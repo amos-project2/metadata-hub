@@ -11,3 +11,7 @@
 **still compile:** $ mvn compile
 
 **remove target directory:** $ mvn clean
+
+
+**Short maven-Tutorial**
+https://docs.google.com/document/d/16Iya2Z0hCarSu4MzKlrsoGz86bL85nANL7ZtI1y-_zE/edit?usp=sharing
