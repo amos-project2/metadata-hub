@@ -1,4 +1,5 @@
 
+import HelloWorld.SpringBoot.HelloWorldWebApp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,8 @@ public class Start
 
         System.out.println("it runs");
 
+
+        HelloWorldWebApp.main(args);
 
         //here you can create an instance to your hello-world component and run it
 
