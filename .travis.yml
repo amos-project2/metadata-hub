@@ -1,4 +1,28 @@
 language: java
 
-script:
-    - mvn test
+jdk: openjdk11
+
+sudo: false
+
+cache:
+    directories:
+        - $HOME/.m2
+before_cache:
+    - rm -rf target/
+jobs:
+    include:
+        - stage: clean
+          name: "build and test"
+          script: mvn clean
+        - stage: buildAndTest
+          name: "build and test"
+          script: mvn test
+          after_success: bash <(curl -s https://codecov.io/bash)
+        - stage: deploy
+          name: "deploy"
+          script: mvn verify
+
+
+
+
+
