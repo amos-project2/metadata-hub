@@ -4,7 +4,7 @@ FROM alpine:latest
 COPY exampleImages /tmp
 
 RUN apk add --update-cache \
-	exiftool \
+	# exiftool \
 	python3 \
 	openjdk11 \
 	postgresql
