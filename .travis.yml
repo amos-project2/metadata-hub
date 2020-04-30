@@ -1,42 +1,41 @@
 jobs:
-    include:
-        - language: java
-          jdk: openjdk11
-          sudo: false
-          cache:
-          directories:
-            - $HOME/.m2
-            - server/target/
-          before_cache:
-            - rm -rf server/target/
-          - stage: clean
-            name: "clean"
-            before_script:
-              - cd server/
-            script:
-              - mvn clean
-          - stage: buildAndTest
-            name: "build and test"
-            before_script:
-              - cd server/
-            script:
-              - mvn test
-            after_success:
-              - bash <(curl -s https://codecov.io/bash)
-          - stage: deploy
-            name: "deploy"
-            before_script:
-              - cd server/
-            script:
-              - mvn verify
-        - language: python
-          python: 3.8
-          before_script:
-            - cd crawler/
-          script:
-            - python helloworld.py
+  include:
+    - language: java
+      jdk: openjdk11
+      cache:
+        directories:
+          - $HOME/.m2
+          - server/target/
+        before_cache:
+      jobs:
+        - stage: clean
+          name: "clean"
+          before_script: cd server/
+          script: mvn clean
+        - stage: buildAndTest
+          name: "build and test"
+          before_script: cd server/
+          script: mvn test
+          after_success: bash <(curl -s https://codecov.io/bash)
+        - stage: deploy
+          name: "deploy"
+          before_script: cd server/
+          script: mvn verify
 
-
-
+    - language: python
+      python: 3.8
+      jobs:
+        - stage: build
+          name: "Build Python"
+          before_script: cd crawler
+          script: python helloworld.py
+        - stage: test
+          name: "Test Python"
+          before_script: cd crawler
+          script: python helloworld.py
+        - stage: deploy
+          name: "Deploy Python"
+          before_script: cd crawler
+          script: python helloworld.py
 
 
