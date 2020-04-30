@@ -24,5 +24,7 @@ jobs:
         - mvn verify
     - name: Docker
       services: docker
+      before_script:
+        - cd docker/
       script:
         - docker build -t metadata-hub .
