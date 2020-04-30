@@ -1,27 +1,40 @@
-language: java
-
-jdk: openjdk11
-
-sudo: false
-
-cache:
-    directories:
-        - $HOME/.m2
-        - target/
-before_cache:
-    - rm -rf target/
 jobs:
     include:
-        - stage: clean
-          name: "clean"
-          script: mvn clean
-        - stage: buildAndTest
-          name: "build and test"
-          script: mvn test
-          after_success: bash <(curl -s https://codecov.io/bash)
-        - stage: deploy
-          name: "deploy"
-          script: mvn verify
+        - language: java
+          jdk: openjdk11
+          sudo: false
+          cache:
+          directories:
+            - $HOME/.m2
+            - server/target/
+          before_cache:
+            - rm -rf server/target/
+          - stage: clean
+            name: "clean"
+            before_script:
+              - cd server/
+            script:
+              - mvn clean
+          - stage: buildAndTest
+            name: "build and test"
+            before_script:
+              - cd server/
+            script:
+              - mvn test
+            after_success:
+              - bash <(curl -s https://codecov.io/bash)
+          - stage: deploy
+            name: "deploy"
+            before_script:
+              - cd server/
+            script:
+              - mvn verify
+        - language: python
+          python: 3.8
+          before_script:
+            - cd crawler/
+          script:
+            - python helloworld.py
 
 
 
