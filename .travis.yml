@@ -22,3 +22,7 @@ jobs:
         - mvn clean
         - mvn test
         - mvn verify
+    - name: Docker
+      services: docker
+      script:
+        - docker build -t metadata-hub .
