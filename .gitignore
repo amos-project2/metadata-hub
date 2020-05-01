@@ -1,6 +1,7 @@
 ### here we can add our own stuff ###
 .idea
 *.log
+*.code-workspace
 
 
 
