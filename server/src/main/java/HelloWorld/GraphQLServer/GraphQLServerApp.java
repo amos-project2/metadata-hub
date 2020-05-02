@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class GraphQLServerApp {
 
     // Visit at: http://localhost:8080/graphql
-    public static void main(String[] args)
+    public static void main222(String[] args)
     {
         SpringApplication.run(GraphQLServerApp.class, args);
     }
