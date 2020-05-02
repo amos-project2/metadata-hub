@@ -22,6 +22,9 @@ import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 public class GraphQLProvider
 {
 
+    @Autowired
+    GraphQLDataFetchers graphQLDataFetchers;
+
     private GraphQL graphQL;
 
     @Bean
@@ -39,8 +42,6 @@ public class GraphQLProvider
         this.graphQL = GraphQL.newGraphQL(graphQLSchema).build();
     }
 
-    @Autowired
-    GraphQLDataFetchers graphQLDataFetchers;
 
     private GraphQLSchema buildSchema(String sdl)
     {
