@@ -1,0 +1,14 @@
+type Query{
+    knockknock(name: String): World
+}
+
+type World{
+    name: String!
+    greeting: String
+    population: [Human!]
+}
+
+type Human{
+    first_name: String!
+    last_name: String!
+}
