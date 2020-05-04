@@ -22,13 +22,14 @@ def naiveTreeWalk(pathExifTool, pathInput, pathProtocol):
     #: Debugging variable to check how many exiftool scans fail
     failures = []
 
-    #: Walk over every directory and execute the exiftool. Log to file protocol.txt at <pathProtocol>
-    with open(f'{pathProtocol}/protocol.txt', 'w') as myFile:
-        for root, directories, files in os.walk(pathInput):
-            try:
+    #: Walk over every directory and execute the exiftool. Log to file to <pathProtocol>
+
+    for root, directories, files in os.walk(pathInput):
+        try:
+            with open(f'{pathProtocol}/protocol{root.replace("/","_")}.json', 'w') as myFile:
                 subprocess.check_call([f'{pathExifTool}', '-json', root], stdout=myFile)
-            except subprocess.CalledProcessError:
-                failures.append(root)
+        except subprocess.CalledProcessError:
+            failures.append(root)
 
 
 def hashTable(pathInput):
@@ -61,7 +62,7 @@ def hashTable(pathInput):
 # #: <pathInput>: path to folder you want to check
 # pathInput = '/home/thomas/Downloads/TESTY'
 # #: <pathProtocol>:
-# pathProtocol = '/home/thomas/Documents/master/amos/metadata-hub/crawler/protocol'
+# pathProtocol = 'protocol'
 # #: for testing purposes
 # naiveTreeWalk(pathExifTool, pathInput, pathProtocol)
 # dictionary = hashTable(pathInput)
