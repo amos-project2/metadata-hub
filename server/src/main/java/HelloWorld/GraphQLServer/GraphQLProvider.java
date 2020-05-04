@@ -21,8 +21,7 @@ public class GraphQLProvider
 {
 
 
-    GraphQLDataFetchers graphQLDataFetchers;
-
+    private final GraphQLDataFetchers graphQLDataFetchers=new GraphQLDataFetchers();//TODO use a better injection
     private GraphQL graphQL;
 
 
@@ -32,12 +31,13 @@ public class GraphQLProvider
     }
 
 
-    public void init() throws IOException
+    public GraphQLProvider init() throws IOException
     {
         URL url = Resources.getResource("schema.graphqls");
         String sdl = Resources.toString(url, Charsets.UTF_8);
         GraphQLSchema graphQLSchema = buildSchema(sdl);
         this.graphQL = GraphQL.newGraphQL(graphQLSchema).build();
+        return this;
     }
 
 

@@ -1,5 +1,6 @@
 package JerseyServer;
 
+import graphql.GraphQL;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -15,9 +16,26 @@ public class JerseyServer
 
     private final ResourceConfig resourceConfig = new ResourceConfig(MainController.class);
     private final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, resourceConfig, false);
+    private final GraphQL graphQL;
+
+    private static GraphQL graphQLDependencyInjectionCheat;
+
+    public JerseyServer(GraphQL graphQL)
+    {
+        this.graphQL = graphQL;
+    }
+
+    public static GraphQL getGraphQLCheat()
+    {
+        return JerseyServer.graphQLDependencyInjectionCheat;
+    }
+
 
     public void start()
     {
+        if (JerseyServer.graphQLDependencyInjectionCheat != null) throw new RuntimeException("Server is/was already started");
+        JerseyServer.graphQLDependencyInjectionCheat = graphQL;
+
         try
         {
             System.out.println("Jersey-Server is starting");
@@ -32,9 +50,9 @@ public class JerseyServer
             }));
             server.start();
 
-            System.out.println("Application started. Try out.\n");
+            System.out.println("Jersey-Server started\n");
             System.out.println("WEB-GUI: http://localhost:8080");
-            System.out.println("GRAPHQL-ENDPOINT: http://localhost:8080/graphql/");
+            System.out.println("GRAPHQL-ENDPOINT: http://localhost:8080/graphql/?query=hey");
             System.out.println("GRAPHQL-TEST-CONSOLE: http://localhost:8080/testconsole/");
 
             Thread.currentThread().join();

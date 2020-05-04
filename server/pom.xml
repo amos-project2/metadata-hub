@@ -83,7 +83,11 @@
             <artifactId>jersey-hk2</artifactId>
         </dependency>
 
-
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.8</version>
+        </dependency>
 
 
     </dependencies>
@@ -96,54 +100,41 @@
                 <version>${maven-compiler-plugin.version}</version>
 
             </plugin>
-<!--            <plugin>-->
-<!--                <artifactId>maven-shade-plugin</artifactId>-->
-<!--                <version>${maven-shade-plugin.version}</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <phase>package</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>shade</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <transformers>-->
-<!--                                <transformer-->
-<!--                                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">-->
-<!--                                    <manifestEntries>-->
-<!--                                        <Main-Class>Start.Start</Main-Class>-->
-<!--                                    </manifestEntries>-->
-<!--                                </transformer>-->
-<!--                            </transformers>-->
+            <plugin>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${maven-shade-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Main-Class>Start.Start</Main-Class>
+                                    </manifestEntries>
+                                </transformer>
+                            </transformers>
 
-<!--                            <artifactSet>-->
-<!--                            </artifactSet>-->
-<!--                            <outputFile>${project.build.directory}/${project.artifactId}-${project.version}-fat.jar-->
-<!--                            </outputFile>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
+                            <artifactSet>
+                            </artifactSet>
+                            <outputFile>${project.build.directory}/${project.artifactId}-${project.version}-fat.jar
+                            </outputFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
             </plugin>
 
             <!-- HelloWorld Server Plugin -->
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.2.6.RELEASE</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <mainClass>Start.Start</mainClass>
-                </configuration>
-            </plugin>
+<!--          on
+-->
 
         </plugins>
     </build>
