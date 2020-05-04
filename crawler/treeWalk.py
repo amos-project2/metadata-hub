@@ -54,8 +54,10 @@ def hashTable(pathInput):
 # #: For testing (put your on paths into the variables)
 # #: Write paths in Windows with \\ between directorises: C:\\Thomas
 # #: Write paths in Linux with / between directories: /home/thomas
-# #: <pathExifTool>: path to the exiftool.
+# #: <pathExifTool> Linux: path to the exiftool.
 # pathExifTool = '/home/thomas/Documents/master/amos/metadata-hub/crawler/exiftool/exiftoolLinux/exiftool'
+# #: <pathExifTool> Window: path to the exiftool.
+# pathExifTool = '...\\metadata-hub\\crawler\\exiftool\\exiftoolWindows\\exiftool.exe';
 # #: <pathInput>: path to folder you want to check
 # pathInput = '/home/thomas/Downloads/TESTY'
 # #: <pathProtocol>:
