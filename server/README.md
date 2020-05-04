@@ -36,7 +36,7 @@ $ mvn compile
 ```console
 $ mvn clean
 ```
-###Endpoints
+### Endpoints
 
 WEB-GUI: http://localhost:8080
 
@@ -68,9 +68,9 @@ CREATE DATABASE metadatahub
     CONNECTION LIMIT = -1;
 ```
 
-######Add a testtable
+###### Add a testtable
 
-```
+```sql
 -- Table: public.testtable
 
 -- DROP TABLE public.testtable;
@@ -90,7 +90,7 @@ TABLESPACE pg_default;
 ALTER TABLE public.testtable
     OWNER to metadatahub;
 ```
-######fill the testable with one ore more rows
+###### fill the testable with one ore more rows
 
 
 
