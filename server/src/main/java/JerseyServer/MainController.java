@@ -22,9 +22,10 @@ public class MainController
 
     public MainController()
     {
-        System.out.println("graphQL added: "+(JerseyServer.getGraphQLCheat()!=null));
+        System.out.println("graphQL added: " + (JerseyServer.getGraphQLCheat() != null));
         this.graphQl = JerseyServer.getGraphQLCheat();
-        //TODO add DatabaseManager too
+        //i dont think, that we must have here a databaseaccess, because the controllers should delegate their stuff
+        //to components, who have databaseaccess
     }
 
 

@@ -1,5 +1,6 @@
 package HelloWorld.GraphQLServer;
 
+import Database.DatabaseProvider;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import graphql.GraphQL;
@@ -19,18 +20,23 @@ import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 
 public class GraphQLProvider
 {
-
-
-    private final GraphQLDataFetchers graphQLDataFetchers=new GraphQLDataFetchers();//TODO use a better injection
+    private final GraphQLDataFetchers graphQLDataFetchers;
+    private final DatabaseProvider databaseProvider;
     private GraphQL graphQL;
-
 
     public GraphQL graphQL()
     {
         return graphQL;
     }
 
+    public GraphQLProvider(GraphQLDataFetchers graphQLDataFetchers, DatabaseProvider databaseProvider)
+    {
+        this.graphQLDataFetchers = graphQLDataFetchers;
+        this.databaseProvider = databaseProvider;
+    }
 
+    //its good to use a init, because calling object-methods, since the object is not ready constructed
+    //is due different reasons not a so good idea
     public GraphQLProvider init() throws IOException
     {
         URL url = Resources.getResource("schema.graphqls");
@@ -48,7 +54,9 @@ public class GraphQLProvider
         SchemaGenerator schemaGenerator = new SchemaGenerator();
         return schemaGenerator.makeExecutableSchema(typeRegistry, runtimeWiring);
     }
-    private RuntimeWiring buildWiring() {
+
+    private RuntimeWiring buildWiring()
+    {
         return RuntimeWiring.newRuntimeWiring()
             .type(newTypeWiring("Query")
                 .dataFetcher("knockknock", graphQLDataFetchers.getGreetingFetcher()))
