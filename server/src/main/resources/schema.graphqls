@@ -1,14 +1,9 @@
 type Query{
-    knockknock(name: String): World
+    teststuff(id: String): testtable
 }
 
-type World{
-    name: String!
-    greeting: String
-    population: [Human!]
-}
-
-type Human{
-    first_name: String!
-    last_name: String!
+type testtable{
+    id: String!
+    testvalue: String
+    nezahl: Int
 }

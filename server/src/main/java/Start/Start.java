@@ -1,15 +1,13 @@
 package Start;
 
 import Database.DatabaseProvider;
-import HelloWorld.GraphQLServer.GraphQLDataFetchers;
-import HelloWorld.GraphQLServer.GraphQLProvider;
+import GraphQL.GraphQLDataFetchers;
+import GraphQL.GraphQLProvider;
 import JerseyServer.JerseyServer;
-import graphql.nextgen.GraphQL;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import graphql.ExecutionResult;
 import org.jooq.Record;
-import org.jooq.Record1;
 import org.jooq.Result;
-import org.jooq.ResultQuery;
-import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +32,12 @@ public class Start
         GraphQLDataFetchers graphQLDataFetchers = new GraphQLDataFetchers(databaseProvider);
         GraphQLProvider graphQLProvider = new GraphQLProvider(graphQLDataFetchers, databaseProvider);
 
+        ExecutionResult execute = graphQLProvider.init().graphQL().execute("query {teststuff(id: \"1\") {id, testvalue}}");
+
+        System.out.println(execute);
+        String json = new ObjectMapper().writeValueAsString(execute.toSpecification());
+        System.out.println(json);
+
         JerseyServer jerseyServer = new JerseyServer(graphQLProvider.init().graphQL());
         jerseyServer.start();
 
@@ -50,11 +54,11 @@ public class Start
             System.out.println(records);
 
             //with normal jdbc
-            try(Connection connection = databaseProvider.getHikariDataSource().getConnection())
+            try (Connection connection = databaseProvider.getHikariDataSource().getConnection())
             {
                 ResultSet resultSet = connection.prepareStatement("SELECT * FROM public.testtable").executeQuery();
                 resultSet.next();
-                System.out.println("Testvalueoutput: "+resultSet.getString("testvalue"));
+                System.out.println("Testvalueoutput: " + resultSet.getString("testvalue"));
             }
         }
         catch (SQLException throwables)

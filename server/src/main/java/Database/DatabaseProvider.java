@@ -10,8 +10,8 @@ import java.util.Properties;
 
 public class DatabaseProvider
 {
-    private final HikariDataSource hikariDataSource;
-    private final DSLContext dslContext;
+    private  HikariDataSource hikariDataSource;
+    private  DSLContext dslContext;
     //TODO implement (maybe using jooq)
 
 

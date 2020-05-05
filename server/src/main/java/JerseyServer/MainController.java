@@ -2,6 +2,7 @@ package JerseyServer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import graphql.ExecutionResult;
 import graphql.GraphQL;
 
 import javax.inject.Singleton;
@@ -98,14 +99,27 @@ public class MainController
         //not sure for what the variables are for, but graph-I-QL posts them to the server
         //so maybe we find in them some functionality?^^
 
-        Map<String, String> payload = new HashMap<>();
-        payload.put("Hello", "Moon");
-        payload.put("From", "AMOS TEAM 2");
-        payload.put("queryData", query);
-        payload.put("variables", variables);
-
-        String json = new ObjectMapper().writeValueAsString(payload);
+//        Map<String, String> payload = new HashMap<>();
+//        payload.put("Hello", "Moon");
+//        payload.put("From", "AMOS TEAM 2");
+//        payload.put("queryData", query);
+//        payload.put("variables", variables);
+//
+//        String json = new ObjectMapper().writeValueAsString(payload);
         //System.out.println(json);
+
+        ExecutionResult execute;
+
+        if (variables != null)
+        {
+            execute = this.graphQl.execute(query, null, variables);
+        }
+        else
+        {
+            execute = this.graphQl.execute(query);
+        }
+
+        String json = new ObjectMapper().writeValueAsString(execute.toSpecification());
         return json;
     }
 

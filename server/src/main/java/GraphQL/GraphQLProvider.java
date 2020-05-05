@@ -1,4 +1,4 @@
-package HelloWorld.GraphQLServer;
+package GraphQL;
 
 import Database.DatabaseProvider;
 import com.google.common.base.Charsets;
@@ -11,7 +11,6 @@ import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URL;
 
@@ -59,7 +58,7 @@ public class GraphQLProvider
     {
         return RuntimeWiring.newRuntimeWiring()
             .type(newTypeWiring("Query")
-                .dataFetcher("knockknock", graphQLDataFetchers.getGreetingFetcher()))
+                .dataFetcher("teststuff", graphQLDataFetchers.getDatabaseTestFetcher()))
             .build();
     }
 }
