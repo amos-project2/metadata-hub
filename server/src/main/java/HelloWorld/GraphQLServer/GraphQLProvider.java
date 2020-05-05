@@ -27,11 +27,6 @@ public class GraphQLProvider
 
     private GraphQL graphQL;
 
-    @Bean
-    public GraphQL graphQL()
-    {
-        return graphQL;
-    }
 
     @PostConstruct
     public void init() throws IOException
@@ -55,5 +50,11 @@ public class GraphQLProvider
             .type(newTypeWiring("Query")
                 .dataFetcher("knockknock", graphQLDataFetchers.getGreetingFetcher()))
             .build();
+    }
+
+    @Bean
+    public GraphQL graphQL()
+    {
+        return graphQL;
     }
 }
