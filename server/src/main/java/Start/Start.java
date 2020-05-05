@@ -13,6 +13,7 @@ public class Start
     public static void main(String[] args)
     {
         System.out.println("AMOS-GRAPHQL-SERVER");
+
         SpringApplication.run(Start.class, args);
 
         System.out.println("is running");

@@ -123,6 +123,10 @@
             <artifactId>graphql-java-spring-webmvc</artifactId>
             <version>2019-06-24T11-47-27-31ab4f9</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
 
 
     </dependencies>

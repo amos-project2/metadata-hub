@@ -1,14 +1,22 @@
 type Query{
     knockknock(name: String): World
+    alive(world_name: String): [Human!]
+}
+
+type Mutation{
+    born(first_name: String!, last_name: String!): Human!
+    die(first_name: String!, last_name: String!): Boolean!
 }
 
 type World{
+    id: ID!
     name: String!
     greeting: String
     population: [Human!]
 }
 
 type Human{
+    id: ID!
     first_name: String!
     last_name: String!
 }
