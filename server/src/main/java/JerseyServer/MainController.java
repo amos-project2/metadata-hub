@@ -8,10 +8,7 @@ import graphql.GraphQL;
 import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -128,19 +125,16 @@ public class MainController
     @GET
     @Produces({MediaType.TEXT_HTML})
     @Path("/testconsole")
-    public FileInputStream getTestConsole() throws FileNotFoundException
+    public InputStream getTestConsole() throws FileNotFoundException
     {
-        try
-        {
-//            File f = new File("graphiql/graphiql.html");
-            File f = new File(getClass().getClassLoader().getResource("graphiql/graphiql.html").getFile());
-            return new FileInputStream(f);
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-            throw e;
-        }
+        //            File f = new File("graphiql/graphiql.html");
+       // File f = new File(getClass().getClassLoader().getResource("graphiql/graphiql.html").getFile());
+
+
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        InputStream is = classloader.getResourceAsStream("graphiql/graphiql.html");
+        return is;
+
     }
 
 }
