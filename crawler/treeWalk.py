@@ -69,16 +69,18 @@ def naiveTreeWalk(pathExifTool: str, pathInput: str, pathProtocol: str, clear: b
 
     #: Debugging variable to check how many exiftool scans fail
     failures = []
-
+    #: variable to count how many files have been written
+    logCount = 0
     #: Walk over every directory and execute the exiftool. Log to file to <pathProtocol>
     for root, directories, files in os.walk(pathInput):
+        logCount += 1
         # Skip node if it is already processed
         if root in alreadyProcessed:
             relativePath = os.path.relpath(root, pathInput)
             print(f'Skip node \'{relativePath}\': already processed.')
             continue
         try:
-            with open(f'{pathProtocol}/protocol{root.replace("/","_")}.json', 'w') as myFile:
+            with open(f'{pathProtocol}/protocol{logCount}.json', 'w') as myFile:
                 subprocess.check_call([f'{pathExifTool}', '-json', root], stdout=myFile)
                 addProcessedEntry(root, traceFile)
         except subprocess.CalledProcessError:
