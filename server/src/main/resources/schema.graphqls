@@ -1,0 +1,9 @@
+type Query{
+    teststuff(id: String): testtable
+}
+
+type testtable{
+    id: String!
+    testvalue: String
+    nezahl: Int
+}

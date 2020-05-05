@@ -17,7 +17,7 @@
     </appender>
 
 
-    <root level="error">   <!-- level==debug -->
+    <root level="info">   <!-- level==debug -->
         <appender-ref ref="STDOUT"/>
         <!--   <appender-ref ref="FILE" /> -->
     </root>
