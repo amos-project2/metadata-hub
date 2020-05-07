@@ -36,6 +36,23 @@ $ mvn compile
 ```console
 $ mvn clean
 ```
+### Configuration
+You can configure the server with the *-config.properties file.<br><br>
+The local-config.properties file is for local purposes and is **default read** by the java-app. No argument is needed<br>
+The deployment-config.properties file is for deployment purposes. The Path must be hand over a java-app argument.<br>
+You are also allowed to create your own *-config.properties file. You have to do the same as you do with the deployment-config.properties file.
+
+**An Example**
+
+```console
+java -jar metadata-hub-server-application-fat.jar CONFIG-FILE-PATH
+```
+
+
+
+
+
+
 ### Endpoints
 
 WEB-GUI: http://localhost:8080
