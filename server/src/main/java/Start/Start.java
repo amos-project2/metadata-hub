@@ -15,15 +15,32 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Properties;
 
 
 public class Start
 {
     private static final Logger logger = LoggerFactory.getLogger(Start.class);
+    public static Properties config;
 
     public static void main(String[] args) throws IOException
     {
         System.out.println("AMOS-GRAPHQL-SERVER");
+
+
+        ApplicationConfig applicationConfig = new ApplicationConfig((args.length>0)?args[0]:null);
+        if (!applicationConfig.isConfigValide())
+        {
+            System.out.println("Config is not valide: " + applicationConfig.getErrorMessage());
+            System.exit(-1);
+            return;
+        }
+
+        Start.config = applicationConfig.getConfig();
+
+        System.out.println(Start.config.getProperty("foo"));
+        if(true) return;
+
 
         DatabaseProvider databaseProvider = new DatabaseProvider();
         Start.databaseTest(databaseProvider);
