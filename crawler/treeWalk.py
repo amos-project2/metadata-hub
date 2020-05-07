@@ -1,11 +1,7 @@
-#TODO Add logging of already passed directories
-#TODO Add debugging logging
-#TODO Add CPU-Check
-#TODO Add Multi Thread
-
 import os
 import argparse
 import subprocess
+import json
 from sys import exit
 from typing import Tuple, List
 
@@ -106,39 +102,39 @@ def hashTable(pathInput):
     return directoryDictionary
 
 
-def parse_arguments() -> argparse.Namespace:
-    """Parse command line arguments.
-
-    Returns:
-        argparse.Namespace: command line arguments
-
-    """
-    parser = argparse.ArgumentParser(description='MetaHub Filesystem Crawler')
-    parser.add_argument(
-        'exiftool',
-        type=str,
-        nargs=None,
-        help='path of the ExifTool executable'
-    )
-    parser.add_argument(
-        'input',
-        type=str,
-        nargs=None,
-        help='path of the input directory'
-    )
-    parser.add_argument(
-        'output',
-        type=str,
-        nargs=None,
-        help='path of the output directory'
-    )
-    parser.add_argument(
-        '--clear',
-        dest='clear',
-        action='store_true',
-        help='clear the Trace if it exists'
-    )
-    return parser.parse_args()
+# def parse_arguments() -> argparse.Namespace:
+#     """Parse command line arguments.
+#
+#     Returns:
+#         argparse.Namespace: command line arguments
+#
+#     """
+#     parser = argparse.ArgumentParser(description='MetaHub Filesystem Crawler')
+#     parser.add_argument(
+#         'exiftool',
+#         type=str,
+#         nargs=None,
+#         help='path of the ExifTool executable'
+#     )
+#     parser.add_argument(
+#         'input',
+#         type=str,
+#         nargs=None,
+#         help='path of the input directory'
+#     )
+#     parser.add_argument(
+#         'output',
+#         type=str,
+#         nargs=None,
+#         help='path of the output directory'
+#     )
+#     parser.add_argument(
+#         '--clear',
+#         dest='clear',
+#         action='store_true',
+#         help='clear the Trace if it exists'
+#     )
+#     return parser.parse_args()
 
 
 def err(message: str) -> None:
@@ -153,34 +149,21 @@ def err(message: str) -> None:
 
 
 if __name__ == "__main__":
-    args = parse_arguments()
-    if not os.path.isfile(args.exiftool):
-        err(f'ExifTool \'{args.exiftool}\' does not exist.')
-    if not os.path.isdir(args.input):
-        err(f'Input directory \'{args.input}\' does not exist.')
-    if not os.path.isdir(args.output):
-        err(f'Output directory \'{args.output}\' does not exist.')
+    #: Load the config files data
+    with open("configCrawler.json") as jsonData:
+        data = json.load(jsonData)
+    #: Check for invalid input
+    if not os.path.isfile(data['paths']['exiftoolPath']):
+        err(f'ExifTool \'{data["paths"]["exiftoolPath"]}\' does not exist.')
+    if not os.path.isdir(data['paths']['inputPath']):
+        err(f'Input directory \'{data["paths"]["inputPath"]}\' does not exist.')
+    if not os.path.isdir(data['paths']['outputPath']):
+        err(f'Output directory \'{data["paths"]["outputPath"]}\' does not exist.')
+    #: run the tree walk
     naiveTreeWalk(
-        pathExifTool=args.exiftool,
-        pathInput=args.input,
-        pathProtocol=args.output,
-        clear=args.clear,
+        pathExifTool=data['paths']['exiftoolPath'],
+        pathInput=data['paths']['inputPath'],
+        pathProtocol=data['paths']['outputPath'],
+        clear=data['options']['clear'],
     )
-
-
-# #: For testing (put your on paths into the variables)
-# #: Write paths in Windows with \\ between directorises: C:\\Thomas
-# #: Write paths in Linux with / between directories: /home/thomas
-# #: <pathExifTool> Linux: path to the exiftool.
-# pathExifTool = '/home/thomas/Documents/master/amos/metadata-hub/crawler/exiftool/exiftoolLinux/exiftool'
-# #: <pathExifTool> Window: path to the exiftool.
-# pathExifTool = '...\\metadata-hub\\crawler\\exiftool\\exiftoolWindows\\exiftool.exe';
-# #: <pathInput>: path to folder you want to check
-# pathInput = '/home/thomas/Downloads/TESTY'
-# #: <pathProtocol>:
-# pathProtocol = 'protocol'
-# #: for testing purposes
-# naiveTreeWalk(pathExifTool, pathInput, pathProtocol)
-# dictionary = hashTable(pathInput)
-# for entry in dictionary:
-#     print(f'{entry}:  {dictionary[entry]}')
+    pass

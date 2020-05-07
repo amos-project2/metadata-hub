@@ -1,0 +1,13 @@
+{
+	"paths":{
+		"exiftoolPath":"/home/thomas/Documents/master/amos/metadata-hub/crawler/exiftool/exiftoolLinux/exiftool",
+		"inputPath":"/home/thomas/Documents/master/amos/TreeWalkTestDirectory",
+		"outputPath":"/home/thomas/Documents/master/amos/metadata-hub/crawler/protocol"
+	},
+    "options": {
+        "clear":false
+    },
+	"performance":{
+		"powerLevel":1
+	}
+}
