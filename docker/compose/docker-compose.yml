@@ -1,0 +1,43 @@
+version: "3.7"
+
+services:
+
+    crawler:
+        container_name: "metadata-hub.crawler"
+        image: "metadata-hub.crawler"
+        build:
+          dockerfile: $PWD/crawler/Dockerfile
+          context: ../..
+        env_file:
+            - ./.env
+        depends_on:
+            - database
+        volumes:
+            - ${CRAWLER_FILESYSTEM}:/filesystem
+        ports:
+            - ${CRAWLER_PORT}:3000
+
+    database:
+        image: postgres:latest
+        container_name: "metadata-hub.database"
+        env_file:
+            - ./.env
+        environment:
+            - POSTGRES_USER=${DATABASE_USER}
+            - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+        volumes:
+            - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+            - ${DATABASE_STORAGE}:/var/lib/postgresql/data
+        ports:
+            - ${DATABASE_PORT}:5432
+
+    server:
+        image: "metadata-hub.server"
+        container_name: "metadata-hub.server"
+        build:
+            dockerfile: $PWD/server/Dockerfile
+            context: ../..
+        depends_on:
+            - database
+        ports:
+            - ${SERVER_PORT}:8080
