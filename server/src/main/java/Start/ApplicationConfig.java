@@ -76,7 +76,25 @@ public class ApplicationConfig
     {
         this.errorMessage = "";
 
-        if (this.config.get("foo") == null) this.errorMessage = "Property foo is missing";
+        if (this.config.getProperty("dataSource.user") == null) this.errorMessage = "Property dataSource.user is missing";
+        if (this.config.getProperty("dataSource.password") == null) this.errorMessage = "Property dataSource.password is missing";
+        if (this.config.getProperty("dataSource.databaseName") == null) this.errorMessage = "Property dataSource.databaseName is missing";
+        if (this.config.getProperty("dataSource.portNumber") == null) this.errorMessage = "Property dataSource.portNumber is missing";
+        if (this.config.getProperty("dataSource.serverName") == null) this.errorMessage = "Property dataSource.serverName is missing";
+
+        if (!this.errorMessage.equals(""))
+        {
+            return;
+        }
+
+        try
+        {
+            Integer.parseInt(this.config.getProperty("dataSource.portNumber"));
+        }
+        catch (NumberFormatException e)
+        {
+            this.errorMessage = "Property dataSource.portNumber must be an Integervalue";
+        }
 
 
         if (this.errorMessage.equals(""))

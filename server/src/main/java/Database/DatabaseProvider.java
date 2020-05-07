@@ -1,5 +1,6 @@
 package Database;
 
+import Start.Start;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.jooq.DSLContext;
@@ -22,11 +23,12 @@ public class DatabaseProvider
         props.setProperty("dataSourceClassName", "org.postgresql.ds.PGSimpleDataSource");
         props.setProperty("minimumIdle", "2");
 
-        props.setProperty("dataSource.user", "metadatahub");
-        props.setProperty("dataSource.password", "metadatahub");
-        props.setProperty("dataSource.databaseName", "metadatahub");
-        props.setProperty("dataSource.portNumber", "5432");
-        props.setProperty("dataSource.serverName", "localhost");
+
+        props.setProperty("dataSource.user", Start.config.getProperty("dataSource.user"));
+        props.setProperty("dataSource.password", Start.config.getProperty("dataSource.password"));
+        props.setProperty("dataSource.databaseName", Start.config.getProperty("dataSource.databaseName"));
+        props.setProperty("dataSource.portNumber", Start.config.getProperty("dataSource.portNumber"));
+        props.setProperty("dataSource.serverName", Start.config.getProperty("dataSource.serverName"));
 
         HikariConfig config = new HikariConfig(props);
         hikariDataSource = new HikariDataSource(config);

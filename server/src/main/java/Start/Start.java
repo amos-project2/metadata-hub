@@ -38,10 +38,6 @@ public class Start
 
         Start.config = applicationConfig.getConfig();
 
-        System.out.println(Start.config.getProperty("foo"));
-        if(true) return;
-
-
         DatabaseProvider databaseProvider = new DatabaseProvider();
         Start.databaseTest(databaseProvider);
 
