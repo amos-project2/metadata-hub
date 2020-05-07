@@ -82,6 +82,10 @@ public class ApplicationConfig
         if (this.config.getProperty("dataSource.portNumber") == null) this.errorMessage = "Property dataSource.portNumber is missing";
         if (this.config.getProperty("dataSource.serverName") == null) this.errorMessage = "Property dataSource.serverName is missing";
 
+        if (this.config.getProperty("httpserver.address") == null) this.errorMessage = "Property httpserver.address is missing";
+        if (this.config.getProperty("httpserver.port") == null) this.errorMessage = "Property httpserver.port is missing";
+
+
         if (!this.errorMessage.equals(""))
         {
             return;
@@ -94,6 +98,15 @@ public class ApplicationConfig
         catch (NumberFormatException e)
         {
             this.errorMessage = "Property dataSource.portNumber must be an Integervalue";
+        }
+
+        try
+        {
+            Integer.parseInt(this.config.getProperty("httpserver.port"));
+        }
+        catch (NumberFormatException e)
+        {
+            this.errorMessage = "Property httpserver.port must be an Integervalue";
         }
 
 
