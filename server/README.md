@@ -10,13 +10,13 @@ A short Maven tutorial can be found [here](https://docs.google.com/document/d/16
 ###### Build and execute
 
 ```console
-$ mvn package && java -jar ./target/metadata-hub-1.0-SNAPSHOT-fat.jar
+$ mvn package && java -jar ./target/metadata-hub-server-application-fat.jar
 ```
 
 ###### Skip tests
 
 ```console
-$ mvn package -DskipTests && java -jar ./target/metadata-hub-1.0-SNAPSHOT-fat.jar
+$ mvn package -DskipTests && java -jar ./target/metadata-hub-server-application-fat.jar
 ```
 
 ###### Still get .jar files

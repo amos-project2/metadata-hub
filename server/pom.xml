@@ -8,7 +8,9 @@
 
     <groupId>org.amos.group2</groupId>
     <artifactId>metadata-hub</artifactId>
-    <version>1.0-SNAPSHOT</version>
+
+    <!-- i  named the version server-application, because we dont change the versions in maven -->
+    <version>server-application</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
