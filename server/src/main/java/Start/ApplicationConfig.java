@@ -1,13 +1,12 @@
 package Start;
 
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.util.Properties;
 
 public class ApplicationConfig
@@ -15,10 +14,10 @@ public class ApplicationConfig
     private static final Logger logger = LoggerFactory.getLogger(ApplicationConfig.class);
 
     private boolean configExists = false;
-    private boolean configValide = false;
-    private String errorMessage = "Config File not exists/Config Path is incorrect";
+    private boolean configValid = false;
+    @Getter private String errorMessage = "Config File not exists/Config Path is incorrect";
 
-    private final Properties config = new Properties();
+    @Getter private final Properties config = new Properties();
 
     public ApplicationConfig(String filePath)
     {
@@ -28,7 +27,7 @@ public class ApplicationConfig
             {
                 //cause we read the file from our ressource, which is in the jar-file
                 ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-                try (InputStream is = classloader.getResourceAsStream("config-local.properties");)
+                try (InputStream is = classloader.getResourceAsStream("config-local.properties"))
                 {
                     config.load(is);
                     this.configExists = true;
@@ -61,14 +60,9 @@ public class ApplicationConfig
         return configExists;
     }
 
-    public boolean isConfigValide()
+    public boolean isConfigValid()
     {
-        return configValide;
-    }
-
-    public Properties getConfig()
-    {
-        return config;
+        return configValid;
     }
 
     //may not be overwritten, cause its called from the constructor -> final
@@ -112,12 +106,7 @@ public class ApplicationConfig
 
         if (this.errorMessage.equals(""))
         {
-            this.configValide = true;
+            this.configValid = true;
         }
-    }
-
-    public String getErrorMessage()
-    {
-        return this.errorMessage;
     }
 }
