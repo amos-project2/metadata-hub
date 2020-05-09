@@ -1,7 +1,10 @@
 import os
 import argparse
+import random
 import subprocess
 import json
+import time
+from concurrent.futures.thread import ThreadPoolExecutor
 from sys import exit
 from typing import Tuple, List
 
@@ -48,40 +51,66 @@ def initTrace(pathProtocol: str, clear: bool) -> Tuple[List[str], str]:
         open(traceFile, 'a').close()
     return (alreadyProcessed, traceFile)
 
-
-def naiveTreeWalk(pathExifTool: str, pathInput: str, pathProtocol: str, clear: bool) -> None:
-    """Naive implementation of the tree walk. logs the results in Json format.
+# TODO This function should ultimately be used to create a list of even work packages
+def naiveCreateWorkpackages(pathInput: str, pathProtocol:str, clear:bool) -> Tuple[List[str],str]:
+    """Creates a list of every directory found in the give paths file tree.
 
     Args:
-        pathExifTool (str): Path to the exiftool.
         pathInput (str): Path to the directory we want to walk.
-        pathProtocol (str): Path to the output directory
-        clear (bool): clear trace data beforehand
 
     """
     #: Initialize tracing
     alreadyProcessed, traceFile = initTrace(pathProtocol, clear)
     print(f'Initialized with {len(alreadyProcessed)} already processed nodes.')
 
-    #: Debugging variable to check how many exiftool scans fail
-    failures = []
-    #: variable to count how many files have been written
-    logCount = 0
-    #: Walk over every directory and execute the exiftool. Log to file to <pathProtocol>
+    directoryList = []
     for root, directories, files in os.walk(pathInput):
-        logCount += 1
         # Skip node if it is already processed
         if root in alreadyProcessed:
             relativePath = os.path.relpath(root, pathInput)
             print(f'Skip node \'{relativePath}\': already processed.')
             continue
+        directoryList.append(root)
+    return directoryList, traceFile
+
+def naiveTreeWalk(pathExifTool: str, pathProtocol: str, directory:str, traceFile:str) -> None:
+    """Naive implementation of the tree walk. logs the results in Json format.
+
+    Args:
+        pathExifTool (str): Path to the exiftool.
+        pathProtocol (str): Path to the output directory
+        directory (str): The directory to scan
+        traceFile (str): The trace file
+    """
+
+    #: Debugging variable to check how many exiftool scans fail
+    failures = []
+    #: variable to give protocol files a name
+    logCount = random.randint(1,2000000)
+    #: Walk over every directory and execute the exiftool. Log to file to <pathProtocol>
+    try:
+        with open(f'{pathProtocol}/protocol{logCount}.json', 'w') as myFile:
+            subprocess.check_call([f'{pathExifTool}', '-json', directory], stdout=myFile)
+            addProcessedEntry(directory, traceFile)
+    except subprocess.CalledProcessError:
+        failures.append(directory)
+
+def naiveTreeWalkTest(pathExifTool: str, pathProtocol: str, directory:List[str], traceFile:str) -> None:
+    """Naive implementation of the tree walk. logs the results in Json format. Only exist for testing the single thread
+        treewalk!
+    """
+    #: Debugging variable to check how many exiftool scans fail
+    failures = []
+    for direct in directory:
+        #: variable to give protocol files a name
+        logCount = random.randint(1,2000000)
+        #: Walk over every directory and execute the exiftool. Log to file to <pathProtocol>
         try:
             with open(f'{pathProtocol}/protocol{logCount}.json', 'w') as myFile:
-                subprocess.check_call([f'{pathExifTool}', '-json', root], stdout=myFile)
-                addProcessedEntry(root, traceFile)
+                subprocess.check_call([f'{pathExifTool}', '-json', direct], stdout=myFile)
+                addProcessedEntry(direct, traceFile)
         except subprocess.CalledProcessError:
-            failures.append(root)
-
+            failures.append(direct)
 
 def hashTable(pathInput):
     """Creates a hash table based on the total amount of files per directory.
@@ -100,42 +129,6 @@ def hashTable(pathInput):
         else:
             directoryDictionary[len(files)] = [root]
     return directoryDictionary
-
-
-# def parse_arguments() -> argparse.Namespace:
-#     """Parse command line arguments.
-#
-#     Returns:
-#         argparse.Namespace: command line arguments
-#
-#     """
-#     parser = argparse.ArgumentParser(description='MetaHub Filesystem Crawler')
-#     parser.add_argument(
-#         'exiftool',
-#         type=str,
-#         nargs=None,
-#         help='path of the ExifTool executable'
-#     )
-#     parser.add_argument(
-#         'input',
-#         type=str,
-#         nargs=None,
-#         help='path of the input directory'
-#     )
-#     parser.add_argument(
-#         'output',
-#         type=str,
-#         nargs=None,
-#         help='path of the output directory'
-#     )
-#     parser.add_argument(
-#         '--clear',
-#         dest='clear',
-#         action='store_true',
-#         help='clear the Trace if it exists'
-#     )
-#     return parser.parse_args()
-
 
 def err(message: str) -> None:
     """Helper function to display error message and exit.
@@ -159,11 +152,14 @@ if __name__ == "__main__":
         err(f'Input directory \'{data["paths"]["inputPath"]}\' does not exist.')
     if not os.path.isdir(data['paths']['outputPath']):
         err(f'Output directory \'{data["paths"]["outputPath"]}\' does not exist.')
-    #: run the tree walk
-    naiveTreeWalk(
-        pathExifTool=data['paths']['exiftoolPath'],
-        pathInput=data['paths']['inputPath'],
-        pathProtocol=data['paths']['outputPath'],
-        clear=data['options']['clear'],
-    )
+    #: gather the given input directories contents
+    package = naiveCreateWorkpackages(data['paths']['inputPath'], data['paths']['outputPath'], data['options']['clear'])
+    #: Run the tree walk in parallel
+    start = time.time()
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        for directory in package[0]:
+            future = executor.submit(naiveTreeWalk, data['paths']['exiftoolPath'], data['paths']['outputPath'],directory, package[1])
+    # naiveTreeWalkTest(data['paths']['exiftoolPath'], data['paths']['outputPath'],package[0], package[1])
+    end = time.time()
+    print(end - start)
     pass
