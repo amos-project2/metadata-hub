@@ -3,6 +3,7 @@ package JerseyServer;
 import Start.Start;
 import graphql.GraphQL;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -14,23 +15,18 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@RequiredArgsConstructor
 public class JerseyServer
 {
 
-    private static final Properties config = Start.getConfig();
-    private static final URI BASE_URI = UriBuilder.fromUri("http://"+ config.get("httpserver.address")+"/").port(Integer.parseInt(config.getProperty("httpserver.port"))).build();
-
-
-    private final ResourceConfig resourceConfig = new ResourceConfig(MainController.class);
-    private final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, resourceConfig, false);
     private final GraphQL graphQL;
 
-    @Getter private static GraphQL graphQLCheat;
+    private static final Properties config = Start.getConfig();
+    private static final URI BASE_URI = UriBuilder.fromUri("http://"+ config.get("httpserver.address")+"/").port(Integer.parseInt(config.getProperty("httpserver.port"))).build();
+    private final ResourceConfig resourceConfig = new ResourceConfig(MainController.class);
+    private final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, resourceConfig, false);
 
-    public JerseyServer(GraphQL graphQL)
-    {
-        this.graphQL = graphQL;
-    }
+    @Getter private static GraphQL graphQLCheat;
 
     public void start()
     {
