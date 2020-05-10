@@ -1,3 +1,4 @@
+import multiprocessing
 import os
 import argparse
 import random
@@ -152,11 +153,24 @@ if __name__ == "__main__":
         err(f'Input directory \'{data["paths"]["inputPath"]}\' does not exist.')
     if not os.path.isdir(data['paths']['outputPath']):
         err(f'Output directory \'{data["paths"]["outputPath"]}\' does not exist.')
+    powerLevel = 0
+    #: Set the number of threads according to input
+    if data['performance']['powerLevel'] == 4:
+        powerLevel = multiprocessing.cpu_count()
+    elif data['performance']['powerLevel'] == 3:
+        powerLevel = multiprocessing.cpu_count() * 0.75
+    elif data['performance']['powerLevel'] == 2:
+        powerLevel = multiprocessing.cpu_count() * 0.5
+    elif data['performance']['powerLevel'] == 1:
+        powerLevel = multiprocessing.cpu_count() * 0.25
+    else:
+        err(f'Please chose a power level between 1 and 4')
+
     #: gather the given input directories contents
     package = naiveCreateWorkpackages(data['paths']['inputPath'], data['paths']['outputPath'], data['options']['clear'])
     #: Run the tree walk in parallel
     start = time.time()
-    with ThreadPoolExecutor(max_workers=4) as executor:
+    with ThreadPoolExecutor(max_workers=powerLevel) as executor:
         for directory in package[0]:
             future = executor.submit(naiveTreeWalk, data['paths']['exiftoolPath'], data['paths']['outputPath'],directory, package[1])
     # naiveTreeWalkTest(data['paths']['exiftoolPath'], data['paths']['outputPath'],package[0], package[1])
