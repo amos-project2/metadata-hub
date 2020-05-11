@@ -59,33 +59,21 @@ public class GraphQLDataFetchers
             final String id = dataFetchingEnvironment.getArgument("file");
             final Set<String> attributes = dataFetchingEnvironment.getArgument("attribute_names");
 
-            System.out.println("getMetadata: file_id = " + id + " attributes = " + attributes.toString());
+            if(attributes == null)
+            {
+               System.out.println("getMetadata: file_id = " + id );
+            }else
+            {
+                System.out.println("getMetadata: file_id = " + id + " attributes = " + attributes.toString());
+            }
 
-            HikariDataSource dataSource = databaseProvider.getHikariDataSource();
-
+            ArrayList<Attribute> list = new ArrayList<>();
+            list.add(new Attribute("id", "treeid", "fileid", "name", "value"));
+            list.add(new Attribute("2.attr", ", ", "< ", "d", "v"));
+            return list;
+            //TODO Query the database
             //TODO Fix to use just the requested attributes
-            try (Connection connection = dataSource.getConnection();
-                 PreparedStatement selectStmt = connection.prepareStatement("SELECT * from public.file_generic WHERE id=?");)
-            {
-                selectStmt.setLong(1, Long.parseLong(id));
-                ResultSet rs = selectStmt.executeQuery();
-                if (!rs.next()) return null;
 
-                //HashSet<String, Object> ret = new HashMap<>();
-                //ret.put("id", rs.getString(1));
-                //ret.put("testvalue", rs.getString(2));
-                //ret.put("nezahl", rs.getInt(3));
-                //return ret;
-
-                List<Attribute> list = new ArrayList<Attribute>();
-                list.add(new Attribute("1", "2", "3", "name", "value"));
-                return list;
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-                return null;
-            }
         };
     }
 

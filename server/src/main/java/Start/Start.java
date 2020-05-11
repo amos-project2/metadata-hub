@@ -40,17 +40,17 @@ public class Start
         Start.config = applicationConfig.getConfig();
 
         DatabaseProvider databaseProvider = new DatabaseProvider();
-        Start.databaseTest(databaseProvider);
+        //Start.databaseTest(databaseProvider);
 
 
         GraphQLDataFetchers graphQLDataFetchers = new GraphQLDataFetchers(databaseProvider);
         GraphQLProvider graphQLProvider = new GraphQLProvider(graphQLDataFetchers, databaseProvider);
 
-        ExecutionResult execute = graphQLProvider.init().getGraphQL().execute("query {teststuff(id: \"1\") {id, testvalue}}");
+        //ExecutionResult execute = graphQLProvider.init().getGraphQL().execute("query {teststuff(id: \"1\") {id, testvalue}}");
 
-        System.out.println(execute);
-        String json = new ObjectMapper().writeValueAsString(execute.toSpecification());
-        System.out.println(json);
+        //System.out.println(execute);
+        //String json = new ObjectMapper().writeValueAsString(execute.toSpecification());
+        //System.out.println(json);
 
         JerseyServer jerseyServer = new JerseyServer(graphQLProvider.init().getGraphQL());
         jerseyServer.start();
