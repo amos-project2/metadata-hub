@@ -1,0 +1,40 @@
+Project Lombok [Quick Overview] https://projectlombok.org/features/all
+
+For intellij to deal with the , by the compiler, generated methods a plugin needs to be added.
+
+To avoid boilerplate code, it automatically generates default functions out of annotations.
+Also offers a tool, which, if needed, can turn back the annotations into normal functions again. (https://projectlombok.org/features/delombok)
+
+@Data:
+Bundles together @ToString, @EqualsAndHashCode, @Getter / @Setter and @RequiredArgsConstructor.
+These annotations offer more than just the default version (e.g.  @Getter(AccessLevel.PROTECTED) ).
+If one of those specific versions is used, it overrides the default one. 
+
+@Getter / @Setter: 
+automatically generates a default public getter or setter
+
+@Getter(lazy=true):
+For expensive operations so they only get executed when the get-Method is called
+
+@NoArgsConstructor, @RequiredArgsConstructor and @AllArgsConstructor:
+generates a constructor with no parameters or
+a constructor with only non-intialized final fields or @NonNull fields or
+a constructor with 1 parameter for each field 
+
+@NonNull:
+Creates a not-null check for a parameter, that throws a NullPointerException
+
+@Cleanup:
+Calls the close method on the annotated object at the end of the scope,
+other cleanup methods can be specified.
+
+@Builder:
+Generates a whole builder pattern for a class.
+@Builder.Default: to give a parameter a default value.
+@Singular: parameter gets treated as a collection and 2 adder and one clear method are generated instead of a setter method
+	(add one object, add all objects of a collection).
+
+@Slf4j:
+Generates: private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LogExample.class);
+
+... and some more :)

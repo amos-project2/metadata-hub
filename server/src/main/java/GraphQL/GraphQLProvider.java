@@ -9,6 +9,7 @@ import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import lombok.Getter;
 
 
 import java.io.IOException;
@@ -21,12 +22,7 @@ public class GraphQLProvider
 {
     private final GraphQLDataFetchers graphQLDataFetchers;
     private final DatabaseProvider databaseProvider;
-    private GraphQL graphQL;
-
-    public GraphQL graphQL()
-    {
-        return graphQL;
-    }
+    @Getter private GraphQL graphQL;
 
     public GraphQLProvider(GraphQLDataFetchers graphQLDataFetchers, DatabaseProvider databaseProvider)
     {
