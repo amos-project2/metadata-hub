@@ -6,6 +6,7 @@ import GraphQL.GraphQLProvider;
 import JerseyServer.JerseyServer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.ExecutionResult;
+import lombok.Getter;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.slf4j.Logger;
@@ -20,8 +21,8 @@ import java.util.Properties;
 
 public class Start
 {
-    private static final Logger logger = LoggerFactory.getLogger(Start.class);
-    public static Properties config;
+    private static final Logger log = LoggerFactory.getLogger(Start.class);
+    @Getter private static Properties config;
 
     public static void main(String[] args) throws IOException
     {
@@ -29,7 +30,7 @@ public class Start
 
 
         ApplicationConfig applicationConfig = new ApplicationConfig((args.length>0)?args[0]:null);
-        if (!applicationConfig.isConfigValide())
+        if (!applicationConfig.isConfigValid())
         {
             System.out.println("Config is not valide: " + applicationConfig.getErrorMessage());
             System.exit(-1);
@@ -45,13 +46,13 @@ public class Start
         GraphQLDataFetchers graphQLDataFetchers = new GraphQLDataFetchers(databaseProvider);
         GraphQLProvider graphQLProvider = new GraphQLProvider(graphQLDataFetchers, databaseProvider);
 
-        ExecutionResult execute = graphQLProvider.init().graphQL().execute("query {teststuff(id: \"1\") {id, testvalue}}");
+        ExecutionResult execute = graphQLProvider.init().getGraphQL().execute("query {teststuff(id: \"1\") {id, testvalue}}");
 
         System.out.println(execute);
         String json = new ObjectMapper().writeValueAsString(execute.toSpecification());
         System.out.println(json);
 
-        JerseyServer jerseyServer = new JerseyServer(graphQLProvider.init().graphQL());
+        JerseyServer jerseyServer = new JerseyServer(graphQLProvider.init().getGraphQL());
         jerseyServer.start();
 
         System.out.println("all services are started");
