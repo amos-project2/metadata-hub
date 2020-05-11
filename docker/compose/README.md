@@ -11,7 +11,6 @@ It is based on the Docker Engine to provide as much platform independency as pos
   - [Table of contents](#table-of-contents)
   - [Installation](#installation)
   - [Configuration](#configuration)
-  - [Usage](#usage)
 
 ## Installation
 
@@ -32,7 +31,7 @@ CRAWLER_FILESYSTEM=~/Public                     # Filesystem on the host to anal
 DATABASE_USER=metadatahub
 DATABASE_PASSWORD=metadatahub
 DATABASE_STORAGE=~/.metadatahub-database        # The location where the database is stored on the host (can change)
-SERVER_PORT=9000                                # Port for the host system (can change)
+SERVER_PORT=8080                                # Port for the host system (can change)
 CRAWLER_PORT=9001                               # Port for the host system (can change)
 DATABASE_PORT=9002                              # Port for the host system (can change
 
@@ -50,7 +49,9 @@ httpserver.port=8080                            # Do not change
 
 The uncommented values are obviously the database configuration and can be changed, but must always match with upper/lowercase ones.
 
-**Important**: the database initialization is defined in ```database/init.sql```. You can create such a dump of your currently running database and replace the content. The current init script is not yet providing a functional metadata database.
+The database is initialized with the schema and data located in
+```database/metadatahub-database.sql``` and ```database/metadatahub-data.sql```
+(in this order)
 
 ## Usage
 Once configured, simply change into the compose directory and start the services.

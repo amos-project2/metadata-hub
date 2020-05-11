@@ -26,7 +26,8 @@ services:
             - POSTGRES_USER=${DATABASE_USER}
             - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
         volumes:
-            - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+            - $PWD/../../database/metadatahub-schemata.sql:/docker-entrypoint-initdb.d/10-init.sql
+            - $PWD/../../database/metadatahub-data.sql:/docker-entrypoint-initdb.d/20-init.sql
             - ${DATABASE_STORAGE}:/var/lib/postgresql/data
         ports:
             - ${DATABASE_PORT}:5432
@@ -41,3 +42,4 @@ services:
             - database
         ports:
             - ${SERVER_PORT}:8080
+        restart: on-failure
