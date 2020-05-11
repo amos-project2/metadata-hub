@@ -30,4 +30,4 @@ jobs:
       before_script:
         - cd docker/compose
       script:
-        - ./travis-sh
+        - ./travis.sh
