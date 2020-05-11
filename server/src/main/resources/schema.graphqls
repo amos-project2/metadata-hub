@@ -1,9 +1,45 @@
 type Query{
     teststuff(id: String): testtable
+
+    get_metadata(file: String!, attribute_names: [String]) : [Attribute]
 }
 
 type testtable{
     id: String!
     testvalue: String
     nezahl: Int
+}
+
+type File{
+    id: String!
+    tree_walk_id: String!
+    sub_path: String!
+    name: String!
+    file_type: String!
+    creation_date: String
+    modification_date: String
+    access_date: String
+    metadata: String
+    attributes: [Attribute!]!
+}
+
+type Attribute{
+    id: String!
+    tree_walk_id: String!
+    file_id: String!
+    name: String!
+    value: String!
+}
+
+type Tree_Walk{
+    id: String!
+    name: String!
+    notes: String
+    root_path: String!
+    start_time: String!
+    end_time: String
+    status: String!
+    crawl_config: String
+    update_time: String!
+    save_in_generic_table: Boolean!
 }

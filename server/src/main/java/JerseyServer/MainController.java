@@ -26,7 +26,6 @@ public class MainController
         //to components, who have databaseaccess
     }
 
-
     //static-stuff
 
     @GET
@@ -36,8 +35,6 @@ public class MainController
     {
         return "static data";
     }
-
-    //...
 
 
     //graphQL-Endpoint

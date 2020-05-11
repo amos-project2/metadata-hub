@@ -26,8 +26,6 @@ public class GraphQLProvider
     private final DatabaseProvider databaseProvider;
     @Getter private GraphQL graphQL;
 
-    //its good to use a init, because calling object-methods, since the object is not ready constructed
-    //is due different reasons not a so good idea
     public GraphQLProvider init() throws IOException
     {
         URL url = Resources.getResource("schema.graphqls");
@@ -36,7 +34,6 @@ public class GraphQLProvider
         this.graphQL = GraphQL.newGraphQL(graphQLSchema).build();
         return this;
     }
-
 
     private GraphQLSchema buildSchema(String sdl)
     {
@@ -51,6 +48,9 @@ public class GraphQLProvider
         return RuntimeWiring.newRuntimeWiring()
             .type(newTypeWiring("Query")
                 .dataFetcher("teststuff", graphQLDataFetchers.getDatabaseTestFetcher()))
+            .type(newTypeWiring("Query")
+                .dataFetcher("get_metadata", graphQLDataFetchers.getMetadataFetcher()))
+
             .build();
     }
 }
