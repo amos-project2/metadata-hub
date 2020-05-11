@@ -4,17 +4,13 @@ import Database.DatabaseProvider;
 import Model.Attribute;
 import com.zaxxer.hikari.HikariDataSource;
 import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.jooq.meta.derby.sys.Sys;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 @RequiredArgsConstructor
@@ -57,22 +53,18 @@ public class GraphQLDataFetchers
     {
         return (DataFetcher<List<Attribute>>) dataFetchingEnvironment -> {
             final String id = dataFetchingEnvironment.getArgument("file");
-            final Set<String> attributes = dataFetchingEnvironment.getArgument("attribute_names");
 
-            if(attributes == null)
-            {
-               System.out.println("getMetadata: file_id = " + id );
-            }else
-            {
-                System.out.println("getMetadata: file_id = " + id + " attributes = " + attributes.toString());
-            }
+            //TODO We only want to query the database for the requested arguments
+            Map<String, Map<String, Object>> selection = dataFetchingEnvironment.getSelectionSet().getArguments();
+            List<String> attributes = new ArrayList<>(selection.keySet());
+
+            System.out.println("getMetadata: file_id = " + id + " attributes = " + attributes.toString());
 
             ArrayList<Attribute> list = new ArrayList<>();
             list.add(new Attribute("id", "treeid", "fileid", "name", "value"));
             list.add(new Attribute("2.attr", ", ", "< ", "d", "v"));
             return list;
             //TODO Query the database
-            //TODO Fix to use just the requested attributes
 
         };
     }

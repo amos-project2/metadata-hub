@@ -2,14 +2,17 @@ package JerseyServer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.graph.Graph;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import graphql.GraphQLError;
 
 import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Path("/")
@@ -22,8 +25,6 @@ public class MainController
     {
         System.out.println("graphQL added: " + (JerseyServer.getGraphQLCheat() != null));
         this.graphQl = JerseyServer.getGraphQLCheat();
-        //i dont think, that we must have here a databaseaccess, because the controllers should delegate their stuff
-        //to components, who have databaseaccess
     }
 
     //static-stuff
@@ -87,21 +88,6 @@ public class MainController
 
     public String graphQlEndpoint(String query, String variables) throws JsonProcessingException
     {
-        // TODO here we want bind the GRAPH-QL-JAVA-LIB,
-        // TODO which should produce our json, and takes the query
-
-        //not sure for what the variables are for, but graph-I-QL posts them to the server
-        //so maybe we find in them some functionality?^^
-
-//        Map<String, String> payload = new HashMap<>();
-//        payload.put("Hello", "Moon");
-//        payload.put("From", "AMOS TEAM 2");
-//        payload.put("queryData", query);
-//        payload.put("variables", variables);
-//
-//        String json = new ObjectMapper().writeValueAsString(payload);
-        //System.out.println(json);
-
         ExecutionResult execute;
 
         if (variables != null)
@@ -114,6 +100,7 @@ public class MainController
         }
 
         String json = new ObjectMapper().writeValueAsString(execute.toSpecification());
+        //List<GraphQLError> errors = execute.getErrors();
         return json;
     }
 
@@ -126,7 +113,6 @@ public class MainController
     {
         //            File f = new File("graphiql/graphiql.html");
        // File f = new File(getClass().getClassLoader().getResource("graphiql/graphiql.html").getFile());
-
 
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
         InputStream is = classloader.getResourceAsStream("graphiql/graphiql.html");
