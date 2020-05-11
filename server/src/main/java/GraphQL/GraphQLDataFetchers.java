@@ -3,6 +3,7 @@ package GraphQL;
 import Database.DatabaseProvider;
 import com.zaxxer.hikari.HikariDataSource;
 import graphql.schema.DataFetcher;
+import lombok.RequiredArgsConstructor;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,15 +11,11 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 
 
+@RequiredArgsConstructor
 public class GraphQLDataFetchers
 {
 
     private final DatabaseProvider databaseProvider;
-
-    public GraphQLDataFetchers(DatabaseProvider databaseProvider)
-    {
-        this.databaseProvider = databaseProvider;
-    }
 
     public DataFetcher getDatabaseTestFetcher()
     {
