@@ -52,11 +52,11 @@ class Tracer:
         # Initialize given configuration
         self._processed = []
         self._lock = threading.Lock()
-        self._clear = config.get('options', {}).get('clear', '')
-        self._trace_file = config.get('paths', {}).get('traceFile')
+        self._clear = config.get('options', {}).get('clear', False)
+        self._trace_file = config.get('paths', {}).get('trace')
         self._header = TraceHeader(
-            root=config.get('paths', {}).get('inputPath', ''),
-            output=config.get('paths', {}).get('outputPath', ''),
+            root=config.get('paths', {}).get('input', ''),
+            output=config.get('paths', {}).get('output', ''),
             date=datetime.datetime.now().strftime(Tracer._TIMESTAMP_FORMAT)
         )
         # Use empty initialization if there is no trace data

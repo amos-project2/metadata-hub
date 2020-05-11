@@ -1,0 +1,45 @@
+{
+    "title": "Crawler Configuration",
+    "description": "Definition of a configuration of the Crawler",
+    "type": "object",
+    "properties": {
+        "paths": {
+            "type": "object",
+            "properties": {
+                "input": {
+                    "description": "Root directory to crawl",
+                    "type": "string"
+                },
+                "output": {
+                    "description": "Output directory (temporary)",
+                    "type": "string"
+                },
+                "trace": {
+                    "description": "Trace file (temporary)",
+                    "type": "string"
+                },
+                "exiftool": {
+                    "description": "Executable of exiftool",
+                    "type": "string"
+                }
+            },
+            "required": ["input", "output", "trace", "exiftool"]
+        },
+        "options": {
+            "type": "object",
+            "properties": {
+                "powerLevel": {
+                    "description": "Specify CPU usage as power level 1-4",
+                    "type": "integer"
+                },
+                "clearTrace": {
+                    "description": "Clear trace data if present",
+                    "type": "boolean"
+                }
+            },
+            "required": ["powerLevel", "clearTrace"]
+        }
+
+    },
+    "required": ["paths", "options"]
+}
