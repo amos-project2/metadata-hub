@@ -12,7 +12,7 @@ function check {
 
 TIMEOUT=60
 
-docker-compose build --parallel
+docker-compose build --parallel --force-rm --no-cache
 docker-compose up &
 PID=$!
 sleep $TIMEOUT

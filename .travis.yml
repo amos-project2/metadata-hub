@@ -2,6 +2,7 @@ language: shell
 os: linux
 dist: xenial
 
+
 jobs:
   include:
     - name: Crawler
@@ -22,9 +23,11 @@ jobs:
         - mvn clean
         - mvn test
         - mvn verify
-    - name: Docker
+    - name: App-Compose
+      env:
+        - DOCKER_COMPOSE_VERSION=1.25.0
       services: docker
       before_script:
-        - cd docker/
+        - cd docker/compose
       script:
-        - docker build -t metadata-hub .
+        - ./travis-sh
