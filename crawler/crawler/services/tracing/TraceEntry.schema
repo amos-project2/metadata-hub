@@ -1,0 +1,16 @@
+{
+    "title": "TraceEntry",
+    "description": "Definition of a trace entry of the tree walk algorithm",
+    "type": "object",
+    "properties": {
+        "timestamp": {
+            "description": "Timestamp when the node was processed",
+            "type": "string"
+        },
+        "node": {
+            "description": "Full path of the processed node",
+            "type": "string"
+        }
+    },
+    "required": ["timestamp", "node"]
+}
