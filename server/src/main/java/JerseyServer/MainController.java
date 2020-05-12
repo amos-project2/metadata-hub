@@ -1,25 +1,24 @@
 package JerseyServer;
 
+import Start.Start;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.graph.Graph;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
-import graphql.GraphQLError;
 
 import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.*;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 @Path("/")
 @Singleton
 public class MainController
 {
     private final GraphQL graphQl;
+    private static final Properties config = Start.getConfig();
 
     public MainController()
     {
@@ -109,15 +108,24 @@ public class MainController
     @GET
     @Produces({MediaType.TEXT_HTML})
     @Path("/testconsole")
-    public InputStream getTestConsole() throws FileNotFoundException
+    public String getTestConsole() throws IOException
     {
-        //            File f = new File("graphiql/graphiql.html");
-       // File f = new File(getClass().getClassLoader().getResource("graphiql/graphiql.html").getFile());
 
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        InputStream is = classloader.getResourceAsStream("graphiql/graphiql.html");
-        return is;
+        StringBuilder out = new StringBuilder();
+        try(InputStream is = classloader.getResourceAsStream("graphiql/graphiql.html");
+        InputStreamReader isr=new InputStreamReader(is);// im not sure if we can use this directly in the constructor of Buffered Reader, with try-with TODO research
+        BufferedReader reader = new BufferedReader(isr);)
+        {
+            String line;
+            while ((line = reader.readLine()) != null)
+            {
+                out.append(line);
+            }
+        }
 
+        String content = out.toString().replaceAll("%PORT%", config.getProperty("httpserver.port"));
+        return content;
     }
 
 }
