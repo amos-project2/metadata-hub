@@ -45,3 +45,46 @@ psql metadatahubtest -Umetadatahub -W -f metadatahub-schemata.sql
 psql metadatahubtest -Umetadatahub -W -f metadatahub-data.sql
 ```
 
+### Database-Schemata
+
+###### tree_walk
+```
+id -> primary key (autoincrement)
+name -> a name/title, which the user can choose
+notes -> notes, which the user can add to this tree_walk
+root_path -> ? maybe the absolut path to the path
+created_time -> when this entry here is created/when the crawler job started
+finished_time -> the end of the first crawler-job
+status -> the status (crawling, finished, abborted, ...)
+crawl_config -> the config-data the crawler was/is executed, only for user-presentation purposes
+crawl_update_time -> the last finish of the last update
+save_in_generic_table -> boolean, if true -> save in the big-table file_generic, if false, the crawl-data comes to a new table, for example file_%ID
+```
+###### file_generic
+```
+id -> primary key (autoincrement)
+tree_walk_id -> reference ID to tree_walk
+sub_dir_path -> the subdir path
+name -> the name of the file
+file_typ -> the file_type as a String
+size -> the size in bytes
+file_create_data -> the file create data
+file_modyfy_data -> the file modify data
+file_access_date -> the file access date
+metadata -> json_field, which could contains as json all metadata
+```
+
+###### file_generic
+
+its redundand to the metadata field, but for now we are not sure, what we want to use
+maybe the json_field metada could be faster, cause there postgres can optimize on itself
+
+```
+id -> primary key (autoincrement) -> cause postgres want a primary-key, but we can choose a other primary key
+tree_walk_id -> reference ID to tree_walk
+file_generic_id -> reference ID to file_generic
+attribute -> as String the attribute name
+value -> as String the attribute value
+unit -> as String the unit (but i have no idea what the content here could be, cause the exiftool dont deliver units)
+```
+
