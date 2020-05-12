@@ -1,7 +1,7 @@
 type Query{
     teststuff(id: String): testtable
 
-    get_metadata(file: String!, attributes: [String!]) : [Attribute]
+    get_metadata(file: String!, attributes: [String!], eav: Boolean) : [Attribute]
 }
 
 type testtable{
