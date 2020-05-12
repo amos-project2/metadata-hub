@@ -1,8 +1,8 @@
 {
 	"paths":{
-		"exiftoolPath":"/home/thomas/Documents/master/amos/metadata-hub/crawler/exiftool/exiftoolLinux/exiftool",
-		"inputPath":"/home/thomas/Documents/master",
-		"outputPath":"/home/thomas/Documents/master/amos/metadata-hub/crawler/protocol"
+		"exiftoolPath":"",
+		"inputPath":"",
+		"outputPath":""
 	},
     "options": {
         "clear":true
