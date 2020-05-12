@@ -47,8 +47,6 @@ public class MainController
     {
         ObjectMapper mapper = new ObjectMapper();
         Map<String, String> map = mapper.readValue(jsonData, Map.class);
-        System.out.println(map.get("query"));
-        System.out.println(map.get("variables"));
 
         String query = map.get("query");
         String variables = map.get("variables");
@@ -56,7 +54,6 @@ public class MainController
         //its ok, doing that so, cause the compilzer optimze the second allocation away
         query = query == null ? "" : query;
         variables = variables == null ? "" : variables;
-
 
         return this.graphQlEndpoint(query, variables);
     }
@@ -113,9 +110,9 @@ public class MainController
 
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
         StringBuilder out = new StringBuilder();
-        try(InputStream is = classloader.getResourceAsStream("graphiql/graphiql.html");
-        InputStreamReader isr=new InputStreamReader(is);// im not sure if we can use this directly in the constructor of Buffered Reader, with try-with TODO research
-        BufferedReader reader = new BufferedReader(isr);)
+        try (InputStream is = classloader.getResourceAsStream("graphiql/graphiql.html");
+             InputStreamReader isr = new InputStreamReader(is);// im not sure if we can use this directly in the constructor of Buffered Reader, with try-with TODO research
+             BufferedReader reader = new BufferedReader(isr);)
         {
             String line;
             while ((line = reader.readLine()) != null)
@@ -147,7 +144,6 @@ public class MainController
         //a none WebApplicationException, the message here may not be propagated to the client
         throw new Exception("error2");
     }
-
 
 
 }

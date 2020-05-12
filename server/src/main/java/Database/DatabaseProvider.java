@@ -12,8 +12,8 @@ import java.util.Properties;
 
 public class DatabaseProvider
 {
-    @Getter private  HikariDataSource hikariDataSource;
-    @Getter private  DSLContext dslContext;
+    @Getter private final HikariDataSource hikariDataSource;
+    @Getter private final DSLContext dslContext;
     private static final Properties config = Start.getConfig();
     //TODO implement (maybe using jooq)
 

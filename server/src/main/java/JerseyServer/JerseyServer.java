@@ -30,7 +30,7 @@ public class JerseyServer
 
     public JerseyServer(GraphQL graphQl)
     {
-        this.graphQL=graphQl;
+        this.graphQL = graphQl;
         resourceConfig = new ResourceConfig(MainController.class);
         resourceConfig.register(ErrorHandler.class);
         this.server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, resourceConfig, false);
