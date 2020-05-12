@@ -128,4 +128,26 @@ public class MainController
         return content;
     }
 
+
+    //for testing purposes:
+
+    @GET
+    @Produces("text/plain")
+    @Path("/error1")
+    public String getError1()
+    {
+        throw new WebApplicationException("error 1", 403);
+    }
+
+    @GET
+    @Produces("text/plain")
+    @Path("/error2")
+    public String getError2() throws Exception
+    {
+        //a none WebApplicationException, the message here may not be propagated to the client
+        throw new Exception("error2");
+    }
+
+
+
 }
