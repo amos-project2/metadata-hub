@@ -87,8 +87,8 @@ public class GraphQLDataFetchers
                     for(Map.Entry<String, String> entry: map.entrySet())
                     {
                         String key = entry.getKey();
-                        String value = entry.getValue().toString();
-                        list.add(new Attribute(attribute_id, tree_walk_id, file_generic_id, key, value));
+                        Object value = entry.getValue();
+                        list.add(new Attribute(attribute_id, tree_walk_id, file_generic_id, key, value.toString()));
                     }
                 }else
                     {
