@@ -21,7 +21,7 @@
 
 <script>
     const graphQLFetcher = graphQLParams =>
-        fetch('http://localhost:8080/graphql/', {
+        fetch('http://localhost:%PORT%/graphql/', {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(graphQLParams),

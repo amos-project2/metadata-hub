@@ -15,18 +15,26 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class JerseyServer
 {
-
     private final GraphQL graphQL;
 
     private static final Properties config = Start.getConfig();
-    private static final URI BASE_URI = UriBuilder.fromUri("http://"+ config.get("httpserver.address")+"/").port(Integer.parseInt(config.getProperty("httpserver.port"))).build();
-    private final ResourceConfig resourceConfig = new ResourceConfig(MainController.class);
-    private final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, resourceConfig, false);
+    private static final URI BASE_URI = UriBuilder.fromUri("http://" + config.get("httpserver.address") + "/").port(Integer.parseInt(config.getProperty("httpserver.port"))).build();
+    private final ResourceConfig resourceConfig;
+    private final HttpServer server;
 
-    @Getter private static GraphQL graphQLCheat;
+    @Getter
+    private static GraphQL graphQLCheat;
+
+    public JerseyServer(GraphQL graphQl)
+    {
+        this.graphQL = graphQl;
+        resourceConfig = new ResourceConfig(MainController.class);
+        resourceConfig.register(ErrorHandler.class);
+        this.server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, resourceConfig, false);
+    }
 
     public void start()
     {
@@ -45,14 +53,16 @@ public class JerseyServer
                     server.shutdownNow();
                 }
             }));
+
+
             server.start();
 
 
             System.out.println("Jersey-Server started\n");
-            System.out.println("Listening-Address: " + config.get("httpserver.address")+ " | Port: "+ config.get("httpserver.port"));
-            System.out.println("WEB-GUI: http://localhost:"+ config.get("httpserver.port"));
-            System.out.println("GRAPHQL-ENDPOINT: http://localhost:"+ config.get("httpserver.port")+"/graphql/?query=hey");
-            System.out.println("GRAPHQL-TEST-CONSOLE: http://localhost:"+ config.get("httpserver.port")+"/testconsole/");
+            System.out.println("Listening-Address: " + config.get("httpserver.address") + " | Port: " + config.get("httpserver.port"));
+            System.out.println("WEB-GUI: http://localhost:" + config.get("httpserver.port"));
+            System.out.println("GRAPHQL-ENDPOINT: http://localhost:" + config.get("httpserver.port") + "/graphql/?query=hey");
+            System.out.println("GRAPHQL-TEST-CONSOLE: http://localhost:" + config.get("httpserver.port") + "/testconsole/");
 
             Thread.currentThread().join();
         }

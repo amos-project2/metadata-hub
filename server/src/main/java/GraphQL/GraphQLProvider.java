@@ -10,6 +10,7 @@ import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 
 import java.io.IOException;
@@ -18,20 +19,13 @@ import java.net.URL;
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 
 
+@RequiredArgsConstructor
 public class GraphQLProvider
 {
     private final GraphQLDataFetchers graphQLDataFetchers;
     private final DatabaseProvider databaseProvider;
     @Getter private GraphQL graphQL;
 
-    public GraphQLProvider(GraphQLDataFetchers graphQLDataFetchers, DatabaseProvider databaseProvider)
-    {
-        this.graphQLDataFetchers = graphQLDataFetchers;
-        this.databaseProvider = databaseProvider;
-    }
-
-    //its good to use a init, because calling object-methods, since the object is not ready constructed
-    //is due different reasons not a so good idea
     public GraphQLProvider init() throws IOException
     {
         URL url = Resources.getResource("schema.graphqls");
@@ -40,7 +34,6 @@ public class GraphQLProvider
         this.graphQL = GraphQL.newGraphQL(graphQLSchema).build();
         return this;
     }
-
 
     private GraphQLSchema buildSchema(String sdl)
     {
@@ -55,6 +48,9 @@ public class GraphQLProvider
         return RuntimeWiring.newRuntimeWiring()
             .type(newTypeWiring("Query")
                 .dataFetcher("teststuff", graphQLDataFetchers.getDatabaseTestFetcher()))
+            .type(newTypeWiring("Query")
+                .dataFetcher("get_metadata", graphQLDataFetchers.getMetadataFetcher()))
+
             .build();
     }
 }
