@@ -2,6 +2,7 @@ package GraphQL;
 
 import Database.DatabaseProvider;
 import Model.Attribute;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zaxxer.hikari.HikariDataSource;
 import graphql.schema.DataFetcher;
 import lombok.RequiredArgsConstructor;
@@ -49,22 +50,61 @@ public class GraphQLDataFetchers
         };
     }
 
+    //Only accesses the file_generic table and extracts the metadata out of the "metadata" field
     public DataFetcher getMetadataFetcher()
     {
         return (DataFetcher<List<Attribute>>) dataFetchingEnvironment -> {
-            final String id = dataFetchingEnvironment.getArgument("file");
 
-            //TODO We only want to query the database for the requested arguments
-            Map<String, Map<String, Object>> selection = dataFetchingEnvironment.getSelectionSet().getArguments();
-            List<String> attributes = new ArrayList<>(selection.keySet());
+            final String file_generic_id = dataFetchingEnvironment.getArgument("file");
+            final ArrayList<String> requested_attributes = dataFetchingEnvironment.getArgument("attributes");
 
-            System.out.println("getMetadata: file_id = " + id + " attributes = " + attributes.toString());
+            if(requested_attributes != null)
+            {
+                System.out.println("getMetadata: file_id = " + file_generic_id + " attributes = " + requested_attributes.toString());
+            }
 
-            ArrayList<Attribute> list = new ArrayList<>();
-            list.add(new Attribute("id", "treeid", "fileid", "name", "value"));
-            list.add(new Attribute("2.attr", ", ", "< ", "d", "v"));
-            return list;
-            //TODO Query the database
+            HikariDataSource dataSource = databaseProvider.getHikariDataSource();
+
+            try (Connection connection = dataSource.getConnection();
+                 PreparedStatement selectStmt = connection.prepareStatement("SELECT * from public.file_generic WHERE id=?");)
+            {
+                selectStmt.setLong(1, Long.parseLong(file_generic_id));
+                ResultSet rs = selectStmt.executeQuery();
+                if (!rs.next()) return null;
+
+                System.out.println("SQL Result : " + rs.toString());
+                String attribute_id = rs.getString("id");
+                String tree_walk_id = rs.getString("tree_walk_id");
+
+                String jsonFileMetadata = rs.getString("metadata");
+                ObjectMapper mapper = new ObjectMapper();
+                Map<String, String> map = mapper.readValue(jsonFileMetadata, Map.class);
+
+                ArrayList<Attribute> list = new ArrayList<>();
+
+                if(requested_attributes == null)
+                {
+                    for(Map.Entry<String, String> entry: map.entrySet())
+                    {
+                        String key = entry.getKey();
+                        String value = entry.getValue().toString();
+                        list.add(new Attribute(attribute_id, tree_walk_id, file_generic_id, key, value));
+                    }
+                }else
+                    {
+                    for (String attribute : requested_attributes)
+                    {
+                        list.add(new Attribute(attribute_id, tree_walk_id, file_generic_id, attribute, map.get(attribute)));
+                    }
+                }
+
+                return list;
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                return null;
+            }
 
         };
     }
