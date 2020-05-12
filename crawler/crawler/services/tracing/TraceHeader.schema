@@ -1,0 +1,20 @@
+{
+    "title": "TraceHeader",
+    "description": "Definition of the header of a trace file",
+    "type": "object",
+    "properties": {
+        "root": {
+            "description": "Root node to crawl",
+            "type": "string"
+        },
+        "output": {
+            "description": "Directory of the output",
+            "type": "string"
+        },
+        "date": {
+            "description": "Date of the trace",
+            "type": "string"
+        }
+    },
+    "required": ["root", "output", "date"]
+}
