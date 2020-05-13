@@ -25,6 +25,9 @@ local.properties
 .loadpath
 .recommenders
 
+# Python caches
+**/__pycache__
+
 # External tool builders
 .externalToolBuilders/
 
