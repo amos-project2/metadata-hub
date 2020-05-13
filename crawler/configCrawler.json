@@ -1,0 +1,14 @@
+{
+    "paths":{
+        "exiftoolPath": "",
+        "inputPath": "",
+        "outputPath": "",
+        "trace": ""
+    },
+    "options": {
+        "clear": true
+    },
+    "performance":{
+        "powerLevel": 1
+    }
+}
