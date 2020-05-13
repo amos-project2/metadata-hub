@@ -9,6 +9,8 @@ from concurrent.futures.thread import ThreadPoolExecutor
 from sys import exit
 from typing import Tuple, List
 
+import crawler.services.tracing as tracing
+
 
 TRACE_FILE = 'TRACE.log'
 
@@ -61,7 +63,9 @@ def naiveCreateWorkpackages(pathInput: str, pathProtocol:str, clear:bool) -> Tup
 
     """
     #: Initialize tracing
-    alreadyProcessed, traceFile = initTrace(pathProtocol, clear)
+    # FIXME
+    alreadyProcessed = TRACER.get_processed_nodes()
+    traceFile = TRACER._trace_file
     print(f'Initialized with {len(alreadyProcessed)} already processed nodes.')
 
     directoryList = []
@@ -92,7 +96,7 @@ def naiveTreeWalk(pathExifTool: str, pathProtocol: str, directory:str, traceFile
     try:
         with open(f'{pathProtocol}/protocol{logCount}.json', 'w') as myFile:
             subprocess.check_call([f'{pathExifTool}', '-json', directory], stdout=myFile)
-            addProcessedEntry(directory, traceFile)
+            TRACER.add_node(directory)
     except subprocess.CalledProcessError:
         failures.append(directory)
 
@@ -109,7 +113,8 @@ def naiveTreeWalkTest(pathExifTool: str, pathProtocol: str, directory:List[str],
         try:
             with open(f'{pathProtocol}/protocol{logCount}.json', 'w') as myFile:
                 subprocess.check_call([f'{pathExifTool}', '-json', direct], stdout=myFile)
-                addProcessedEntry(direct, traceFile)
+                # FIXME
+                TRACER.add_node(direct)
         except subprocess.CalledProcessError:
             failures.append(direct)
 
@@ -165,7 +170,8 @@ if __name__ == "__main__":
         powerLevel = multiprocessing.cpu_count() * 0.25
     else:
         err(f'Please chose a power level between 1 and 4')
-
+    # FIXME
+    TRACER = tracing.Tracer(data)
     #: gather the given input directories contents
     package = naiveCreateWorkpackages(data['paths']['inputPath'], data['paths']['outputPath'], data['options']['clear'])
     #: Run the tree walk in parallel
