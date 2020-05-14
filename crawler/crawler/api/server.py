@@ -16,7 +16,11 @@ import flask
 from . import defaults
 
 
-app = flask.Flask(__name__)
+app = flask.Flask(
+    __name__,
+    template_folder='../../templates',
+    static_folder='../../static'
+)
 
 
 @app.route('/pause', methods=['POST'])
@@ -147,5 +151,23 @@ def start() -> flask.Response:
     return resp
 
 
+@app.route('/config', methods=['GET', 'POST'])
+def config():
+    if flask.request.method == 'GET':
+        return flask.render_template('config.html')
+    return flask.render_template('config.html', message='Success')
+
+
+def start(host: str, port: int) -> None:
+    """Start the Flask application at given host:port.
+
+    Args:
+        host (str): host to run on
+        port (int): port to run on
+
+    """
+    app.run(host=host, port=port)
+
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port='9000')
+    start(host='0.0.0.0', port=9000)
