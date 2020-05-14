@@ -32,7 +32,7 @@
                             For example:
                         </p>
                         <p style="text-align: center; font-style: italic;">
-                            /home/john/Documents, True ; /home/doe/Pictures, False
+                            /home/john/Documents, true ; /home/doe/Pictures, false
                         </p>
                         <p>
                             This would invoke the crawler to process the directory
@@ -45,13 +45,13 @@
                         <form action="{{ url_for('config') }}" method="post">
                             <fieldset>
                                 <label for="inputs">Input directories</label>
-                                <input type="text" placeholder="(/home/metadata-hub, True), ..." name="inputs" id="inputs">
+                                <input type="text" placeholder="(/home/metadata-hub, True), ..." name="inputs" id="inputs" required>
 
                                 <label for="output">Output directory</label>
-                                <input type="text" placeholder="/home/metadata-hub/output" name="output" id="output">
+                                <input type="text" placeholder="/home/metadata-hub/output" name="output" id="output" required>
 
                                 <label for="trace">Trace file</label>
-                                <input type="text" placeholder="/home/metadata-hub/trace" name="trace" id="trace">
+                                <input type="text" placeholder="/home/metadata-hub/trace" name="trace" id="trace" required>
 
                                 <label for="exiftool">ExifTool</label>
                                 <select id="exiftool" name="exiftool">

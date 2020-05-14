@@ -14,6 +14,7 @@ import flask
 
 # Local imports
 from . import defaults
+from . import parsing
 
 
 app = flask.Flask(
@@ -155,7 +156,13 @@ def start() -> flask.Response:
 def config():
     if flask.request.method == 'GET':
         return flask.render_template('config.html')
-    return flask.render_template('config.html', message='Success')
+    try:
+        print(flask.request.form)
+        result = parsing.parse(flask.request.form)
+        return flask.render_template('config.html', message='Success')
+    except parsing.APIParsingException as err:
+        message = f'Failed. {str(err)}'
+        return flask.render_template('config.html', message=message)
 
 
 def start(host: str, port: int) -> None:
