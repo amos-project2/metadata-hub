@@ -4,6 +4,7 @@
 *.code-workspace
 venv
 web-ui/node_modules
+package-lock.json
 
 
 
