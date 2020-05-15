@@ -8,7 +8,9 @@ $ npm install
 $ npm run build
 ```
 
-In the folder ./dist are then the output
+3. In the folder ./dist are then the output
+
+4. Open in then in ./ the index.html and enjoy^^
 
 
 #### Informations about my webpack and Bootstrap
