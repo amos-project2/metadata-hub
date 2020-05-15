@@ -27,32 +27,32 @@ def addProcessedEntry(path: str, traceFile: str) -> None:
         traceFilePointer.write(f'{path}\n')
 
 
-def initTrace(pathProtocol: str, clear: bool) -> Tuple[List[str], str]:
-    """Initialize the trace file and the nodes which should be skipped.
-
-    If clear is set to true, all existing trace data is removed.
-
-    Args:
-        pathProtocol (str): path of the output directory
-        clear (bool): clear existing trace data
-
-    Returns:
-        Tuple[List[str], str]: list of already processed nodes, path of trace file
-
-    """
-    traceFile = os.path.join(pathProtocol, TRACE_FILE)
-    alreadyProcessed = []
-    # Remove all content in the trace file
-    if clear:
-        open(traceFile, 'w').close()
-        return (alreadyProcessed, traceFile)
-    # Read trace data or create empty trace file if no data exists yet
-    if os.path.isfile(traceFile):
-        with open(traceFile, 'r') as traceFilePointer:
-            alreadyProcessed = [entry.rstrip() for entry in traceFilePointer.readlines()]
-    else:
-        open(traceFile, 'a').close()
-    return (alreadyProcessed, traceFile)
+# def initTrace(pathProtocol: str, clear: bool) -> Tuple[List[str], str]:
+#     """Initialize the trace file and the nodes which should be skipped.
+#
+#     If clear is set to true, all existing trace data is removed.
+#
+#     Args:
+#         pathProtocol (str): path of the output directory
+#         clear (bool): clear existing trace data
+#
+#     Returns:
+#         Tuple[List[str], str]: list of already processed nodes, path of trace file
+#
+#     """
+#     traceFile = os.path.join(pathProtocol, TRACE_FILE)
+#     alreadyProcessed = []
+#     # Remove all content in the trace file
+#     if clear:
+#         open(traceFile, 'w').close()
+#         return (alreadyProcessed, traceFile)
+#     # Read trace data or create empty trace file if no data exists yet
+#     if os.path.isfile(traceFile):
+#         with open(traceFile, 'r') as traceFilePointer:
+#             alreadyProcessed = [entry.rstrip() for entry in traceFilePointer.readlines()]
+#     else:
+#         open(traceFile, 'a').close()
+#     return (alreadyProcessed, traceFile)
 
 # TODO This function should ultimately be used to create a list of even work packages
 def naiveCreateWorkpackages(pathInput: str, recursive:bool) -> Tuple[List[str],str]:
@@ -67,7 +67,6 @@ def naiveCreateWorkpackages(pathInput: str, recursive:bool) -> Tuple[List[str],s
     alreadyProcessed = TRACER.get_processed_nodes()
     traceFile = TRACER._trace_file
     print(f'Initialized with {len(alreadyProcessed)} already processed nodes.')
-
     directoryList = []
     for root, directories, files in os.walk(pathInput):
         # Skip node if it is already processed
@@ -82,7 +81,7 @@ def naiveCreateWorkpackages(pathInput: str, recursive:bool) -> Tuple[List[str],s
             break
     return directoryList, traceFile
 
-def naiveTreeWalk(pathExifTool: str, pathProtocol: str, directory:str, traceFile:str) -> None:
+def naiveTreeWalk(pathExifTool: str, pathProtocol: str, directory:str, options:List[str]) -> None:
     """Naive implementation of the tree walk. logs the results in Json format.
 
     Args:
@@ -99,7 +98,7 @@ def naiveTreeWalk(pathExifTool: str, pathProtocol: str, directory:str, traceFile
     #: Walk over every directory and execute the exiftool. Log to file to <pathProtocol>
     try:
         with open(f'{pathProtocol}/protocol{logCount}.json', 'w') as myFile:
-            subprocess.check_call([f'{pathExifTool}', '-json', directory], stdout=myFile)
+            subprocess.check_call([f'{pathExifTool}', '-json', *options, directory], stdout=myFile)
             TRACER.add_node(directory)
     except subprocess.CalledProcessError:
         failures.append(directory)
@@ -179,6 +178,15 @@ if __name__ == "__main__":
     else:
         err(f'Please chose a power level between 1 and 4')
 
+    #: Add all desired options to a list
+    options = []
+    if data['options']['language'] != 'en':
+        options.append(f"-lang {data['options']['language']}")
+    if len(data['options']['fileTypes']) != 0:
+        for element in data['options']['fileTypes']:
+            options.append('-ext')
+            options.append(element)
+
     # FIXME
     TRACER = tracing.Tracer(data)
 
@@ -186,15 +194,11 @@ if __name__ == "__main__":
     roots = []
     for directory in data['paths']['inputs']:
         roots.append(naiveCreateWorkpackages(directory['path'], directory['recursive']))
-    print(roots)
-    #: Run the tree walk in parallel
-    start = time.time()
 
+    #: Run the tree walk in parallel
     for package in roots:
         with ThreadPoolExecutor(max_workers=powerLevel) as executor:
             for directory in package[0]:
-                future = executor.submit(naiveTreeWalk, data['paths']['exiftool'], data['paths']['output'], directory, package[1])
+                future = executor.submit(naiveTreeWalk, data['paths']['exiftool'], data['paths']['output'], directory, options)
 
-    end = time.time()
-    print(end - start)
     pass

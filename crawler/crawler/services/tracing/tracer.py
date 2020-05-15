@@ -52,7 +52,7 @@ class Tracer:
         # Initialize given configuration
         self._processed = []
         self._lock = threading.Lock()
-        self._clear = config.get('options', {}).get('clear', False)
+        self._clear = config.get('options', {}).get('clearTrace', False)
         self._trace_file = config.get('paths', {}).get('trace')
         self._header = TraceHeader(
             root=config.get('paths', {}).get('input', ''),
