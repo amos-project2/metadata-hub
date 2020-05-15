@@ -1,14 +1,14 @@
 {
     "paths":{
-        "exiftoolPath": "",
-        "inputPath": "",
-        "outputPath": "",
-        "trace": ""
+        "inputs": [{"path":"", "recursive":false}],
+        "output":"",
+        "trace": "",
+        "exiftool":""
     },
     "options": {
-        "clear": true
-    },
-    "performance":{
-        "powerLevel": 1
+        "powerLevel": 1,
+        "clearTrace": false,
+        "fileTypes": ["all"],
+        "language": "en"
     }
 }

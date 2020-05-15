@@ -55,7 +55,7 @@ def initTrace(pathProtocol: str, clear: bool) -> Tuple[List[str], str]:
     return (alreadyProcessed, traceFile)
 
 # TODO This function should ultimately be used to create a list of even work packages
-def naiveCreateWorkpackages(pathInput: str, pathProtocol:str, clear:bool) -> Tuple[List[str],str]:
+def naiveCreateWorkpackages(pathInput: str, recursive:bool) -> Tuple[List[str],str]:
     """Creates a list of every directory found in the give paths file tree.
 
     Args:
@@ -74,8 +74,12 @@ def naiveCreateWorkpackages(pathInput: str, pathProtocol:str, clear:bool) -> Tup
         if root in alreadyProcessed:
             relativePath = os.path.relpath(root, pathInput)
             print(f'Skip node \'{relativePath}\': already processed.')
+            if recursive == 0:
+                break
             continue
         directoryList.append(root)
+        if recursive == 0:
+            break
     return directoryList, traceFile
 
 def naiveTreeWalk(pathExifTool: str, pathProtocol: str, directory:str, traceFile:str) -> None:
@@ -100,23 +104,23 @@ def naiveTreeWalk(pathExifTool: str, pathProtocol: str, directory:str, traceFile
     except subprocess.CalledProcessError:
         failures.append(directory)
 
-def naiveTreeWalkTest(pathExifTool: str, pathProtocol: str, directory:List[str], traceFile:str) -> None:
-    """Naive implementation of the tree walk. logs the results in Json format. Only exist for testing the single thread
-        treewalk!
-    """
-    #: Debugging variable to check how many exiftool scans fail
-    failures = []
-    for direct in directory:
-        #: variable to give protocol files a name
-        logCount = random.randint(1,2000000)
-        #: Walk over every directory and execute the exiftool. Log to file to <pathProtocol>
-        try:
-            with open(f'{pathProtocol}/protocol{logCount}.json', 'w') as myFile:
-                subprocess.check_call([f'{pathExifTool}', '-json', direct], stdout=myFile)
-                # FIXME
-                TRACER.add_node(direct)
-        except subprocess.CalledProcessError:
-            failures.append(direct)
+# def naiveTreeWalkTest(pathExifTool: str, pathProtocol: str, directory:List[str], traceFile:str) -> None:
+#     """Naive implementation of the tree walk. logs the results in Json format. Only exist for testing the single thread
+#         treewalk!
+#     """
+#     #: Debugging variable to check how many exiftool scans fail
+#     failures = []
+#     for direct in directory:
+#         #: variable to give protocol files a name
+#         logCount = random.randint(1,2000000)
+#         #: Walk over every directory and execute the exiftool. Log to file to <pathProtocol>
+#         try:
+#             with open(f'{pathProtocol}/protocol{logCount}.json', 'w') as myFile:
+#                 subprocess.check_call([f'{pathExifTool}', '-json', direct], stdout=myFile)
+#                 # FIXME
+#                 TRACER.add_node(direct)
+#         except subprocess.CalledProcessError:
+#             failures.append(direct)
 
 def hashTable(pathInput):
     """Creates a hash table based on the total amount of files per directory.
@@ -148,38 +152,49 @@ def err(message: str) -> None:
 
 
 if __name__ == "__main__":
+
     #: Load the config files data
-    with open("configCrawler.json") as jsonData:
+    with open('configCrawler.json') as jsonData:
         data = json.load(jsonData)
+
     #: Check for invalid input
-    if not os.path.isfile(data['paths']['exiftoolPath']):
-        err(f'ExifTool \'{data["paths"]["exiftoolPath"]}\' does not exist.')
-    if not os.path.isdir(data['paths']['inputPath']):
-        err(f'Input directory \'{data["paths"]["inputPath"]}\' does not exist.')
-    if not os.path.isdir(data['paths']['outputPath']):
+    if not os.path.isfile(data['paths']['exiftool']):
+        err(f'ExifTool \'{data["paths"]["exiftool"]}\' does not exist.')
+    for directory in data['paths']['inputs']:
+        if not os.path.isdir(directory['path']):
+            err(f'Input directory \'{data["paths"]["inputPath"]}\' does not exist.')
+    if not os.path.isdir(data['paths']['output']):
         err(f'Output directory \'{data["paths"]["outputPath"]}\' does not exist.')
-    powerLevel = 0
+
     #: Set the number of threads according to input
-    if data['performance']['powerLevel'] == 4:
+    powerLevel = 0
+    if data['options']['powerLevel'] == 4:
         powerLevel = multiprocessing.cpu_count()
-    elif data['performance']['powerLevel'] == 3:
+    elif data['options']['powerLevel'] == 3:
         powerLevel = multiprocessing.cpu_count() * 0.75
-    elif data['performance']['powerLevel'] == 2:
+    elif data['options']['powerLevel'] == 2:
         powerLevel = multiprocessing.cpu_count() * 0.5
-    elif data['performance']['powerLevel'] == 1:
+    elif data['options']['powerLevel'] == 1:
         powerLevel = multiprocessing.cpu_count() * 0.25
     else:
         err(f'Please chose a power level between 1 and 4')
+
     # FIXME
     TRACER = tracing.Tracer(data)
+
     #: gather the given input directories contents
-    package = naiveCreateWorkpackages(data['paths']['inputPath'], data['paths']['outputPath'], data['options']['clear'])
+    roots = []
+    for directory in data['paths']['inputs']:
+        roots.append(naiveCreateWorkpackages(directory['path'], directory['recursive']))
+    print(roots)
     #: Run the tree walk in parallel
     start = time.time()
-    with ThreadPoolExecutor(max_workers=powerLevel) as executor:
-        for directory in package[0]:
-            future = executor.submit(naiveTreeWalk, data['paths']['exiftoolPath'], data['paths']['outputPath'],directory, package[1])
-    # naiveTreeWalkTest(data['paths']['exiftoolPath'], data['paths']['outputPath'],package[0], package[1])
+
+    for package in roots:
+        with ThreadPoolExecutor(max_workers=powerLevel) as executor:
+            for directory in package[0]:
+                future = executor.submit(naiveTreeWalk, data['paths']['exiftool'], data['paths']['output'], directory, package[1])
+
     end = time.time()
     print(end - start)
     pass
