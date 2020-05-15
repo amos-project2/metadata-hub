@@ -2,6 +2,8 @@
 .idea
 *.log
 *.code-workspace
+venv
+web-ui/node_modules
 
 
 
