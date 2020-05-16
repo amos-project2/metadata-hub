@@ -25,6 +25,9 @@ local.properties
 .loadpath
 .recommenders
 
+# Sphinx autodoc build
+crawler/doc/autodoc/build
+
 # Python caches
 **/__pycache__
 
