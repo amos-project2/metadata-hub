@@ -109,9 +109,11 @@ def info() -> flask.Response:
     # TODO: info functionality
 
     msg = {
-        'status': 'Not running',
-        'config': {},
-        'progress': f'{0.0} %'
+        'message': {
+            'status': 'Not running',
+            'config': {},
+            'progress': f'{0.0} %'
+        }
     }
     resp = flask.Response(
         json.dumps(msg),
@@ -163,6 +165,25 @@ def config():
     except parsing.APIParsingException as err:
         message = f'Failed. {str(err)}'
         return flask.render_template('config.html', message=message)
+
+
+@app.route('/shutdown', methods=['POST'])
+def shutdown():
+    resp = flask.Response(
+        status=defaults.STATUS_OK,
+        mimetype=defaults.MIMETYPE_JSON
+    )
+    return resp
+
+
+@app.route('/', methods=['GET'])
+def home():
+    resp = flask.Response(
+        status=defaults.STATUS_OK,
+        mimetype=defaults.MIMETYPE_JSON
+    )
+    return resp
+
 
 
 def start(host: str, port: int) -> None:
