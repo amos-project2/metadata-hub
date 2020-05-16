@@ -10,7 +10,8 @@ from sys import exit
 from typing import Tuple, List
 
 import crawler.services.tracing as tracing
-
+from crawler.connectPG.connector import DatabaseConnection
+from crawler.connectPG.extract_data import extractData
 
 TRACE_FILE = 'TRACE.log'
 
@@ -121,6 +122,43 @@ def naiveTreeWalk(pathExifTool: str, pathProtocol: str, directory:str, options:L
 #         except subprocess.CalledProcessError:
 #             failures.append(direct)
 
+
+def naiveTreeWalkUpdate(pathExifTool: str, pathProtocol: str, directory:str, traceFile:str) -> None:
+    """Naive implementation of the tree walk. inserts the results in Postgre database.
+    
+    Args:
+        pathExifTool (str): Path to the exiftool.
+        pathProtocol (str): Path to the output directory
+        directory (str): The directory to scan
+        traceFile (str): The trace file
+    """
+    
+    # Local Database info
+    db_info = ["dbname='metadatahub'", "user='postgres'",       \
+               "host='localhost'"    , "password=''",   \
+               "port='5432'"]
+    
+    #: Debugging variable to check how many exiftool scans fail
+    failures = []
+
+    #: Walk over every directory and execute the exiftool. Log to file to <pathProtocol>
+    try:
+        process  = subprocess.Popen([f'{pathExifTool}', '-json', directory], stdout=subprocess.PIPE)
+        metadata = json.load(process.stdout)       
+        
+        # Walk through each object/file
+        for file_number in metadata:
+            # Generate queries to insert into tables from 1 file
+            query = extractData(file_number).extract_metadata()
+            # Apply apply query to insert for each table
+            for query_number in query:
+                DatabaseConnection(db_info).insert_new_record(query_number)
+        
+        TRACER.add_node(directory)
+    except subprocess.CalledProcessError:
+        failures.append(directory)
+        
+
 def hashTable(pathInput):
     """Creates a hash table based on the total amount of files per directory.
 
@@ -199,6 +237,6 @@ if __name__ == "__main__":
     for package in roots:
         with ThreadPoolExecutor(max_workers=powerLevel) as executor:
             for directory in package[0]:
-                future = executor.submit(naiveTreeWalk, data['paths']['exiftool'], data['paths']['output'], directory, options)
-
+#                future = executor.submit(naiveTreeWalk, data['paths']['exiftool'], data['paths']['output'], directory, options)
+                future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], data['paths']['output'], directory, options)              
     pass
