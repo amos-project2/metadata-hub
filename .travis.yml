@@ -16,7 +16,7 @@ jobs:
       before_script:
         - cd crawler/doc/autodoc
       script:
-        - make html SPHINXOPTS="-W --keep-going -n"
+        - make html SPHINXOPTS="-W --keep-going"
     - name: crawler.lint
       language: python
       python: 3.8
