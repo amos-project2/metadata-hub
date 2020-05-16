@@ -12,7 +12,7 @@ jobs:
       language: python
       python: 3.8
       install:
-        - pip install -r requirements.txt
+        - pip install -r crawler/requirements.txt
       before_script:
         - cd crawler/
       script:
@@ -21,7 +21,7 @@ jobs:
       language: python
       python: 3.8
       install:
-        - pip install -r requirements.txt
+        - pip install -r crawler/requirements.txt
       before_script:
         - cd crawler/
       script:
