@@ -4,12 +4,28 @@ dist: xenial
 
 
 jobs:
+  allow_failures:
+    - name: "crawler.lint"
+
   include:
-    - name: Crawler
+    - name: crawler.lint
       language: python
       python: 3.8
-      before_script: cd crawler/
-      script: python helloworld.py
+      install:
+        - pip install -r requirements.txt
+      before_script:
+        - cd crawler/
+      script:
+        - pylint *.py crawler/
+    - name: crawler.test
+      language: python
+      python: 3.8
+      install:
+        - pip install -r requirements.txt
+      before_script:
+        - cd crawler/
+      script:
+        - python -m tests
     - name: Server
       language: java
       jdk: openjdk11
