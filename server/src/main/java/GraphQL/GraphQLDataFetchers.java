@@ -2,6 +2,7 @@ package GraphQL;
 
 import Database.DatabaseProvider;
 import Model.Attribute;
+import Model.File;
 import Start.Start;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zaxxer.hikari.HikariDataSource;
@@ -60,8 +61,8 @@ public class GraphQLDataFetchers
         return (DataFetcher<List<Attribute>>) dataFetchingEnvironment ->
         {
 
-            final String file_generic_id = dataFetchingEnvironment.getArgument("file");
-            final ArrayList<String> requested_attributes = dataFetchingEnvironment.getArgument("attributes");
+            final String file_generic_id = dataFetchingEnvironment.getArgument("file_id");
+            final ArrayList<String> requested_attributes = dataFetchingEnvironment.getArgument("sel_attributes");
             final Boolean eav = dataFetchingEnvironment.getArgument("eav");
 
             if (eav != null && eav == true)
@@ -163,18 +164,76 @@ public class GraphQLDataFetchers
 
     }
 
-    public DataFetcher getFileFetcher()
+    //Only accesses the file_generic table and extracts the metadata out of the "metadata" field
+    public DataFetcher getDirMetadataFetcher()
     {
-        return null;
-    }
+        return (DataFetcher<List<File>>) dataFetchingEnvironment ->
+        {
 
-    public DataFetcher getAttributeFetcher()
-    {
-        return null;
-    }
+            final String dir_path = dataFetchingEnvironment.getArgument("dir_path");
+            final ArrayList<String> selection_attributes = dataFetchingEnvironment.getArgument("sel_attributes");
+            final Boolean eav = dataFetchingEnvironment.getArgument("eav");
 
-    public DataFetcher getTreeWalkFetcher()
-    {
-        return null;
+            if (eav != null && eav == true)
+            {
+                //TODO Implement EAV Access? Or just stick to the JsonVariant
+                //return helperEAVAccess(dir_path, selection_attributes);
+            }
+
+            if (selection_attributes != null)
+            {
+                log.info("getDirMetadata: dir_path = " + dir_path + " sel_attributes = " + selection_attributes.toString());
+            }
+
+            HikariDataSource dataSource = databaseProvider.getHikariDataSource();
+
+            try (Connection connection = dataSource.getConnection();
+                 PreparedStatement selectStmt = connection.prepareStatement("SELECT * from public.file_generic WHERE sub_dir_path LIKE ?");)
+            {
+                selectStmt.setString(1, dir_path + "%");
+                try (ResultSet rs = selectStmt.executeQuery();)
+                {
+                    ArrayList<File> files = new ArrayList<>();
+                    while(rs.next())
+                    {
+                        //TODO Work on the Model? Right now every query asks for all available information in the database
+                        //TODO and doesn't ask just for the selected File and Attribute Types
+                        //That is the file_id in the database, for the actual attribte_id there would be necessary
+                        // another query to the file_generic_data_eav table
+                        String attribute_id = rs.getString("id");
+                        String tree_walk_id = rs.getString("tree_walk_id");
+                        String jsonFileMetadata = rs.getString("metadata");
+                        ArrayList<Attribute> attributes = new ArrayList<>();
+                        ObjectMapper mapper = new ObjectMapper();
+                        Map<String, String> attribute_map = mapper.readValue(jsonFileMetadata, Map.class);
+
+                        //TODO maybe refactor later
+                        if (selection_attributes == null)
+                        {
+                            for (Map.Entry<String, String> entry : attribute_map.entrySet())
+                            {
+                                String key = entry.getKey();
+                                Object value = entry.getValue();
+                                attributes.add(new Attribute(attribute_id, tree_walk_id, dir_path, key, value.toString()));
+                            }
+                        }
+                        else
+                        {
+                            for (String attribute : selection_attributes)
+                            {
+                                attributes.add(new Attribute(attribute_id, tree_walk_id, dir_path, attribute, attribute_map.get(attribute)));
+                            }
+                        }
+                        files.add(new File(attribute_id, tree_walk_id,
+                            dir_path, rs.getString("name"), rs.getString("file_typ"),
+                            rs.getString("file_create_date"), rs.getString("file_modify_date"),
+                            rs.getString("file_access_date"), jsonFileMetadata, attributes));
+
+                    }
+
+                    return files;
+                }
+            }
+        };
     }
 }

@@ -50,6 +50,8 @@ public class GraphQLProvider
                 .dataFetcher("teststuff", graphQLDataFetchers.getDatabaseTestFetcher()))
             .type(newTypeWiring("Query")
                 .dataFetcher("get_metadata", graphQLDataFetchers.getMetadataFetcher()))
+            .type(newTypeWiring("Query")
+                .dataFetcher("get_dir_metadata", graphQLDataFetchers.getDirMetadataFetcher()))
 
             .build();
     }
