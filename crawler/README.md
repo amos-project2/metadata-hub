@@ -30,7 +30,7 @@ subdirectories will also be scanned.
 scanned again.
 * **filetypes**: Array of string containing the different file types the exiftool is supposed to look for. Leave this
 empty to scan for all file types.
-**language**: This feature is currently being worked on.
+* **language**: This feature is currently being worked on.
 ### FAQ
 **What is the current state of the crawler?**
 
