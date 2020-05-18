@@ -17,7 +17,10 @@ class DatabaseConnection:
         
         """                    
         try:
-            self.connection = psycopg2.connect(" ".join(db_info))       
+            # database info in a string
+            db_info_str = "dbname='{b}' user='{c}' host='{d}' password='{e}' port='{f}' \
+                            ".format(b=db_info['dbname'], c=db_info['user'], d=db_info['host'], e=db_info['password'], f=db_info['port'])
+            self.connection = psycopg2.connect(db_info_str)       
             self.connection.autocommit = True
             self.cursor = self.connection.cursor()
         except:
@@ -32,6 +35,7 @@ class DatabaseConnection:
             insert_cmd (dict): a single INSERT query to Postgre database 
 
         """
+        pprint("----Insert-Done-----")
         self.cursor.execute(insert_cmd)
     
             
@@ -39,5 +43,4 @@ class DatabaseConnection:
         pass
 
     
-    
-    
+  
