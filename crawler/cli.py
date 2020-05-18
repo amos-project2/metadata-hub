@@ -15,10 +15,11 @@ from sys import exit
 import requests
 
 
-_HOST = 'localhost'
-_PORT = 9000
-_PROTOCOL = 'http://'
-_API = f'{_PROTOCOL}{_HOST}:{_PORT}'
+# Local imports
+import crawler.services.environment as environment
+
+
+_API = None
 
 
 def check_connection() -> bool:
@@ -191,6 +192,12 @@ def shutdown(
 
 
 if __name__ == '__main__':
+    try:
+        environment.init()
+    except environment.InvalidEnvironmentException as err:
+        print(f'{str(err)} Aborted.')
+        exit(1)
+    _API =f'http://{environment.env.CRAWLER_HOST}:{environment.env.CRAWLER_PORT}'
     parser = argparse.ArgumentParser()
     subparser = parser.add_subparsers(title='command', dest='command')
     # Create parsers for each command

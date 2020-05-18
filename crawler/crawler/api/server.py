@@ -18,6 +18,7 @@ from . import defaults
 from . import parsing
 import crawler.treewalk as treewalk
 import crawler.services.config as config_service
+import crawler.services.environment as environment
 
 
 app = flask.Flask(
@@ -196,16 +197,9 @@ def home():
     return resp
 
 
-def start(host: str, port: int) -> None:
-    """Start the Flask application at given host:port.
-
-    Args:
-        host (str): host to run on
-        port (int): port to run on
-
-    """
-    app.run(host=host, port=port)
-
-
-if __name__ == '__main__':
-    start(host='0.0.0.0', port=9000)
+def start() -> None:
+    """Start the Flask application."""
+    app.run(
+        host=environment.env.CRAWLER_HOST,
+        port=environment.env.CRAWLER_PORT
+    )
