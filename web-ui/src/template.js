@@ -8,6 +8,7 @@ class NavElement {
 
 class NavGroup {
     constructor() {
+        this.parent_nav = "";
         this.data = "";
         this.navElements = [];
     }
@@ -15,8 +16,8 @@ class NavGroup {
     addOneNavElement(navElement) {
 
         this.data += `
- <li class="nav-item active">
-              <a class="nav-link nav-element-${navElement.selectorName}" href="#">${navElement.name}</a>
+            <li class="nav-item container-${this.parent_nav}" style="display:none;">
+              <a class="nav-link nav-element-${navElement.selectorName}" href="#" id="nav-element-${navElement.selectorName}">${navElement.name}</a>
             </li>`;
         this.navElements.push(navElement);
 
@@ -24,18 +25,19 @@ class NavGroup {
 
     addMoreNavElementsToOneGroup(dropdownName, navElementArr) {
 
-        var tmp = "";
+        let tmp = "";
         for (let value of navElementArr) {
             if (value.name === "divider") {
                 tmp += ` <div class="dropdown-divider"></div>`;
             } else {
-                tmp += `<a class="dropdown-item nav-element-${value.selectorName}" href="#">${value.name}</a>`;
+                tmp += `<a class="dropdown-item nav-element-${value.selectorName}" href="#" id="nav-element-${value.selectorName}">${value.name}</a>`;
+                this.navElements.push(value);
             }
         }
 
 
         this.data += `
-            <li class="nav-item dropdown">
+            <li class="nav-item dropdown container-${this.parent_nav}" style="display:none;">
               <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 ${dropdownName}
               </a>
@@ -54,27 +56,93 @@ class NavGroup {
 export class Template {
 
     constructor() {
+        this.thisdata = this;
         this.data = "";
         this.navbar = "";
         this.navGroups = [];
 
-        let navGroup = new NavGroup();
-        this.navGroups.push(navGroup);
-        navGroup.addOneNavElement(new NavElement("Testname", "testname", function () {
-        }));
-        navGroup.addOneNavElement(new NavElement("Testname2", "testname2", function () {
-        }));
-        navGroup.addMoreNavElementsToOneGroup("MyDropdown", [new NavElement("Testname3", "testname3", function () {
-        }),
-            new NavElement("Testname4", "testname4", function () {
-            }),
-            new NavElement("divider"),
-            new NavElement("Testname5", "testname5", function () {
-            })
+        //constraint -> both have to be null or not null
+        this.currentSelectedElement = null;
+        this.currentSelectedElementGroup = null;
 
+        //Nav-Group nav_query
+        let navGroup = new NavGroup();
+        navGroup.parent_nav = "nav_query";
+        this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
+
+        navGroup.addOneNavElement(new NavElement("Testname", "testname", function () { }));
+        navGroup.addOneNavElement(new NavElement("Testname2", "testname2", function () { }));
+        navGroup.addMoreNavElementsToOneGroup("MyDropdown", [new NavElement("Testname3", "testname3", function () { }),
+            new NavElement("Testname4", "testname4", function () { }),
+            new NavElement("divider"),
+            new NavElement("Testname5", "testname5", function () { })
         ]);
-        navGroup.addOneNavElement(new NavElement("Testname6", "testname6", function () {
-        }));
+        navGroup.addOneNavElement(new NavElement("Testname6", "testname6", function () { }));
+        this.navbar += navGroup.data;
+
+        //Nav-Group nav_graphiql
+        navGroup = new NavGroup();
+        navGroup.parent_nav = "nav_graphiql";
+        this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
+
+        navGroup.addOneNavElement(new NavElement("graphiql1", "graphiql1", function () { }));
+        navGroup.addOneNavElement(new NavElement("graphiql2", "graphiql2", function () { }));
+
+        this.navbar += navGroup.data;
+
+
+
+
+        //Nav-Group nav_crawler
+        navGroup = new NavGroup();
+        navGroup.parent_nav = "nav_crawler";
+        this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
+
+        navGroup.addOneNavElement(new NavElement("crawler1", "crawler1", function () { }));
+        navGroup.addOneNavElement(new NavElement("crawler2", "crawler2", function () { }));
+
+        this.navbar += navGroup.data;
+
+
+        //Nav-Group nav_status
+        navGroup = new NavGroup();
+        navGroup.parent_nav = "nav_status";
+        this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
+
+        navGroup.addOneNavElement(new NavElement("status1", "status1", function () { }));
+        navGroup.addOneNavElement(new NavElement("status1", "status2", function () { }));
+
+        this.navbar += navGroup.data;
+
+
+        //Nav-Group nav_help
+        navGroup = new NavGroup();
+        navGroup.parent_nav = "nav_help";
+        this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
+
+        navGroup.addOneNavElement(new NavElement("help1", "help1", function () { }));
+        navGroup.addOneNavElement(new NavElement("help1", "help2", function () { }));
+
+        this.navbar += navGroup.data;
+
+        //Nav-Group nav_logout
+        navGroup = new NavGroup();
+        navGroup.parent_nav = "nav_logout";
+        this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
+
+        navGroup.addOneNavElement(new NavElement("Logout", "logout", function () { }));
+
+        this.navbar += navGroup.data;
+
+
+        //Nav-Group nav_about
+        navGroup = new NavGroup();
+        navGroup.parent_nav = "nav_about";
+        this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
+
+        navGroup.addOneNavElement(new NavElement("about1", "about1", function () { }));
+        navGroup.addOneNavElement(new NavElement("about1", "about2", function () { }));
+
         this.navbar += navGroup.data;
 
 
@@ -89,7 +157,46 @@ export class Template {
             $("#wrapper").toggleClass("toggled");
         });
 
-        //TODO register eventListener
+        //Register eventListener
+        let thisdata = this;
+        for (let value of this.navGroups) {
+            for (let value2 of value.data.navElements) {
+                $("#nav-element-" + value2.selectorName).click(function () {
+                    $(".nav-item").removeClass("active");//remove from all
+
+                    if (thisdata.currentSelectedElement != null) {
+                        thisdata.currentSelectedElement.contentLoader();//TODO content-unloader
+                        if (thisdata.currentSelectedElementGroup !== value.data) {
+                            $(".container-" + thisdata.currentSelectedElementGroup.parent_nav).hide();
+                            $(".x" + thisdata.currentSelectedElementGroup.parent_nav).removeClass("active_sidebar");
+                        }
+                    }
+
+                    if (thisdata.currentSelectedElementGroup !== value.data) {
+                        //alert("hi "+".container-" + value.data.parent_nav);
+                        $(".container-" + value.data.parent_nav).show(1000);
+                        $(".x" + value.data.parent_nav).addClass("active_sidebar");
+                    }
+
+
+                    $(this).closest(".nav-item").addClass("active");
+                    value2.contentLoader();
+                    thisdata.currentSelectedElement = value2;
+                    thisdata.currentSelectedElementGroup = value.data;
+                   // alert("hey: " + value2.name);
+                })
+            }
+        }
+        $(".nav-query").click(function () { $("#nav-element-testname").trigger("click"); });
+        $(".nav-graphiql").click(function () { $("#nav-element-graphiql1").trigger("click"); });
+        $(".nav-crawler").click(function () { $("#nav-element-crawler1").trigger("click"); });
+        $(".nav-status").click(function () { $("#nav-element-status1").trigger("click"); });
+        $(".nav-help").click(function () { $("#nav-element-help1").trigger("click"); });
+        $(".nav-about").click(function () { $("#nav-element-about1").trigger("click"); });
+        $(".nav-logout").click(function () { $("#nav-element-logout").trigger("click"); });
+
+      //  $(".container-nav_query").show(4000);
+
     }
 
 
@@ -100,11 +207,13 @@ export class Template {
     <div class="bg-light border-right" id="sidebar-wrapper">
       <div class="sidebar-heading">Start Bootstrap </div>
       <div class="list-group list-group-flush">
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-query">Query</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-graphiql">GraphIQl</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-crawler">Crawler</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-status">Status</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-logout">Logout</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light nav-query xnav_query">Query</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light nav-graphiql xnav_graphiql">GraphiQl</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light nav-crawler xnav_crawler">Crawler</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light nav-status xnav_status">Status</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light nav-help xnav_help">Help</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light nav-about xnav_about">About</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light nav-logout xnav_logout">Logout</a>
       </div>
     </div>
 
@@ -140,8 +249,6 @@ export class Template {
   </div>
   <!-- /#wrapper -->`;
     }
-
-
 
 
 }
