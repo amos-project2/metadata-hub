@@ -1,6 +1,6 @@
 {
-    "paths":{
-        "inputs": [{"path":"", "recursive":false}],
+    "paths": {
+        "inputs": [{"path":"", "recursive":true}],
         "output":"",
         "trace": "",
         "exiftool":""
@@ -10,5 +10,13 @@
         "clearTrace": false,
         "fileTypes": ["all"],
         "language": "en"
+    },
+    "db_info": {
+        "dbname": "metadatahub",
+        "user": "",
+        "host": "", 
+        "password": "",
+        "port": "5432"
     }
 }
+
