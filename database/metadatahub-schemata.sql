@@ -73,7 +73,7 @@ ALTER SEQUENCE public."TreeWalks_id_seq" OWNED BY public.tree_walk.id;
 --
 
 CREATE TABLE public.file_generic (
-    tree_walk_Id bigint NOT NULL,
+    tree_walk_id bigint NOT NULL,
     sub_dir_path text,
     name text,
     file_typ text,
