@@ -17,6 +17,7 @@ import flask
 from . import defaults
 from . import parsing
 import crawler.treewalk as treewalk
+import crawler.services.config as config_service
 
 
 app = flask.Flask(
@@ -146,11 +147,18 @@ def start() -> flask.Response:
             mimetype=defaults.MIMETYPE_JSON
         )
         return resp
-
-    # TODO: parse config
+    parser = config_service.ConfigParser(config)
+    try:
+        config = parser.parse()
+    except config_service.ConfigParsingException as error:
+        msg = {'error': str(error)}
+        resp = flask.Response(
+            json.dumps(msg),
+            status=defaults.STATUS_BAD_REQUEST,
+            mimetype=defaults.MIMETYPE_JSON
+        )
+        return resp
     treewalk.add_config_queue(config)
-
-
     resp = flask.Response(
         status=defaults.STATUS_OK,
         mimetype=defaults.MIMETYPE_JSON
