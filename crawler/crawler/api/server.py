@@ -6,6 +6,7 @@ This module contains the REST interface for communication with the crawler.
 
 # Python imports
 import json
+import threading
 
 
 # 3rd party modules
@@ -15,6 +16,7 @@ import flask
 # Local imports
 from . import defaults
 from . import parsing
+import crawler.treewalk as treewalk
 
 
 app = flask.Flask(
@@ -145,7 +147,9 @@ def start() -> flask.Response:
         )
         return resp
 
-    # TODO: start functionality
+    # TODO: parse config
+    treewalk.add_config_queue(config)
+
 
     resp = flask.Response(
         status=defaults.STATUS_OK,
@@ -159,7 +163,6 @@ def config():
     if flask.request.method == 'GET':
         return flask.render_template('config.html')
     try:
-        print(flask.request.form)
         result = parsing.parse(flask.request.form)
         return flask.render_template('config.html', message='Success')
     except parsing.APIParsingException as err:
@@ -183,7 +186,6 @@ def home():
         mimetype=defaults.MIMETYPE_JSON
     )
     return resp
-
 
 
 def start(host: str, port: int) -> None:

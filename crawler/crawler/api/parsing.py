@@ -162,10 +162,8 @@ def parse(form_data: dict) -> dict:
     """
 
     for prop in REQUIRED_PROPERTIES:
-        print(prop)
         if prop not in form_data:
             raise APIParsingException('Form data was modified.')
-
     inputs = _parse_inputs(form_data.get('inputs'))
     if inputs is None:
         raise APIParsingException('Invalid input field: Input directories')
