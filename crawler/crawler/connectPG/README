@@ -1,6 +1,7 @@
 - Import psycopg2
 - Connect to Postgre Database and get all info e.g: dbname, user, host, password, port
-into the list inside function "naiveTreeWalkUpdate" in TreeWalk.py
+into the configCrawler.json
+- Input all required paths in configCrawler.json
 - Test with func "naiveTreeWalkUpdate"
 
 e.g: db_info = ["dbname='metadatahub'", "user='postgres'",       \
