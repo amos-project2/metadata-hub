@@ -123,7 +123,7 @@ def naiveTreeWalk(pathExifTool: str, pathProtocol: str, directory:str, options:L
 #             failures.append(direct)
 
 
-def naiveTreeWalkUpdate(pathExifTool: str, pathProtocol: str, directory:str, traceFile:str) -> None:
+def naiveTreeWalkUpdate(pathExifTool: str, pathProtocol: str, directory:str, options:List[str], db_info:dict) -> None:
     """Naive implementation of the tree walk. inserts the results in Postgre database.
     
     Args:
@@ -132,11 +132,6 @@ def naiveTreeWalkUpdate(pathExifTool: str, pathProtocol: str, directory:str, tra
         directory (str): The directory to scan
         traceFile (str): The trace file
     """
-    
-    # Local Database info
-    db_info = ["dbname='metadatahub'", "user='postgres'",       \
-               "host='localhost'"    , "password=''",   \
-               "port='5432'"]
     
     #: Debugging variable to check how many exiftool scans fail
     failures = []
@@ -237,6 +232,6 @@ if __name__ == "__main__":
     for package in roots:
         with ThreadPoolExecutor(max_workers=powerLevel) as executor:
             for directory in package[0]:
-#                future = executor.submit(naiveTreeWalk, data['paths']['exiftool'], data['paths']['output'], directory, options)
-                future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], data['paths']['output'], directory, options)              
+#               future = executor.submit(naiveTreeWalk, data['paths']['exiftool'], data['paths']['output'], directory, options)
+                future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], data['paths']['output'], directory, options, data['db_info'])              
     pass
