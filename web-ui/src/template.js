@@ -1,3 +1,5 @@
+import {Page} from "./Page";
+
 class NavElement {
     constructor(name, selectorName, contentLoader) {
         this.name = name;
@@ -70,14 +72,14 @@ export class Template {
         navGroup.parent_nav = "nav_query";
         this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
 
-        navGroup.addOneNavElement(new NavElement("Testname", "testname", function () { }));
-        navGroup.addOneNavElement(new NavElement("Testname2", "testname2", function () { }));
-        navGroup.addMoreNavElementsToOneGroup("MyDropdown", [new NavElement("Testname3", "testname3", function () { }),
-            new NavElement("Testname4", "testname4", function () { }),
+        navGroup.addOneNavElement(new NavElement("Testname", "testname", new Page("testname")));
+        navGroup.addOneNavElement(new NavElement("Testname2", "testname2", new Page("testname2")));
+        navGroup.addMoreNavElementsToOneGroup("MyDropdown", [new NavElement("Testname3", "testname3", new Page("testname3")),
+            new NavElement("Testname4", "testname4", new Page("testname4")),
             new NavElement("divider"),
-            new NavElement("Testname5", "testname5", function () { })
+            new NavElement("Testname5", "testname5", new Page("testname5"))
         ]);
-        navGroup.addOneNavElement(new NavElement("Testname6", "testname6", function () { }));
+        navGroup.addOneNavElement(new NavElement("Testname6", "testname6", new Page("testname6")));
         this.navbar += navGroup.data;
 
         //Nav-Group nav_graphiql
@@ -85,12 +87,10 @@ export class Template {
         navGroup.parent_nav = "nav_graphiql";
         this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
 
-        navGroup.addOneNavElement(new NavElement("graphiql1", "graphiql1", function () { }));
-        navGroup.addOneNavElement(new NavElement("graphiql2", "graphiql2", function () { }));
+        navGroup.addOneNavElement(new NavElement("graphiql1", "graphiql1", new Page("graphiql1")));
+        navGroup.addOneNavElement(new NavElement("graphiql2", "graphiql2", new Page("graphiql2")));
 
         this.navbar += navGroup.data;
-
-
 
 
         //Nav-Group nav_crawler
@@ -98,8 +98,8 @@ export class Template {
         navGroup.parent_nav = "nav_crawler";
         this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
 
-        navGroup.addOneNavElement(new NavElement("crawler1", "crawler1", function () { }));
-        navGroup.addOneNavElement(new NavElement("crawler2", "crawler2", function () { }));
+        navGroup.addOneNavElement(new NavElement("crawler1", "crawler1", new Page("crawler1")));
+        navGroup.addOneNavElement(new NavElement("crawler2", "crawler2", new Page("crawler2")));
 
         this.navbar += navGroup.data;
 
@@ -109,8 +109,8 @@ export class Template {
         navGroup.parent_nav = "nav_status";
         this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
 
-        navGroup.addOneNavElement(new NavElement("status1", "status1", function () { }));
-        navGroup.addOneNavElement(new NavElement("status1", "status2", function () { }));
+        navGroup.addOneNavElement(new NavElement("status1", "status1", new Page("status1")));
+        navGroup.addOneNavElement(new NavElement("status1", "status2", new Page("status2")));
 
         this.navbar += navGroup.data;
 
@@ -120,28 +120,28 @@ export class Template {
         navGroup.parent_nav = "nav_help";
         this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
 
-        navGroup.addOneNavElement(new NavElement("help1", "help1", function () { }));
-        navGroup.addOneNavElement(new NavElement("help1", "help2", function () { }));
+        navGroup.addOneNavElement(new NavElement("help1", "help1", new Page("help1")));
+        navGroup.addOneNavElement(new NavElement("help1", "help2", new Page("help2")));
 
         this.navbar += navGroup.data;
-
-        //Nav-Group nav_logout
-        navGroup = new NavGroup();
-        navGroup.parent_nav = "nav_logout";
-        this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
-
-        navGroup.addOneNavElement(new NavElement("Logout", "logout", function () { }));
-
-        this.navbar += navGroup.data;
-
 
         //Nav-Group nav_about
         navGroup = new NavGroup();
         navGroup.parent_nav = "nav_about";
         this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
 
-        navGroup.addOneNavElement(new NavElement("about1", "about1", function () { }));
-        navGroup.addOneNavElement(new NavElement("about1", "about2", function () { }));
+        navGroup.addOneNavElement(new NavElement("about1", "about1", new Page("about1")));
+        navGroup.addOneNavElement(new NavElement("about1", "about2", new Page("about2")));
+
+        this.navbar += navGroup.data;
+
+
+        //Nav-Group nav_logout
+        navGroup = new NavGroup();
+        navGroup.parent_nav = "nav_logout";
+        this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
+
+        navGroup.addOneNavElement(new NavElement("Logout", "logout", new Page("logout")));
 
         this.navbar += navGroup.data;
 
@@ -165,7 +165,7 @@ export class Template {
                     $(".nav-item").removeClass("active");//remove from all
 
                     if (thisdata.currentSelectedElement != null) {
-                        thisdata.currentSelectedElement.contentLoader();//TODO content-unloader
+                        thisdata.currentSelectedElement.contentLoader.onUnMountIntern();//content-unloader
                         if (thisdata.currentSelectedElementGroup !== value.data) {
                             $(".container-" + thisdata.currentSelectedElementGroup.parent_nav).hide();
                             $(".x" + thisdata.currentSelectedElementGroup.parent_nav).removeClass("active_sidebar");
@@ -180,10 +180,10 @@ export class Template {
 
 
                     $(this).closest(".nav-item").addClass("active");
-                    value2.contentLoader();
+                    value2.contentLoader.onMountIntern();//content-unloader
                     thisdata.currentSelectedElement = value2;
                     thisdata.currentSelectedElementGroup = value.data;
-                   // alert("hey: " + value2.name);
+                    // alert("hey: " + value2.name);
                 })
             }
         }
@@ -195,7 +195,7 @@ export class Template {
         $(".nav-about").click(function () { $("#nav-element-about1").trigger("click"); });
         $(".nav-logout").click(function () { $("#nav-element-logout").trigger("click"); });
 
-      //  $(".container-nav_query").show(4000);
+        //  $(".container-nav_query").show(4000);
 
     }
 
@@ -241,8 +241,8 @@ export class Template {
 
 
       <div class="container-fluid">
-        <h1 class="mt-4 our-title">Simple Sidebar</h1>
-        <div class="our-content">CONTENT</div>
+        <h1 class="mt-4 our-title"></h1>
+        <div class="our-content"></div>
         </div>
     </div>
     <!-- /#page-content-wrapper -->
