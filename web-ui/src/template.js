@@ -1,4 +1,5 @@
 import {Page} from "./Page";
+import {Testname} from "./query/Testname";
 
 class NavElement {
     constructor(name, selectorName, contentLoader) {
@@ -72,7 +73,7 @@ export class Template {
         navGroup.parent_nav = "nav_query";
         this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
 
-        navGroup.addOneNavElement(new NavElement("Testname", "testname", new Page("testname")));
+        navGroup.addOneNavElement(new NavElement("Testname", "testname", new Testname("testname")));
         navGroup.addOneNavElement(new NavElement("Testname2", "testname2", new Page("testname2")));
         navGroup.addMoreNavElementsToOneGroup("MyDropdown", [new NavElement("Testname3", "testname3", new Page("testname3")),
             new NavElement("Testname4", "testname4", new Page("testname4")),

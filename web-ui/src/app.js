@@ -1,6 +1,6 @@
 import 'bootstrap';
 import './scss/app.scss';
-import {Page} from "./Page";
+// import {Page} from "./Page";
 import {Template} from "./template";
 
 
