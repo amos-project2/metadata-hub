@@ -1,6 +1,8 @@
 import {Page} from "./Page";
-import {Testname} from "./query/Testname";
+import {Testname} from "./status/Testname";
 import {GraphiqlConsole} from "./graphiql/Graphiql-console";
+import {FormQueryEditor} from "./query/FormQueryEditor";
+import {GraphqlQueryEditor} from "./query/GraphqlQueryEditor";
 
 class NavElement {
     constructor(name, selectorName, contentLoader) {
@@ -72,8 +74,8 @@ export class Template {
 
 
         this.addNavGroup("nav_query", function (n) {
-            n.addOneNavElement(new NavElement("GraphQL-Query", "graphql-query", new Page("graphql-query")));
-            n.addOneNavElement(new NavElement("Form-Query", "form-query", new Page("form-query")));
+            n.addOneNavElement(new NavElement("GraphQL-Query", "graphql-query", new GraphqlQueryEditor("graphql-query")));
+            n.addOneNavElement(new NavElement("Form-Query", "form-query", new FormQueryEditor("form-query")));
         });
 
         this.addNavGroup("nav_graphiql", function (n) {
