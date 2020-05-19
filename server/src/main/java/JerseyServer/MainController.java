@@ -26,15 +26,15 @@ public class MainController
         this.graphQl = JerseyServer.getGraphQLCheat();
     }
 
-    //static-stuff
-
-    @GET
-    @Produces("text/plain")
-    @Path("/")
-    public String getStatic1()
-    {
-        return "static data";
-    }
+//    //static-stuff
+//
+//    @GET
+//    @Produces("text/plain")
+//    @Path("/")
+//    public String getStatic1()
+//    {
+//        return "static data";
+//    }
 
 
     //graphQL-Endpoint
@@ -107,19 +107,7 @@ public class MainController
     @Path("/testconsole")
     public String getTestConsole() throws IOException
     {
-
-        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        StringBuilder out = new StringBuilder();
-        try (InputStream is = classloader.getResourceAsStream("graphiql/graphiql.html");
-             InputStreamReader isr = new InputStreamReader(is);// im not sure if we can use this directly in the constructor of Buffered Reader, with try-with TODO research
-             BufferedReader reader = new BufferedReader(isr);)
-        {
-            String line;
-            while ((line = reader.readLine()) != null)
-            {
-                out.append(line);
-            }
-        }
+        String out = this.loadFile("graphiql/graphiql.html");
 
         String content = out.toString().replaceAll("%PORT%", config.getProperty("httpserver.port"));
         return content;
@@ -145,5 +133,63 @@ public class MainController
         throw new Exception("error2");
     }
 
+
+    //web-ui-output
+
+
+    @GET
+    @Produces({MediaType.TEXT_HTML})
+    @Path("/")
+    public String getIndexHtml() throws IOException
+    {
+        String out = this.loadFile("web-ui/index.html");
+
+        String content = out.toString().replaceAll("%PORT%", config.getProperty("httpserver.port"));
+        return content;
+    }
+
+    @GET
+    @Produces({"application/javascript"})
+    @Path("/bundle.js")
+    public InputStream getBundleJs() throws IOException
+    {
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        InputStream is = classloader.getResourceAsStream("static-files/bundle.js");
+        return is;
+    }
+
+    @GET
+    @Produces({"application/javascript"})
+    @Path("/main.bundle.js")
+    public InputStream getMainBundleJs() throws IOException
+    {
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        InputStream is = classloader.getResourceAsStream("static-files/main.bundle.js");
+        return is;
+    }
+
+
+
+
+
+
+    private String loadFile(String fileName) throws IOException
+    {
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        StringBuilder out = new StringBuilder();
+        try (InputStream is = classloader.getResourceAsStream(fileName);
+             InputStreamReader isr = new InputStreamReader(is);// im not sure if we can use this directly in the constructor of Buffered Reader, with try-with TODO research
+             BufferedReader reader = new BufferedReader(isr);)
+        {
+            String line;
+            while ((line = reader.readLine()) != null)
+            {
+                out.append(line);
+            }
+        }
+
+
+        return out.toString();
+    }
 
 }

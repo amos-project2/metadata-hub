@@ -6,6 +6,7 @@
     "scripts": {
         "build": "webpack",
         "dev-build": "webpack -o ../server/src/main/resources/static-files/bundle.js",
+        "runtime-build": "webpack -o ../server/target/classes/static-files/bundle.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [],

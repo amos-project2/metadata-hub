@@ -20,7 +20,8 @@ export class GraphiqlConsole extends Page {
     }
 
     onMount() {
-        const URL = "http://localhost:8080/graphql/";
+        const URL = "graphql/";
+        // const URL = "http://localhost:8080/graphql/";
 
         function graphQLFetcher(graphQLParams) {
             return fetch(URL, {
