@@ -143,7 +143,6 @@ public class GraphQLDataFetchers
                 Map<String, String> map = mapper.readValue(jsonFileMetadata, Map.class);
 
                 ArrayList<Attribute> attributes = new ArrayList<>();
-
                 helperAddSelAttributes(requested_attributes, attribute_id, tree_walk_id, file_generic_id, attributes, map);
 
                 return attributes;
@@ -318,7 +317,12 @@ public class GraphQLDataFetchers
         {
             for (String attribute : selection_attributes)
             {
-                attributes.add(new Attribute(attribute_id, tree_walk_id, absolute_file_path, attribute, attribute_map.get(attribute)));
+                String attr_value = attribute_map.get(attribute);
+                if(attr_value == null)
+                {
+                    continue;
+                }
+                attributes.add(new Attribute(attribute_id, tree_walk_id, absolute_file_path, attribute, attr_value));
             }
         }
     }
