@@ -114,7 +114,7 @@ class extractData:
                         test.append('NULL')
                         values = " VALUES({a})".format(a=" ,".join(test))
                         query.append(insertin + values)
-                    continue
+
 
                 elif att_name == "metadata":
                     metadata_input = "'{}'".format(json.dumps(self._input))
@@ -153,8 +153,11 @@ class extractData:
                     text_input = "'{}'".format(self._input.get(att_exiftool, ""))
                     metadata.append(text_input)
 
+            if table == 'file_generic_data_eav':
+                continue
             values = " VALUES({a})".format(a = " ,".join(metadata))
             query.append(insertin + values)
+            print(insertin + values)
 
         return query
 
