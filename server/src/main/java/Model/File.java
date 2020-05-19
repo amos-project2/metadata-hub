@@ -2,7 +2,7 @@ package Model;
 
 import lombok.Data;
 
-import java.util.Set;
+import java.util.List;
 
 @Data
 public class File
@@ -16,5 +16,5 @@ public class File
     private final String modification_date;
     private final String access_date;
     private final String metadata;
-    private final Set<Attribute> attributes;
+    private final List<Attribute> attributes;
 }
