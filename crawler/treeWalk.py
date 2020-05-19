@@ -28,33 +28,6 @@ def addProcessedEntry(path: str, traceFile: str) -> None:
         traceFilePointer.write(f'{path}\n')
 
 
-# def initTrace(pathProtocol: str, clear: bool) -> Tuple[List[str], str]:
-#     """Initialize the trace file and the nodes which should be skipped.
-#
-#     If clear is set to true, all existing trace data is removed.
-#
-#     Args:
-#         pathProtocol (str): path of the output directory
-#         clear (bool): clear existing trace data
-#
-#     Returns:
-#         Tuple[List[str], str]: list of already processed nodes, path of trace file
-#
-#     """
-#     traceFile = os.path.join(pathProtocol, TRACE_FILE)
-#     alreadyProcessed = []
-#     # Remove all content in the trace file
-#     if clear:
-#         open(traceFile, 'w').close()
-#         return (alreadyProcessed, traceFile)
-#     # Read trace data or create empty trace file if no data exists yet
-#     if os.path.isfile(traceFile):
-#         with open(traceFile, 'r') as traceFilePointer:
-#             alreadyProcessed = [entry.rstrip() for entry in traceFilePointer.readlines()]
-#     else:
-#         open(traceFile, 'a').close()
-#     return (alreadyProcessed, traceFile)
-
 # TODO This function should ultimately be used to create a list of even work packages
 def naiveCreateWorkpackages(pathInput: str, recursive:bool) -> Tuple[List[str],str]:
     """Creates a list of every directory found in the give paths file tree.
@@ -67,7 +40,8 @@ def naiveCreateWorkpackages(pathInput: str, recursive:bool) -> Tuple[List[str],s
     # FIXME
     alreadyProcessed = TRACER.get_processed_nodes()
     traceFile = TRACER._trace_file
-    print(f'Initialized with {len(alreadyProcessed)} already processed nodes.')
+    print(f'Initialized {pathInput} with {len(alreadyProcessed)} already processed nodes.')
+    print(alreadyProcessed)
     directoryList = []
     for root, directories, files in os.walk(pathInput):
         # Skip node if it is already processed
@@ -81,6 +55,7 @@ def naiveCreateWorkpackages(pathInput: str, recursive:bool) -> Tuple[List[str],s
         if recursive == 0:
             break
     return directoryList, traceFile
+
 
 def naiveTreeWalk(pathExifTool: str, pathProtocol: str, directory:str, options:List[str]) -> None:
     """Naive implementation of the tree walk. logs the results in Json format.
@@ -104,43 +79,24 @@ def naiveTreeWalk(pathExifTool: str, pathProtocol: str, directory:str, options:L
     except subprocess.CalledProcessError:
         failures.append(directory)
 
-# def naiveTreeWalkTest(pathExifTool: str, pathProtocol: str, directory:List[str], traceFile:str) -> None:
-#     """Naive implementation of the tree walk. logs the results in Json format. Only exist for testing the single thread
-#         treewalk!
-#     """
-#     #: Debugging variable to check how many exiftool scans fail
-#     failures = []
-#     for direct in directory:
-#         #: variable to give protocol files a name
-#         logCount = random.randint(1,2000000)
-#         #: Walk over every directory and execute the exiftool. Log to file to <pathProtocol>
-#         try:
-#             with open(f'{pathProtocol}/protocol{logCount}.json', 'w') as myFile:
-#                 subprocess.check_call([f'{pathExifTool}', '-json', direct], stdout=myFile)
-#                 # FIXME
-#                 TRACER.add_node(direct)
-#         except subprocess.CalledProcessError:
-#             failures.append(direct)
-
 
 def naiveTreeWalkUpdate(pathExifTool: str, pathProtocol: str, directory:str, options:List[str], db_info:dict) -> None:
     """Naive implementation of the tree walk. inserts the results in Postgre database.
-    
+
     Args:
         pathExifTool (str): Path to the exiftool.
         pathProtocol (str): Path to the output directory
         directory (str): The directory to scan
         traceFile (str): The trace file
     """
-    
     #: Debugging variable to check how many exiftool scans fail
     failures = []
 
     #: Walk over every directory and execute the exiftool. Log to file to <pathProtocol>
     try:
         process  = subprocess.Popen([f'{pathExifTool}', '-json', directory], stdout=subprocess.PIPE)
-        metadata = json.load(process.stdout)       
-        
+        metadata = json.load(process.stdout)
+
         # Walk through each object/file
         for file_number in metadata:
             # Generate queries to insert into tables from 1 file
@@ -148,11 +104,10 @@ def naiveTreeWalkUpdate(pathExifTool: str, pathProtocol: str, directory:str, opt
             # Apply apply query to insert for each table
             for query_number in query:
                 DatabaseConnection(db_info).insert_new_record(query_number)
-        
         TRACER.add_node(directory)
     except subprocess.CalledProcessError:
         failures.append(directory)
-        
+
 
 def hashTable(pathInput):
     """Creates a hash table based on the total amount of files per directory.
@@ -233,5 +188,5 @@ if __name__ == "__main__":
         with ThreadPoolExecutor(max_workers=powerLevel) as executor:
             for directory in package[0]:
 #               future = executor.submit(naiveTreeWalk, data['paths']['exiftool'], data['paths']['output'], directory, options)
-                future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], data['paths']['output'], directory, options, data['db_info'])              
+                future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], data['paths']['output'], directory, options, data['db_info'])
     pass
