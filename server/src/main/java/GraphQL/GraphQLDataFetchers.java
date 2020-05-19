@@ -135,7 +135,9 @@ public class GraphQLDataFetchers
                 if (!rs.next()) return null;
 
                 log.info("SQL Result : " + rs.toString());
-                String attribute_id = rs.getString("id");
+                //TODO Right here we don't have the actual Attribute ID theres no attribute ID in public.file_generic
+                //String attribute_id = rs.getString("id");
+                String attribute_id = "<No AttributeID, when the EAV_Table isn't used";
                 String tree_walk_id = rs.getString("tree_walk_id");
 
                 String jsonFileMetadata = rs.getString("metadata");
@@ -179,16 +181,16 @@ public class GraphQLDataFetchers
 
             try (ResultSet rs = selectStmt.executeQuery())
             {
-                ArrayList<Attribute> list = new ArrayList<>();
+                ArrayList<Attribute> attributes = new ArrayList<>();
                 rs.getFetchSize();
 
                 while (rs.next())
                 {
-                    list.add(new Attribute(rs.getString("id"), rs.getString("tree_walk_id"),
+                    attributes.add(new Attribute(rs.getString("id"), rs.getString("tree_walk_id"),
                         file_generic_id, rs.getString("attribute"), rs.getString("value")));
                 }
 
-                return list;
+                return attributes;
             }
         }
 
@@ -201,6 +203,7 @@ public class GraphQLDataFetchers
         //SelectStmt = Join on tree_walk_id; Concat the paths and remove the leftmost slash "/home/" + "/testDir/" = "/home/testDir/"
         //TODO Use treewalk table and file table for the absolute path
         //TODO Or save the absolute path also in the file table
+        //TODO Don't join on TreeWalkID? but on file_id?
         /*try (Connection connection = dataSource.getConnection();
              PreparedStatement selectStmt = connection.prepareStatement
                  ("SELECT *" +
@@ -217,9 +220,10 @@ public class GraphQLDataFetchers
                 while (rs.next()) {
                     //TODO Work on the Model? Right now every query asks for all available information in the database
                     //TODO and doesn't ask just for the selected File and Attribute Types
-                    //That is the file_id in the database, for the actual attribte_id there would be necessary
+                    //TODO That is the file_id in the database, for the actual attribte_id there would be necessary
                     // another query to the file_generic_data_eav table
-                    String attribute_id = rs.getString("id");
+                    //String attribute_id = rs.getString("id");
+                    String attribute_id = "<No Attribute ID, when the EAV_table isn't used>";
                     String tree_walk_id = rs.getString("tree_walk_id");
                     //TODO File only has relative path as attribute, user right now doesnt get information back about the treewalk
                     //TODO Right now the user can't calculate the absolute path themselves -> think about which information we send back
@@ -257,7 +261,7 @@ public class GraphQLDataFetchers
 */
         StringBuilder sql_statement = new StringBuilder("SELECT *, public.file_generic.id AS file_id " +
             "FROM public.file_generic " +
-            "INNER JOIN public.file_generic_data_eav ON public.file_generic.\"tree_walk_id\" = public.file_generic_data_eav.\"tree_walk_id\" " +
+            "INNER JOIN public.file_generic_data_eav ON public.file_generic.\"id\" = public.file_generic_data_eav.\"file_generic_id\" " +
             "WHERE public.file_generic.sub_dir_path LIKE ? ");
 
         if (selection_attributes != null) {
