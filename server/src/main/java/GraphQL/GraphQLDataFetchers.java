@@ -187,8 +187,12 @@ public class GraphQLDataFetchers
 
             HikariDataSource dataSource = databaseProvider.getHikariDataSource();
 
+            //SelectStmt = Join on tree_walk_id; Concat the paths and remove the leftmost slash "/home/" + "/testDir/" = "/home/testDir/"
             try (Connection connection = dataSource.getConnection();
-                 PreparedStatement selectStmt = connection.prepareStatement("SELECT * from public.file_generic WHERE sub_dir_path LIKE ?");)
+                 PreparedStatement selectStmt = connection.prepareStatement
+                     ("SELECT *" +
+                         " FROM public.file_generic INNER JOIN public.tree_walk ON public.file_generic.\"tree_walk_Id\" = public.tree_walk.\"id\"" +
+                         " WHERE CONCAT(public.tree_walk.root_path, RIGHT(public.file_generic.sub_dir_path, length(public.file_generic.sub_dir_path) - 1)) LIKE ?"))
             {
                 selectStmt.setString(1, dir_path + "%");
                 try (ResultSet rs = selectStmt.executeQuery();)
@@ -202,6 +206,10 @@ public class GraphQLDataFetchers
                         // another query to the file_generic_data_eav table
                         String attribute_id = rs.getString("id");
                         String tree_walk_id = rs.getString("tree_walk_id");
+                        //TODO File only has relative path as attribute, user right now doesnt get information back about the treewalk
+                        //TODO Right now the user can't calculate the absolute path themselves -> think about which information we send back
+                        //TODO change GraphQL such that it doesn't resemble database scheme but delivers the most useful information to the user?
+                        String absolute_file_path = rs.getString("root_path") + rs.getString("sub_dir_path").substring(1);
                         String jsonFileMetadata = rs.getString("metadata");
                         ArrayList<Attribute> attributes = new ArrayList<>();
                         ObjectMapper mapper = new ObjectMapper();
@@ -214,18 +222,18 @@ public class GraphQLDataFetchers
                             {
                                 String key = entry.getKey();
                                 Object value = entry.getValue();
-                                attributes.add(new Attribute(attribute_id, tree_walk_id, dir_path, key, value.toString()));
+                                attributes.add(new Attribute(attribute_id, tree_walk_id, absolute_file_path, key, value.toString()));
                             }
                         }
                         else
                         {
                             for (String attribute : selection_attributes)
                             {
-                                attributes.add(new Attribute(attribute_id, tree_walk_id, dir_path, attribute, attribute_map.get(attribute)));
+                                attributes.add(new Attribute(attribute_id, tree_walk_id, absolute_file_path, attribute, attribute_map.get(attribute)));
                             }
                         }
                         files.add(new File(attribute_id, tree_walk_id,
-                            dir_path, rs.getString("name"), rs.getString("file_typ"),
+                            absolute_file_path, rs.getString("name"), rs.getString("file_typ"),
                             rs.getString("file_create_date"), rs.getString("file_modify_date"),
                             rs.getString("file_access_date"), jsonFileMetadata, attributes));
 
