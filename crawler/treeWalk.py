@@ -166,7 +166,7 @@ if __name__ == "__main__":
         powerLevel = multiprocessing.cpu_count() * 0.25
     else:
         err(f'Please chose a power level between 1 and 4')
-    powerLevel = 1
+
     #: Add all desired options to a list
     options = []
     if data['options']['language'] != 'en':
