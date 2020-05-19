@@ -20,10 +20,11 @@ export class GraphiqlConsole extends Page {
     }
 
     onMount() {
-        const URL = "https://swapi-graphql.netlify.com/.netlify/functions/index";
+        const URL = "http://localhost:8080/graphql/";
 
         function graphQLFetcher(graphQLParams) {
             return fetch(URL, {
+                crossOrigin: null,
                 method: "post",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(graphQLParams)
