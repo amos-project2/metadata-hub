@@ -27,8 +27,8 @@ class DatabaseConnection:
             pprint("Cannot connect to database")
 
 
-
-    def insert_new_record(self, insert_cmd: str) -> None:
+    #TODO int too small?
+    def insert_new_record(self, insert_cmd: str) -> int:
         """Insert a new record to a row in connected database.
 
         Args:
@@ -38,6 +38,10 @@ class DatabaseConnection:
         pprint("----Insert-Done-----")
         self.cursor.execute(insert_cmd)
 
+        try:
+            return self.cursor.fetchone()[0]
+        except:
+            return 0
 
     def update_record(self):
         pass

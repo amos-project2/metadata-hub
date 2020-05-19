@@ -8,7 +8,7 @@ import time
 from concurrent.futures.thread import ThreadPoolExecutor
 from sys import exit
 from typing import Tuple, List
-
+from datetime import datetime
 import crawler.services.tracing as tracing
 from crawler.connectPG.connector import DatabaseConnection
 from crawler.connectPG.extract_data import extractData
@@ -80,7 +80,7 @@ def naiveTreeWalk(pathExifTool: str, pathProtocol: str, directory:str, options:L
         failures.append(directory)
 
 
-def naiveTreeWalkUpdate(pathExifTool: str, pathProtocol: str, directory:str, options:List[str], db_info:dict) -> None:
+def naiveTreeWalkUpdate(pathExifTool: str, directory:str, options:List[str], con:DatabaseConnection, dbID:int) -> None:
     """Naive implementation of the tree walk. inserts the results in Postgre database.
 
     Args:
@@ -96,17 +96,18 @@ def naiveTreeWalkUpdate(pathExifTool: str, pathProtocol: str, directory:str, opt
     try:
         process  = subprocess.Popen([f'{pathExifTool}', '-json', directory], stdout=subprocess.PIPE)
         metadata = json.load(process.stdout)
-
         # Walk through each object/file
         for file_number in metadata:
             # Generate queries to insert into tables from 1 file
-            query = extractData(file_number).extract_metadata()
+            genericID = con.insert_new_record(extractData(file_number).extract_metadata_generic(dbID))
+            query = extractData(file_number).extract_metadata_eav(dbID, genericID)
             # Apply apply query to insert for each table
             for query_number in query:
-                DatabaseConnection(db_info).insert_new_record(query_number)
+                con.insert_new_record(query_number)
         TRACER.add_node(directory)
     except subprocess.CalledProcessError:
         failures.append(directory)
+    except Exception as e: print(e)
 
 
 def hashTable(pathInput):
@@ -165,7 +166,7 @@ if __name__ == "__main__":
         powerLevel = multiprocessing.cpu_count() * 0.25
     else:
         err(f'Please chose a power level between 1 and 4')
-
+    powerLevel = 1
     #: Add all desired options to a list
     options = []
     if data['options']['language'] != 'en':
@@ -184,9 +185,13 @@ if __name__ == "__main__":
         roots.append(naiveCreateWorkpackages(directory['path'], directory['recursive']))
 
     #: Run the tree walk in parallel
+    #: Write the start of the crawler into the database
+    dbConnection = DatabaseConnection(data['db_info'])
+    start = f"INSERT INTO tree_walk (name, notes, root_path, created_time, status, crawl_config, save_in_gerneric_table)  VALUES('test' ,'---' ,'/home/thomas/Documents/master/amos/TreeWalkTestDirectory' ,'{datetime.now()}' ,NULL ,NULL ,NULL) RETURNING id"
+    dbID = dbConnection.insert_new_record(start)
     for package in roots:
         with ThreadPoolExecutor(max_workers=powerLevel) as executor:
             for directory in package[0]:
 #               future = executor.submit(naiveTreeWalk, data['paths']['exiftool'], data['paths']['output'], directory, options)
-                future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], data['paths']['output'], directory, options, data['db_info'])
-    pass
+                future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], directory, options,  dbConnection, dbID)
+
