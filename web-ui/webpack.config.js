@@ -5,6 +5,8 @@ const webpack = require('webpack')
 
 module.exports = {
     entry: './src/app.js',
+    //context: path.resolve(__dirname, './src'),
+    devtool: 'inline-source-map',
     output: {
         //filename: 'bundle.js',
         filename: '[name].bundle.js',
@@ -40,8 +42,29 @@ module.exports = {
                         loader: 'sass-loader'
                     }
                 ]
+            },
+            {
+                type: 'javascript/auto',
+                test: /\.mjs$/,
+                use: [],
+                include: /node_modules/,
+            },
+            {
+                test: /\.css$/,
+                use: ['style-loader', 'css-loader'],
+            },
+            {
+                test: /\.svg$/,
+                use: [{loader: 'svg-inline-loader'}],
+            },
+            {
+                test: /\.html$/,
+                use: ['file?name=[name].[ext]'],
             }
         ]
+    },
+    resolve: {
+        extensions: ['.js', '.json', '.jsx', '.css', '.mjs'],
     },
     plugins: [
         new CleanWebpackPlugin(),

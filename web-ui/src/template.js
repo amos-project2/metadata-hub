@@ -1,5 +1,6 @@
 import {Page} from "./Page";
 import {Testname} from "./query/Testname";
+import {GraphiqlConsole} from "./graphiql/Graphiql-console";
 
 class NavElement {
     constructor(name, selectorName, contentLoader) {
@@ -88,8 +89,8 @@ export class Template {
         navGroup.parent_nav = "nav_graphiql";
         this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
 
-        navGroup.addOneNavElement(new NavElement("graphiql1", "graphiql1", new Page("graphiql1")));
-        navGroup.addOneNavElement(new NavElement("graphiql2", "graphiql2", new Page("graphiql2")));
+        navGroup.addOneNavElement(new NavElement("GraphiQL-Console", "graphiql-console", new GraphiqlConsole("graphiql-console")));
+
 
         this.navbar += navGroup.data;
 
@@ -189,7 +190,7 @@ export class Template {
             }
         }
         $(".nav-query").click(function () { $("#nav-element-testname").trigger("click"); });
-        $(".nav-graphiql").click(function () { $("#nav-element-graphiql1").trigger("click"); });
+        $(".nav-graphiql").click(function () { $("#nav-element-graphiql-console").trigger("click"); });
         $(".nav-crawler").click(function () { $("#nav-element-crawler1").trigger("click"); });
         $(".nav-status").click(function () { $("#nav-element-status1").trigger("click"); });
         $(".nav-help").click(function () { $("#nav-element-help1").trigger("click"); });

@@ -4,7 +4,16 @@ export class Page {
         this.moutpoint = mountpoint;
         this.titleSelector = titleSelector;
         this.title = "one Page Title";
-        this.cacheChanges = true;
+
+        //TODO to fullfill the new cacheLevels
+        /**
+         * level = 0 -> no cache
+         * level = 1 -> cache into javascript-memory, but remove from dome
+         * level = 2 -> cache, dont remove from dome + hide()
+         * level = 3 -> cache, dont remove from dome + hide() + no onMount()-call, if cache have data
+         */
+        this.cacheChangesLevel = 0;
+        this.cacheChanges=true; //TODO remove this old cache-boolean
         this.cachedChanges = "";
         this.counter = 0;
     }
