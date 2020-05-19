@@ -8,7 +8,7 @@ import {Template} from "./template";
 
 let template = new Template();
 template.injectinDomeAndRegisterListener($(".app-root"));
-$("#nav-element-testname").trigger("click");
+$("#nav-element-graphql-query").trigger("click");
 
 
 

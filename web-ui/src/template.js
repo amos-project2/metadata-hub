@@ -69,87 +69,62 @@ export class Template {
         this.currentSelectedElement = null;
         this.currentSelectedElementGroup = null;
 
-        //Nav-Group nav_query
-        let navGroup = new NavGroup();
-        navGroup.parent_nav = "nav_query";
-        this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
-
-        navGroup.addOneNavElement(new NavElement("Testname", "testname", new Testname("testname")));
-        navGroup.addOneNavElement(new NavElement("Testname2", "testname2", new Page("testname2")));
-        navGroup.addMoreNavElementsToOneGroup("MyDropdown", [new NavElement("Testname3", "testname3", new Page("testname3")),
-            new NavElement("Testname4", "testname4", new Page("testname4")),
-            new NavElement("divider"),
-            new NavElement("Testname5", "testname5", new Page("testname5"))
-        ]);
-        navGroup.addOneNavElement(new NavElement("Testname6", "testname6", new Page("testname6")));
-        this.navbar += navGroup.data;
-
-        //Nav-Group nav_graphiql
-        navGroup = new NavGroup();
-        navGroup.parent_nav = "nav_graphiql";
-        this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
-
-        navGroup.addOneNavElement(new NavElement("GraphiQL-Console", "graphiql-console", new GraphiqlConsole("graphiql-console")));
 
 
-        this.navbar += navGroup.data;
+        this.addNavGroup("nav_query", function (n) {
+            n.addOneNavElement(new NavElement("GraphQL-Query", "graphql-query", new Page("graphql-query")));
+            n.addOneNavElement(new NavElement("Form-Query", "form-query", new Page("form-query")));
+        });
+
+        this.addNavGroup("nav_graphiql", function (n) {
+            n.addOneNavElement(new NavElement("GraphiQL-Console", "graphiql-console", new GraphiqlConsole("graphiql-console")));
+        });
+
+        this.addNavGroup("nav_crawler", function (n) {
+            n.addOneNavElement(new NavElement("crawler1", "crawler1", new Page("crawler1")));
+            n.addOneNavElement(new NavElement("crawler2", "crawler2", new Page("crawler2")));
+        });
 
 
-        //Nav-Group nav_crawler
-        navGroup = new NavGroup();
-        navGroup.parent_nav = "nav_crawler";
-        this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
+        this.addNavGroup("nav_status", function (n) {
+            n.addOneNavElement(new NavElement("Testname", "testname", new Testname("testname")));
+            n.addOneNavElement(new NavElement("Testname2", "testname2", new Page("testname2")));
+            n.addMoreNavElementsToOneGroup("MyDropdown", [new NavElement("Testname3", "testname3", new Page("testname3")),
+                new NavElement("Testname4", "testname4", new Page("testname4")),
+                new NavElement("divider"),
+                new NavElement("Testname5", "testname5", new Page("testname5"))
+            ]);
+            n.addOneNavElement(new NavElement("Testname6", "testname6", new Page("testname6")));
+        });
 
-        navGroup.addOneNavElement(new NavElement("crawler1", "crawler1", new Page("crawler1")));
-        navGroup.addOneNavElement(new NavElement("crawler2", "crawler2", new Page("crawler2")));
-
-        this.navbar += navGroup.data;
-
-
-        //Nav-Group nav_status
-        navGroup = new NavGroup();
-        navGroup.parent_nav = "nav_status";
-        this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
-
-        navGroup.addOneNavElement(new NavElement("status1", "status1", new Page("status1")));
-        navGroup.addOneNavElement(new NavElement("status1", "status2", new Page("status2")));
-
-        this.navbar += navGroup.data;
+        this.addNavGroup("nav_help", function (n) {
+            n.addOneNavElement(new NavElement("help1", "help1", new Page("help1")));
+            n.addOneNavElement(new NavElement("help1", "help2", new Page("help2")));
+        });
 
 
-        //Nav-Group nav_help
-        navGroup = new NavGroup();
-        navGroup.parent_nav = "nav_help";
-        this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
-
-        navGroup.addOneNavElement(new NavElement("help1", "help1", new Page("help1")));
-        navGroup.addOneNavElement(new NavElement("help1", "help2", new Page("help2")));
-
-        this.navbar += navGroup.data;
-
-        //Nav-Group nav_about
-        navGroup = new NavGroup();
-        navGroup.parent_nav = "nav_about";
-        this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
-
-        navGroup.addOneNavElement(new NavElement("about1", "about1", new Page("about1")));
-        navGroup.addOneNavElement(new NavElement("about1", "about2", new Page("about2")));
-
-        this.navbar += navGroup.data;
+        this.addNavGroup("nav_about", function (n) {
+            n.addOneNavElement(new NavElement("about1", "about1", new Page("about1")));
+            n.addOneNavElement(new NavElement("about1", "about2", new Page("about2")));
+        });
 
 
-        //Nav-Group nav_logout
-        navGroup = new NavGroup();
-        navGroup.parent_nav = "nav_logout";
-        this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
-
-        navGroup.addOneNavElement(new NavElement("Logout", "logout", new Page("logout")));
-
-        this.navbar += navGroup.data;
-
+        this.addNavGroup("nav_logout", function (n) {
+            n.addOneNavElement(new NavElement("Logout", "logout", new Page("logout")));
+        });
 
         this.generateTemplate()
     }
+
+
+    addNavGroup(parent_nav, consumer) {
+        let navGroup = new NavGroup();
+        navGroup.parent_nav = parent_nav
+        this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
+        consumer(navGroup);
+        this.navbar += navGroup.data;
+    }
+
 
     injectinDomeAndRegisterListener(mountElement) {
         mountElement.html(this.data);
@@ -189,10 +164,10 @@ export class Template {
                 })
             }
         }
-        $(".nav-query").click(function () { $("#nav-element-testname").trigger("click"); });
+        $(".nav-query").click(function () { $("#nav-element-graphql-query").trigger("click"); });
         $(".nav-graphiql").click(function () { $("#nav-element-graphiql-console").trigger("click"); });
         $(".nav-crawler").click(function () { $("#nav-element-crawler1").trigger("click"); });
-        $(".nav-status").click(function () { $("#nav-element-status1").trigger("click"); });
+        $(".nav-status").click(function () { $("#nav-element-testname").trigger("click"); });
         $(".nav-help").click(function () { $("#nav-element-help1").trigger("click"); });
         $(".nav-about").click(function () { $("#nav-element-about1").trigger("click"); });
         $(".nav-logout").click(function () { $("#nav-element-logout").trigger("click"); });
