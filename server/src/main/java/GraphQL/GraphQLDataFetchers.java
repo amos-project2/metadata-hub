@@ -3,12 +3,10 @@ package GraphQL;
 import Database.DatabaseProvider;
 import Model.Attribute;
 import Model.File;
-import Start.Start;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zaxxer.hikari.HikariDataSource;
 import graphql.schema.DataFetcher;
 import lombok.RequiredArgsConstructor;
-import org.jooq.meta.derby.sys.Sys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,9 +20,9 @@ import java.util.*;
 public class GraphQLDataFetchers
 {
     private static final Logger log = LoggerFactory.getLogger(GraphQLDataFetchers.class);
-
     private final DatabaseProvider databaseProvider;
 
+    @SuppressWarnings("rawtypes")
     public DataFetcher getDatabaseTestFetcher()
     {
         return dataFetchingEnvironment ->
@@ -35,7 +33,7 @@ public class GraphQLDataFetchers
             HikariDataSource dataSource = databaseProvider.getHikariDataSource();
 
             try (Connection connection = dataSource.getConnection();
-                 PreparedStatement selectStmt = connection.prepareStatement("SELECT * from public.testtable WHERE id=?");)
+                 PreparedStatement selectStmt = connection.prepareStatement("SELECT * from public.testtable WHERE id=?"))
             {
                 selectStmt.setLong(1, Long.parseLong(id));
                 ResultSet rs = selectStmt.executeQuery();
@@ -55,7 +53,19 @@ public class GraphQLDataFetchers
         };
     }
 
-    //Only accesses the file_generic table and extracts the metadata out of the "metadata" field
+    /**
+     * Data Fetcher is used by this GraphQL Query:
+     * get_metadata(file_id: String!, sel_attributes: [String!], eav: Boolean) : [Attribute]
+     *
+     * Function:
+     * Fetches the metadata of a file corresponding to the used file_id
+     *
+     * Options:
+     * sel_attributes: If specified, fetches solely the selected attributes
+     * eav: If specified and true, fetches the file metadata from the entity-attribute-value database table
+     *
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public DataFetcher getMetadataFetcher()
     {
         return (DataFetcher<List<Attribute>>) dataFetchingEnvironment ->
@@ -63,9 +73,9 @@ public class GraphQLDataFetchers
 
             final String file_generic_id = dataFetchingEnvironment.getArgument("file_id");
             final ArrayList<String> requested_attributes = dataFetchingEnvironment.getArgument("sel_attributes");
-            final Boolean eav = dataFetchingEnvironment.getArgument("eav");
+            final Boolean useEAVTable = dataFetchingEnvironment.getArgument("eav");
 
-            if (eav != null && eav == true)
+            if (useEAVTable != null && useEAVTable)
             {
                 return helperEAVAccess(file_generic_id, requested_attributes);
             }
@@ -78,10 +88,10 @@ public class GraphQLDataFetchers
             HikariDataSource dataSource = databaseProvider.getHikariDataSource();
 
             try (Connection connection = dataSource.getConnection();
-                 PreparedStatement selectStmt = connection.prepareStatement("SELECT * from public.file_generic WHERE id=?");)
+                 PreparedStatement selectStmt = connection.prepareStatement("SELECT * from public.file_generic WHERE id=?"))
             {
                 selectStmt.setLong(1, Long.parseLong(file_generic_id));
-                try (ResultSet rs = selectStmt.executeQuery();)
+                try (ResultSet rs = selectStmt.executeQuery())
                 {
                     if (!rs.next()) return null;
 
@@ -93,78 +103,28 @@ public class GraphQLDataFetchers
                     ObjectMapper mapper = new ObjectMapper();
                     Map<String, String> map = mapper.readValue(jsonFileMetadata, Map.class);
 
-                    ArrayList<Attribute> list = new ArrayList<>();
+                    ArrayList<Attribute> attributes = new ArrayList<>();
 
-                    if (requested_attributes == null)
-                    {
-                        for (Map.Entry<String, String> entry : map.entrySet())
-                        {
-                            String key = entry.getKey();
-                            Object value = entry.getValue();
-                            list.add(new Attribute(attribute_id, tree_walk_id, file_generic_id, key, value.toString()));
-                        }
-                    }
-                    else
-                    {
-                        for (String attribute : requested_attributes)
-                        {
-                            list.add(new Attribute(attribute_id, tree_walk_id, file_generic_id, attribute, map.get(attribute)));
-                        }
-                    }
+                    helperAddSelAttributes(requested_attributes, attribute_id, tree_walk_id, file_generic_id, attributes, map);
 
-                    return list;
+                    return attributes;
                 }
             }
         };
     }
 
-    private List<Attribute> helperEAVAccess(String file_generic_id, List<String> requested_attributes) throws Exception
-    {
-
-        HikariDataSource dataSource = databaseProvider.getHikariDataSource();
-
-
-        StringBuilder sql_statement = new StringBuilder("SELECT * FROM public.file_generic_data_eav WHERE file_generic_id=? ");
-        if (requested_attributes != null)
-        {
-            sql_statement.append("AND (");
-            for (int i = 0; i + 1 < requested_attributes.size(); i++)
-            {
-                sql_statement.append("attribute=? OR ");
-            }
-            sql_statement.append(" attribute=?)");
-        }
-
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement selectStmt = connection.prepareStatement(sql_statement.toString());)
-        {
-            selectStmt.setLong(1, Long.parseLong(file_generic_id));
-            if (requested_attributes != null)
-            {
-                for (int i = 0; i < requested_attributes.size(); i++)
-                {
-                    selectStmt.setString(i + 2, requested_attributes.get(i));
-                }
-            }
-
-            try (ResultSet rs = selectStmt.executeQuery();)
-            {
-                ArrayList<Attribute> list = new ArrayList<>();
-                rs.getFetchSize();
-
-                while (rs.next())
-                {
-                    list.add(new Attribute(rs.getString("id"), rs.getString("tree_walk_id"),
-                        file_generic_id, rs.getString("attribute"), rs.getString("value")));
-                }
-
-                return list;
-            }
-        }
-
-    }
-
-    //Only accesses the file_generic table and extracts the metadata out of the "metadata" field
+    /**
+     * Data Fetcher is used by this GraphQL Query:
+     * get_dir_metadata(dir_path: String!, sel_attributes: [String!], eav: Boolean) : [File]
+     *
+     * Function:
+     * Fetches all file metadata of specified directory
+     *
+     * Options:
+     * sel_attributes: If specified, fetches solely the selected attributes
+     * eav: If specified and true, fetches the file metadata from the entity-attribute-value database table
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public DataFetcher getDirMetadataFetcher()
     {
         return (DataFetcher<List<File>>) dataFetchingEnvironment ->
@@ -172,12 +132,13 @@ public class GraphQLDataFetchers
 
             final String dir_path = dataFetchingEnvironment.getArgument("dir_path");
             final ArrayList<String> selection_attributes = dataFetchingEnvironment.getArgument("sel_attributes");
-            final Boolean eav = dataFetchingEnvironment.getArgument("eav");
+            final Boolean useEAVTable = dataFetchingEnvironment.getArgument("eav");
 
-            if (eav != null && eav == true)
+            if (useEAVTable != null && useEAVTable)
             {
                 //TODO Implement EAV Access? Or just stick to the JsonVariant
                 //return helperEAVAccess(dir_path, selection_attributes);
+                return null;
             }
 
             if (selection_attributes != null)
@@ -195,7 +156,7 @@ public class GraphQLDataFetchers
                          " WHERE CONCAT(public.tree_walk.root_path, RIGHT(public.file_generic.sub_dir_path, length(public.file_generic.sub_dir_path) - 1)) LIKE ?"))
             {
                 selectStmt.setString(1, dir_path + "%");
-                try (ResultSet rs = selectStmt.executeQuery();)
+                try (ResultSet rs = selectStmt.executeQuery())
                 {
                     ArrayList<File> files = new ArrayList<>();
                     while(rs.next())
@@ -215,23 +176,7 @@ public class GraphQLDataFetchers
                         ObjectMapper mapper = new ObjectMapper();
                         Map<String, String> attribute_map = mapper.readValue(jsonFileMetadata, Map.class);
 
-                        //TODO maybe refactor later
-                        if (selection_attributes == null)
-                        {
-                            for (Map.Entry<String, String> entry : attribute_map.entrySet())
-                            {
-                                String key = entry.getKey();
-                                Object value = entry.getValue();
-                                attributes.add(new Attribute(attribute_id, tree_walk_id, absolute_file_path, key, value.toString()));
-                            }
-                        }
-                        else
-                        {
-                            for (String attribute : selection_attributes)
-                            {
-                                attributes.add(new Attribute(attribute_id, tree_walk_id, absolute_file_path, attribute, attribute_map.get(attribute)));
-                            }
-                        }
+                        helperAddSelAttributes(selection_attributes, attribute_id, tree_walk_id, absolute_file_path, attributes, attribute_map);
                         files.add(new File(attribute_id, tree_walk_id,
                             absolute_file_path, rs.getString("name"), rs.getString("file_typ"),
                             rs.getString("file_create_date"), rs.getString("file_modify_date"),
@@ -243,5 +188,69 @@ public class GraphQLDataFetchers
                 }
             }
         };
+    }
+    private List<Attribute> helperEAVAccess(String file_generic_id, List<String> requested_attributes) throws Exception
+    {
+
+        HikariDataSource dataSource = databaseProvider.getHikariDataSource();
+
+
+        StringBuilder sql_statement = new StringBuilder("SELECT * FROM public.file_generic_data_eav WHERE file_generic_id=? ");
+        if (requested_attributes != null)
+        {
+            sql_statement.append("AND (");
+            for (int i = 0; i + 1 < requested_attributes.size(); i++)
+            {
+                sql_statement.append("attribute=? OR ");
+            }
+            sql_statement.append(" attribute=?)");
+        }
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement selectStmt = connection.prepareStatement(sql_statement.toString()))
+        {
+            selectStmt.setLong(1, Long.parseLong(file_generic_id));
+            if (requested_attributes != null)
+            {
+                for (int i = 0; i < requested_attributes.size(); i++)
+                {
+                    selectStmt.setString(i + 2, requested_attributes.get(i));
+                }
+            }
+
+            try (ResultSet rs = selectStmt.executeQuery())
+            {
+                ArrayList<Attribute> list = new ArrayList<>();
+                rs.getFetchSize();
+
+                while (rs.next())
+                {
+                    list.add(new Attribute(rs.getString("id"), rs.getString("tree_walk_id"),
+                        file_generic_id, rs.getString("attribute"), rs.getString("value")));
+                }
+
+                return list;
+            }
+        }
+
+    }
+
+    private void helperAddSelAttributes(ArrayList<String> selection_attributes, String attribute_id, String tree_walk_id, String absolute_file_path, ArrayList<Attribute> attributes, Map<String, String> attribute_map) {
+        if (selection_attributes == null)
+        {
+            for (Map.Entry<String, String> entry : attribute_map.entrySet())
+            {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                attributes.add(new Attribute(attribute_id, tree_walk_id, absolute_file_path, key, value.toString()));
+            }
+        }
+        else
+        {
+            for (String attribute : selection_attributes)
+            {
+                attributes.add(new Attribute(attribute_id, tree_walk_id, absolute_file_path, attribute, attribute_map.get(attribute)));
+            }
+        }
     }
 }
