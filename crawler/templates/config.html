@@ -1,0 +1,83 @@
+<html>
+    <head>
+        <title>Crawler Configuration</title>
+        <link rel="stylesheet" href="{{ url_for('static',filename='styles/milligram.min.css') }}">
+    </head>
+    <body>
+        {% if message %}
+            <h1 style="text-align: center; padding-top: 10%;">
+                {{message}}
+            </h1>
+        {% else %}
+            <div class="container" style="margin-top: 5%;">
+                <div class="row">
+                    <div class="column column-50 column-offset-25">
+                        <h1>
+                            Crawler configuration panel
+                        </h1>
+                        <h3>Overview</h3>
+                        <p>
+                            This is the configuration panel for directly accessing
+                            the crawler. Make sure to fill out all forms before
+                            hitting the Submit button.
+                        </p>
+                        <p>
+                            The input directories have to be specified in the
+                            following format:
+                        </p>
+                        <p style="text-align: center; font-style: italic;">
+                            PATH, RECURSIVE ; PATH, RECURSIVE ; ...
+                        </p>
+                        <p>
+                            For example:
+                        </p>
+                        <p style="text-align: center; font-style: italic;">
+                            /home/john/Documents, true ; /home/doe/Pictures, false
+                        </p>
+                        <p>
+                            This would invoke the crawler to process the directory
+                            <span style="font-style: italic;">/home/john/Documents</span>
+                            recursively and to crawl only the files that are directly
+                            located in
+                            <span style="font-style: italic;">/home/doe/Pictures</span>
+                        </p>
+                        <h3>Configuration</h3>
+                        <form action="{{ url_for('config') }}" method="post">
+                            <fieldset>
+                                <label for="inputs">Input directories</label>
+                                <input type="text" placeholder="(/home/metadata-hub, True), ..." name="inputs" id="inputs" required>
+
+                                <label for="output">Output directory</label>
+                                <input type="text" placeholder="/home/metadata-hub/output" name="output" id="output" required>
+
+                                <label for="trace">Trace file</label>
+                                <input type="text" placeholder="/home/metadata-hub/trace" name="trace" id="trace" required>
+
+                                <label for="exiftool">ExifTool</label>
+                                <select id="exiftool" name="exiftool">
+                                    <option value="linux">Linux</option>
+                                    <option value="windows">Windows</option>
+                                </select>
+
+                                <label for="clear">Clear trace data before start</label>
+                                <select id="clear" name="clear">
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                </select>
+
+                                <label for="power">Power level</label>
+                                <select id="power" name=power>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                </select>
+                                <input class="button-primary" type="submit" value="SUBMIT">
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </body>
+</html>

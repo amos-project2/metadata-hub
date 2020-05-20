@@ -1,0 +1,12 @@
+- Import psycopg2
+- Connect to Postgre Database and get all info e.g: dbname, user, host, password, port
+into the configCrawler.json
+- Input all required paths in configCrawler.json
+- Test with func "naiveTreeWalkUpdate"
+
+e.g: db_info = ["dbname='metadatahub'", "user='postgres'",       \
+               "host='localhost'"    , "password='123456'",   \
+               "port='5432'"]
+
+
+Note: tree_walk_id and file_generic_id are still not linked, and some attributes are missing
