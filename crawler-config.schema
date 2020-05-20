@@ -1,14 +1,36 @@
 {
     "title": "Crawler Configuration",
     "description": "Definition of a configuration of the Crawler",
+    "definitions": {
+        "root": {
+            "type": "object",
+            "properties": {
+                "path": {
+                    "description": "Path of the input",
+                    "type": "string"
+                },
+                "recursive": {
+                    "description": "Flag to indicate recursive descent",
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "path",
+                "recursive"
+            ]
+        }
+    },
     "type": "object",
     "properties": {
         "paths": {
             "type": "object",
             "properties": {
-                "input": {
-                    "description": "Root directory to crawl",
-                    "type": "string"
+                "inputs": {
+                    "description": "Root directories to crawl",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/root"
+                    }
                 },
                 "output": {
                     "description": "Output directory (temporary)",
@@ -23,7 +45,12 @@
                     "type": "string"
                 }
             },
-            "required": ["input", "output", "trace", "exiftool"]
+            "required": [
+                "inputs",
+                "output",
+                "trace",
+                "exiftool"
+            ]
         },
         "options": {
             "type": "object",
@@ -35,9 +62,25 @@
                 "clearTrace": {
                     "description": "Clear trace data if present",
                     "type": "boolean"
+                },
+                "fileTypes": {
+                    "description": "File types to include",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "language": {
+                    "description": "Language of the output data",
+                    "type": "string"
                 }
             },
-            "required": ["powerLevel", "clearTrace"]
+            "required": [
+                "powerLevel",
+                "clearTrace",
+                "fileTypes",
+                "language"
+            ]
         }
 
     },

@@ -22,13 +22,11 @@ from .header import TraceHeader
 class Tracer:
     """Tracer class.
 
-    Attributes:
-        _processed (List[str]): list of already processed nodes
-        _lock (threading.Lock): lock for synchronization between multiple
-                                    threads
-        _clear (bool): clear present trace data?
-        _trace_file (str): path of the trace file
-        _header (TraceHeader): trace header
+    :ivar _processed (List[str]): list of already processed nodes
+    :ivar _lock (threading.Lock): lock for synchronization between multiple threads
+    :ivar _clear (bool): clear present trace data?
+    :ivar _trace_file (str): path of the trace file
+    :ivar _header (TraceHeader): trace header
 
     """
 
@@ -52,7 +50,7 @@ class Tracer:
         # Initialize given configuration
         self._processed = []
         self._lock = threading.Lock()
-        self._clear = config.get('options', {}).get('clear', False)
+        self._clear = config.get('options', {}).get('clearTrace', False)
         self._trace_file = config.get('paths', {}).get('trace')
         self._header = TraceHeader(
             root=config.get('paths', {}).get('input', ''),

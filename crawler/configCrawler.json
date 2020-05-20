@@ -1,14 +1,22 @@
 {
-    "paths":{
-        "exiftoolPath": "",
-        "inputPath": "",
-        "outputPath": "",
-        "trace": ""
+    "paths": {
+        "inputs": [{"path":"", "recursive":true}],
+        "output":"",
+        "trace": "",
+        "exiftool":""
     },
     "options": {
-        "clear": true
+        "powerLevel": 1,
+        "clearTrace": false,
+        "fileTypes": ["all"],
+        "language": "en"
     },
-    "performance":{
-        "powerLevel": 1
+    "db_info": {
+        "dbname": "metadatahub",
+        "user": "",
+        "host": "", 
+        "password": "",
+        "port": "5432"
     }
 }
+

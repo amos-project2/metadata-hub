@@ -1,0 +1,4 @@
+#the webpack-bundler push and delete into that directory,
+#there are dynamic generated files
+#TODO maybe rename the directory
+static-files/
