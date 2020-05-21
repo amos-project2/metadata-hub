@@ -15,7 +15,7 @@ services:
         volumes:
             - ${CRAWLER_FILESYSTEM}:/filesystem
         ports:
-            - ${CRAWLER_PORT}:3000
+            - ${CRAWLER_PORT}:9000
 
     database:
         image: postgres:latest
