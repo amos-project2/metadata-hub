@@ -63,7 +63,6 @@ jobs:
     if: branch = ci-cd
     services:
         - docker
-        - dbus
     before_install:
     - docker build -f docker/deployment/Dockerfile -t metadatahub .
     script:
