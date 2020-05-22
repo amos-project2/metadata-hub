@@ -1,11 +1,11 @@
 # STAGE: Building the server
+# FIXME: Very slow due to no caching process, but I cannot fix it.
 FROM maven:3.6.3-jdk-13 AS server-build
 RUN mkdir /metadatahub
 WORKDIR /metadatahub
 COPY server server
 COPY web-ui web-ui
-WORKDIR /metadatahub/server
-RUN mvn -f pom.xml clean package
+RUN mvn -f server/pom.xml package
 
 # STAGE: FINAL IMAGE
 FROM ubuntu:latest as app
@@ -41,8 +41,7 @@ COPY crawler/requirements crawler/requirements
 RUN pip3 install -r crawler/requirements/base.txt
 COPY crawler crawler
 # Copy server artifacts
-COPY --from=server-build metadatahub/server/target/metadata-hub-server-application-fat.jar server/
-COPY --from=server-build metadatahub/web-ui web-ui
+COPY --from=server-build /metadatahub/server/target/metadata-hub-server-application-fat.jar server/
 # Copy configs, export ports and set entrypoint and default arguments via cmd
 COPY configs configs
 EXPOSE 5432 8080 9000
