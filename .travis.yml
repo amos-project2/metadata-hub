@@ -61,7 +61,9 @@ jobs:
     - bash travis.sh
   - name: app.deployment
     if: branch = ci-cd
-    services: docker
+    services:
+        - docker
+        - dbus
     before_install:
     - docker build -f docker/deployment/Dockerfile -t metadatahub .
     script:
