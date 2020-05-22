@@ -48,7 +48,7 @@ jobs:
         - mvn clean
         - mvn test
         - mvn verify
-    - name: App-Compose
+    - name: app.testing
       env:
         - DOCKER_COMPOSE_VERSION=1.25.0
       services: docker
@@ -61,3 +61,12 @@ jobs:
         - cd docker/compose
       script:
         - bash travis.sh
+    - name: app.deployment
+      if: branch = ci-cd
+      services: docker
+      before_install:
+        - docker build -f docker/deployment/Dockerfile -t amosproject2/metadatahub .
+      script:
+        - docker run amosproject2/metadatahub 1 10
+      after_success:
+        - ./docker/deployment/deploy.sh
