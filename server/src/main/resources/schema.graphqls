@@ -1,6 +1,4 @@
 type Query{
-    teststuff(id: String): testtable
-
     get_metadata(file_id: String!, sel_attributes: [String!], eav: Boolean) : [Attribute]
 
     get_dir_metadata(dir_path: String!, sel_attributes: [String!], eav: Boolean) : [File]
