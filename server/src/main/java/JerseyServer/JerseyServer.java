@@ -29,10 +29,10 @@ public class JerseyServer
     @Getter
     private static GraphQL graphQLCheat;
 
-    public JerseyServer(GraphQL graphQl, Properties config)
+    public JerseyServer(GraphQL graphQl, Config config)
     {
         this.config = config;
-        BASE_URI = UriBuilder.fromUri("http://" + config.get("httpserver.address") + "/")
+        BASE_URI = UriBuilder.fromUri("http://" + config.getProperty("httpserver.address") + "/")
             .port(Integer.parseInt(config.getProperty("httpserver.port"))).build();
         this.graphQL = graphQl;
         resourceConfig = new ResourceConfig(MainController.class);

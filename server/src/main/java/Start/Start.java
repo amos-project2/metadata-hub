@@ -22,11 +22,9 @@ public class Start
 
         if (!loadConfig(args))
         {
-            System.out.println("Config is not valide: " + applicationConfig.getErrorMessage());
             System.exit(-1);
             return;
         }
-
 
         Registry registry = new Registry();
 

@@ -1,11 +1,11 @@
 package TestSetup;
 
+import Config.ApplicationConfig;
+import Config.Config;
 import Database.DatabaseProvider;
 import GraphQL.GraphQLDataFetchers;
 import GraphQL.GraphQLProvider;
 import JerseyServer.JerseyServer;
-import Start.ApplicationConfig;
-import Start.Start;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -19,7 +19,12 @@ public class TestSetup {
     public static Client testClient;
 
     public static void setupServer(){
-        Properties config = new ApplicationConfig(null).getConfig();
+        Config config = null;
+        try {
+            config = new ApplicationConfig(null, System.getenv("METADATAHUB_SERVER_CONFIG")).getConfig();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         DatabaseProvider databaseProvider = new DatabaseProvider(config);
         GraphQLDataFetchers graphQLDataFetchers = new GraphQLDataFetchers(databaseProvider);
         GraphQLProvider graphQLProvider = new GraphQLProvider(graphQLDataFetchers, databaseProvider);
