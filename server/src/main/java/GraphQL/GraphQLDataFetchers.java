@@ -1,7 +1,7 @@
 package GraphQL;
 
 import Database.DatabaseProvider;
-import Model.Attribute;
+import Model.Metadatum;
 import Model.File;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zaxxer.hikari.HikariDataSource;
@@ -38,7 +38,7 @@ public class GraphQLDataFetchers
      */
     @SuppressWarnings({"rawtypes"})
     public DataFetcher getFileMetadataFetcher() {
-        return (DataFetcher<List<Attribute>>) dataFetchingEnvironment ->
+        return (DataFetcher<List<Metadatum>>) dataFetchingEnvironment ->
         {
 
             final String file_generic_id = dataFetchingEnvironment.getArgument("file_id");
@@ -94,7 +94,7 @@ public class GraphQLDataFetchers
         };
     }
     @SuppressWarnings("unchecked")
-    private List<Attribute> queryFileMetadata(String file_generic_id, ArrayList<String> requested_attributes) throws SQLException, IOException {
+    private List<Metadatum> queryFileMetadata(String file_generic_id, ArrayList<String> requested_attributes) throws SQLException, IOException {
         HikariDataSource dataSource = databaseProvider.getHikariDataSource();
 
         try (Connection connection = dataSource.getConnection();
@@ -105,22 +105,22 @@ public class GraphQLDataFetchers
 
                 log.info("SQL Result : " + rs.toString());
                 //TODO Right here we don't have the actual Attribute ID theres no attribute ID in public.file_generic
-                //String attribute_id = rs.getString("id");
-                String attribute_id = "<No AttributeID, when the EAV_Table isn't used";
+                //String metadatum_id = rs.getString("id");
+                String metadatum_id = "<No AttributeID, when the EAV_Table isn't used";
                 String tree_walk_id = rs.getString("tree_walk_id");
 
                 String jsonFileMetadata = rs.getString("metadata");
                 ObjectMapper mapper = new ObjectMapper();
                 Map<String, String> map = mapper.readValue(jsonFileMetadata, Map.class);
 
-                ArrayList<Attribute> attributes = new ArrayList<>();
-                helperAddSelAttributes(requested_attributes, attribute_id, tree_walk_id, file_generic_id, attributes, map);
+                ArrayList<Metadatum> metadata = new ArrayList<>();
+                helperAddSelAttributes(requested_attributes, metadatum_id, tree_walk_id, file_generic_id, metadata, map);
 
-                return attributes;
+                return metadata;
             }
         }
     }
-    private List<Attribute> queryFileMetadataEAV(String file_generic_id, ArrayList<String> requested_attributes) throws SQLException {
+    private List<Metadatum> queryFileMetadataEAV(String file_generic_id, ArrayList<String> requested_attributes) throws SQLException {
 
         HikariDataSource dataSource = databaseProvider.getHikariDataSource();
 
@@ -150,16 +150,16 @@ public class GraphQLDataFetchers
 
             try (ResultSet rs = selectStmt.executeQuery())
             {
-                ArrayList<Attribute> attributes = new ArrayList<>();
+                ArrayList<Metadatum> metadata = new ArrayList<>();
                 rs.getFetchSize();
 
                 while (rs.next())
                 {
-                    attributes.add(new Attribute(rs.getString("id"), rs.getString("tree_walk_id"),
+                    metadata.add(new Metadatum(rs.getString("id"), rs.getString("tree_walk_id"),
                         file_generic_id, rs.getString("attribute"), rs.getString("value")));
                 }
 
-                return attributes;
+                return metadata;
             }
         }
 
@@ -191,8 +191,8 @@ public class GraphQLDataFetchers
                     //TODO and doesn't ask just for the selected File and Attribute Types
                     //TODO That is the file_id in the database, for the actual attribte_id there would be necessary
                     // another query to the file_generic_data_eav table
-                    //String attribute_id = rs.getString("id");
-                    String attribute_id = "<No Attribute ID, when the EAV_table isn't used>";
+                    //String metdatum_id = rs.getString("id");
+                    String metdatum_id = "<No Attribute ID, when the EAV_table isn't used>";
                     String tree_walk_id = rs.getString("tree_walk_id");
                     //TODO File only has relative path as attribute, user right now doesnt get information back about the treewalk
                     //TODO Right now the user can't calculate the absolute path themselves -> think about which information we send back
@@ -200,15 +200,15 @@ public class GraphQLDataFetchers
                     //String absolute_file_path = rs.getString("root_path") + rs.getString("sub_dir_path").substring(1);
                     String absolute_file_path = rs.getString("sub_dir_path");
                     String jsonFileMetadata = rs.getString("metadata");
-                    ArrayList<Attribute> attributes = new ArrayList<>();
+                    ArrayList<Metadatum> metadata = new ArrayList<>();
                     ObjectMapper mapper = new ObjectMapper();
                     Map<String, String> attribute_map = mapper.readValue(jsonFileMetadata, Map.class);
 
-                    helperAddSelAttributes(selection_attributes, attribute_id, tree_walk_id, absolute_file_path, attributes, attribute_map);
-                    files.add(new File(attribute_id, tree_walk_id,
+                    helperAddSelAttributes(selection_attributes, metdatum_id, tree_walk_id, absolute_file_path, metadata, attribute_map);
+                    files.add(new File(metdatum_id, tree_walk_id,
                         absolute_file_path, rs.getString("name"), rs.getString("file_typ"),
                         rs.getString("file_create_date"), rs.getString("file_modify_date"),
-                        rs.getString("file_access_date"), jsonFileMetadata, attributes));
+                        rs.getString("file_access_date"), jsonFileMetadata, metadata));
 
                 }
 
@@ -257,15 +257,15 @@ public class GraphQLDataFetchers
                 while (rs.next()) {
                     String file_id = rs.getString("file_id");
                     if (!files.containsKey(file_id)) {
-                        List<Attribute> attributes = new ArrayList<>();
+                        List<Metadatum> metadata = new ArrayList<>();
                         files.put(file_id, new File(file_id, rs.getString("tree_walk_id"), rs.getString("sub_dir_path"),
                             rs.getString("name"), rs.getString("file_typ"),
                             rs.getString("file_create_date"), rs.getString("file_modify_date"),
-                            rs.getString("file_access_date"), rs.getString("metadata"), attributes));
+                            rs.getString("file_access_date"), rs.getString("metadata"), metadata));
                     }
 
                     File file = files.get(file_id);
-                    file.getAttributes().add(new Attribute(rs.getString("id"), rs.getString("tree_walk_id"),
+                    file.getMetadata().add(new Metadatum(rs.getString("id"), rs.getString("tree_walk_id"),
                         file_id, rs.getString("attribute"), rs.getString("value")));
                 }
 
@@ -276,14 +276,14 @@ public class GraphQLDataFetchers
 
 
 
-    private void helperAddSelAttributes(ArrayList<String> selection_attributes, String attribute_id, String tree_walk_id, String absolute_file_path, ArrayList<Attribute> attributes, Map<String, String> attribute_map) {
+    private void helperAddSelAttributes(ArrayList<String> selection_attributes, String attribute_id, String tree_walk_id, String absolute_file_path, ArrayList<Metadatum> metadata, Map<String, String> attribute_map) {
         if (selection_attributes == null)
         {
             for (Map.Entry<String, String> entry : attribute_map.entrySet())
             {
                 String key = entry.getKey();
                 Object value = entry.getValue();
-                attributes.add(new Attribute(attribute_id, tree_walk_id, absolute_file_path, key, value.toString()));
+                metadata.add(new Metadatum(attribute_id, tree_walk_id, absolute_file_path, key, value.toString()));
             }
         }
         else
@@ -295,7 +295,7 @@ public class GraphQLDataFetchers
                 {
                     continue;
                 }
-                attributes.add(new Attribute(attribute_id, tree_walk_id, absolute_file_path, attribute, attr_value));
+                metadata.add(new Metadatum(attribute_id, tree_walk_id, absolute_file_path, attribute, attr_value));
             }
         }
     }

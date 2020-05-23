@@ -15,6 +15,6 @@ public class File
     private final String creation_date;
     private final String modification_date;
     private final String access_date;
-    private final String metadata;
-    private final List<Attribute> attributes;
+    private final String metadataJson;
+    private final List<Metadatum> metadata;
 }

@@ -1,13 +1,31 @@
+"""
+Collection of all available Queries
+"""
 type Query{
-    get_metadata(file_id: String!, sel_attributes: [String!], eav: Boolean) : [Attribute]
+    """
+    A query that returns Metadata of a File identified by its file_id
+    """
+    getFileMetadata(file_id: String! sel_attributes: [String!] eav: Boolean) : [Metadatum]
 
-    get_dir_metadata(dir_path: String!, sel_attributes: [String!], eav: Boolean) : [File]
+    """
+    A query that returns all Files of a stated directory and its sub-directories
+    """
+    getDirMetadata(dir_path: String! sel_attributes: [String!] eav: Boolean) : [File]
+
+    """
+    A query that returns all Files matching or not matching a pattern depending on the used PatternOption.
+    """
+    searchForPattern(pattern: String! option: PatternOption!) : [File]
+
+    """
+    A query that returns all Files created between startTime and endTime
+    """
+    searchForCreationTime(startTime: String! endTime: String!) : [File]
 }
 
-type testtable{
-    id: String!
-    testvalue: String
-    nezahl: Int
+enum PatternOption{
+    included,
+    excluded
 }
 
 type File{
@@ -19,11 +37,11 @@ type File{
     creation_date: String
     modification_date: String
     access_date: String
-    metadata: String
-    attributes: [Attribute!]!
+    metadataJson: String
+    metadata: [Metadatum!]!
 }
 
-type Attribute{
+type Metadatum{
     id: String!
     tree_walk_id: String!
     file_id: String!
