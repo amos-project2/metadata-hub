@@ -42,12 +42,23 @@ The local-config.properties file is for local purposes and is **default read** b
 The deployment-config.properties file is for deployment purposes. The Path must be hand over a java-app argument.<br>
 You are also allowed to create your own *-config.properties file. You have to do the same as you do with the deployment-config.properties file.
 
+Edit: Now you can also use instead of the properties-format the json-format.
+The Java-Application detects the right format on its own.
+As value-datatypes is allowed there : **String, Integer, Boolean**
+
+ You can also set the path via environment-variable.
+
 **An Example**
 
 ```console
-java -jar metadata-hub-server-application-fat.jar CONFIG-FILE-PATH
-```
+$ java -jar metadata-hub-server-application-fat.jar CONFIG-FILE-PATH
 
+//OR
+
+$ export METADATAHUB_SERVER_CONFIG=CONFIG-FILE-PATH
+$ java -jar metadata-hub-server-application-fat.jar
+```
+You can also set the path via environment-variable
 
 
 

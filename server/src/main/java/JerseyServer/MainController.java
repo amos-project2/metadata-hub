@@ -1,5 +1,6 @@
 package JerseyServer;
 
+import Config.Config;
 import Start.Start;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,7 +19,7 @@ import java.util.Properties;
 public class MainController
 {
     private final GraphQL graphQl;
-    private static final Properties config = Start.getConfig();
+    private static final Config config = Start.getConfig();
 
     public MainController()
     {

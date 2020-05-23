@@ -1,5 +1,6 @@
 package Database;
 
+import Config.Config;
 import Start.Start;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -14,7 +15,7 @@ public class DatabaseProvider
 {
     @Getter private final HikariDataSource hikariDataSource;
     @Getter private final DSLContext dslContext;
-    private static final Properties config = Start.getConfig();
+    private static final Config config = Start.getConfig();
     //TODO implement (maybe using jooq)
 
 
