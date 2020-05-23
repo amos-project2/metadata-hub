@@ -145,14 +145,21 @@ if __name__ == "__main__":
     with open('configCrawler.json') as jsonData:
         data = json.load(jsonData)
 
-    #: Check for invalid input
+    #: Check for invalid input and make string of the root directories for the tree_walk table in the database
+    treeWalk = ''
     if not os.path.isfile(data['paths']['exiftool']):
         err(f'ExifTool \'{data["paths"]["exiftool"]}\' does not exist.')
     for directory in data['paths']['inputs']:
         if not os.path.isdir(directory['path']):
             err(f'Input directory \'{data["paths"]["inputPath"]}\' does not exist.')
+        treeWalk += f'{directory["path"]}'
+        if directory['recursive']:
+            treeWalk += ':recursive, '
+        else:
+            treeWalk += ':single, '
     if not os.path.isdir(data['paths']['output']):
         err(f'Output directory \'{data["paths"]["outputPath"]}\' does not exist.')
+    treeWalk = treeWalk[:-2]
 
     #: Set the number of threads according to input
     powerLevel = 0
@@ -187,11 +194,10 @@ if __name__ == "__main__":
     #: Run the tree walk in parallel
     #: Write the start of the crawler into the database
     dbConnection = DatabaseConnection(data['db_info'])
-    start = f"INSERT INTO tree_walk (name, notes, root_path, created_time, status, crawl_config, save_in_gerneric_table)  VALUES('test' ,'---' ,'/home/thomas/Documents/master/amos/TreeWalkTestDirectory' ,'{datetime.now()}' ,NULL ,NULL ,NULL) RETURNING id"
+    start = f"INSERT INTO tree_walk (name, notes, root_path, created_time, status, crawl_config, save_in_gerneric_table)  VALUES('test' ,'---' ,'{treeWalk}' ,'{datetime.now()}' ,NULL ,NULL ,NULL) RETURNING id"
     dbID = dbConnection.insert_new_record(start)
     for package in roots:
         with ThreadPoolExecutor(max_workers=powerLevel) as executor:
             for directory in package[0]:
-#               future = executor.submit(naiveTreeWalk, data['paths']['exiftool'], data['paths']['output'], directory, options)
                 future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], directory, options,  dbConnection, dbID)
 
