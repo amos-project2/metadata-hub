@@ -1,5 +1,6 @@
 package JerseyServer;
 
+import Config.Config;
 import Start.Start;
 import graphql.GraphQL;
 import lombok.Getter;
@@ -20,7 +21,7 @@ public class JerseyServer
 {
     private final GraphQL graphQL;
 
-    private  Properties config;
+    private Config config;
     private static URI BASE_URI;
     private final ResourceConfig resourceConfig;
     private final HttpServer server;
@@ -62,10 +63,10 @@ public class JerseyServer
 
 
             System.out.println("Jersey-Server started\n");
-            System.out.println("Listening-Address: " + config.get("httpserver.address") + " | Port: " + config.get("httpserver.port"));
-            System.out.println("WEB-GUI: http://localhost:" + config.get("httpserver.port"));
-            System.out.println("GRAPHQL-ENDPOINT: http://localhost:" + config.get("httpserver.port") + "/graphql/?query=hey");
-            System.out.println("GRAPHQL-TEST-CONSOLE: http://localhost:" + config.get("httpserver.port") + "/testconsole/");
+            System.out.println("Listening-Address: " + config.getProperty("httpserver.address") + " | Port: " + config.getProperty("httpserver.port"));
+            System.out.println("WEB-GUI: http://localhost:" + config.getProperty("httpserver.port"));
+            System.out.println("GRAPHQL-ENDPOINT: http://localhost:" + config.getProperty("httpserver.port") + "/graphql/?query=hey");
+            System.out.println("GRAPHQL-TEST-CONSOLE: http://localhost:" + config.getProperty("httpserver.port") + "/testconsole/");
 
             Thread.currentThread().join();
         }
