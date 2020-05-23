@@ -15,17 +15,7 @@ public class Start
     public static void main(String[] args) throws Exception
     {
         System.out.println("AMOS-GRAPHQL-SERVER");
-
-        //Config Stuff:
-        ApplicationConfig applicationConfig = new ApplicationConfig((args.length > 0) ? args[0] : null);
-        if (!applicationConfig.isConfigValid())
-        {
-            System.out.println("Config is not valide: " + applicationConfig.getErrorMessage());
-            System.exit(-1);
-            return;
-        }
-        Start.config = applicationConfig.getConfig();
-        //End Config Stuff
+        if (!createdConfig(args)) return;
 
         Registry registry = new Registry();
 
@@ -38,6 +28,20 @@ public class Start
 
 
         System.out.println("all services are started");
+    }
+
+    public static boolean createdConfig(String[] args) {
+        //Config Stuff:
+        ApplicationConfig applicationConfig = new ApplicationConfig((args.length > 0) ? args[0] : null);
+        if (!applicationConfig.isConfigValid())
+        {
+            System.out.println("Config is not valide: " + applicationConfig.getErrorMessage());
+            System.exit(-1);
+            return false;
+        }
+        Start.config = applicationConfig.getConfig();
+        //End Config Stuff
+        return true;
     }
 
 

@@ -14,12 +14,13 @@ public class DatabaseProvider
 {
     @Getter private final HikariDataSource hikariDataSource;
     @Getter private final DSLContext dslContext;
-    private static final Properties config = Start.getConfig();
+    private static Properties config;
     //TODO implement (maybe using jooq)
 
 
-    public DatabaseProvider()
+    public DatabaseProvider(Properties config)
     {
+        this.config = config;
         Properties props = new Properties();
 
         props.setProperty("dataSourceClassName", "org.postgresql.ds.PGSimpleDataSource");
@@ -31,8 +32,8 @@ public class DatabaseProvider
         props.setProperty("dataSource.portNumber", config.getProperty("dataSource.portNumber"));
         props.setProperty("dataSource.serverName", config.getProperty("dataSource.serverName"));
 
-        HikariConfig config = new HikariConfig(props);
-        hikariDataSource = new HikariDataSource(config);
+        HikariConfig hikariConfig = new HikariConfig(props);
+        hikariDataSource = new HikariDataSource(hikariConfig);
 
         dslContext = DSL.using(hikariDataSource, SQLDialect.POSTGRES);
     }

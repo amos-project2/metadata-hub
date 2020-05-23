@@ -26,17 +26,6 @@ public class MainController
         this.graphQl = JerseyServer.getGraphQLCheat();
     }
 
-//    //static-stuff
-//
-//    @GET
-//    @Produces("text/plain")
-//    @Path("/")
-//    public String getStatic1()
-//    {
-//        return "static data";
-//    }
-
-
     //graphQL-Endpoint
 
     @POST

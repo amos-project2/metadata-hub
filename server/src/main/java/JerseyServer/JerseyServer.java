@@ -20,16 +20,19 @@ public class JerseyServer
 {
     private final GraphQL graphQL;
 
-    private static final Properties config = Start.getConfig();
-    private static final URI BASE_URI = UriBuilder.fromUri("http://" + config.get("httpserver.address") + "/").port(Integer.parseInt(config.getProperty("httpserver.port"))).build();
+    private  Properties config;
+    private static URI BASE_URI;
     private final ResourceConfig resourceConfig;
     private final HttpServer server;
 
     @Getter
     private static GraphQL graphQLCheat;
 
-    public JerseyServer(GraphQL graphQl)
+    public JerseyServer(GraphQL graphQl, Properties config)
     {
+        this.config = config;
+        BASE_URI = UriBuilder.fromUri("http://" + config.get("httpserver.address") + "/")
+            .port(Integer.parseInt(config.getProperty("httpserver.port"))).build();
         this.graphQL = graphQl;
         resourceConfig = new ResourceConfig(MainController.class);
         resourceConfig.register(ErrorHandler.class);
