@@ -22,7 +22,7 @@ class ConfigParser:
 
 
     # FIXME: This should have a more reliable solution
-    _SCHEMA_FILE = '../../../../../crawler-config.schema'
+    _SCHEMA_FILE = '../../../../../configs/crawler-config.schema'
 
 
     def __init__(self, data: Any):

@@ -1,63 +1,75 @@
 language: shell
 os: linux
 dist: xenial
-
-
 jobs:
   allow_failures:
-    - name: "crawler.lint"
-
+  - name: crawler.lint
   include:
-    - name: crawler.doc
-      language: python
-      python: 3.8
-      install:
-        - pip install -r crawler/requirements/doc.txt
-      before_script:
-        - cd crawler/doc/autodoc
-      script:
-        - make html SPHINXOPTS="-W --keep-going"
-    - name: crawler.lint
-      language: python
-      python: 3.8
-      install:
-        - pip install -r crawler/requirements/dev.txt
-      before_script:
-        - cd crawler/
-      script:
-        - pylint *.py crawler/
-    - name: crawler.test
-      language: python
-      python: 3.8
-      install:
-        - pip install -r crawler/requirements/dev.txt
-      before_script:
-        - cd crawler/
-      script:
-        - python -m tests
-    - name: Server
-      language: java
-      jdk: openjdk11
-      cache:
-        directories:
-          - $HOME/.m2
-          - server/target/
-      before_cache: rm -rf server/target/
-      before_script: cd server/
-      script:
-        - mvn clean
-        - mvn test
-        - mvn verify
-    - name: App-Compose
-      env:
-        - DOCKER_COMPOSE_VERSION=1.25.0
-      services: docker
-      before_install:
-        - sudo rm /usr/local/bin/docker-compose
-        - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-        - chmod +x docker-compose
-        - sudo mv docker-compose /usr/local/bin
-      before_script:
-        - cd docker/compose
-      script:
-        - bash travis.sh
+  - name: crawler.doc
+    language: python
+    python: 3.8
+    install:
+    - pip install -r crawler/requirements/doc.txt
+    before_script:
+    - cd crawler/doc/autodoc
+    script:
+    - make html SPHINXOPTS="-W --keep-going"
+  - name: crawler.lint
+    language: python
+    python: 3.8
+    install:
+    - pip install -r crawler/requirements/dev.txt
+    before_script:
+    - cd crawler/
+    script:
+    - pylint *.py crawler/
+  - name: crawler.test
+    language: python
+    python: 3.8
+    install:
+    - pip install -r crawler/requirements/dev.txt
+    before_script:
+    - cd crawler/
+    script:
+    - python -m tests
+  - name: Server
+    language: java
+    jdk: openjdk11
+    cache:
+      directories:
+      - "$HOME/.m2"
+      - server/target/
+    before_cache: rm -rf server/target/
+    before_script: cd server/
+    script:
+    - mvn clean
+    - mvn test
+    - mvn verify
+  - name: app.testing
+    env:
+    - DOCKER_COMPOSE_VERSION=1.25.0
+    services: docker
+    before_install:
+    - sudo rm /usr/local/bin/docker-compose
+    - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname
+      -s`-`uname -m` > docker-compose
+    - chmod +x docker-compose
+    - sudo mv docker-compose /usr/local/bin
+    before_script:
+    - cd docker/compose
+    script:
+    - bash travis.sh
+  - name: app.deployment
+    if: branch = ci-cd
+    services:
+        - docker
+    before_install:
+    - docker build -f docker/deployment/Dockerfile -t metadatahub .
+    script:
+    - docker run metadatahub 1 10
+    after_success:
+    - "./docker/deployment/deploy.sh"
+env:
+  global:
+  - secure: BY8CnNz0753mFd7S5Zu6BfkkGhH4jqHOEKnHOwCFsEYmFgHEAHcRUW7N7qPXfbUw6eU9J3119gGE7W8SMmUnzJr5pTCCB4Az6m6ag9tXan78/GOFcGkKDS94IlK61SZbKvb58Tbgfyf4tzCmDzcDujY0loadELvnJVx43vlhHpdSllziYSLNuaL9LAaQPgNJ4EnZYL/M3Y72mMM1rC4gDyW4Lx9HJlMgHPqW/ptN14e+Y1K0s9Y7LedFCtHsOVO5NFd7YsxrguzgXw+utiBhqfyTYii6aStYV94prL5M0l5EhvnCnKSUlzKNdyGEwHIpgE6v2mzctrwZvkBSCjQNYIg+WkchpSRaXTO53dEs5J3DICFlKLyvQRo0HyzlK1X87qd8SLBrryRUmTd8M2QnjBnd/py+lG+1mWsN3OkJ4BBgxScnl6nqYHouaRMoLi1dwv1qKse5b41r6apl97b3U2aXQGvUTbjuj/95hbvYWVlZb/FKM6zUpsH/vAseBzm2Q1t6uzAGIuJM6DM3Jgl3ettb73zhAWTvy5SveD0qlD+Q+D2H8gdOCqqqWJxGcZWEq+zKgPurhIEVBfydH1bq+uGDBenPHgNBg7mr+hhjpdINVFLStQRU6BLrcPpx5DVkGQZ1n93udZSE4capf7pbTBygWsZer+k8dq3tyw48xu8=
+  - secure: MhFCYVbffDtlDUcuZ5e/bkUkORvRx92kq8f46HKjy95Q2XMVPhjv4Ts06Px4jKPEPbyLX1mf05O/UTphbchuajX50abxvws92BYS/q7c7omi6AWULjUOR4SXjZ/C9iTKwSLZYNz/VS9fyUGftohQiwrQJvkoHoP6uwn5+q92uwtgLUV22V+qQJ+cwOpKMgSpFkLmkaM+JIJvIe90d5O9nUjjG2yQepc7oJOmB8EsatvzoCogvESqDzEEdT+abfs522H0NQqhJrc02K4WhJk/6CXev9t0u7M3UXghZyuT8QzKsguWVLkNz+wAxcvaNO5k8QtNI7rjvY1/S/F9zc1t3G8/j+2wCs7gNjIDeByuQ7mNvVj1XnF8gDcgAuOcbNzMIyhNqHUArcT2pV0v9baSJL98+masWNo9AODTkMR3Ihix7nTUWgbQUdntUOU8NO6saMxXnXS90jibEV60MtFW8KMHWwbZaIMpM6V0iseApFKE3yuXbxPjKeomwzXYmxlcoRyDgvXZsob0RjeU0sgZ8rYb/3q4cLZwRGc4y8fo1UgNNvm9NmxiDNxcWglvMVK9RXK4RDh/Iqy6X3Jn/SMemNoSoYtumwEbB2aiVyfEzv9mtgp0TLkZlIh7x4QUkSzklpEFNVHTd8iAJ2Dk/SzNB1JePjM5epBYEoRnKNwKi3M=
