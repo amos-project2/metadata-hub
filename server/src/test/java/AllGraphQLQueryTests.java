@@ -17,6 +17,7 @@ import java.util.concurrent.Executors;
     getDirMetadataTest.class
 })
 
+// Server has to be running as well right now
 //PostgreSQL Database needs to be running and metadatahub-data.sql has to be inserted
 public class AllGraphQLQueryTests {
 
@@ -24,6 +25,7 @@ public class AllGraphQLQueryTests {
     public static void setup(){
         System.out.println("Setup start");
 
+/*
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 
         Runnable serverTask = new Runnable(){
@@ -43,7 +45,8 @@ public class AllGraphQLQueryTests {
             Thread.sleep(9);
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
+        TestSetup}
+*/
 
         if(TestSetup.testClient == null){
             TestSetup.setupClient();
