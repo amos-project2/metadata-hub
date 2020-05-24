@@ -32,8 +32,8 @@ public class ApplicationConfig
                 this.configFilePath = "intern-config-file";
                 //cause we read the file from our ressource, which is in the jar-file
                 ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-                try (InputStream is = classloader.getResourceAsStream("config-local.properties");
-                     InputStream is2 = classloader.getResourceAsStream("config-local.properties");
+                try (InputStream is = classloader.getResourceAsStream("environment.default.copy.json");
+                     InputStream is2 = classloader.getResourceAsStream("environment.default.copy.json");
                 )
                 {
 
@@ -50,7 +50,14 @@ public class ApplicationConfig
                         logger.info("no json-format detected, fallback to property-format");
                         //ok its no json-format, so try next the properties-format
                         ConfigProperty properties = new ConfigProperty();
-                        properties.load(is2);
+                        try
+                        {
+                            properties.load(is2);
+                        }
+                        catch (Exception loadException)
+                        {
+                            throw new Exception("The local config is not found: please run one maven run, before you try to start in the IDEA", loadException);
+                        }
                         tmp = properties;
                     }
                     this.config = tmp;
@@ -121,14 +128,14 @@ public class ApplicationConfig
     {
         this.errorMessage = "";
 
-        if (this.config.getProperty("dataSource.user") == null) this.errorMessage = "Property dataSource.user is missing";
-        if (this.config.getProperty("dataSource.password") == null) this.errorMessage = "Property dataSource.password is missing";
-        if (this.config.getProperty("dataSource.databaseName") == null) this.errorMessage = "Property dataSource.databaseName is missing";
-        if (this.config.getProperty("dataSource.portNumber") == null) this.errorMessage = "Property dataSource.portNumber is missing";
-        if (this.config.getProperty("dataSource.serverName") == null) this.errorMessage = "Property dataSource.serverName is missing";
+        if (this.config.getProperty("database-user") == null) this.errorMessage = "Property database-user is missing";
+        if (this.config.getProperty("database-password") == null) this.errorMessage = "Property database-password is missing";
+        if (this.config.getProperty("database-name") == null) this.errorMessage = "Property database-name is missing";
+        if (this.config.getProperty("database-port") == null) this.errorMessage = "Property database-port is missing";
+        if (this.config.getProperty("database-host") == null) this.errorMessage = "Property database-host is missing";
 
-        if (this.config.getProperty("httpserver.address") == null) this.errorMessage = "Property httpserver.address is missing";
-        if (this.config.getProperty("httpserver.port") == null) this.errorMessage = "Property httpserver.port is missing";
+        if (this.config.getProperty("server-host") == null) this.errorMessage = "Property server-host is missing";
+        if (this.config.getProperty("server-port") == null) this.errorMessage = "Property server-port is missing";
 
 
         if (!this.getErrorMessage().equals(""))
@@ -138,20 +145,20 @@ public class ApplicationConfig
 
         try
         {
-            Integer.parseInt(this.config.getProperty("dataSource.portNumber"));
+            Integer.parseInt(this.config.getProperty("database-port"));
         }
         catch (NumberFormatException e)
         {
-            this.errorMessage = "Property dataSource.portNumber must be an Integervalue";
+            this.errorMessage = "Property database-port must be an Integervalue";
         }
 
         try
         {
-            Integer.parseInt(this.config.getProperty("httpserver.port"));
+            Integer.parseInt(this.config.getProperty("server-port"));
         }
         catch (NumberFormatException e)
         {
-            this.errorMessage = "Property httpserver.port must be an Integervalue";
+            this.errorMessage = "Property server-port must be an Integervalue";
         }
 
 
@@ -163,7 +170,7 @@ public class ApplicationConfig
 
     public Config getConfig()
     {
-        if(!this.isConfigValid()) throw new RuntimeException("Config is not valid");
+        if (!this.isConfigValid()) throw new RuntimeException("Config is not valid");
         return this.config;
     }
 }
