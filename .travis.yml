@@ -60,15 +60,14 @@ jobs:
     script:
     - bash travis.sh
   - name: app.deployment
-    if: branch = ci-cd
-    services:
-        - docker
+    services: docker
     before_install:
     - docker build -f docker/deployment/Dockerfile -t metadatahub .
     script:
     - docker run metadatahub 1 10
     after_success:
-    - "./docker/deployment/deploy.sh"
+    - ./docker/deployment/deploy.sh "$TRAVIS_BRANCH"
+
 env:
   global:
   - secure: BY8CnNz0753mFd7S5Zu6BfkkGhH4jqHOEKnHOwCFsEYmFgHEAHcRUW7N7qPXfbUw6eU9J3119gGE7W8SMmUnzJr5pTCCB4Az6m6ag9tXan78/GOFcGkKDS94IlK61SZbKvb58Tbgfyf4tzCmDzcDujY0loadELvnJVx43vlhHpdSllziYSLNuaL9LAaQPgNJ4EnZYL/M3Y72mMM1rC4gDyW4Lx9HJlMgHPqW/ptN14e+Y1K0s9Y7LedFCtHsOVO5NFd7YsxrguzgXw+utiBhqfyTYii6aStYV94prL5M0l5EhvnCnKSUlzKNdyGEwHIpgE6v2mzctrwZvkBSCjQNYIg+WkchpSRaXTO53dEs5J3DICFlKLyvQRo0HyzlK1X87qd8SLBrryRUmTd8M2QnjBnd/py+lG+1mWsN3OkJ4BBgxScnl6nqYHouaRMoLi1dwv1qKse5b41r6apl97b3U2aXQGvUTbjuj/95hbvYWVlZb/FKM6zUpsH/vAseBzm2Q1t6uzAGIuJM6DM3Jgl3ettb73zhAWTvy5SveD0qlD+Q+D2H8gdOCqqqWJxGcZWEq+zKgPurhIEVBfydH1bq+uGDBenPHgNBg7mr+hhjpdINVFLStQRU6BLrcPpx5DVkGQZ1n93udZSE4capf7pbTBygWsZer+k8dq3tyw48xu8=
