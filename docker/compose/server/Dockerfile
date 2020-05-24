@@ -3,7 +3,8 @@ RUN mkdir /metadatahub
 WORKDIR /metadatahub
 COPY server server
 COPY web-ui web-ui
-RUN mvn -f server/pom.xml package
+COPY configs configs
+RUN cd server && mvn -f pom.xml package
 
 FROM openjdk:13 AS run
 RUN mkdir /metadatahub

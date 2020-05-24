@@ -21,4 +21,3 @@ web-ui/node
 web-ui/node_modules
 web-ui/README
 
-configs/environment.default.json
