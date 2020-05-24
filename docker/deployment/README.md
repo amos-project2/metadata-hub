@@ -41,24 +41,41 @@ The image was built with the following configuration.
 }
 ```
 
-You can run the image according to the configuration using this schema:
+In order to mount the database storage, a volume is required. Mounting
+an arbitrary directory will lead to a failure during the PostgreSQL startup.
+
+```bash
+ docker volume create --name metadatahub-database -d local
+```
+
+You can then run the image according to the configuration using this schema:
 
 ```bash
 docker run \
     -p {HOST_SERVER_PORT}:8080 \
     -p {HOST_CRAWLER_PORT}:9000 \
     -p {HOST_DATABASE_PORT}:5432 \
-    -v {DATABASE_STORAGE_ON_HOST}:/var/lib/postgres/data \
+    -v {VOLUME}:/var/lib/postgresql/12/main \
     amosproject2/metadatahub
 ```
 
-For example
+This example will publish the *sever* on port *9999*, the *crawler* on
+port *9998* and the *database* on port *9997* on the host machine.
+Furthermore, the local directory ```/home/johndoe/data``` is mounted into
+```/data``` inside the container.
 
 ```bash
 docker run \
     -p 9999:8080 \
     -p 9998:9000 \
     -p 9997:5432 \
-    -v /home/johndoe/.metadatahub-database:/var/lib/postgres/data \
+    -v metadatahub-database:/var/lib/postgresql/12/main \
+    -v /home/johndoe/data:/filesystem
     amosproject2/metadatahub
+```
+
+In order to inspect a running container using *bash*, simply run:
+
+```bash
+docker exec -it {CONTAINER_ID} /bin/bash
 ```
