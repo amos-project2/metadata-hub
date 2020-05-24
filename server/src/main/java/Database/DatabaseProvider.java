@@ -38,4 +38,10 @@ public class DatabaseProvider
 
         dslContext = DSL.using(hikariDataSource, SQLDialect.POSTGRES);
     }
+
+    public void shutdown()
+    {
+        this.dslContext.close();
+        this.hikariDataSource.close();
+    }
 }
