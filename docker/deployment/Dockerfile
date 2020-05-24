@@ -11,8 +11,7 @@ RUN mvn -f server/pom.xml package
 FROM ubuntu:latest as app
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive \
-    METADATAHUB_ENV=/metadatahub/configs/environment.deployment.json \
-    SERVER_CONFIG=/metadatahub/configs/deployment.env
+    METADATAHUB_ENV=/metadatahub/configs/environment.deployment.json
 # Install system dependencies
 RUN apt update -y && \
     apt install -y \

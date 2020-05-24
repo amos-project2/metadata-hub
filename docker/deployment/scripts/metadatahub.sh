@@ -32,7 +32,7 @@ fi
 # Start the server and save the command
 process_server="java -jar server/metadata-hub-server-application-fat.jar"
 java -jar server/metadata-hub-server-application-fat.jar \
-    $SERVER_CONFIG >> /metadatahub/server.log 2>&1 &
+    >> /metadatahub/server.log 2>&1 &
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to start SERVER: $status"
