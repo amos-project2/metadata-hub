@@ -2,3 +2,4 @@
 #there are dynamic generated files
 #TODO maybe rename the directory
 static-files/
+environment.default.copy.json

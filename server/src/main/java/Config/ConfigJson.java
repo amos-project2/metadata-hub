@@ -21,6 +21,7 @@ public class ConfigJson implements Config
     public String getProperty(String key)
     {
         Object tmp = data.get(key);
+        if (tmp == null) return null;
         if (tmp instanceof String) return (String) tmp;
         if (tmp instanceof Integer) return Integer.toString((Integer) tmp);
         if (tmp instanceof Boolean) return ((Boolean) tmp) ? "true" : "false";
@@ -36,13 +37,13 @@ public class ConfigJson implements Config
         {
             if (!(key instanceof String))
             {
-                isJsonValide.set(false, "key "+key+ "isnt from type String");
+                isJsonValide.set(false, "key " + key + "isnt from type String");
                 return;
             }
 
             if (!(value instanceof String || value instanceof Integer || value instanceof Boolean))
             {
-                isJsonValide.set(false, "the value from key "+key+ " isn't from type String or Integer or Boolean");
+                isJsonValide.set(false, "the value from key " + key + " isn't from type String or Integer or Boolean");
                 return;
             }
 
@@ -55,7 +56,7 @@ public class ConfigJson implements Config
     public ConfigJson isJsonValideIfNotException() throws JsonValideException
     {
         IsJsonValide jsonValide = this.isJsonValide();
-        if(jsonValide.isState())return this;
+        if (jsonValide.isState()) return this;
 
         throw new JsonValideException(jsonValide.getErrorMessage());
     }
@@ -73,8 +74,8 @@ public class ConfigJson implements Config
 
         private void set(boolean state, String errorMessage)
         {
-            this.state=state;
-            this.errorMessage=errorMessage;
+            this.state = state;
+            this.errorMessage = errorMessage;
         }
     }
 }

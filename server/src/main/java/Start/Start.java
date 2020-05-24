@@ -44,7 +44,7 @@ public class Start
         try
         {
             Map<String, String> env = System.getenv();
-            ApplicationConfig applicationConfig = new ApplicationConfig((args.length > 0) ? args[0] : null, env.get("METADATAHUB_SERVER_CONFIG"));
+            ApplicationConfig applicationConfig = new ApplicationConfig((args.length > 0) ? args[0] : null, env.get("METADATAHUB_ENV"));
 
             if (!applicationConfig.isConfigValid())
             {
