@@ -42,4 +42,4 @@ services:
             - database
         ports:
             - ${SERVER_PORT}:8080
-        restart: on-failure
+        restart: on-failure:5
