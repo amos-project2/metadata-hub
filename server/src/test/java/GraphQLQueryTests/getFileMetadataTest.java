@@ -52,11 +52,48 @@ public class getFileMetadataTest {
         assertEquals(24, metadata.size());
         for (int i = 0; i < metadata.size(); i++) {
             //System.out.println(metadata.get(i).toString());
-            JSONObject metadatum = (JSONObject) metadata.get(1);
+            JSONObject metadatum = (JSONObject) metadata.get(i);
             String metadatumName = (String) metadatum.get("name");
             //Tests
             if(metadatumName.equals("FileName")){
+                assertEquals("<No AttributeID, when the EAV_Table isn't used", metadatum.get("id"));
                 assertEquals("hund1.jpg", metadatum.get("value"));
+            }
+            if(metadatumName.equals("FileSize")){
+                assertEquals("7.1 kB", metadatum.get("value"));
+            }
+            if(metadatumName.equals("Directory")){
+                assertEquals("../../testDir/crawler test 2", metadatum.get("value"));
+            }
+        }
+    }
+
+    @Test
+    public void testFirstFileEAV() throws ParseException {
+
+        WebTarget webTarget = testClient.target("http://[::]:8080/").path("graphql");
+        String request = "query{ getFileMetadata(file_id:\"1\" eav: true) { id, name, value} }";
+
+        Response response = webTarget.request(MediaType.APPLICATION_JSON)
+            .post(Entity.entity(request, MediaType.TEXT_PLAIN_TYPE));
+
+        String jsonString = response.readEntity(String.class);
+        JSONParser parser = new JSONParser();
+        JSONObject jsonObject = (JSONObject) parser.parse(jsonString);
+        //System.out.println(jsonObject.toString());
+        JSONArray metadata = (JSONArray) ((JSONObject) jsonObject.get("data")).get("getFileMetadata");
+
+        //Test
+        assertEquals(24, metadata.size());
+        for (int i = 0; i < metadata.size(); i++) {
+            //System.out.println(metadata.get(i).toString());
+            JSONObject metadatum = (JSONObject) metadata.get(i);
+            String metadatumName = (String) metadatum.get("name");
+            //Tests
+            if(metadatumName.equals("FileName")){
+                assertEquals("3", metadatum.get("id"));
+                //TODO different names in FileTable and EAVTable correct testdata
+                assertEquals("hund.jpg", metadatum.get("value"));
             }
             if(metadatumName.equals("FileSize")){
                 assertEquals("7.1 kB", metadatum.get("value"));
