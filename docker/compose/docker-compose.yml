@@ -23,8 +23,8 @@ services:
         env_file:
             - ./.env
         environment:
-            - POSTGRES_USER=${DATABASE_USER}
-            - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+            - POSTGRES_USER=metadatahub
+            - POSTGRES_PASSWORD=metadatahub
         volumes:
             - $PWD/../../database/metadatahub-schemata.sql:/docker-entrypoint-initdb.d/10-init.sql
             - $PWD/../../database/metadatahub-data.sql:/docker-entrypoint-initdb.d/20-init.sql
