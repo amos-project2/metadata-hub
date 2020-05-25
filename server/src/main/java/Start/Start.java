@@ -1,5 +1,6 @@
 package Start;
 
+import Benchmark.BenchmarkTest;
 import Config.ApplicationConfig;
 import Config.JsonValideException;
 import Config.Config;
@@ -46,6 +47,8 @@ public class Start
 
 
         System.out.println("all services are started");
+
+        new BenchmarkTest(registry).doBenchmark();
 
 
         if (Start.isIntegrationTest)
