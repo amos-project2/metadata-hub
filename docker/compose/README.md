@@ -1,66 +1,72 @@
-# Deployment system
+# Metadata-Hub @ Compose
 
-This is the deployment system of the Metadata-Hub project.
-At the moment, it is basically used for testing and debugging purposes.
-Further functionality and improvements will be included in the future.
-It is based on the Docker Engine to provide as much platform independency as possible.
+This is the *compose* approach of the Metadata-Hub software.
 
 ## Table of contents
 
-- [Deployment system](#deployment-system)
-  - [Table of contents](#table-of-contents)
   - [Installation](#installation)
   - [Configuration](#configuration)
+  - [Usage](#usage)
 
 ## Installation
 
-In order to run the system prototype, [Docker](https://docs.docker.com/get-docker) and [Docker-Compose](https://docs.docker.com/compose/install/) must be installed on the system. You can check your installation with.
-The system should run with Docker >= 19.03 and Docker-Compose >= 1.25.
+In order to run the application, install the following software
+- [Docker](https://docs.docker.com/get-docker) with version  *19.03*
+- [Docker-Compose](https://docs.docker.com/compose/install/) with version *1.25* or later
+
+You can verify your installation with
+```bash
+docker -v # Docker version ...
+docker-compose -v # docker-compose version ...
+```
 
 ## Configuration
 
-<span style="color:red; font-weight:bold">WARNING</span> Do **not** use the following configuration for production/deployment purposes
-
-The system is configured by a simple environment file. It's required for sharing the correct credentials and connection parameter between the different services.
-
-Here is the full working example of the config file. It is also used for the server component, these values have an other naming convention (see [here](https://github.com/amos-project2/metadata-hub/tree/master/server) for a more detailed explanation).
+The components share the following configuration that is build inside the corresponding docker images.
+**This** configuration can't be changed without modifying the ```environment.testing.json``` file and rebuilding the images.
 
 ```bash
-# Settings for docker services
-CRAWLER_FILESYSTEM=~/Public                     # Filesystem on the host to analyze (can change)
-DATABASE_USER=metadatahub
-DATABASE_PASSWORD=metadatahub
-DATABASE_STORAGE=~/.metadatahub-database        # The location where the database is stored on the host (can change)
-SERVER_PORT=8080                                # Port for the host system (can change)
-CRAWLER_PORT=9001                               # Port for the host system (can change)
-DATABASE_PORT=9002                              # Port for the host system (can change
-
-
-# Settings for the server component
-dataSource.user=metadatahub
-dataSource.password=metadatahub
-dataSource.databaseName=metadatahub
-dataSource.portNumber=5432                      # Do not change
-dataSource.serverName=database                  # Name of the corresponding docker-compose service
-httpserver.address=0.0.0.0                      # Do not change
-httpserver.port=8080                            # Do not change
-
+{
+    "database-host": "database",
+    "database-name": "metadatahub",
+    "database-user": "metadatahub",
+    "database-password": "metadatahub",
+    "database-port": 5432,
+    "crawler-host": "0.0.0.0",
+    "crawler-port": 9000,
+    "server-host": "0.0.0.0",
+    "server-port": 8080
+}
 ```
 
-The uncommented values are obviously the database configuration and can be changed, but must always match with upper/lowercase ones.
+The database is already initialized with the user/password and the database schemata. There is also some test data inside the database.
 
-The database is initialized with the schema and data located in
-```database/metadatahub-database.sql``` and ```database/metadatahub-data.sql```
-(in this order)
+
+
+The ```.env``` file in this directory does configure the following values.
+**These** are the values you can safely adapt, because they relate to the host machine the services are running on.
+
+```bash
+# Directory to mount into the CRAWLER container
+CRAWLER_FILESYSTEM=~/Public
+
+# Directory where the DATABASE is stored on the host
+DATABASE_STORAGE=~/.metadatahub-database
+
+# Ports on which the services are available on the host
+SERVER_PORT=8080
+CRAWLER_PORT=9000
+DATABASE_PORT=5432
+```
+
 
 ## Usage
-Once configured, simply change into the compose directory and start the services.
-Please note that starting the system from an arbitrary directory is currently **not** supported, because some paths relative to the current working directory.
+You can either use the default ```.env``` file or adapt the configuration.
+Once accomplished, you can change into the ```metadata-hub/docker/compose``` directory and start the services.
+Please note that starting the system from an arbitrary directory is **not** possible, due to how docker-compose handles ```.env``` files.
 ```bash
-cd crawler/compose
+# Assume we are in the root directory of project metadata-hub
+cd docker/compose
 docker-compose up  # use -d for detached mode
 ```
-If you're using not the default ```.env``` file, you must specify the config file via
-```bash
-docker-compose up --env-file <PATH>
-```
+The services should now run until you stop them again.

@@ -2,6 +2,14 @@
     "title": "MetadataHub environment setting",
     "description": "Definition of environment variables",
     "type": "object",
+    "definitions": {
+        "port": {
+            "description": "Valid port assignment",
+            "type": "integer",
+            "minimum": 1024,
+            "maximum": 65535
+        }
+    },
     "properties": {
         "database-name": {
             "description": "Database to connect to",
@@ -12,8 +20,7 @@
             "type": "string"
         },
         "database-port": {
-            "description": "Port the database is running on",
-            "type": "integer"
+            "$ref": "#/definitions/port"
         },
         "database-user": {
             "description": "Username for database",
@@ -28,16 +35,14 @@
             "type": "string"
         },
         "crawler-port": {
-            "description": "Port the crawler API is running on",
-            "type": "integer"
+            "$ref": "#/definitions/port"
         },
         "server-host": {
             "description": "Host the server is running on",
             "type": "string"
         },
         "server-port": {
-            "description": "Port the server is running on",
-            "type": "integer"
+            "$ref": "#/definitions/port"
         }
     },
     "required": [
@@ -52,3 +57,5 @@
         "server-port"
     ]
 }
+
+

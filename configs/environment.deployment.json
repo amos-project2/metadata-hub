@@ -1,0 +1,11 @@
+{
+    "database-name": "metadatahub",
+    "database-host": "0.0.0.0",
+    "database-port": 5432,
+    "database-user": "metadatahub",
+    "database-password": "metadatahub",
+    "crawler-host": "0.0.0.0",
+    "crawler-port": 9000,
+    "server-host": "0.0.0.0",
+    "server-port": 8080
+}
