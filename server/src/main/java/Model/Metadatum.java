@@ -3,7 +3,7 @@ package Model;
 import lombok.Data;
 
 @Data
-public class Attribute
+public class Metadatum
 {
     private final String id;
     private final String tree_walk_id;

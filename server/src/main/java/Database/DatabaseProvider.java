@@ -1,5 +1,6 @@
 package Database;
 
+import Config.Config;
 import Start.Start;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -14,25 +15,26 @@ public class DatabaseProvider
 {
     @Getter private final HikariDataSource hikariDataSource;
     @Getter private final DSLContext dslContext;
-    private static final Properties config = Start.getConfig();
+    private static Config config;
     //TODO implement (maybe using jooq)
 
 
-    public DatabaseProvider()
+    public DatabaseProvider(Config config)
     {
+        this.config = config;
         Properties props = new Properties();
 
         props.setProperty("dataSourceClassName", "org.postgresql.ds.PGSimpleDataSource");
         props.setProperty("minimumIdle", "2");
 
-        props.setProperty("dataSource.user", config.getProperty("dataSource.user"));
-        props.setProperty("dataSource.password", config.getProperty("dataSource.password"));
-        props.setProperty("dataSource.databaseName", config.getProperty("dataSource.databaseName"));
-        props.setProperty("dataSource.portNumber", config.getProperty("dataSource.portNumber"));
-        props.setProperty("dataSource.serverName", config.getProperty("dataSource.serverName"));
+        props.setProperty("dataSource.user", config.getProperty("database-user"));
+        props.setProperty("dataSource.password", config.getProperty("database-password"));
+        props.setProperty("dataSource.databaseName", config.getProperty("database-name"));
+        props.setProperty("dataSource.portNumber", config.getProperty("database-port"));
+        props.setProperty("dataSource.serverName", config.getProperty("database-host"));
 
-        HikariConfig config = new HikariConfig(props);
-        hikariDataSource = new HikariDataSource(config);
+        HikariConfig hikariConfig = new HikariConfig(props);
+        hikariDataSource = new HikariDataSource(hikariConfig);
 
         dslContext = DSL.using(hikariDataSource, SQLDialect.POSTGRES);
     }

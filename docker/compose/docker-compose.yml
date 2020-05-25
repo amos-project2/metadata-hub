@@ -15,7 +15,7 @@ services:
         volumes:
             - ${CRAWLER_FILESYSTEM}:/filesystem
         ports:
-            - ${CRAWLER_PORT}:3000
+            - ${CRAWLER_PORT}:9000
 
     database:
         image: postgres:latest
@@ -23,8 +23,8 @@ services:
         env_file:
             - ./.env
         environment:
-            - POSTGRES_USER=${DATABASE_USER}
-            - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+            - POSTGRES_USER=metadatahub
+            - POSTGRES_PASSWORD=metadatahub
         volumes:
             - $PWD/../../database/metadatahub-schemata.sql:/docker-entrypoint-initdb.d/10-init.sql
             - $PWD/../../database/metadatahub-data.sql:/docker-entrypoint-initdb.d/20-init.sql
@@ -42,4 +42,4 @@ services:
             - database
         ports:
             - ${SERVER_PORT}:8080
-        restart: on-failure
+        restart: on-failure:5
