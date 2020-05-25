@@ -1,5 +1,6 @@
 package Benchmark;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class DirectJsonToEavComparer
@@ -86,8 +87,7 @@ public class DirectJsonToEavComparer
     }
 
 
-    public DirectJsonToEavComparer testJson(Runner run) throws InterruptedException
-    {
+    public DirectJsonToEavComparer testJson(Runner run) throws InterruptedException, SQLException {
         this.startJsonTime();
         run.execute();
         this.endJsonTime();
@@ -95,8 +95,7 @@ public class DirectJsonToEavComparer
         return this;
     }
 
-    public DirectJsonToEavComparer testEav(Runner run) throws InterruptedException
-    {
+    public DirectJsonToEavComparer testEav(Runner run) throws InterruptedException, SQLException {
         this.startEavTime();
         run.execute();
         this.endEavTime();
@@ -106,7 +105,7 @@ public class DirectJsonToEavComparer
 
     public static interface Runner
     {
-        void execute() throws InterruptedException;
+        void execute() throws InterruptedException, SQLException;
     }
 
 
