@@ -107,8 +107,8 @@ class extractData:
                     test.append(f"'{attributesTmp[i]}'")
                     test.append(f"'{valuesTmp[i]}'")
                     test.append('NULL')
-                    values = " VALUES({a})".format(a=" ,".join(test))
-                    query.append(insertin + values)
+                    values = "({a})".format(a=" ,".join(test))
+                    query.append(values)
         return query
 
     def extract_metadata_generic(self, dbID: int) -> str:

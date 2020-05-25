@@ -31,8 +31,7 @@ def addProcessedEntry(path: str, traceFile: str) -> None:
         traceFilePointer.write(f'{path}\n')
 
 
-# TODO This function should ultimately be used to create a list of even work packages
-def naiveCreateWorkpackages(pathInput: str, recursive:bool) -> Tuple[List[str],str]:
+def naiveCreateWorkpackages(pathInput: str, recursive: bool) -> List[str]:
     """Creates a list of every directory found in the give paths file tree.
 
     Args:
@@ -57,33 +56,34 @@ def naiveCreateWorkpackages(pathInput: str, recursive:bool) -> Tuple[List[str],s
         directoryList.append(root)
         if recursive == 0:
             break
-    return directoryList, traceFile
+    return directoryList
 
 
-def naiveTreeWalk(pathExifTool: str, pathProtocol: str, directory:str, options:List[str]) -> None:
-    """Naive implementation of the tree walk. logs the results in Json format.
+# def naiveTreeWalk(pathExifTool: str, pathProtocol: str, directory:str, options:List[str]) -> None:
+#     """Naive implementation of the tree walk. logs the results in Json format.
+#
+#     Args:
+#         pathExifTool (str): Path to the exiftool.
+#         pathProtocol (str): Path to the output directory
+#         directory (str): The directory to scan
+#         traceFile (str): The trace file
+#     """
+#
+#     #: Debugging variable to check how many exiftool scans fail
+#     failures = []
+#     #: variable to give protocol files a name
+#     logCount = random.randint(1,2000000)
+#     #: Walk over every directory and execute the exiftool. Log to file to <pathProtocol>
+#     try:
+#         with open(f'{pathProtocol}/protocol{logCount}.json', 'w') as myFile:
+#             subprocess.check_call([f'{pathExifTool}', '-json', *options, directory], stdout=myFile)
+#             TRACER.add_node(directory)
+#     except subprocess.CalledProcessError:
+#         failures.append(directory)
 
-    Args:
-        pathExifTool (str): Path to the exiftool.
-        pathProtocol (str): Path to the output directory
-        directory (str): The directory to scan
-        traceFile (str): The trace file
-    """
 
-    #: Debugging variable to check how many exiftool scans fail
-    failures = []
-    #: variable to give protocol files a name
-    logCount = random.randint(1,2000000)
-    #: Walk over every directory and execute the exiftool. Log to file to <pathProtocol>
-    try:
-        with open(f'{pathProtocol}/protocol{logCount}.json', 'w') as myFile:
-            subprocess.check_call([f'{pathExifTool}', '-json', *options, directory], stdout=myFile)
-            TRACER.add_node(directory)
-    except subprocess.CalledProcessError:
-        failures.append(directory)
-
-
-def naiveTreeWalkUpdate(pathExifTool: str, directory:str, options:List[str], con:DatabaseConnection, dbID:int) -> None:
+def naiveTreeWalkUpdate(pathExifTool: str, directory: List[str], options: List[str], con: DatabaseConnection,
+                        dbID: int) -> None:
     """Naive implementation of the tree walk. inserts the results in Postgre database.
 
     Args:
@@ -95,25 +95,22 @@ def naiveTreeWalkUpdate(pathExifTool: str, directory:str, options:List[str], con
     #: Debugging variable to check how many exiftool scans fail
     failures = []
 
-    #: Walk over every directory and execute the exiftool. Log to file to <pathProtocol>
+    #: Walk over every directory and execute the exiftool.
     try:
-        process  = subprocess.Popen([f'{pathExifTool}', '-json', directory], stdout=subprocess.PIPE)
+        process = subprocess.Popen([f'{pathExifTool}', '-json', *directory], stdout=subprocess.PIPE)
         metadata = json.load(process.stdout)
         # Walk through each object/file
+        insertions = []
         for file_number in metadata:
-            # Create query and insert into 1 table_generic from 1 file
             genericID = con.insert_new_record(extractData(file_number).extract_metadata_generic(dbID))
-            
-            # Create queries and insert into 1 table_eav from 1 file
-            query = extractData(file_number).extract_metadata_eav(dbID, genericID)
-            # Apply each query to insert for each row
-            for query_number in query:
-                con.insert_new_record(query_number)
-        TRACER.add_node(directory)
+            insertions.extend(extractData(file_number).extract_metadata_eav(dbID, genericID))
+        con.insert_new_record("INSERT INTO file_generic_data_eav (tree_walk_id, file_generic_id, attribute, value, unit) VALUES " + ','.join(insertions))
+        for dir in directory:
+            TRACER.add_node(dir)
     except subprocess.CalledProcessError:
         failures.append(directory)
-    except Exception as e: print(e)
-
+    except Exception as e:
+        print(e)
 
 def naiveTreeWalkBenchmark(pathExifTool: str, package: list, options:List[str], con:DatabaseConnection, dbID:int) -> None:
     """Naive implementation of the tree walk. inserts the results in Postgre database.
@@ -133,7 +130,7 @@ def naiveTreeWalkBenchmark(pathExifTool: str, package: list, options:List[str], 
     xtime_list = []
     ytime_list = []
     etime_list = []
-    
+
     for directory in package:
         try:
             etime_start   = timer()
@@ -141,18 +138,18 @@ def naiveTreeWalkBenchmark(pathExifTool: str, package: list, options:List[str], 
             metadata = json.load(process.stdout)
             etime_end     = timer()
             etime_list.append(etime_end - etime_start)
-            
+
             # Perform time measurement for each directory
             x, y, total_time = Benchmark(metadata, con, dbID).insert_file()
             TRACER.add_node(directory)
             time_list.append(total_time)
             xtime_list.append(x)
             ytime_list.append(y)
-            
+
         except subprocess.CalledProcessError:
             failures.append(directory)
         except Exception as e: print(e)
-        
+
     # Print total compute time
     if time_list[0] == None:
         pprint('####################')
@@ -168,25 +165,18 @@ def naiveTreeWalkBenchmark(pathExifTool: str, package: list, options:List[str], 
         pprint('    eav time: {}'.format(sum(ytime_list)))
         pprint('Exiftooltime: {}'.format(sum(etime_list)))
         pprint(time_list)
-        
 
-def hashTable(pathInput):
+
+def workSize(pathInput: str) -> List[str]:
     """Creates a hash table based on the total amount of files per directory.
 
     Args:
-        pathExifTool: Path to the exiftool.
-
+        pathInput: Path to a directory for processing.
     Returns:
-        dictionary with directories maped to amount of files
-
+        List with processed directory and the file size
     """
-    directoryDictionary = dict()
-    for root, directories, files in os.walk(pathInput):
-        if len(files) in directoryDictionary:
-            directoryDictionary[len(files)].append(root)
-        else:
-            directoryDictionary[len(files)] = [root]
-    return directoryDictionary
+    root, directories, files = next(os.walk(pathInput))
+    return [pathInput, len(files)]
 
 def err(message: str) -> None:
     """Helper function to display error message and exit.
@@ -200,6 +190,8 @@ def err(message: str) -> None:
 
 
 if __name__ == "__main__":
+
+    start_time = time.time()
 
     #: Load the config files data
     with open('configCrawler.json') as jsonData:
@@ -250,15 +242,47 @@ if __name__ == "__main__":
     roots = []
     total_time = []
     for directory in data['paths']['inputs']:
-        roots.append(naiveCreateWorkpackages(directory['path'], directory['recursive']))
+        roots.extend(naiveCreateWorkpackages(directory['path'], directory['recursive']))
+
+    #: Attempt to create even work packages
+    #: Variable representing the average work package size
+    X = 250
+    #: Gather a list with every directory and it's total amount of files
+    directorySize = []
+    for root in roots:
+        directorySize.append(workSize(root))
+    # total = 0
+    # for value in directorySize:
+    #     total += value[1]
+    # print(total/len(directorySize))
+    # exit(0)
+    workPackages = []
+    #: Split the workload into packages of size X
+    split = []
+    while 1:
+        workPackageTmp = [[],0]
+        for element in directorySize.copy():
+            if element[1] + workPackageTmp[1] <= X:
+                workPackageTmp[0].append(element[0])
+                workPackageTmp[1] += element[1]
+                directorySize.remove(element)
+            else:
+                if element[1] > X:
+                    workPackages.append([element[0]])
+                    directorySize.remove(element)
+        workPackages.append(workPackageTmp[0])
+        if len(directorySize) < 1:
+            break
 
     #: Run the tree walk in parallel
     #: Write the start of the crawler into the database
     dbConnection = DatabaseConnection(data['db_info'])
     start = f"INSERT INTO tree_walk (name, notes, root_path, created_time, status, crawl_config, save_in_gerneric_table)  VALUES('test' ,'---' ,'{treeWalk}' ,'{datetime.now()}' ,NULL ,NULL ,NULL) RETURNING id"
     dbID = dbConnection.insert_new_record(start)
-    for package in roots:
-        with ThreadPoolExecutor(max_workers=powerLevel) as executor:
-#            for directory in package[0]:
-#                future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], directory, options,  dbConnection, dbID)
-                future =  executor.submit(naiveTreeWalkBenchmark, data['paths']['exiftool'], package[0], options,  dbConnection, dbID)
+    with ThreadPoolExecutor(max_workers=powerLevel) as executor:
+        for directories in workPackages:
+            future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], directories, options,dbConnection, dbID)
+            # future = executor.submit(naiveTreeWalkBenchmark, data['paths']['exiftool'], package[0], options,  dbConnection, dbID)
+    pass
+    elapsed_time = time.time() - start_time
+    print(elapsed_time)

@@ -35,7 +35,7 @@ class DatabaseConnection:
             insert_cmd (dict): a single INSERT query to Postgres database
 
         """
-        pprint("----Insert-Done-----")
+        #pprint("----Insert-Done-----")
         self.cursor.execute(insert_cmd)
 
         try:
