@@ -86,17 +86,28 @@ public class DirectJsonToEavComparer
     }
 
 
-    public void testJson(Runnable run)
+    public DirectJsonToEavComparer testJson(Runner run) throws InterruptedException
     {
         this.startJsonTime();
-        run.run();
+        run.execute();
         this.endJsonTime();
+
+        return this;
     }
 
-    public void testEav(Runnable run)
+    public DirectJsonToEavComparer testEav(Runner run) throws InterruptedException
     {
         this.startEavTime();
-        run.run();
+        run.execute();
         this.endEavTime();
+
+        return this;
     }
+
+    public static interface Runner
+    {
+        void execute() throws InterruptedException;
+    }
+
+
 }

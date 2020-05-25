@@ -80,38 +80,16 @@ public class BenchmarkTest
     /**
      * Example with lambda-syntax
      */
-    private DirectJsonToEavComparer test2()
+    private DirectJsonToEavComparer test2() throws InterruptedException
     {
-        var c = this.createAndGetComparer("Test 2");
-
-        c.testJson(() ->
+        return this.createAndGetComparer("Test 2").testJson(() ->
         {
-            try
-            {
-                Thread.sleep(600);
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
-            }
-
+            Thread.sleep(600);
+        }).testEav(() ->
+        {
+            Thread.sleep(1200);
         });
 
-        c.testEav(() ->
-        {
-            try
-            {
-                Thread.sleep(1200);
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
-            }
-
-        });
-
-
-        return c;
     }
 
 
