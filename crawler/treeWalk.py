@@ -10,6 +10,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from sys import exit
 from typing import Tuple, List
 from datetime import datetime
+from timeit import default_timer as timer
 import crawler.services.tracing as tracing
 from crawler.connectPG.connector import DatabaseConnection
 from crawler.connectPG.extract_data import extractData
@@ -131,11 +132,15 @@ def naiveTreeWalkBenchmark(pathExifTool: str, package: list, options:List[str], 
     time_list  = []
     xtime_list = []
     ytime_list = []
-
+    etime_list = []
+    
     for directory in package:
-        try:     
+        try:
+            etime_start   = timer()
             process  = subprocess.Popen([f'{pathExifTool}', '-json', directory], stdout=subprocess.PIPE)
             metadata = json.load(process.stdout)
+            etime_end     = timer()
+            etime_list.append(etime_end - etime_start)
             
             # Perform time measurement for each directory
             x, y, total_time = Benchmark(metadata, con, dbID).insert_file()
@@ -147,18 +152,21 @@ def naiveTreeWalkBenchmark(pathExifTool: str, package: list, options:List[str], 
         except subprocess.CalledProcessError:
             failures.append(directory)
         except Exception as e: print(e)
+        
     # Print total compute time
     if time_list[0] == None:
         pprint('####################')
         pprint('  Total time: {}'.format(sum(time_list[1::])))
         pprint('Generic time: {}'.format(sum(xtime_list[1::])))
         pprint('    eav time: {}'.format(sum(ytime_list[1::])))
+        pprint('Exiftooltime: {}'.format(sum(etime_list)))
         pprint(time_list[1::])
     else:
         pprint('####################')
         pprint('  Total time: {}'.format(sum(time_list)))
         pprint('Generic time: {}'.format(sum(xtime_list)))
         pprint('    eav time: {}'.format(sum(ytime_list)))
+        pprint('Exiftooltime: {}'.format(sum(etime_list)))
         pprint(time_list)
         
 
