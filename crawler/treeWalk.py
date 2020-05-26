@@ -103,7 +103,9 @@ def naiveTreeWalkUpdate(pathExifTool: str, directory: List[str], options: List[s
         insertions = []
         for file_number in metadata:
             genericID = con.insert_new_record(extractData(file_number).extract_metadata_generic(dbID))
+            print(genericID)
             insertions.extend(extractData(file_number).extract_metadata_eav(dbID, genericID))
+        
         con.insert_new_record("INSERT INTO file_generic_data_eav (tree_walk_id, file_generic_id, attribute, value, unit) VALUES " + ','.join(insertions))
         for dir in directory:
             TRACER.add_node(dir)
@@ -112,13 +114,13 @@ def naiveTreeWalkUpdate(pathExifTool: str, directory: List[str], options: List[s
     except Exception as e:
         print(e)
 
-def naiveTreeWalkBenchmark(pathExifTool: str, package: list, options:List[str], con:DatabaseConnection, dbID:int) -> None:
+def naiveTreeWalkBenchmark(pathExifTool: str, directory: List[str], options:List[str], con:DatabaseConnection, dbID:int) -> None:
     """Naive implementation of the tree walk. inserts the results in Postgre database.
     and also mearure the inserting time for each directory
 
     Args:
         pathExifTool (str): Path to the exiftool.
-        package (List): The list of scanned directories
+        directory (List): The list of scanned directories
         options (List[str]): The list of CPU options
         dbID (int): The id for current Tree Walk execution
     """
@@ -131,24 +133,26 @@ def naiveTreeWalkBenchmark(pathExifTool: str, package: list, options:List[str], 
     ytime_list = []
     etime_list = []
 
-    for directory in package:
-        try:
-            etime_start   = timer()
-            process  = subprocess.Popen([f'{pathExifTool}', '-json', directory], stdout=subprocess.PIPE)
-            metadata = json.load(process.stdout)
-            etime_end     = timer()
-            etime_list.append(etime_end - etime_start)
+    try:
+        etime_start   = timer()
+        process = subprocess.Popen([f'{pathExifTool}', '-json', *directory], stdout=subprocess.PIPE)
+        metadata = json.load(process.stdout)
+        etime_end     = timer()
+        etime_list.append(etime_end - etime_start)
 
-            # Perform time measurement for each directory
-            x, y, total_time = Benchmark(metadata, con, dbID).insert_file()
-            TRACER.add_node(directory)
-            time_list.append(total_time)
-            xtime_list.append(x)
-            ytime_list.append(y)
+        # Perform time measurement for each directory
+        x, y, total_time = Benchmark(metadata, con, dbID).insert_file()
+        
+        for dir in directory:
+            TRACER.add_node(dir)
+            
+        time_list.append(total_time)
+        xtime_list.append(x)
+        ytime_list.append(y)
 
-        except subprocess.CalledProcessError:
-            failures.append(directory)
-        except Exception as e: print(e)
+    except subprocess.CalledProcessError:
+        failures.append(directory)
+    except Exception as e: print(e)
 
     # Print total compute time
     if time_list[0] == None:
@@ -281,8 +285,8 @@ if __name__ == "__main__":
     dbID = dbConnection.insert_new_record(start)
     with ThreadPoolExecutor(max_workers=powerLevel) as executor:
         for directories in workPackages:
-            future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], directories, options,dbConnection, dbID)
-            # future = executor.submit(naiveTreeWalkBenchmark, data['paths']['exiftool'], package[0], options,  dbConnection, dbID)
+            # future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], directories, options,dbConnection, dbID)
+            future = executor.submit(naiveTreeWalkBenchmark, data['paths']['exiftool'], directories, options,  dbConnection, dbID)
     pass
     elapsed_time = time.time() - start_time
-    print(elapsed_time)
+    pprint(f"Execution time: {elapsed_time}")
