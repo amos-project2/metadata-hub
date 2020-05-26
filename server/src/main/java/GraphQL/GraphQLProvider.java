@@ -51,7 +51,7 @@ public class GraphQLProvider
             .type(newTypeWiring("Query")
                 .dataFetcher("getDirMetadata", graphQLDataFetchers.getDirMetadataFetcher()))
             .type(newTypeWiring("Query")
-                .dataFetcher("searchForPattern", graphQLDataFetchers.searchForPatternFetcher()))
+                .dataFetcher("search", graphQLDataFetchers.searchFetcher()))
 
             .build();
     }

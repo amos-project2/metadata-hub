@@ -69,21 +69,28 @@ public class GraphQLDataFetchers
      * sel_attributes: If specified, fetches solely the selected attributes
      */
     @SuppressWarnings({"rawtypes"})
-    public DataFetcher searchForPatternFetcher()
+    public DataFetcher searchFetcher()
     {
         return (DataFetcher<List<File>>) dataFetchingEnvironment ->
         {
 
             final String pattern = dataFetchingEnvironment.getArgument("pattern");
-            final String option = dataFetchingEnvironment.getArgument("option");
+            final String patternOption = dataFetchingEnvironment.getArgument("option");
+            final String startTime = dataFetchingEnvironment.getArgument("startTime");
+            final String endTime = dataFetchingEnvironment.getArgument("endTime");
             final ArrayList<String> selection_attributes = dataFetchingEnvironment.getArgument("sel_attributes");
+            int limitFetchingSize = 0;
+            if(dataFetchingEnvironment.getArgument("limitFetchingSize") != null)
+            {
+                limitFetchingSize = dataFetchingEnvironment.getArgument("limitFetchingSize");
+            }
 
             if (selection_attributes != null)
             {
-                log.info("searchForPattern: pattern = " + pattern + " option = " + option + " sel_attributes = " + selection_attributes.toString());
+                log.info("searchForPattern: pattern = " + pattern + " option = " + patternOption + " sel_attributes = " + selection_attributes.toString());
             }
 
-            return queryForPattern(pattern, option, selection_attributes);
+            return queryFilesWithOptions(pattern, patternOption, startTime, endTime, selection_attributes, limitFetchingSize);
         };
     }
 
@@ -305,7 +312,8 @@ public class GraphQLDataFetchers
         }
     }
 
-    private List<File> queryForPattern(String pattern, String option, ArrayList<String> selection_attributes) throws SQLException, IOException {
+    private List<File> queryFilesWithOptions(String pattern, String patternOption, String startTime, String endTime,
+                                             ArrayList<String> selection_attributes, int limitFetchingSize) throws SQLException, IOException {
         HikariDataSource dataSource = databaseProvider.getHikariDataSource();
 
         //SelectStmt = Join on tree_walk_id; Concat the paths and remove the leftmost slash "/home/" + "/testDir/" = "/home/testDir/"
@@ -320,16 +328,25 @@ public class GraphQLDataFetchers
 */
         //TODO Talk about database structure! Right now sub_dir_path is the absolute path but without the filename?!
 
-        String optionStmt = "";
-        if(option.equals("excluded")){
-            System.out.println("EXCLUED!!");
-            optionStmt = " NOT ";
+        //Options
+        String patternOptionStmt = "";
+        if(patternOption != null && patternOption.equals("excluded"))
+        {
+            patternOptionStmt = " NOT ";
         }
+
+        String fetchingSizeLimitStmt = "";
+        if(limitFetchingSize > 0)
+        {
+            fetchingSizeLimitStmt = "FETCH FIRST " + limitFetchingSize + " ROWS ONLY";
+        }
+
         try (Connection connection = dataSource.getConnection();
              PreparedStatement selectStmt = connection.prepareStatement
                  ("SELECT * " +
                      "FROM public.file_generic " +
-                     "WHERE CONCAT(public.file_generic.sub_dir_path, '/', public.file_generic.name)"  + optionStmt + " LIKE ?")) {
+                     "WHERE CONCAT(public.file_generic.sub_dir_path, '/', public.file_generic.name)"  + patternOptionStmt + " LIKE ? " +
+                     " " + fetchingSizeLimitStmt)) {
 
             selectStmt.setString(1, "%" + pattern + "%");
             System.out.println(selectStmt.toString());
