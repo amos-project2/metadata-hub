@@ -99,7 +99,7 @@ public class MainController
     {
         String out = this.loadFile("graphiql/graphiql.html");
 
-        String content = out.toString().replaceAll("%PORT%", config.getProperty("httpserver.port"));
+        String content = out.toString().replaceAll("%PORT%", config.getProperty("server-port"));
         return content;
     }
 
