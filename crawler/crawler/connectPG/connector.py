@@ -6,7 +6,7 @@ from pprint import pprint
 class DatabaseConnection:
 
 
-    def __init__(self, db_info: dict) -> None:
+    def __init__(self, db_info: dict, powerLevel:int) -> None:
         """Initialize the connection to Postgre Database.
 
         Args:
@@ -17,14 +17,26 @@ class DatabaseConnection:
 
         """
         try:
-            # database info in a string
-            db_info_str = "dbname='{b}' user='{c}' host='{d}' password='{e}' port='{f}' \
-                            ".format(b=db_info['dbname'], c=db_info['user'], d=db_info['host'], e=db_info['password'], f=db_info['port'])
-            self.connection = psycopg2.connect(db_info_str)
-            self.connection.autocommit = True
-            self.cursor = self.connection.cursor()
+            # Establish connection pool
+            self.dbConnectionPool = psycopg2.pool.SimpleConnectionPool(1, powerLevel
+                                                                  , user=db_info['user'],
+                                                                  password=db_info['password'],
+                                                                  host=db_info['host'],
+                                                                  port=db_info['port'],
+                                                                  database=db_info['dbname'])
+
         except:
-            pprint("Cannot connect to database")
+            print('Error while creating the ThreadPool')
+
+
+        #     # database info in a string
+        #     db_info_str = "dbname='{b}' user='{c}' host='{d}' password='{e}' port='{f}' \
+        #                     ".format(b=db_info['dbname'], c=db_info['user'], d=db_info['host'], e=db_info['password'], f=db_info['port'])
+        #     self.connection = psycopg2.connect(db_info_str)
+        #     self.connection.autocommit = True
+        #     self.cursor = self.connection.cursor()
+        # except:
+        #     pprint("Cannot connect to database")
 
 
     #TODO int too small?
@@ -36,12 +48,17 @@ class DatabaseConnection:
 
         """
         #pprint("----Insert-Done-----")
-        self.cursor.execute(insert_cmd)
-
+        con = self.dbConnectionPool.getconn()
+        curs = con.cursor()
+        curs.execute(insert_cmd)
         try:
-            return self.cursor.fetchone()[0]
+            dbID = curs.fetchone()[0]
         except:
-            return 0
+            dbID = 0
+        curs.close()
+        con.commit()
+        self.dbConnectionPool.putconn(con)
+        return dbID
 
     def update_record(self):
         pass
