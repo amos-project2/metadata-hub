@@ -335,10 +335,22 @@ public class GraphQLDataFetchers
             patternOptionStmt = " NOT ";
         }
 
+        String startTimeStmt = "";
+        if(startTime != null)
+        {
+            startTimeStmt = " AND public.file_generic.file_create_date >= \'" + startTime + "\'";
+        }
+
+        String endTimeStmt = "";
+        if(endTime != null)
+        {
+            endTimeStmt = " AND public.file_generic.file_create_date < \'" + endTime + "\'";
+        }
+
         String fetchingSizeLimitStmt = "";
         if(limitFetchingSize > 0)
         {
-            fetchingSizeLimitStmt = "FETCH FIRST " + limitFetchingSize + " ROWS ONLY";
+            fetchingSizeLimitStmt = " FETCH FIRST " + limitFetchingSize + " ROWS ONLY";
         }
 
         try (Connection connection = dataSource.getConnection();
@@ -346,7 +358,7 @@ public class GraphQLDataFetchers
                  ("SELECT * " +
                      "FROM public.file_generic " +
                      "WHERE CONCAT(public.file_generic.sub_dir_path, '/', public.file_generic.name)"  + patternOptionStmt + " LIKE ? " +
-                     " " + fetchingSizeLimitStmt)) {
+                     startTimeStmt + endTimeStmt + fetchingSizeLimitStmt)) {
 
             selectStmt.setString(1, "%" + pattern + "%");
             System.out.println(selectStmt.toString());
