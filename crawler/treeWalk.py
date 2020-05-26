@@ -91,6 +91,11 @@ def naiveTreeWalkUpdate(pathExifTool: str, directory: List[str], options: List[s
     except Exception as e:
         print(e)
 
+
+def splitList(split:List[str], X:int) :
+    return lambda split, X: [split[i: i + X] for i in range(0, len(split), X)]
+
+
 def naiveTreeWalkBenchmark(pathExifTool: str, directory: List[str], options:List[str], con:DatabaseConnection, dbID:int) -> None:
     """Naive implementation of the tree walk. inserts the results in Postgre database.
     and also mearure the inserting time for each directory
@@ -233,11 +238,7 @@ if __name__ == "__main__":
     directorySize = []
     for root in roots:
         directorySize.append(workSize(root))
-    # total = 0
-    # for value in directorySize:
-    #     total += value[1]
-    # print(total/len(directorySize))
-    # exit(0)
+
     workPackages = []
     #: Split the workload into packages of size X
     split = []
@@ -253,6 +254,7 @@ if __name__ == "__main__":
                     split.append([element[0]])
                     # workPackages.append([element[0]])
                     directorySize.remove(element)
+                    continue
         workPackages.append(workPackageTmp[0])
         if len(directorySize) < 1:
             break
@@ -262,11 +264,22 @@ if __name__ == "__main__":
     #: Write the start of the crawler into the database
     start = f"INSERT INTO tree_walk (name, notes, root_path, created_time, status, crawl_config, save_in_gerneric_table)  VALUES('test' ,'---' ,'{treeWalk}' ,'{datetime.now()}' ,NULL ,NULL ,NULL) RETURNING id"
     dbID = dbConnectionPool.insert_new_record(start)
+
+    # Run the small work packages
     with ThreadPoolExecutor(max_workers=powerLevel) as executor:
         for directories in workPackages:
             future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], directories, options,dbConnectionPool, dbID)
             # future = executor.submit(naiveTreeWalkBenchmark, data['paths']['exiftool'], directories, options,  dbConnection, dbID)
 
-    pass
+    # Run the big work packages
+    splitList = lambda split, X: [split[i: i + X] for i in range(0, len(split), X)]
+    with ThreadPoolExecutor(max_workers=powerLevel) as executor:
+        for directories in split:
+            for root, directory, files in os.walk(directories[0]):
+                completePath = [root + '/' + s for s in files]
+                splitComplete = splitList(completePath,X)
+                for element in splitComplete:
+                    future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], element, options,dbConnectionPool, dbID)
+
     elapsed_time = time.time() - start_time
     pprint(f"Execution time: {elapsed_time}")
