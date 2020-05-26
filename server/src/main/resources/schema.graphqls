@@ -15,12 +15,12 @@ type Query{
     """
     A query that returns all Files matching or not matching a pattern depending on the used PatternOption.
     """
-    searchForPattern(pattern: String! option: PatternOption!) : [File]
+    searchForPattern(pattern: String! option: PatternOption! sel_attributes: [String!]) : [File]
 
     """
     A query that returns all Files created between startTime and endTime
     """
-    searchForCreationTime(startTime: String! endTime: String!) : [File]
+    searchForCreationTime(startTime: String! endTime: String! sel_attributes: [String!]) : [File]
 }
 
 enum PatternOption{

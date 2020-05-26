@@ -48,7 +48,7 @@ public class Start
 
         System.out.println("all services are started");
 
-        new BenchmarkTest(registry).doBenchmark();
+        //new BenchmarkTest(registry).doBenchmark();
 
 
         if (Start.isIntegrationTest)
