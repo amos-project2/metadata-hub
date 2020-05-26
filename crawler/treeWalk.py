@@ -266,11 +266,11 @@ if __name__ == "__main__":
     start = f"INSERT INTO tree_walk (name, notes, root_path, created_time, status, crawl_config, save_in_gerneric_table)  VALUES('test' ,'---' ,'{treeWalk}' ,'{datetime.now()}' ,NULL ,NULL ,NULL) RETURNING id"
     dbID = dbConnectionPool.insert_new_record(start)
 
-    # # Run the small work packages
-    # with ThreadPoolExecutor(max_workers=powerLevel) as executor:
-    #     for directories in workPackages:
-    #         future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], directories, options,dbConnectionPool, dbID, True)
-    #         # future = executor.submit(naiveTreeWalkBenchmark, data['paths']['exiftool'], directories, options,  dbConnection, dbID)
+    # Run the small work packages
+    with ThreadPoolExecutor(max_workers=powerLevel) as executor:
+        for directories in workPackages:
+            future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], directories, options,dbConnectionPool, dbID, True)
+            # future = executor.submit(naiveTreeWalkBenchmark, data['paths']['exiftool'], directories, options,  dbConnection, dbID)
 
     # Run the big work packages
     splitList = lambda split, X: [split[i: i + X] for i in range(0, len(split), X)]
