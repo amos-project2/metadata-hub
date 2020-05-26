@@ -33,7 +33,8 @@ class Benchmark:
         """       
         x = 0
         y = 0
-       
+        insertions = []
+        
         # Walk through each object/file
         for file_number in self._metadata:
             # Time-elapsed: create query and insert into 1 table_generic from 1 file        
@@ -42,14 +43,17 @@ class Benchmark:
             x_end     = timer()
             x        += x_end - x_start
             
-            # Time-elapsed: create queries and insert into 1 table_eav from 1 file
+            # Time-elapsed: create 1 combined query for inserting into 1 table_eav from 1 file
             y_start = timer()
-            query   = extractData(file_number).extract_metadata_eav(self._id, genericID)
-            # Apply each query to insert for each row
-            for query_number in query:
-                self._con.insert_new_record(query_number)
+            insertions.extend(extractData(file_number).extract_metadata_eav(self._id, genericID))
             y_end   = timer()
             y      += y_end - y_start
+        
+        # Time-elapsed: insert into 1 table_eav from 1 file
+        y_start = timer()
+        self._con.insert_new_record("INSERT INTO file_generic_data_eav (tree_walk_id, file_generic_id, attribute, value, unit) VALUES " + ','.join(insertions))
+        y_end   = timer()
+        y      += y_end - y_start
         
         return [x, y, x + y]
     
