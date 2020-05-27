@@ -96,8 +96,8 @@ def splitList(split:List[str], X:int) :
     return lambda split, X: [split[i: i + X] for i in range(0, len(split), X)]
 
 
-def naiveTreeWalkBenchmark(pathExifTool: str, directory: List[str], options:List[str], con:DatabaseConnection, 
-                           dbID:int, trace:bool) -> None:
+def naiveTreeWalkBenchmark(pathExifTool: str, splitComplete: List[List[str]], options:List[str], 
+                           con:DatabaseConnection, dbID:int, trace:bool) -> None:
     """Naive implementation of the tree walk. inserts the results in Postgre database.
     and also mearure the inserting time for each directory
 
@@ -115,28 +115,29 @@ def naiveTreeWalkBenchmark(pathExifTool: str, directory: List[str], options:List
     xtime_list = []
     ytime_list = []
     etime_list = []
-
-    try:
-        etime_start   = timer()
-        process = subprocess.Popen([f'{pathExifTool}', '-json', *directory], stdout=subprocess.PIPE)
-        metadata = json.load(process.stdout)
-        etime_end     = timer()
-        etime_list.append(etime_end - etime_start)
-
-        # Perform time measurement for each directory
-        x, y, total_time = Benchmark(metadata, con, dbID).insert_file()
-        
-        if bool:
-            for dir in directory:
-                TRACER.add_node(dir)
-       
-        time_list.append(total_time)
-        xtime_list.append(x)
-        ytime_list.append(y)
-
-    except subprocess.CalledProcessError:
-        failures.append(directory)
-    except Exception as e: print(e)
+    
+    for directory in splitComplete:
+        try:
+            etime_start   = timer()
+            process = subprocess.Popen([f'{pathExifTool}', '-json', *directory], stdout=subprocess.PIPE)
+            metadata = json.load(process.stdout)
+            etime_end     = timer()
+            etime_list.append(etime_end - etime_start)
+    
+            # Perform time measurement for each directory
+            x, y, total_time = Benchmark(metadata, con, dbID).insert_file()
+            
+            if bool:
+                for dir in directory:
+                    TRACER.add_node(dir)
+           
+            time_list.append(total_time)
+            xtime_list.append(x)
+            ytime_list.append(y)
+    
+        except subprocess.CalledProcessError:
+            failures.append(directory)
+        except Exception as e: print(e)
 
     # Print total compute time
     if time_list[0] == None:
@@ -145,15 +146,12 @@ def naiveTreeWalkBenchmark(pathExifTool: str, directory: List[str], options:List
         pprint('Generic time: {}'.format(sum(xtime_list[1::])))
         pprint('    eav time: {}'.format(sum(ytime_list[1::])))
         pprint('Exiftooltime: {}'.format(sum(etime_list)))
-        pprint(time_list[1::])
     else:
         pprint('####################')
         pprint('  Total time: {}'.format(sum(time_list)))
         pprint('Generic time: {}'.format(sum(xtime_list)))
         pprint('    eav time: {}'.format(sum(ytime_list)))
         pprint('Exiftooltime: {}'.format(sum(etime_list)))
-        pprint(time_list)
-
 
 def workSize(pathInput: str) -> List[str]:
     """Creates a hash table based on the total amount of files per directory.
@@ -270,8 +268,8 @@ if __name__ == "__main__":
     # Run the small work packages
     with ThreadPoolExecutor(max_workers=powerLevel) as executor:
         for directories in workPackages:
-            # future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], directories, options,dbConnectionPool, dbID, True)
-            future = executor.submit(naiveTreeWalkBenchmark, data['paths']['exiftool'], directories, options, dbConnectionPool, dbID, True)
+            future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], directories, options,dbConnectionPool, dbID, True)
+            # future = executor.submit(naiveTreeWalkBenchmark, data['paths']['exiftool'], [directories], options, dbConnectionPool, dbID, True)
 
     # Run the big work packages
     splitList = lambda split, X: [split[i: i + X] for i in range(0, len(split), X)]
@@ -280,9 +278,9 @@ if __name__ == "__main__":
             for root, directory, files in os.walk(directories[0]):
                 completePath = [root + '/' + s for s in files]
                 splitComplete = splitList(completePath,X)
-                for element in splitComplete:
-                    # future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], element, options, dbConnectionPool, dbID, False)
-                    future = executor.submit(naiveTreeWalkBenchmark, data['paths']['exiftool'], element, options, dbConnectionPool, dbID, False)
+                 for element in splitComplete:
+                     future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], element, options, dbConnectionPool, dbID, False)
+                # future = executor.submit(naiveTreeWalkBenchmark, data['paths']['exiftool'], splitComplete, options, dbConnectionPool, dbID, False)
             print(directories)
             TRACER.add_node(directories[0])
 
