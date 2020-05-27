@@ -278,8 +278,8 @@ if __name__ == "__main__":
             for root, directory, files in os.walk(directories[0]):
                 completePath = [root + '/' + s for s in files]
                 splitComplete = splitList(completePath,X)
-                 for element in splitComplete:
-                     future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], element, options, dbConnectionPool, dbID, False)
+                for element in splitComplete:
+                    future = executor.submit(naiveTreeWalkUpdate, data['paths']['exiftool'], element, options, dbConnectionPool, dbID, False)
                 # future = executor.submit(naiveTreeWalkBenchmark, data['paths']['exiftool'], splitComplete, options, dbConnectionPool, dbID, False)
             print(directories)
             TRACER.add_node(directories[0])
