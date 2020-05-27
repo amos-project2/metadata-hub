@@ -16,7 +16,7 @@ export class FormQueryEditor extends Page {
 
     content() {
         return `
-<form>
+<form class="q-send-query-form-editor">
   <div class="form-row">
 
     <div class="form-group col-md-6">
@@ -32,7 +32,7 @@ export class FormQueryEditor extends Page {
 
   <div class="form-row">
     <div class="form-group col-md-6">
-      <label for="fq-filePattern">Query-Name</label>
+      <label for="fq-filePattern">Pattern*</label>
       <input type="text" class="form-control" id="fq-filePattern">
     </div>
 <div class="form-group col-md-6">
@@ -49,7 +49,7 @@ export class FormQueryEditor extends Page {
       <input type="text" class="form-control" id="fq-createFileTimeRangeStart">
     </div>
      <div class="form-group col-md-6">
-      <label for="fq-createFileTimeRangeEnd">Start-DateTime</label>
+      <label for="fq-createFileTimeRangeEnd">End-DateTime</label>
       <input type="text" class="form-control" id="fq-createFileTimeRangeEnd">
     </div>
 
@@ -60,7 +60,7 @@ export class FormQueryEditor extends Page {
 
 <div class="col-md-12"><hr></div>
 
-<div class="col-md-12">Which Attributes:</div>
+<div class="col-md-12">Which Attributes (empty means all attributes):</div>
 <div class="fg-attribut-container" style="width: 100%">
 
      <div class="form-group col-md-4 fg-attribut-element">
@@ -81,14 +81,64 @@ export class FormQueryEditor extends Page {
 <pre id="json" class="q_result"></pre>
 </div>
 
+
+<div class="modal fade" id="graphql-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">GraphQl Code Inspection</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" >
+        <pre id="graphql-code-content"></pre>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
         `;
     }
 
     onMount() {
 
         this.helperMethod();
+        let thisdata = this;
+        $(".q-send-query-form-editor").submit(function (event) {
+            event.preventDefault();
+            thisdata.graphqlfetcher(thisdata.buildAndGetGraphQlQuery(), function (sucess, json, jsonString) {
+
+                $(".q_result").text(jsonString);
+
+            })
+        });
+
+        $(".open-query").click(function () {
+
+            $("#graphql-code-content").text(thisdata.buildAndGetGraphQlQuery());
+            $('#graphql-modal').modal()
+
+        });
+
+        $(".send-to-graphiql").click(function () {
+
+            $("#nav-element-graphiql-console").trigger("click");
+            setTimeout(function () {
+
+                alert(thisdata.buildAndGetGraphQlQuery());
+                //TODO inject, prettify, and execute, remove alert^^
+
+            }, 1000);
 
 
+        });
 
 
         //alert(datetimepicker());
@@ -138,6 +188,81 @@ export class FormQueryEditor extends Page {
             }
 
         });
+    }
+
+
+    buildAndGetGraphQlQuery() {
+
+        let filepattern = $("#fq-filePattern").val();
+        let checkbox = $("#fq-includeVsExclude").prop('checked');
+        let limit = $("#fq-limit").val();
+        let startDate = $("#fq-createFileTimeRangeStart").val();
+        let endDate = $("#fq-createFileTimeRangeEnd").val();
+
+        if (filepattern !== "") {filepattern = `pattern: "${filepattern}",`;} else {filepattern = "";}
+        if (!checkbox) {checkbox = "option: included,";} else {checkbox = "option: excluded,";}
+        if (limit !== "") {limit = `limitFetchingSize: ${limit},`;} else {limit = "";}
+        if (startDate !== "") {startDate = `startTime: "${startDate}",`;} else {startDate = "";}
+        if (endDate !== "") {endDate = `endTime: "${endDate}",`;} else {endDate = "";}
+
+        let attributes = "";
+        $(".attribut-element-input").each(function () {
+            if ($(this).val() !== "") {
+                attributes += `"${$(this).val()}", `;
+            }
+
+        });
+
+        if (attributes !== "") {
+            attributes = `sel_attributes:[${attributes}],`;
+        }
+
+
+        let query = `
+query
+{
+  search(${filepattern} ${checkbox} ${limit} ${startDate} ${endDate} ${attributes})
+  {
+    sub_path,
+    name,
+    metadata
+    {
+      name,
+      value,
+    }
+  }
+}`;
+
+        return query
+
+    }
+
+    graphqlfetcher(query, func) {
+
+        const URL = "graphql/";
+
+        fetch(URL, {
+            crossOrigin: null,
+            method: "post",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({query: query})
+        }).then(function (response) {
+            console.log(response);
+            if (response.ok)
+                return response.json();
+            else
+                func(false, null, 'Error in the HTTP-Answer');
+            // throw new Error('Error in the HTTP-Answer');
+        })
+            .then(function (json) {
+                func(true, json, JSON.stringify(json, undefined, 2));
+                // $(".q_result").text(JSON.stringify(json, undefined, 2));
+            })
+            .catch(function (err) {
+                func(false, null, JSON.stringify(json, undefined, 2));
+                //$(".q_result").text("Error: " + err);
+            });
+
     }
 
 
