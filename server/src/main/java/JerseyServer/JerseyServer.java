@@ -68,9 +68,9 @@ public class JerseyServer
             System.out.println("GRAPHQL-ENDPOINT: http://localhost:" + config.getProperty("server-port") + "/graphql/?query=hey");
             System.out.println("GRAPHQL-TEST-CONSOLE: http://localhost:" + config.getProperty("server-port") + "/testconsole/");
 
-            Thread.currentThread().join();
+            //Thread.currentThread().join();
         }
-        catch (IOException | InterruptedException ex)
+        catch (IOException ex)
         {
             Logger.getLogger(JerseyServer.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -1,5 +1,6 @@
 package Start;
 
+import Benchmark.BenchmarkTest;
 import Config.ApplicationConfig;
 import Config.JsonValideException;
 import Config.Config;
@@ -9,18 +10,25 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 
 public class Start
 {
     private static final Logger log = LoggerFactory.getLogger(Start.class);
+    public static boolean isIntegrationTest = false;
     @Getter private static Config config;
 
     public static void main(String[] args) throws Exception
     {
         System.out.println("AMOS-GRAPHQL-SERVER");
 
-        if (!loadConfig(args))
+        final CLIParser cliParser = new CLIParser(args).parse();
+        Start.isIntegrationTest = cliParser.isIntegrationTest();
+        System.out.println(Start.isIntegrationTest + " integration-test");
+
+        if ((config = ApplicationConfig.loadConfig(cliParser.getConfigFilePath())) == null)
         {
             System.exit(-1);
             return;
@@ -28,6 +36,8 @@ public class Start
 
         Registry registry = new Registry();
 
+
+        //this is not related to our integration-tests
         RuntimeTests runtimeTests = new RuntimeTests(registry);
         /**
          * you can add there tests, activate, deactivate, however you want
@@ -37,30 +47,33 @@ public class Start
 
 
         System.out.println("all services are started");
-    }
 
-    private static boolean loadConfig(String[] args) throws IOException, JsonValideException
-    {
-        try
+        //new BenchmarkTest(registry).doBenchmark();
+
+
+        if (Start.isIntegrationTest)
         {
-            Map<String, String> env = System.getenv();
-            ApplicationConfig applicationConfig = new ApplicationConfig((args.length > 0) ? args[0] : null, env.get("METADATAHUB_ENV"));
+            IntegrationTest integrationTest = new IntegrationTest(registry);
+            boolean result = integrationTest.testAll();
 
-            if (!applicationConfig.isConfigValid())
+            registry.shutdown();
+
+            if (result)
             {
-                System.out.println("Config (" + applicationConfig.getConfigFilePath() + ") is not valide: " + applicationConfig.getErrorMessage());
-                return false;
+                System.out.println("Integrationtest succeeded!");
+                System.exit(0);
+                return;
             }
-            Start.config = applicationConfig.getConfig();
-            System.out.println("Used config-file: " + applicationConfig.getConfigFilePath() + " [" + ((applicationConfig.isJson()) ? "JSON" : "PROPERTY-FILE") + "]");
-            return true;
+            else
+            {
+                System.out.println("Integrationtest failed!");
+                System.exit(-1);
+                return;
+            }
+
         }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            System.out.println("Error in loading the config: " + e.getMessage());
-            return false;
-        }
+
+        Thread.currentThread().join();
 
     }
 

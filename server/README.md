@@ -36,6 +36,14 @@ $ mvn compile
 ```console
 $ mvn clean
 ```
+
+###### Run with arguments
+
+```console
+$ java -jar ./target/metadata-hub-server-application-fat.jar [CONFIG_FILE_PATH] [-integretationTestEnable]
+```
+if there is the option **-integretationTestEnable** then the program starts with its integration-tests. After test-finish it stopps
+
 ### Configuration
 You can configure the server with the *-config.properties file.<br><br>
 The ../configs/environment.default.json file is for local purposes and is **default read** by the java-app. No argument is needed<br>

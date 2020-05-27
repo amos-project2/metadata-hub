@@ -59,6 +59,43 @@ public class GraphQLDataFetchers
 
     /**
      * Data Fetcher is used by this GraphQL Query:
+     * searchForPattern(pattern: String!, option: PatternOption!) : [File]
+     *
+     * Function:
+     * If option == included: Searches for all files with "pattern" in their pathname
+     * If option == excluded: Searches for all files without "pattern" in their pathname
+     *
+     * Options:
+     * sel_attributes: If specified, fetches solely the selected attributes
+     */
+    @SuppressWarnings({"rawtypes"})
+    public DataFetcher searchFetcher()
+    {
+        return (DataFetcher<List<File>>) dataFetchingEnvironment ->
+        {
+
+            final String pattern = dataFetchingEnvironment.getArgument("pattern");
+            final String patternOption = dataFetchingEnvironment.getArgument("option");
+            final String startTime = dataFetchingEnvironment.getArgument("startTime");
+            final String endTime = dataFetchingEnvironment.getArgument("endTime");
+            final ArrayList<String> selection_attributes = dataFetchingEnvironment.getArgument("sel_attributes");
+            int limitFetchingSize = 0;
+            if(dataFetchingEnvironment.getArgument("limitFetchingSize") != null)
+            {
+                limitFetchingSize = dataFetchingEnvironment.getArgument("limitFetchingSize");
+            }
+
+            if (selection_attributes != null)
+            {
+                log.info("searchForPattern: pattern = " + pattern + " option = " + patternOption + " sel_attributes = " + selection_attributes.toString());
+            }
+
+            return queryFilesWithOptions(pattern, patternOption, startTime, endTime, selection_attributes, limitFetchingSize);
+        };
+    }
+
+    /**
+     * Data Fetcher is used by this GraphQL Query:
      * get_dir_metadata(dir_path: String!, sel_attributes: [String!], eav: Boolean) : [File]
      *
      * Function:
@@ -93,6 +130,7 @@ public class GraphQLDataFetchers
             }
         };
     }
+
     @SuppressWarnings("unchecked")
     private List<Metadatum> queryFileMetadata(String file_generic_id, ArrayList<String> requested_attributes) throws SQLException, IOException {
         HikariDataSource dataSource = databaseProvider.getHikariDataSource();
@@ -274,6 +312,84 @@ public class GraphQLDataFetchers
         }
     }
 
+    private List<File> queryFilesWithOptions(String pattern, String patternOption, String startTime, String endTime,
+                                             ArrayList<String> selection_attributes, int limitFetchingSize) throws SQLException, IOException {
+        HikariDataSource dataSource = databaseProvider.getHikariDataSource();
+
+        //SelectStmt = Join on tree_walk_id; Concat the paths and remove the leftmost slash "/home/" + "/testDir/" = "/home/testDir/"
+        //TODO Use treewalk table and file table for the absolute path
+        //TODO Or save the absolute path also in the file table
+        //TODO Don't join on TreeWalkID? but on file_id?
+        /*try (Connection connection = dataSource.getConnection();
+             PreparedStatement selectStmt = connection.prepareStatement
+                 ("SELECT *" +
+                     " FROM public.file_generic INNER JOIN public.tree_walk ON public.file_generic.\"tree_walk_id\" = public.tree_walk.\"id\"" +
+                     " WHERE CONCAT(public.tree_walk.root_path, RIGHT(public.file_generic.sub_dir_path, length(public.file_generic.sub_dir_path) - 1)) LIKE ?")) {
+*/
+        //TODO Talk about database structure! Right now sub_dir_path is the absolute path but without the filename?!
+
+        //Options
+        String patternOptionStmt = "";
+        if(patternOption != null && patternOption.equals("excluded"))
+        {
+            patternOptionStmt = " NOT ";
+        }
+
+        String startTimeStmt = "";
+        if(startTime != null)
+        {
+            startTimeStmt = " AND public.file_generic.file_create_date >= \'" + startTime + "\'";
+        }
+
+        String endTimeStmt = "";
+        if(endTime != null)
+        {
+            endTimeStmt = " AND public.file_generic.file_create_date < \'" + endTime + "\'";
+        }
+
+        String fetchingSizeLimitStmt = "";
+        if(limitFetchingSize > 0)
+        {
+            fetchingSizeLimitStmt = " FETCH FIRST " + limitFetchingSize + " ROWS ONLY";
+        }
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement selectStmt = connection.prepareStatement
+                 ("SELECT * " +
+                     "FROM public.file_generic " +
+                     "WHERE CONCAT(public.file_generic.sub_dir_path, '/', public.file_generic.name)"  + patternOptionStmt + " LIKE ? " +
+                     startTimeStmt + endTimeStmt + fetchingSizeLimitStmt)) {
+
+            selectStmt.setString(1, "%" + pattern + "%");
+            System.out.println(selectStmt.toString());
+            try (ResultSet rs = selectStmt.executeQuery()) {
+                ArrayList<File> files = new ArrayList<>();
+                while (rs.next()) {
+                    //TODO Placeholder for Attribute ID
+                    String metdatum_id = "<No Attribute ID, when the EAV_table isn't used>";
+                    String tree_walk_id = rs.getString("tree_walk_id");
+                    //TODO File only has relative path as attribute, user right now doesnt get information back about the treewalk
+                    //TODO Right now the user can't calculate the absolute path themselves -> think about which information we send back
+                    //TODO change GraphQL such that it doesn't resemble database scheme but delivers the most useful information to the user?
+                    //String absolute_file_path = rs.getString("root_path") + rs.getString("sub_dir_path").substring(1);
+                    String absolute_file_path = rs.getString("sub_dir_path");
+                    String jsonFileMetadata = rs.getString("metadata");
+                    ArrayList<Metadatum> metadata = new ArrayList<>();
+                    ObjectMapper mapper = new ObjectMapper();
+                    Map<String, String> attribute_map = mapper.readValue(jsonFileMetadata, Map.class);
+
+                    helperAddSelAttributes(selection_attributes, metdatum_id, tree_walk_id, absolute_file_path, metadata, attribute_map);
+                    files.add(new File(metdatum_id, tree_walk_id,
+                        absolute_file_path, rs.getString("name"), rs.getString("file_typ"),
+                        rs.getString("file_create_date"), rs.getString("file_modify_date"),
+                        rs.getString("file_access_date"), jsonFileMetadata, metadata));
+
+                }
+
+                return files;
+            }
+        }
+    }
 
 
     private void helperAddSelAttributes(ArrayList<String> selection_attributes, String attribute_id, String tree_walk_id, String absolute_file_path, ArrayList<Metadatum> metadata, Map<String, String> attribute_map) {

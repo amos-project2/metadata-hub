@@ -58,3 +58,5 @@ export class GraphqlQueryEditor extends Page {
     }
 
 }
+
+

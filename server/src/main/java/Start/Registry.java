@@ -24,4 +24,11 @@ public class Registry
         jerseyServer = new JerseyServer(graphQLProvider.init().getGraphQL(), Start.getConfig());
         jerseyServer.start();
     }
+
+
+    public void shutdown()
+    {
+        this.jerseyServer.shutdownNow();
+        this.databaseProvider.shutdown();
+    }
 }
