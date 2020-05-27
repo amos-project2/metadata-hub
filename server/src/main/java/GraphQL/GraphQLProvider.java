@@ -47,11 +47,11 @@ public class GraphQLProvider
     {
         return RuntimeWiring.newRuntimeWiring()
             .type(newTypeWiring("Query")
-                .dataFetcher("teststuff", graphQLDataFetchers.getDatabaseTestFetcher()))
+                .dataFetcher("getFileMetadata", graphQLDataFetchers.getFileMetadataFetcher()))
             .type(newTypeWiring("Query")
-                .dataFetcher("get_metadata", graphQLDataFetchers.getFileMetadataFetcher()))
+                .dataFetcher("getDirMetadata", graphQLDataFetchers.getDirMetadataFetcher()))
             .type(newTypeWiring("Query")
-                .dataFetcher("get_dir_metadata", graphQLDataFetchers.getDirMetadataFetcher()))
+                .dataFetcher("search", graphQLDataFetchers.searchFetcher()))
 
             .build();
     }

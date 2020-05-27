@@ -36,18 +36,36 @@ $ mvn compile
 ```console
 $ mvn clean
 ```
+
+###### Run with arguments
+
+```console
+$ java -jar ./target/metadata-hub-server-application-fat.jar [CONFIG_FILE_PATH] [-integretationTestEnable]
+```
+if there is the option **-integretationTestEnable** then the program starts with its integration-tests. After test-finish it stopps
+
 ### Configuration
 You can configure the server with the *-config.properties file.<br><br>
-The local-config.properties file is for local purposes and is **default read** by the java-app. No argument is needed<br>
-The deployment-config.properties file is for deployment purposes. The Path must be hand over a java-app argument.<br>
-You are also allowed to create your own *-config.properties file. You have to do the same as you do with the deployment-config.properties file.
+The ../configs/environment.default.json file is for local purposes and is **default read** by the java-app. No argument is needed<br>
+The ../environment.deployment.json file is for deployment purposes. The Path must be hand over a java-app argument.<br>
+You are also allowed to create your own *-config.properties/*-config.json file. You have to do the same as you do with the deployment file.
+
+Edit: Now you can also use instead of the properties-format the json-format.
+The Java-Application detects the right format on its own.
+As value-datatypes is allowed there : **String, Integer, Boolean**
+
+ You can also set the path via environment-variable.
 
 **An Example**
 
 ```console
-java -jar metadata-hub-server-application-fat.jar CONFIG-FILE-PATH
-```
+$ java -jar metadata-hub-server-application-fat.jar CONFIG-FILE-PATH
 
+//OR
+
+$ export METADATAHUB_ENV=CONFIG-FILE-PATH
+$ java -jar metadata-hub-server-application-fat.jar
+```
 
 
 

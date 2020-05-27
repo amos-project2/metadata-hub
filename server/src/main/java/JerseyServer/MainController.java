@@ -1,5 +1,6 @@
 package JerseyServer;
 
+import Config.Config;
 import Start.Start;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,24 +19,13 @@ import java.util.Properties;
 public class MainController
 {
     private final GraphQL graphQl;
-    private static final Properties config = Start.getConfig();
+    private static final Config config = Start.getConfig();
 
     public MainController()
     {
         System.out.println("graphQL added: " + (JerseyServer.getGraphQLCheat() != null));
         this.graphQl = JerseyServer.getGraphQLCheat();
     }
-
-//    //static-stuff
-//
-//    @GET
-//    @Produces("text/plain")
-//    @Path("/")
-//    public String getStatic1()
-//    {
-//        return "static data";
-//    }
-
 
     //graphQL-Endpoint
 
@@ -109,7 +99,7 @@ public class MainController
     {
         String out = this.loadFile("graphiql/graphiql.html");
 
-        String content = out.toString().replaceAll("%PORT%", config.getProperty("httpserver.port"));
+        String content = out.toString().replaceAll("%PORT%", config.getProperty("server-port"));
         return content;
     }
 
@@ -144,7 +134,7 @@ public class MainController
     {
         String out = this.loadFile("web-ui/index.html");
 
-        String content = out.toString().replaceAll("%PORT%", config.getProperty("httpserver.port"));
+        String content = out.toString().replaceAll("%PORT%", config.getProperty("server-port"));
         return content;
     }
 

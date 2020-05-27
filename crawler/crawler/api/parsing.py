@@ -11,8 +11,11 @@ REQUIRED_PROPERTIES = [
     'output',
     'trace',
     'exiftool',
-    'power',
-    'clear'
+    'powerLevel',
+    'clearTrace',
+    'fileTypes',
+    'language',
+    'packageSize'
 ]
 
 
@@ -77,6 +80,7 @@ def _parse_output(output: str) -> str:
 
     Returns:
         str: input or None on error
+
     """
     if not _check_input_type(output):
         return None
@@ -105,46 +109,104 @@ def _parse_exiftool(exiftool: str) -> str:
         exiftool (str): exiftool input
 
     Returns:
-        str: linux or windows, None on error
+        str: given value if it is of type string, None otherwise
 
     """
-    if exiftool in ['linux', 'windows']:
-        return exiftool
-    return None
+    if not _check_input_type(exiftool):
+        return None
+    return exiftool
 
 
-def _parse_clear(clear: str) -> bool:
+def _parse_clear(clear_trace: str) -> bool:
     """Parse the clear flag for trace data.
 
     Args:
-        clear (str): clear trace data input
+        clear_trace (str): clear trace data input
 
     Returns:
         bool: True/False or None on error
 
     """
-    if clear == 'true':
+    if clear_trace == 'true':
         return True
-    if clear == 'false':
+    if clear_trace == 'false':
         return False
     return None
 
 
-def _parse_power(power: str) -> int:
+def _parse_power(power_level: str) -> int:
     """Parse the power level.
 
     Args:
-        power (str): power level input
+        power_level (str): power level input
 
     Returns:
         int: power level as int or None on error
-    """
-    if not _check_input_type(power):
-        return None
-    if power in ['1', '2', '3', '4']:
-        return int(power)
-    return None
 
+    """
+    if not _check_input_type(power_level):
+        return None
+    try:
+        return int(power_level)
+    except ValueError:
+        return None
+
+
+def _parse_filetypes(file_types: str) -> List[str]:
+    """Parse the desired filetypes
+
+    If all filetypes are desired, the function returns ['all']
+
+    Args:
+        file_types (str): desired filetypes
+
+    Returns:
+        List[str]: list of filetypes or None on error
+
+    """
+    if not _check_input_type(file_types):
+        return None
+    file_types = file_types.split(',')
+    if 'all' in file_types:
+        return ['all']
+    # Get rid of any empty or only whitespace containing element
+    return ' '.join(file_types).split()
+
+
+def _parse_language(language: str) -> str:
+    """Parse the desired output language.
+
+    Args:
+        language (str): given language
+
+    Returns:
+        str: one of the supported languages or None on error
+
+    """
+    if not _check_input_type(language):
+        return None
+    return language
+
+
+def _parse_package_size(package_size: str) -> int:
+    """Parse the size of the work packages.
+
+    Only allow positive numbers for package size. Do not make any other
+    restrictions for now.
+
+    Args:
+        package_size (str): size of work packages to process
+
+    Returns:
+        int: size of the work packages or None on error
+
+    """
+    if not _check_input_type(package_size):
+        return None
+    try:
+        return int(package_size)
+    except ValueError:
+        return None
 
 
 def parse(form_data: dict) -> dict:
@@ -160,7 +222,6 @@ def parse(form_data: dict) -> dict:
         dict: dictionary according to the configuratio schema
 
     """
-
     for prop in REQUIRED_PROPERTIES:
         if prop not in form_data:
             raise APIParsingException('Form data was modified.')
@@ -176,20 +237,34 @@ def parse(form_data: dict) -> dict:
     exiftool = _parse_exiftool(form_data.get('exiftool'))
     if exiftool is None:
         raise APIParsingException('Invalid input field: ExifTool')
-    clear = _parse_clear(form_data.get('clear'))
-    if clear is None:
+    clear_trace = _parse_clear(form_data.get('clearTrace'))
+    if clear_trace is None:
         raise APIParsingException('Invalid input field: Clear trace data')
-    power = _parse_power(form_data.get('power'))
-    if power is None:
+    power_level = _parse_power(form_data.get('powerLevel'))
+    if power_level is None:
         raise APIParsingException('Invalid input field: Power Level')
+    file_types = _parse_filetypes(form_data.get('fileTypes'))
+    if file_types is None:
+        raise APIParsingException('Invalid input field: Filetypes')
+    language = _parse_language(form_data.get('language'))
+    if language is None:
+        raise APIParsingException('Invalid input field: Language')
+    package_size = _parse_package_size(form_data.get('packageSize'))
+    if package_size is None:
+        raise APIParsingException('Invalid input field: Package size')
     result = {
-        'inputs': inputs,
-        'output': output,
-        'trace': trace,
-        'exiftool': exiftool,
+        'paths': {
+            'inputs': inputs,
+            'output': output,
+            'trace': trace,
+            'exiftool': exiftool
+        },
         'options': {
-            'clearTrace': clear,
-            'powerLevel': power
+            'clearTrace': clear_trace,
+            'powerLevel': power_level,
+            'fileTypes': file_types,
+            'language': language,
+            'packageSize': package_size
         }
     }
     return result

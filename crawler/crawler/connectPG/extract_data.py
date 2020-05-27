@@ -107,8 +107,8 @@ class extractData:
                     test.append(f"'{attributesTmp[i]}'")
                     test.append(f"'{valuesTmp[i]}'")
                     test.append('NULL')
-                    values = " VALUES({a})".format(a=" ,".join(test))
-                    query.append(insertin + values)
+                    values = "({a})".format(a=" ,".join(test))
+                    query.append(values)
         return query
 
     def extract_metadata_generic(self, dbID: int) -> str:
@@ -142,6 +142,9 @@ class extractData:
 
             elif att_name in ["file_modify_date", "file_access_date", "file_create_date"]:
                 date_output = refineData(self._input).refine_date(att_exiftool)
+                # TODO
+                if '0000-00-00' in date_output:
+                    print("hi")
                 text_input = "'{}'".format(date_output)
                 metadata.append(text_input)
 

@@ -173,10 +173,16 @@ def config():
         return flask.render_template('config.html')
     try:
         result = parsing.parse(flask.request.form)
-        return flask.render_template('config.html', message='Success')
     except parsing.APIParsingException as err:
         message = f'Failed. {str(err)}'
         return flask.render_template('config.html', message=message)
+    parser = config_service.ConfigParser(json.dumps(result))
+    try:
+        config = parser.parse()
+    except config_service.ConfigParsingException as error:
+        return flask.render_template('config.html', message=str(error))
+    treewalk.add_config_queue(config)
+    return flask.render_template('config.html', message='Success')
 
 
 @app.route('/shutdown', methods=['POST'])

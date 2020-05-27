@@ -19,7 +19,7 @@ from . import env
 
 
 # FIXME: These ones should have a more reliable solution
-_SCHEMA_FILE = '../../../../../environment.schema'
+_SCHEMA_FILE = '../../../../../configs/environment.schema'
 _ENVIRONMENT_VARIABLE = 'METADATAHUB_ENV'
 
 

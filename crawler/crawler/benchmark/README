@@ -1,0 +1,32 @@
+# Data
+- https://www.kaggle.com/paultimothymooney/kermany2018/data
+- Files: ~253,500 images
+- Size:  ~11.1 Gb
+
+# Preparing:
+- A folder with large amount of data with sub-directories inside
+- A folder with large amount of data with no sub-directories (flat)
+ 
+# Benchmarking:
+- evaluate how fast crawling and inserting into the table 
+   > Crawl through folder with no subdir: 
+      + Insert into 3 tables 
+      + CPU options: 1 or 4
+      => 2 tests: (power=1, dataset=tree) and (power=4, dataset=tree)
+      
+   > Crawl through folder with subdirs: 
+      + Insert into 3 tables 
+      + CPU options: 1 or 4
+      => 2 tests: (power=1, dataset=flat) and (power=4, dataset=flat)
+
+# Answering
+- Calcutulate total time if increasing CPU *option
+   => How many files per second? (file/s)
+   => How many bits per second? (Mb/s)
+   
+- Calculate inserting time into
+   => table generic (X seconds)
+   => table eav (Y seconds)
+
+
+

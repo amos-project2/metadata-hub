@@ -18,10 +18,17 @@ public class Registry
 
     public Registry() throws IOException
     {
-        databaseProvider = new DatabaseProvider();
+        databaseProvider = new DatabaseProvider(Start.getConfig());
         graphQLDataFetchers = new GraphQLDataFetchers(databaseProvider);
         graphQLProvider = new GraphQLProvider(graphQLDataFetchers, databaseProvider);
-        jerseyServer = new JerseyServer(graphQLProvider.init().getGraphQL());
+        jerseyServer = new JerseyServer(graphQLProvider.init().getGraphQL(), Start.getConfig());
         jerseyServer.start();
+    }
+
+
+    public void shutdown()
+    {
+        this.jerseyServer.shutdownNow();
+        this.databaseProvider.shutdown();
     }
 }
