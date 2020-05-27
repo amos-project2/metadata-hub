@@ -3,6 +3,7 @@ import {Testname} from "./status/Testname";
 import {GraphiqlConsole} from "./graphiql/Graphiql-console";
 import {FormQueryEditor} from "./query/FormQueryEditor";
 import {GraphqlQueryEditor} from "./query/GraphqlQueryEditor";
+import {CrawlerConfig} from "./crawler/CrawlerConfig";
 
 class NavElement {
     constructor(name, selectorName, contentLoader) {
@@ -85,6 +86,7 @@ export class Template {
         this.addNavGroup("nav_crawler", function (n) {
             n.addOneNavElement(new NavElement("crawler1", "crawler1", new Page("crawler1")));
             n.addOneNavElement(new NavElement("crawler2", "crawler2", new Page("crawler2")));
+            n.addOneNavElement(new NavElement("Crawler Config", "crawler-config", new CrawlerConfig("crawler-config")));
         });
 
 
