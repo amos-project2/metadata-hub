@@ -65,6 +65,12 @@ module.exports = {
     },
     resolve: {
         extensions: ['.js', '.json', '.jsx', '.css', '.mjs'],
+        alias: {
+            // Force all modules to use the same jquery version.
+            'jquery': path.join(__dirname, 'node_modules/jquery/src/jquery')
+            }
+
+
     },
     plugins: [
         new CleanWebpackPlugin(),
