@@ -37,5 +37,8 @@ class Config:
     def get_options_language(self) -> str:
         return self._options.get('language')
 
+    def get_options_package_size(self) -> int:
+        return self._options.get('packageSize')
+
     def __str__(self) -> str:
         return dumps(self._data)
