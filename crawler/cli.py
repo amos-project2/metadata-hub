@@ -183,7 +183,7 @@ def shutdown(
     """
     name = 'shutdown'
     if subparser is None:
-        make_request(f'{_API}/{name}', True)
+        requests.post(f'{_API}/{name}')
         return
     subparser.add_parser(
         name,
