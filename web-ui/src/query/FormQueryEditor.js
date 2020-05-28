@@ -43,7 +43,9 @@ export class FormQueryEditor extends Page {
         <label class="custom-control-label" for="fq-includeVsExclude">Include VS Exclude</label>
     </div>
 </div>
+</div>
 
+  <div class="form-row">
     <div class="form-group col-md-6">
       <label for="fq-createFileTimeRangeStart">Start-DateTime</label>
       <input type="text" class="form-control" id="fq-createFileTimeRangeStart">
@@ -52,24 +54,31 @@ export class FormQueryEditor extends Page {
       <label for="fq-createFileTimeRangeEnd">End-DateTime</label>
       <input type="text" class="form-control" id="fq-createFileTimeRangeEnd">
     </div>
+    </div>
 
+  <div class="form-row">
    <div class="form-group col-md-12">
       <label for="fq-limit">Limit</label>
       <input type="text" class="form-control" id="fq-limit">
     </div>
+    </div>
 
-<div class="col-md-12"><hr></div>
+  <div class="form-row">
+     <div class="col-md-12"><hr></div>
+  </div>
 
+  <div class="form-row">
 <div class="col-md-12">Which Attributes (empty means all attributes):</div>
-<div class="fg-attribut-container" style="width: 100%">
+</div>
+
+
+<div class="fg-attribut-container form-row">
 
      <div class="form-group col-md-4 fg-attribut-element">
           <input type="text" class="form-control attribut-element-input">
      </div>
-
-
 </div>
-  </div>
+
 
 <button type="submit" class="btn btn-primary">Send</button>
 <button type="button" class="btn btn-primary open-query">Open Query</button>
