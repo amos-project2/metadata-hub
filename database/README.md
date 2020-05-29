@@ -1,13 +1,13 @@
 ## HOWTO SETUP
 
-##### 1. Execute metadatahub-role.sql
-##### 2. Execute metadatahub-database.sql
-##### 3. Execute metadatahub-schemata.sql
-##### 4. (Optional) Execute metadatahub-data.sql
+##### 1.Create Role:            Execute metadatahub-role.sql
+##### 2.Create Database:        Execute metadatahub-database.sql
+##### 3.Create Schemata:        Execute metadatahub-schemata.sql
+##### 4.Add Some Example Data:  Execute metadatahub-data.sql
 
 ### Commands for psql-CLI
 
-###### Change the postgres-config first
+##### Change the postgres-config first
 
 /etc/postgresql/12/main/pg_hba.conf<br><br>
 If you cant find the config file there you could search for it with the following command:
@@ -36,7 +36,7 @@ host    replication     all             127.0.0.1/32            md5
 host    replication     all             ::1/128                 md5
 ```
 
-###### on the scond step, execute the commands
+##### On the second step, execute the commands
 
 ```console
 psql -Upostgres -W -f metadatahub-role.sql
@@ -45,46 +45,53 @@ psql metadatahubtest -Umetadatahub -W -f metadatahub-schemata.sql
 psql metadatahubtest -Umetadatahub -W -f metadatahub-data.sql
 ```
 
+##### On Windows:
+loading ".sql"-Files on Windows using the psql shell
+```console
+metadata=> \i c:/dir/dir/metadatahub-schemata.sql
+```
+
 ### Database-Schemata
 
-###### tree_walk
+##### crawls
 ```
-id -> primary key (autoincrement)
-name -> a name/title, which the user can choose
-notes -> notes, which the user can add to this tree_walk
-root_path -> ? maybe the absolut path to the path
-created_time -> when this entry here is created/when the crawler job started
-finished_time -> the end of the first crawler-job
-status -> the status (crawling, finished, abborted, ...)
-crawl_config -> the config-data the crawler was/is executed, only for user-presentation purposes
-crawl_update_time -> the last finish of the last update
-save_in_generic_table -> boolean, if true -> save in the big-table file_generic, if false, the crawl-data comes to a new table, for example file_%ID
+id(bigint)                -> primary key (uses autoincrement sequence)
+dir_path(text)            -> starting directory of the crawl
+name(text)                -> specified name of the crawler
+status(text)              -> status of the crawl (running, finished, suspended, abborted, ...)
+crawl_config(text)        -> latest used crawl_config by the crawl, only for user-presentation purposes
+analyzed_files(jsonb)     -> array of currently analyzed files at "update_time"
+starting_time(date)       -> start time of the crawler job
+finished_time(date)       -> the end of the first crawler-job
+update_time(date)         -> time of the latest update of the crawl data
+analyzed_files_hash(text) -> sha-256 hash of analyzed_files (uses trigger to create hash on inserting and updating)
 ```
-###### file_generic
+##### files
 ```
-id -> primary key (autoincrement)
-tree_walk_id -> reference ID to tree_walk
-sub_dir_path -> the subdir path
-name -> the name of the file
-file_typ -> the file_type as a String
-size -> the size in bytes
-file_create_data -> the file create data
-file_modyfy_data -> the file modify data
-file_access_date -> the file access date
-metadata -> json_field, which could contains as json all metadata
+id(bigint)                -> primary key (uses autoincrement sequence)
+crawl_id(bigint)          -> foreign key "crawls.id"
+dir_path(text)            -> absolute path of the file
+name(text)                -> name of the file
+type(text)                -> type of the file
+size(bigint)              -> the size in bytes
+metadata(jsonb)           -> metadata of the file
+creation_time(date)       -> time the file was created
+access_time(date)         -> time the file was last accessed
+modification_time(date)   -> time the file was last modified
+file_hash(text)           -> sha-256 hash of the file
 ```
 
-###### file_generic
+##### file_generic_data_eav
 
-its redundand to the metadata field, but for now we are not sure, what we want to use
-maybe the json_field metada could be faster, cause there postgres can optimize on itself
+redundant table to save the metadata in another way than "files.metadata"
+is only used by older functions and for testing
 
 ```
-id -> primary key (autoincrement) -> cause postgres want a primary-key, but we can choose a other primary key
-tree_walk_id -> reference ID to tree_walk
-file_generic_id -> reference ID to file_generic
-attribute -> as String the attribute name
-value -> as String the attribute value
-unit -> as String the unit (but i have no idea what the content here could be, cause the exiftool dont deliver units)
+id(bigint)                -> primary key (uses autoincrement sequence)
+tree_walk_id(bigint)      -> reference ID to crawls
+file_generic_id(bigint)   -> reference ID to files
+attribute(text)           -> name of the attribute
+value(text)               -> value of the attribute
+unit(text)                -> unit of "value"
 ```
 

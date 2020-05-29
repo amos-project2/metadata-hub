@@ -2,10 +2,10 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 12.2 (Ubuntu 12.2-4)
--- Dumped by pg_dump version 12.2 (Ubuntu 12.2-4)
+-- Dumped from database version 12.2
+-- Dumped by pg_dump version 12.2
 
--- Started on 2020-05-11 03:31:24 CEST
+-- Started on 2020-05-29 21:17:19
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -18,102 +18,116 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+--
+-- TOC entry 2 (class 3079 OID 16701)
+-- Name: pgcrypto; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
+
+
+--
+-- TOC entry 2885 (class 0 OID 0)
+-- Dependencies: 2
+-- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner:
+--
+
+COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
+
+
+--
+-- TOC entry 245 (class 1255 OID 16741)
+-- Name: analyzed_files_hash_trigger_function(); Type: FUNCTION; Schema: public; Owner: metadatahub
+--
+
+CREATE FUNCTION public.analyzed_files_hash_trigger_function() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$BEGIN
+    IF tg_op = 'INSERT' OR tg_op = 'UPDATE' THEN
+        NEW.analyzed_files_hash = encode(digest(NEW.analyzed_files::text, 'sha256'), 'hex')::text;
+        RETURN NEW;
+    END IF;
+END;
+$$;
+
+
+ALTER FUNCTION public.analyzed_files_hash_trigger_function() OWNER TO metadatahub;
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
 --
--- TOC entry 205 (class 1259 OID 16399)
--- Name: tree_walk; Type: TABLE; Schema: public; Owner: metadatahub
+-- TOC entry 204 (class 1259 OID 16796)
+-- Name: crawls; Type: TABLE; Schema: public; Owner: metadatahub
 --
 
-CREATE TABLE public.tree_walk (
+CREATE TABLE public.crawls (
     id bigint NOT NULL,
-    name text,
-    notes text,
-    root_path text,
-    created_time timestamp with time zone,
+    dir_path text NOT NULL,
+    name text NOT NULL,
+    status text,
+    crawl_config text,
+    analyzed_files jsonb NOT NULL,
+    starting_time timestamp with time zone,
     finished_time timestamp with time zone,
-    status integer,
-    crawl_config jsonb,
-    crawl_update_time timestamp with time zone,
-    save_in_gerneric_table boolean
+    update_time timestamp with time zone,
+    analyzed_files_hash text
 );
 
 
-ALTER TABLE public.tree_walk OWNER TO metadatahub;
+ALTER TABLE public.crawls OWNER TO metadatahub;
 
 --
--- TOC entry 204 (class 1259 OID 16397)
--- Name: TreeWalks_id_seq; Type: SEQUENCE; Schema: public; Owner: metadatahub
+-- TOC entry 203 (class 1259 OID 16794)
+-- Name: crawls_id_seq; Type: SEQUENCE; Schema: public; Owner: metadatahub
 --
 
-CREATE SEQUENCE public."TreeWalks_id_seq"
+CREATE SEQUENCE public.crawls_id_seq
     START WITH 1
     INCREMENT BY 1
-    NO MINVALUE
+    MINVALUE 0
     NO MAXVALUE
     CACHE 1;
 
 
-ALTER TABLE public."TreeWalks_id_seq" OWNER TO metadatahub;
+ALTER TABLE public.crawls_id_seq OWNER TO metadatahub;
 
 --
--- TOC entry 3009 (class 0 OID 0)
--- Dependencies: 204
--- Name: TreeWalks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: metadatahub
+-- TOC entry 2886 (class 0 OID 0)
+-- Dependencies: 203
+-- Name: crawls_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: metadatahub
 --
 
-ALTER SEQUENCE public."TreeWalks_id_seq" OWNED BY public.tree_walk.id;
+ALTER SEQUENCE public.crawls_id_seq OWNED BY public.crawls.id;
 
 
 --
--- TOC entry 207 (class 1259 OID 16410)
--- Name: file_generic; Type: TABLE; Schema: public; Owner: metadatahub
---
-
-CREATE TABLE public.file_generic (
-    tree_walk_id bigint NOT NULL,
-    sub_dir_path text,
-    name text,
-    file_typ text,
-    size bigint,
-    file_create_date timestamp with time zone,
-    file_modify_date timestamp with time zone,
-    id bigint NOT NULL,
-    metadata jsonb,
-    file_access_date timestamp with time zone
-);
-
-
-ALTER TABLE public.file_generic OWNER TO metadatahub;
-
---
--- TOC entry 208 (class 1259 OID 16419)
+-- TOC entry 208 (class 1259 OID 16824)
 -- Name: file_generic_data_eav; Type: TABLE; Schema: public; Owner: metadatahub
 --
 
 CREATE TABLE public.file_generic_data_eav (
+    id bigint NOT NULL,
     tree_walk_id bigint NOT NULL,
     file_generic_id bigint NOT NULL,
-    attribute text,
-    value text,
-    unit text,
-    id bigint NOT NULL
+    attribute text NOT NULL,
+    value text NOT NULL,
+    unit text NOT NULL
 );
 
 
 ALTER TABLE public.file_generic_data_eav OWNER TO metadatahub;
 
 --
--- TOC entry 209 (class 1259 OID 16432)
+-- TOC entry 207 (class 1259 OID 16822)
 -- Name: file_generic_data_eav_id_seq; Type: SEQUENCE; Schema: public; Owner: metadatahub
 --
 
 CREATE SEQUENCE public.file_generic_data_eav_id_seq
     START WITH 1
     INCREMENT BY 1
-    NO MINVALUE
+    MINVALUE 0
     NO MAXVALUE
     CACHE 1;
 
@@ -121,8 +135,8 @@ CREATE SEQUENCE public.file_generic_data_eav_id_seq
 ALTER TABLE public.file_generic_data_eav_id_seq OWNER TO metadatahub;
 
 --
--- TOC entry 3010 (class 0 OID 0)
--- Dependencies: 209
+-- TOC entry 2887 (class 0 OID 0)
+-- Dependencies: 207
 -- Name: file_generic_data_eav_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: metadatahub
 --
 
@@ -130,77 +144,61 @@ ALTER SEQUENCE public.file_generic_data_eav_id_seq OWNED BY public.file_generic_
 
 
 --
--- TOC entry 206 (class 1259 OID 16408)
--- Name: files_generic_id_seq; Type: SEQUENCE; Schema: public; Owner: metadatahub
+-- TOC entry 206 (class 1259 OID 16807)
+-- Name: files; Type: TABLE; Schema: public; Owner: metadatahub
 --
 
-CREATE SEQUENCE public.files_generic_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.files_generic_id_seq OWNER TO metadatahub;
-
---
--- TOC entry 3011 (class 0 OID 0)
--- Dependencies: 206
--- Name: files_generic_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: metadatahub
---
-
-ALTER SEQUENCE public.files_generic_id_seq OWNED BY public.file_generic.id;
-
-
---
--- TOC entry 202 (class 1259 OID 16386)
--- Name: testtable; Type: TABLE; Schema: public; Owner: metadatahub
---
-
-CREATE TABLE public.testtable (
+CREATE TABLE public.files (
     id bigint NOT NULL,
-    testvalue text,
-    nezahl integer
+    crawl_id bigint NOT NULL,
+    dir_path text NOT NULL,
+    name text NOT NULL,
+    type text NOT NULL,
+    size bigint NOT NULL,
+    metadata jsonb NOT NULL,
+    creation_time timestamp with time zone NOT NULL,
+    access_time timestamp with time zone NOT NULL,
+    modification_time timestamp with time zone NOT NULL,
+    file_hash text NOT NULL
 );
 
 
-ALTER TABLE public.testtable OWNER TO metadatahub;
+ALTER TABLE public.files OWNER TO metadatahub;
 
 --
--- TOC entry 203 (class 1259 OID 16392)
--- Name: testtable_id_seq; Type: SEQUENCE; Schema: public; Owner: metadatahub
+-- TOC entry 205 (class 1259 OID 16805)
+-- Name: files_id_seq; Type: SEQUENCE; Schema: public; Owner: metadatahub
 --
 
-CREATE SEQUENCE public.testtable_id_seq
+CREATE SEQUENCE public.files_id_seq
     START WITH 1
     INCREMENT BY 1
-    NO MINVALUE
+    MINVALUE 0
     NO MAXVALUE
     CACHE 1;
 
 
-ALTER TABLE public.testtable_id_seq OWNER TO metadatahub;
+ALTER TABLE public.files_id_seq OWNER TO metadatahub;
 
 --
--- TOC entry 3012 (class 0 OID 0)
--- Dependencies: 203
--- Name: testtable_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: metadatahub
+-- TOC entry 2888 (class 0 OID 0)
+-- Dependencies: 205
+-- Name: files_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: metadatahub
 --
 
-ALTER SEQUENCE public.testtable_id_seq OWNED BY public.testtable.id;
-
-
---
--- TOC entry 2868 (class 2604 OID 16413)
--- Name: file_generic id; Type: DEFAULT; Schema: public; Owner: metadatahub
---
-
-ALTER TABLE ONLY public.file_generic ALTER COLUMN id SET DEFAULT nextval('public.files_generic_id_seq'::regclass);
+ALTER SEQUENCE public.files_id_seq OWNED BY public.files.id;
 
 
 --
--- TOC entry 2869 (class 2604 OID 16434)
+-- TOC entry 2740 (class 2604 OID 16799)
+-- Name: crawls id; Type: DEFAULT; Schema: public; Owner: metadatahub
+--
+
+ALTER TABLE ONLY public.crawls ALTER COLUMN id SET DEFAULT nextval('public.crawls_id_seq'::regclass);
+
+
+--
+-- TOC entry 2742 (class 2604 OID 16827)
 -- Name: file_generic_data_eav id; Type: DEFAULT; Schema: public; Owner: metadatahub
 --
 
@@ -208,32 +206,24 @@ ALTER TABLE ONLY public.file_generic_data_eav ALTER COLUMN id SET DEFAULT nextva
 
 
 --
--- TOC entry 2866 (class 2604 OID 16394)
--- Name: testtable id; Type: DEFAULT; Schema: public; Owner: metadatahub
+-- TOC entry 2741 (class 2604 OID 16810)
+-- Name: files id; Type: DEFAULT; Schema: public; Owner: metadatahub
 --
 
-ALTER TABLE ONLY public.testtable ALTER COLUMN id SET DEFAULT nextval('public.testtable_id_seq'::regclass);
-
-
---
--- TOC entry 2867 (class 2604 OID 16402)
--- Name: tree_walk id; Type: DEFAULT; Schema: public; Owner: metadatahub
---
-
-ALTER TABLE ONLY public.tree_walk ALTER COLUMN id SET DEFAULT nextval('public."TreeWalks_id_seq"'::regclass);
+ALTER TABLE ONLY public.files ALTER COLUMN id SET DEFAULT nextval('public.files_id_seq'::regclass);
 
 
 --
--- TOC entry 2873 (class 2606 OID 16407)
--- Name: tree_walk TreeWalks_pkey; Type: CONSTRAINT; Schema: public; Owner: metadatahub
+-- TOC entry 2744 (class 2606 OID 16804)
+-- Name: crawls crawls_pkey; Type: CONSTRAINT; Schema: public; Owner: metadatahub
 --
 
-ALTER TABLE ONLY public.tree_walk
-    ADD CONSTRAINT "TreeWalks_pkey" PRIMARY KEY (id);
+ALTER TABLE ONLY public.crawls
+    ADD CONSTRAINT crawls_pkey PRIMARY KEY (id);
 
 
 --
--- TOC entry 2877 (class 2606 OID 16442)
+-- TOC entry 2748 (class 2606 OID 16832)
 -- Name: file_generic_data_eav file_generic_data_eav_pkey; Type: CONSTRAINT; Schema: public; Owner: metadatahub
 --
 
@@ -242,24 +232,58 @@ ALTER TABLE ONLY public.file_generic_data_eav
 
 
 --
--- TOC entry 2875 (class 2606 OID 16418)
--- Name: file_generic files_generic_pkey; Type: CONSTRAINT; Schema: public; Owner: metadatahub
+-- TOC entry 2746 (class 2606 OID 16815)
+-- Name: files files_pkey; Type: CONSTRAINT; Schema: public; Owner: metadatahub
 --
 
-ALTER TABLE ONLY public.file_generic
-    ADD CONSTRAINT files_generic_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.files
+    ADD CONSTRAINT files_pkey PRIMARY KEY (id);
 
 
 --
--- TOC entry 2871 (class 2606 OID 16396)
--- Name: testtable testtable_pkey; Type: CONSTRAINT; Schema: public; Owner: metadatahub
+-- TOC entry 2752 (class 2620 OID 16843)
+-- Name: crawls analyzed_files_hash_insert; Type: TRIGGER; Schema: public; Owner: metadatahub
 --
 
-ALTER TABLE ONLY public.testtable
-    ADD CONSTRAINT testtable_pkey PRIMARY KEY (id);
+CREATE TRIGGER analyzed_files_hash_insert BEFORE INSERT ON public.crawls FOR EACH ROW EXECUTE FUNCTION public.analyzed_files_hash_trigger_function();
 
 
--- Completed on 2020-05-11 03:31:25 CEST
+--
+-- TOC entry 2753 (class 2620 OID 16844)
+-- Name: crawls analyzed_files_hash_update; Type: TRIGGER; Schema: public; Owner: metadatahub
+--
+
+CREATE TRIGGER analyzed_files_hash_update BEFORE UPDATE ON public.crawls FOR EACH ROW WHEN ((new.analyzed_files IS DISTINCT FROM old.analyzed_files)) EXECUTE FUNCTION public.analyzed_files_hash_trigger_function();
+
+
+--
+-- TOC entry 2749 (class 2606 OID 16816)
+-- Name: files crawl_id; Type: FK CONSTRAINT; Schema: public; Owner: metadatahub
+--
+
+ALTER TABLE ONLY public.files
+    ADD CONSTRAINT crawl_id FOREIGN KEY (crawl_id) REFERENCES public.crawls(id);
+
+
+--
+-- TOC entry 2750 (class 2606 OID 16833)
+-- Name: file_generic_data_eav crawl_id; Type: FK CONSTRAINT; Schema: public; Owner: metadatahub
+--
+
+ALTER TABLE ONLY public.file_generic_data_eav
+    ADD CONSTRAINT crawl_id FOREIGN KEY (tree_walk_id) REFERENCES public.crawls(id);
+
+
+--
+-- TOC entry 2751 (class 2606 OID 16838)
+-- Name: file_generic_data_eav file_id; Type: FK CONSTRAINT; Schema: public; Owner: metadatahub
+--
+
+ALTER TABLE ONLY public.file_generic_data_eav
+    ADD CONSTRAINT file_id FOREIGN KEY (file_generic_id) REFERENCES public.files(id);
+
+
+-- Completed on 2020-05-29 21:17:19
 
 --
 -- PostgreSQL database dump complete

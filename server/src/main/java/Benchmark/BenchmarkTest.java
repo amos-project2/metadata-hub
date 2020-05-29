@@ -93,9 +93,9 @@ public class BenchmarkTest
         {
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement selectStmt = connection.prepareStatement
-                     ("SELECT * FROM public.file_generic " +
-                         "WHERE public.file_generic.sub_dir_path LIKE ?" +
-                         "FETCH FIRST 100000 ROWS ONLY")) {
+                     ("SELECT * FROM public.files " +
+                         "WHERE public.files.dir_path LIKE ?" +
+                         "FETCH FIRST 150000 ROWS ONLY")) {
                 selectStmt.setString(1, dir_path + "%");
                 ResultSet rsJson = selectStmt.executeQuery();
             }
@@ -107,12 +107,12 @@ public class BenchmarkTest
         {
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement selectStmt = connection.prepareStatement
-                     ("SELECT *, public.file_generic.id AS file_id " +
-                         "FROM public.file_generic " +
-                         "INNER JOIN public.file_generic_data_eav ON public.file_generic.\"id\" = public.file_generic_data_eav.\"file_generic_id\" " +
-                         "WHERE public.file_generic.sub_dir_path LIKE ?" +
-                         "AND NOT public.file_generic.id = 0 " +
-                         "FETCH FIRST 100000 ROWS ONLY")) {
+                     ("SELECT *, public.files.id AS file_id " +
+                         "FROM public.files " +
+                         "INNER JOIN public.file_generic_data_eav ON public.files.\"id\" = public.file_generic_data_eav.\"file_generic_id\" " +
+                         "WHERE public.files.dir_path LIKE ?" +
+                         "AND NOT public.files.id = 0 " +
+                         "FETCH FIRST 150000 ROWS ONLY")) {
                 selectStmt.setString(1, dir_path + "%");
                 ResultSet rsEAV = selectStmt.executeQuery();
             }
@@ -137,8 +137,8 @@ public class BenchmarkTest
 
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement selectStmt = connection.prepareStatement
-                     ("SELECT * FROM public.file_generic " +
-                         "WHERE public.file_generic.metadata ->> 'FileSize' = '40 kB' ")) {
+                     ("SELECT * FROM public.files " +
+                         "WHERE public.files.metadata ->> 'FileSize' = '40 kB' ")) {
                 ResultSet rsJson = selectStmt.executeQuery();
             }
         }).testEav(() ->
@@ -146,8 +146,8 @@ public class BenchmarkTest
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement selectStmt = connection.prepareStatement
                      ("SELECT * " +
-                         "FROM public.file_generic " +
-                         "INNER JOIN public.file_generic_data_eav ON public.file_generic.\"id\" = public.file_generic_data_eav.\"file_generic_id\" " +
+                         "FROM public.files " +
+                         "INNER JOIN public.file_generic_data_eav ON public.files.\"id\" = public.file_generic_data_eav.\"file_generic_id\" " +
                          "WHERE public.file_generic_data_eav.attribute = 'FileSize' AND public.file_generic_data_eav.value = '40 kB'")) {
                 ResultSet rsEAV = selectStmt.executeQuery();
             }
@@ -168,12 +168,12 @@ public class BenchmarkTest
         {
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement selectStmt = connection.prepareStatement
-                     ("SELECT COUNT(tree_walk_id) FROM public.file_generic " +
-                         "WHERE public.file_generic.sub_dir_path LIKE ?")) {
+                     ("SELECT COUNT(crawl_id) FROM public.files " +
+                         "WHERE public.files.dir_path LIKE ?")) {
                 selectStmt.setString(1, dir_path + "%");
                 ResultSet rsJson = selectStmt.executeQuery();
                 rsJson.next();
-                //System.out.println("JsonCount = " + rsJson.getString("count"));
+                System.out.println("JsonCount = " + rsJson.getString("count"));
             }
         }
         c.endJsonTime();
@@ -183,16 +183,16 @@ public class BenchmarkTest
         {
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement selectStmt = connection.prepareStatement
-                     ("SELECT COUNT(file_generic.tree_walk_id)" +
-                         "FROM public.file_generic " +
-                         "INNER JOIN public.file_generic_data_eav ON public.file_generic.\"id\" = public.file_generic_data_eav.\"file_generic_id\" " +
-                         "WHERE public.file_generic.sub_dir_path LIKE ?" +
-                         "AND NOT public.file_generic.id = 0 ")) {
+                     ("SELECT COUNT(files.crawl_id)" +
+                         "FROM public.files " +
+                         "INNER JOIN public.file_generic_data_eav ON public.files.\"id\" = public.file_generic_data_eav.\"file_generic_id\" " +
+                         "WHERE public.files.dir_path LIKE ?" +
+                         "AND NOT public.files.id = 0 ")) {
                 selectStmt.setString(1, dir_path + "%");
                 ResultSet rsEAV = selectStmt.executeQuery();
                 rsEAV.next();
                 //Output may have big consequences on time
-                //System.out.println("EAVCount = " + rsEAV.getString("count"));
+                System.out.println("EAVCount = " + rsEAV.getString("count"));
             }
         }
         c.endEavTime();
