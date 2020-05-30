@@ -6,16 +6,19 @@ TODO: Add more detailed description
 """
 
 # Python imports
+from datetime import datetime
 import logging
+import json
 from multiprocessing import Queue
 
-
 # Local imports
-import crawler.treewalk.tree_walk as tree_walk
+from . import tree_walk as tree_walk
+import crawler.services.environment as environment
 from crawler.treewalk.state import State
 from crawler.services.config import Config
 from crawler.treewalk.worker import Worker
 from crawler.treewalk.state import StateException
+from crawler.connectPG.connector import DatabaseConnection
 
 
 _logger = logging.getLogger(__name__)
@@ -78,6 +81,7 @@ class TreeWalkManager:
             config.get_options_power_level()
         )
 
+
         # TODO: TREEWALK - INIT 'ALREADY_PROCESSED' LIST
         work_packages = tree_walk.create_work_packages(
             inputs=config.get_paths_inputs(),
@@ -87,6 +91,25 @@ class TreeWalkManager:
         )
 
         # TODO: TREEWALK - UPDATE TREEWALK_ID
+        # Create the connection dictionary for the database
+        connectionData = {
+            'user': environment.env.DATABASE_USER,
+            'password': environment.env.DATABASE_PASSWORD,
+            'host': environment.env.DATABASE_HOST,
+            'port': environment.env.DATABASE_PORT,
+            'dbname': environment.env.DATABASE_NAME,
+        }
+        # Establish the connection
+        dbConnectionPool = DatabaseConnection(connectionData, config.get_options_power_level())
+        # Create input values for the database insert
+        dir_path = ", ".join([inputs['path'] for inputs in config.get_paths_inputs()])
+        crawl_config = json.dumps(config._data)
+        analyzedDirectories = json.dumps({})
+        # Write the initial entry into the database
+        start = f"""INSERT INTO crawls (dir_path, name, status, crawl_config, analyzed_files, starting_time)
+                            VALUES('{dir_path}', '---', 'Running', '{crawl_config}', '{analyzedDirectories}', '{datetime.now()}') RETURNING id"""
+        dbID = dbConnectionPool.insert_new_record(start)
+
         for id_worker in range(number_of_workers):
             queue = Queue()
             command_queue = Queue()
