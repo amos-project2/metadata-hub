@@ -59,13 +59,21 @@ def run() -> None:
     _response.put((response, command))
 
 
-def start(config: Config) -> None:
+def start(config: Config, update: bool) -> None:
     """Start the TreeWalk.
+
+    If update is set to True, a possible running execution will be stopped
+    and a new one will be started.
 
     Args:
         config (Config): new configuration
+        update (bool): force update of current execution
 
     """
+    if update:
+        _command_queue.put(TreeWalkManager.COMMAND_STOP)
+        # Throw first response away of stop
+        get_response()
     _config_queue.put(config)
     _command_queue.put(TreeWalkManager.COMMAND_START)
 

@@ -190,7 +190,12 @@ def start() -> flask.Response:
             mimetype=defaults.MIMETYPE_JSON
         )
         return resp
-    treewalk.start(config)
+    update = flask.request.args.get('update', '').lower()
+    if update == 'true':
+        update = True
+    else:
+        update = False
+    treewalk.start(config, update)
     status_ok, message, command = treewalk.get_response()
     return _get_response(
         status_ok=status_ok,
@@ -205,7 +210,7 @@ def config():
     if flask.request.method == 'GET':
         return flask.render_template('config.html')
     try:
-        result = parsing.parse(flask.request.form)
+        result, update = parsing.parse(flask.request.form)
     except parsing.APIParsingException as err:
         message = f'Failed. {str(err)}'
         return flask.render_template('config.html', message=message)
@@ -214,7 +219,7 @@ def config():
         config = parser.parse()
     except config_service.ConfigParsingException as error:
         return flask.render_template('config.html', message=str(error))
-    treewalk.start(config)
+    treewalk.start(config, update)
     status_ok, message, command = treewalk.get_response()
     if status_ok:
         return flask.render_template('config.html', message='Success')

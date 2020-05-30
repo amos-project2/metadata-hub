@@ -2,7 +2,7 @@
 
 
 # Python imports
-from typing import Dict, Any, List, Union
+from typing import Dict, Any, List, Union, Tuple
 
 
 #: Required keys of the form data
@@ -15,7 +15,8 @@ REQUIRED_PROPERTIES = [
     'clearTrace',
     'fileTypes',
     'language',
-    'packageSize'
+    'packageSize',
+    'update'
 ]
 
 
@@ -209,7 +210,24 @@ def _parse_package_size(package_size: str) -> int:
         return None
 
 
-def parse(form_data: dict) -> dict:
+def _parse_update(update: str) -> bool:
+    """Parse the update flag for TreeWalk execution.
+
+    Args:
+        update (str): update current execution
+
+    Returns:
+        bool: True/False or None on error
+
+    """
+    if update == 'true':
+        return True
+    if update == 'false':
+        return False
+    return None
+
+
+def parse(form_data: dict) -> Tuple[dict, bool]:
     """Parse the form data given by user.
 
     Args:
@@ -219,7 +237,9 @@ def parse(form_data: dict) -> dict:
         APIParsingException: if parsing of any component fails
 
     Returns:
-        dict: dictionary according to the configuratio schema
+        Tuple[dict, bool]:
+            dictionary according to the configuration schema
+            stop and start possible current execution or ignore config
 
     """
     for prop in REQUIRED_PROPERTIES:
@@ -252,6 +272,9 @@ def parse(form_data: dict) -> dict:
     package_size = _parse_package_size(form_data.get('packageSize'))
     if package_size is None:
         raise APIParsingException('Invalid input field: Package size')
+    update = _parse_update(form_data.get('update', '').lower())
+    if update is None:
+        raise APIParsingException('Invalid input field: Update')
     result = {
         'paths': {
             'inputs': inputs,
@@ -267,4 +290,4 @@ def parse(form_data: dict) -> dict:
             'packageSize': package_size
         }
     }
-    return result
+    return (result, update)
