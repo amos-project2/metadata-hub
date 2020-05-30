@@ -24,7 +24,7 @@ SET row_security = off;
 -- Data for Name: crawls; Type: TABLE DATA; Schema: public; Owner: metadatahub
 --
 
-COPY public.crawls (id, dir_path, name, status, crawl_config, analyzed_dirs, starting_time, finished_time, update_time, analyzed_dirs) FROM stdin;
+COPY public.crawls (id, dir_path, name, status, crawl_config, analyzed_dirs, starting_time, finished_time, update_time, analyzed_dirs_hash) FROM stdin;
 2	/dir	f	f	f	["cat1.jpg"]	2102-01-01 00:00:00+01	2102-01-01 00:00:00+01	2102-01-01 00:00:00+01	238674c35ca98afaa6054cb049295c2705aae6ef1370701ea9a511a60af6b8c3
 1	/home	hallo	up	config	["hello"]	2120-12-23 00:00:00+01	2120-12-23 00:00:00+01	2120-12-23 00:00:00+01	c7a0f7154e64cd96c617f251dc12c4396b7234c2856ccf4860ab7af537dfcdd9
 \.
