@@ -136,16 +136,15 @@ public class GraphQLDataFetchers
         HikariDataSource dataSource = databaseProvider.getHikariDataSource();
 
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement selectStmt = connection.prepareStatement("SELECT * from public.file_generic WHERE id=?")) {
+             PreparedStatement selectStmt = connection.prepareStatement("SELECT * from public.files WHERE id=?")) {
             selectStmt.setLong(1, Long.parseLong(file_generic_id));
             try (ResultSet rs = selectStmt.executeQuery()) {
                 if (!rs.next()) return null;
 
                 log.info("SQL Result : " + rs.toString());
                 //TODO Right here we don't have the actual Attribute ID theres no attribute ID in public.file_generic
-                //String metadatum_id = rs.getString("id");
                 String metadatum_id = "<No AttributeID, when the EAV_Table isn't used";
-                String tree_walk_id = rs.getString("tree_walk_id");
+                String tree_walk_id = rs.getString("crawl_id");
 
                 String jsonFileMetadata = rs.getString("metadata");
                 ObjectMapper mapper = new ObjectMapper();
@@ -219,8 +218,8 @@ public class GraphQLDataFetchers
 */
         try (Connection connection = dataSource.getConnection();
              PreparedStatement selectStmt = connection.prepareStatement
-                 ("SELECT * FROM public.file_generic " +
-                     "WHERE public.file_generic.sub_dir_path LIKE ?")) {
+                 ("SELECT * FROM public.files " +
+                     "WHERE public.files.dir_path LIKE ?")) {
             selectStmt.setString(1, dir_path + "%");
             try (ResultSet rs = selectStmt.executeQuery()) {
                 ArrayList<File> files = new ArrayList<>();
@@ -231,12 +230,12 @@ public class GraphQLDataFetchers
                     // another query to the file_generic_data_eav table
                     //String metdatum_id = rs.getString("id");
                     String metdatum_id = "<No Attribute ID, when the EAV_table isn't used>";
-                    String tree_walk_id = rs.getString("tree_walk_id");
+                    String tree_walk_id = rs.getString("crawl_id");
                     //TODO File only has relative path as attribute, user right now doesnt get information back about the treewalk
                     //TODO Right now the user can't calculate the absolute path themselves -> think about which information we send back
                     //TODO change GraphQL such that it doesn't resemble database scheme but delivers the most useful information to the user?
                     //String absolute_file_path = rs.getString("root_path") + rs.getString("sub_dir_path").substring(1);
-                    String absolute_file_path = rs.getString("sub_dir_path");
+                    String absolute_file_path = rs.getString("dir_path");
                     String jsonFileMetadata = rs.getString("metadata");
                     ArrayList<Metadatum> metadata = new ArrayList<>();
                     ObjectMapper mapper = new ObjectMapper();
@@ -244,9 +243,9 @@ public class GraphQLDataFetchers
 
                     helperAddSelAttributes(selection_attributes, metdatum_id, tree_walk_id, absolute_file_path, metadata, attribute_map);
                     files.add(new File(metdatum_id, tree_walk_id,
-                        absolute_file_path, rs.getString("name"), rs.getString("file_typ"),
-                        rs.getString("file_create_date"), rs.getString("file_modify_date"),
-                        rs.getString("file_access_date"), jsonFileMetadata, metadata));
+                        absolute_file_path, rs.getString("name"), rs.getString("type"),
+                        rs.getString("creation_time"), rs.getString("modification_time"),
+                        rs.getString("access_time"), jsonFileMetadata, metadata));
 
                 }
 
@@ -266,10 +265,10 @@ public class GraphQLDataFetchers
                 " INNER JOIN public.file_generic_data_eav ON public.file_generic.\"tree_walk_id\" = public.file_generic_data_eav.\"tree_walk_id\" " +
                 " WHERE CONCAT(public.tree_walk.root_path, RIGHT(public.file_generic.sub_dir_path, length(public.file_generic.sub_dir_path) - 1)) LIKE ?");
 */
-        StringBuilder sql_statement = new StringBuilder("SELECT *, public.file_generic.id AS file_id " +
-            "FROM public.file_generic " +
-            "INNER JOIN public.file_generic_data_eav ON public.file_generic.\"id\" = public.file_generic_data_eav.\"file_generic_id\" " +
-            "WHERE public.file_generic.sub_dir_path LIKE ? ");
+        StringBuilder sql_statement = new StringBuilder("SELECT *, public.files.id AS file_id " +
+            "FROM public.files " +
+            "INNER JOIN public.file_generic_data_eav ON public.files.\"id\" = public.file_generic_data_eav.\"file_generic_id\" " +
+            "WHERE public.files.dir_path LIKE ? ");
 
         if (selection_attributes != null) {
             sql_statement.append("AND (");
@@ -338,13 +337,13 @@ public class GraphQLDataFetchers
         String startTimeStmt = "";
         if(startTime != null)
         {
-            startTimeStmt = " AND public.file_generic.file_create_date >= \'" + startTime + "\'";
+            startTimeStmt = " AND public.files.creation_time >= \'" + startTime + "\'";
         }
 
         String endTimeStmt = "";
         if(endTime != null)
         {
-            endTimeStmt = " AND public.file_generic.file_create_date < \'" + endTime + "\'";
+            endTimeStmt = " AND public.files.creation_time < \'" + endTime + "\'";
         }
 
         String fetchingSizeLimitStmt = "";
@@ -356,8 +355,8 @@ public class GraphQLDataFetchers
         try (Connection connection = dataSource.getConnection();
              PreparedStatement selectStmt = connection.prepareStatement
                  ("SELECT * " +
-                     "FROM public.file_generic " +
-                     "WHERE CONCAT(public.file_generic.sub_dir_path, '/', public.file_generic.name)"  + patternOptionStmt + " LIKE ? " +
+                     "FROM public.files " +
+                     "WHERE CONCAT(public.files.dir_path, '/', public.files.name)"  + patternOptionStmt + " LIKE ? " +
                      startTimeStmt + endTimeStmt + fetchingSizeLimitStmt)) {
 
             selectStmt.setString(1, "%" + pattern + "%");
@@ -367,12 +366,12 @@ public class GraphQLDataFetchers
                 while (rs.next()) {
                     //TODO Placeholder for Attribute ID
                     String metdatum_id = "<No Attribute ID, when the EAV_table isn't used>";
-                    String tree_walk_id = rs.getString("tree_walk_id");
+                    String tree_walk_id = rs.getString("crawl_id");
                     //TODO File only has relative path as attribute, user right now doesnt get information back about the treewalk
                     //TODO Right now the user can't calculate the absolute path themselves -> think about which information we send back
                     //TODO change GraphQL such that it doesn't resemble database scheme but delivers the most useful information to the user?
                     //String absolute_file_path = rs.getString("root_path") + rs.getString("sub_dir_path").substring(1);
-                    String absolute_file_path = rs.getString("sub_dir_path");
+                    String absolute_file_path = rs.getString("dir_path");
                     String jsonFileMetadata = rs.getString("metadata");
                     ArrayList<Metadatum> metadata = new ArrayList<>();
                     ObjectMapper mapper = new ObjectMapper();
@@ -380,9 +379,9 @@ public class GraphQLDataFetchers
 
                     helperAddSelAttributes(selection_attributes, metdatum_id, tree_walk_id, absolute_file_path, metadata, attribute_map);
                     files.add(new File(metdatum_id, tree_walk_id,
-                        absolute_file_path, rs.getString("name"), rs.getString("file_typ"),
-                        rs.getString("file_create_date"), rs.getString("file_modify_date"),
-                        rs.getString("file_access_date"), jsonFileMetadata, metadata));
+                        absolute_file_path, rs.getString("name"), rs.getString("type"),
+                        rs.getString("creation_time"), rs.getString("modification_time"),
+                        rs.getString("access_time"), jsonFileMetadata, metadata));
 
                 }
 
