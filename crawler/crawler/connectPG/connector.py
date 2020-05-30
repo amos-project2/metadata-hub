@@ -1,6 +1,7 @@
 """Connection to database and perform query."""
 
 import psycopg2
+from psycopg2 import pool
 from pprint import pprint
 
 class DatabaseConnection:
@@ -18,16 +19,17 @@ class DatabaseConnection:
         """
         try:
             # Establish connection pool
-            self.dbConnectionPool = psycopg2.pool.SimpleConnectionPool(1, powerLevel
-                                                                  , user=db_info['user'],
-                                                                  password=db_info['password'],
-                                                                  host=db_info['host'],
-                                                                  port=db_info['port'],
-                                                                  database=db_info['dbname'])
+            self.dbConnectionPool = psycopg2.pool.SimpleConnectionPool(1, powerLevel,
+                                                                user=db_info['user'],
+                                                                password=db_info['password'],
+                                                                host=db_info['host'],
+                                                                port=db_info['port'],
+                                                                database=db_info['dbname'])
 
-        except:
-            print('Error while creating the ThreadPool')
-
+        # except:
+        #     print('Error while creating the ThreadPool')
+        except Exception as e:
+            print(e)
 
         #     # database info in a string
         #     db_info_str = "dbname='{b}' user='{c}' host='{d}' password='{e}' port='{f}' \
