@@ -56,7 +56,7 @@ def create_work_packages(
 
     # Attempt to create even work packages
     # Variable representing the average work package size
-    X = 250
+    X = work_package_size
     # Gather a list with every directory and it's total amount of files
     directorySize = []
     for root in directories:
