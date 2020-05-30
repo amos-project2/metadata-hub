@@ -1,5 +1,6 @@
 export class Page {
-    constructor(identifier, mountpoint = ".our-content", titleSelector = ".our-title") {
+    constructor(parent, identifier, mountpoint = ".our-content", titleSelector = ".our-title") {
+        this.parent = parent;
         this.identifier = identifier;
         this.moutpoint = mountpoint;
         this.atLeastOnceMounted = false;

@@ -4,15 +4,15 @@ import ReactDOM from 'react-dom';
 import "graphiql/graphiql.min.css";
 import GraphiQL from 'graphiql';
 
- import fetch from 'isomorphic-fetch';
+import fetch from 'isomorphic-fetch';
 
 
 export class GraphiqlConsole extends Page {
-    constructor(identifier, mountpoint, titleSelector) {
-        super(identifier, mountpoint, titleSelector);
+    constructor(parent, identifier, mountpoint, titleSelector) {
+        super(parent, identifier, mountpoint, titleSelector);
         this.title = "GraphiQl-Console";
         this.init = false;
-        this.cacheChangesLevel=3;
+        this.cacheLevel=3;
     }
 
     content() {
@@ -34,27 +34,33 @@ export class GraphiqlConsole extends Page {
 
         }
 
+        //is important to be also here, cause of rendering problems else
         $("#graphql-stuff").removeClass("hide_active");
 
         if (!this.init) {
             this.init = true;
 
+            let graphiqlReact=React.createElement(GraphiQL, {
+                fetcher: graphQLFetcher
+            });
 
-            ReactDOM.render(
-                React.createElement(GraphiQL, {fetcher: graphQLFetcher}),
-                document.getElementById('graphql-stuff')
-            );
 
-            //ReactDOM.render(<GraphiQL fetcher={graphQLFetcher} />, document.body);
+            ReactDOM.render(graphiqlReact,document.getElementById('graphql-stuff'));
+
         }
-
-
-
 
     }
 
     onUnMount() {
+        ReactDOM.unmountComponentAtNode(document.getElementById('graphql-stuff'));
+    }
+
+    onUnLoad() {
         $("#graphql-stuff").addClass("hide_active");
+    }
+
+    onLoad() {
+        $("#graphql-stuff").removeClass("hide_active");
     }
 
 }

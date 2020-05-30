@@ -9,10 +9,10 @@ import {Page} from "../Page";
 
 
 export class FormQueryEditor extends Page {
-    constructor(identifier, mountpoint, titleSelector) {
-        super(identifier, mountpoint, titleSelector);
+    constructor(parent, identifier, mountpoint, titleSelector) {
+        super(parent, identifier, mountpoint, titleSelector);
         this.title = "Form Query Editor";
-        this.cacheLevel=2;
+        this.cacheLevel=3;
     }
 
     content() {

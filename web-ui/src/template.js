@@ -64,6 +64,7 @@ export class Template {
 
     constructor() {
         this.thisdata = this;
+        this.store = {};
         this.data = "";
         this.navbar = "";
         this.navGroups = [];
@@ -72,49 +73,49 @@ export class Template {
         this.currentSelectedElement = null;
         this.currentSelectedElementGroup = null;
 
-
+        let thisdata = this;
 
         this.addNavGroup("nav_query", function (n) {
-            n.addOneNavElement(new NavElement("GraphQL-Query", "graphql-query", new GraphqlQueryEditor("graphql-query")));
-            n.addOneNavElement(new NavElement("Form-Query", "form-query", new FormQueryEditor("form-query")));
+            n.addOneNavElement(new NavElement("GraphQL-Query", "graphql-query", new GraphqlQueryEditor(thisdata, "graphql-query")));
+            n.addOneNavElement(new NavElement("Form-Query", "form-query", new FormQueryEditor(thisdata, "form-query")));
         });
 
         this.addNavGroup("nav_graphiql", function (n) {
-            n.addOneNavElement(new NavElement("GraphiQL-Console", "graphiql-console", new GraphiqlConsole("graphiql-console")));
+            n.addOneNavElement(new NavElement("GraphiQL-Console", "graphiql-console", new GraphiqlConsole(thisdata, "graphiql-console")));
         });
 
         this.addNavGroup("nav_crawler", function (n) {
-            n.addOneNavElement(new NavElement("crawler1", "crawler1", new Page("crawler1")));
-            n.addOneNavElement(new NavElement("crawler2", "crawler2", new Page("crawler2")));
-            n.addOneNavElement(new NavElement("Crawler Config", "crawler-config", new CrawlerConfig("crawler-config")));
+            n.addOneNavElement(new NavElement("crawler1", "crawler1", new Page(thisdata, "crawler1")));
+            n.addOneNavElement(new NavElement("crawler2", "crawler2", new Page(thisdata, "crawler2")));
+            n.addOneNavElement(new NavElement("Crawler Config", "crawler-config", new CrawlerConfig(thisdata, "crawler-config")));
         });
 
 
         this.addNavGroup("nav_status", function (n) {
-            n.addOneNavElement(new NavElement("Testname", "testname", new Testname("testname")));
-            n.addOneNavElement(new NavElement("Testname2", "testname2", new Page("testname2")));
-            n.addMoreNavElementsToOneGroup("MyDropdown", [new NavElement("Testname3", "testname3", new Page("testname3")),
-                new NavElement("Testname4", "testname4", new Page("testname4")),
+            n.addOneNavElement(new NavElement("Testname", "testname", new Testname(thisdata, "testname")));
+            n.addOneNavElement(new NavElement("Testname2", "testname2", new Page(thisdata, "testname2")));
+            n.addMoreNavElementsToOneGroup("MyDropdown", [new NavElement("Testname3", "testname3", new Page(thisdata, "testname3")),
+                new NavElement("Testname4", "testname4", new Page(thisdata, "testname4")),
                 new NavElement("divider"),
-                new NavElement("Testname5", "testname5", new Page("testname5"))
+                new NavElement("Testname5", "testname5", new Page(thisdata, "testname5"))
             ]);
-            n.addOneNavElement(new NavElement("Testname6", "testname6", new Page("testname6")));
+            n.addOneNavElement(new NavElement("Testname6", "testname6", new Page(thisdata, "testname6")));
         });
 
         this.addNavGroup("nav_help", function (n) {
-            n.addOneNavElement(new NavElement("help1", "help1", new Page("help1")));
-            n.addOneNavElement(new NavElement("help1", "help2", new Page("help2")));
+            n.addOneNavElement(new NavElement("help1", "help1", new Page(thisdata, "help1")));
+            n.addOneNavElement(new NavElement("help1", "help2", new Page(thisdata, "help2")));
         });
 
 
         this.addNavGroup("nav_about", function (n) {
-            n.addOneNavElement(new NavElement("about1", "about1", new Page("about1")));
-            n.addOneNavElement(new NavElement("about1", "about2", new Page("about2")));
+            n.addOneNavElement(new NavElement("about1", "about1", new Page(thisdata, "about1")));
+            n.addOneNavElement(new NavElement("about1", "about2", new Page(thisdata, "about2")));
         });
 
 
         this.addNavGroup("nav_logout", function (n) {
-            n.addOneNavElement(new NavElement("Logout", "logout", new Page("logout")));
+            n.addOneNavElement(new NavElement("Logout", "logout", new Page(thisdata, "logout")));
         });
 
         this.generateTemplate()

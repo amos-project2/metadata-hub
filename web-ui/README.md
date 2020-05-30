@@ -82,8 +82,8 @@ In The constructor-body of the new class you can set a few attributes, like cach
 import {Page} from "../Page";
 
 export class FormQueryEditor extends Page {
-    constructor(identifier, mountpoint, titleSelector) {
-        super(identifier, mountpoint, titleSelector);
+    constructor(parent, identifier, mountpoint, titleSelector) {
+        super(parent, identifier, mountpoint, titleSelector);
         this.title = "Form Query Editor";
         //here you set the title-attribut
         //you can here also set the caching_behavour and much more
