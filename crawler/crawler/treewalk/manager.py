@@ -20,6 +20,7 @@ from crawler.treewalk.worker import Worker
 from crawler.treewalk.state import StateException
 from crawler.connectPG.connector import DatabaseConnection
 
+from ..services import tracing
 
 _logger = logging.getLogger(__name__)
 
@@ -81,16 +82,19 @@ class TreeWalkManager:
             config.get_options_power_level()
         )
 
+        #TODO remove me
+        print(number_of_workers)
 
-        # TODO: TREEWALK - INIT 'ALREADY_PROCESSED' LIST
-        work_packages = tree_walk.create_work_packages(
+        TRACER = tracing.Tracer(config._data)
+        alreadyProcessed = TRACER.get_processed_nodes()
+
+        work_packages, split = tree_walk.create_work_packages(
             inputs=config.get_paths_inputs(),
             work_package_size=config.get_options_package_size(),
             number_of_workers=number_of_workers,
-            already_processed=[]
+            already_processed=alreadyProcessed
         )
 
-        # TODO: TREEWALK - UPDATE TREEWALK_ID
         # Create the connection dictionary for the database
         connectionData = {
             'user': environment.env.DATABASE_USER,
@@ -107,7 +111,8 @@ class TreeWalkManager:
         analyzedDirectories = json.dumps({})
         # Write the initial entry into the database
         start = f"""INSERT INTO crawls (dir_path, name, status, crawl_config, analyzed_files, starting_time)
-                            VALUES('{dir_path}', '---', 'Running', '{crawl_config}', '{analyzedDirectories}', '{datetime.now()}') RETURNING id"""
+                    VALUES('{dir_path}', '---', 'Running', '{crawl_config}', '{analyzedDirectories}', '{datetime.now()}')
+                    RETURNING id"""
         dbID = dbConnectionPool.insert_new_record(start)
 
         for id_worker in range(number_of_workers):
@@ -120,8 +125,8 @@ class TreeWalkManager:
                 work_packages=queue,
                 command_queue=command_queue,
                 config=config,
-                db_connection=None,
-                tree_walk_id=-1
+                db_connection=dbConnectionPool,
+                tree_walk_id=dbID
             )
             self._workers.append(worker)
 
