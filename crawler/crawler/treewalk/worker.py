@@ -9,6 +9,9 @@ are required for speeding up the execution time.
 
 # Python imports
 import logging
+import subprocess
+import json
+import hashlib
 from typing import List
 from queue import Empty
 from time import sleep # FIXME REMOVE
@@ -22,6 +25,7 @@ from psycopg2.extensions import connection
 
 # Local imports
 from crawler.services.config import Config
+from crawler.connectPG.connector import DatabaseConnection
 
 
 _logger = logging.getLogger(__name__)
@@ -38,7 +42,7 @@ class Worker(Process):
             work_packages: Queue,
             command_queue: Queue,
             config: Config,
-            db_connection: connection,
+            db_connection: DatabaseConnection,
             tree_walk_id: int
     ):
         super(Worker, self).__init__()
@@ -102,6 +106,36 @@ class Worker(Process):
         return True
 
 
+    def createInsert(self, exif: json, value:str) -> str:
+        """Helper method for collecting all the values from the output of a file.
+
+        Args:
+            exif (json): the exif output
+            value (str): the fist part of the string
+
+        Returns:
+            bool: string with the extracted values
+
+        """
+        for i in ['Directory', 'FileName', 'FileType']:
+            try:
+                value += f"'{exif[i]}', "
+            except:
+                value += 'NULL'
+        for i in ['FileSize']:
+            try:
+                value += f"'{exif[i][:-3]}', "
+            except:
+                value += 'NULL'
+        for i in ['FileAccessDate', 'FileModifyDate', 'FileCreationDate']:
+            try:
+                valueTmp = f"'{exif[i]}"
+                value += f"'{valueTmp[1:12].replace(':', '-') + valueTmp[13:]}', "
+            except:
+                value += "'-infinity', "
+        return value
+
+
     def _do_work(self, package: List[str]) -> None:
         """Process the work package.
 
@@ -109,12 +143,30 @@ class Worker(Process):
             package (List[str]): list of directories to process.
 
         """
-        #_logger.debug(f'Doing work ({self.pid}).')
+        pathEx = "exiftool/exiftoolLinux/exiftool"
+        _logger.debug(f'Doing work ({self.pid}).')
 
-        # TODO TREEWALK - RUN THE EXIFTOOL AND SHA256 HERE
+        # for directory in package:
+        #     values = f"('{self._tree_walk_id}', '{directory}', name, type, size, metadata)"
+        insertin = f"""INSERT INTO files (crawl_id, dir_path, name, type, size, creation_time, access_time, modification_time, metadata, file_hash) """
+        value = f"VALUES ('{self._tree_walk_id}', "
+        try:
+            process = subprocess.Popen([f'{pathEx}', '-json', *package], stdout=subprocess.PIPE)
+            metadata = json.load(process.stdout)
+            for result in metadata:
+                # get the values
+                values = self.createInsert(result, value)
+                # compute the hash256
+                with open(f"{result['Directory']}/{result['FileName']}", "rb") as file:
+                    bytes = file.read()
+                    hash256 = hashlib.sha256(bytes).hexdigest()
+                # insert into the database
+                self._db_connection.insert_new_record(insertin + values + "'{}'".format(json.dumps(result)) + ', ' + f"'{hash256}'" + ')')
 
-        # FIXME: Remove this once the actual behaviour is implemented
-        sleep(random()*2.0)
+        except Exception as e:
+            print(e)
+
+
 
 
     def _clean_up(self) -> None:
