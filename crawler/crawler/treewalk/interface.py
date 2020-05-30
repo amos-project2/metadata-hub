@@ -50,7 +50,6 @@ def run() -> None:
         if command == TreeWalkManager.COMMAND_INFO:
             _logger.info(f'Providing info about TreeWalk state.')
             response = _manager.info()
-            print(response)
         if command == TreeWalkManager.COMMAND_SHUTDOWN:
             _logger.info(f'Shutting TreeWalk down.')
             response = _manager.stop()
@@ -103,6 +102,9 @@ def shutdown():
 def get_response() -> Tuple[bool, str, str]:
     """Get the response of the last command.
 
+    The info command does not return the default OK message on success but
+    a dict in any case, so it needs an extra check.
+
     Returns:
         Tuple[bool, str, str]:
             True on success, False on failure
@@ -111,8 +113,9 @@ def get_response() -> Tuple[bool, str, str]:
 
     """
     respone_msg, command = _response.get()
-    return (
-        respone_msg == TreeWalkManager.RESPONSE_OK,
-        respone_msg,
-        command
-    )
+    if command == TreeWalkManager.COMMAND_INFO:
+        result = (True, respone_msg, command)
+    else:
+        status = respone_msg == TreeWalkManager.RESPONSE_OK
+        result = (status, respone_msg, command)
+    return result

@@ -52,7 +52,9 @@ class TreeWalkManager:
 
         """
         if self._state.is_paused():
-            _logger.warning(f'Attempted to start when state was paused.')
+            message = 'Attempted to start when state was paused.'
+            _logger.warning(message)
+            return message
         # There is currently no way for the processes to report that they
         # are finished, so individually check them (the status is running)
         # in this case
@@ -91,7 +93,6 @@ class TreeWalkManager:
             for index, package in enumerate(work_packages[id_worker]):
                 self._total += 1
                 queue.put(package)
-            print(queue.qsize())
             worker = Worker(
                 work_packages=queue,
                 command_queue=command_queue,
@@ -174,7 +175,7 @@ class TreeWalkManager:
         if not self._state.is_running():
             return {
                 'status': self._state.get_status(),
-                'config': str(self._state.get_config())
+                'config': self._state.get_config()
             }
         packages_left = 0
         for worker in self._workers:
@@ -182,9 +183,9 @@ class TreeWalkManager:
         if packages_left == 0:
             progress = 100.0
         else:
-            progress = ((self._total - packages_left) / packages_left) * 100.0
-        return str({
+            progress = ((self._total - packages_left) / self._total) * 100.0
+        return {
             'status': self._state.get_status(),
-            'config': str(self._state.get_config()),
+            'config': self._state.get_config(),
             'progress': f'{progress:.2f}'
-        })
+        }

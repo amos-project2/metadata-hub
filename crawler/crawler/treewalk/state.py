@@ -51,7 +51,9 @@ class State:
             Config: current configuration
 
         """
-        return self._config
+        if self._config is None:
+            return None
+        return self._config.get_data()
 
 
     def is_running(self) -> bool:
@@ -132,4 +134,5 @@ class State:
 
     def set_ready(self) -> None:
         """Set status to ready."""
+        self._config = None
         self._status = State.READY

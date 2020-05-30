@@ -40,5 +40,5 @@ class Config:
     def get_options_package_size(self) -> int:
         return self._options.get('packageSize')
 
-    def __str__(self) -> str:
-        return dumps(self._data)
+    def get_data(self) -> dict:
+        return self._data

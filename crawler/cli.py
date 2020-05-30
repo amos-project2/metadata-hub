@@ -41,7 +41,7 @@ def check_connection() -> bool:
     return True
 
 
-def make_request(url: str, post: bool = False) -> None:
+def make_request(url: str, post: bool = False, json_output: bool = False) -> None:
     """Helper function to make a request to the crawler API.
 
     Args:
@@ -55,9 +55,13 @@ def make_request(url: str, post: bool = False) -> None:
         response = requests.get(url)
     data = json.loads(response.text or '{}')
     if response.ok:
-        print(data.get('message', 'OK'))
+        res = data.get('message', 'OK')
     else:
-        print(data.get('error', 'Unavailable to load error message'))
+        res = data.get('error', 'Unavailable to load error message')
+    if json_output:
+        print(json.dumps(res, indent=4))
+    else:
+        print(res)
 
 
 def info(subparser: argparse._SubParsersAction = None):
@@ -70,7 +74,7 @@ def info(subparser: argparse._SubParsersAction = None):
     """
     name = 'info'
     if subparser is None:
-        make_request(f'{_API}/{name}')
+        make_request(f'{_API}/{name}', json_output=True)
         return
     subparser.add_parser(
         name,

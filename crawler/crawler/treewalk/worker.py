@@ -90,12 +90,14 @@ class Worker(Process):
             return False
         if command == Worker.COMMAND_PAUSE:
             next_command = self.command_queue.get()
-            self.run_command(next_command)
+            return self.run_command(next_command)
         if command == Worker.COMMAND_STOP:
             self._clean_up()
             return True
-        # This case should never happen!
-        logging.critical(f'Retrieved invalid command {command}. Terminating.')
+        # Unknown command was passed. Log this and exit worker process.
+        logging.critical(
+            f'Retrieved invalid command {command}. Terminating {self.pid}.'
+        )
         self._clean_up()
         return True
 
