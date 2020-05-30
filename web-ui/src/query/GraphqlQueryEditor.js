@@ -4,6 +4,7 @@ export class GraphqlQueryEditor extends Page {
     constructor(identifier, mountpoint, titleSelector) {
         super(identifier, mountpoint, titleSelector);
         this.title = "GraphQl Query Editor";
+        this.cacheLevel
     }
 
     content() {

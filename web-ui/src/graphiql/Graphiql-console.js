@@ -12,6 +12,7 @@ export class GraphiqlConsole extends Page {
         super(identifier, mountpoint, titleSelector);
         this.title = "GraphiQl-Console";
         this.init = false;
+        this.cacheChangesLevel=3;
     }
 
     content() {

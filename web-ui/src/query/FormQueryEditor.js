@@ -12,6 +12,7 @@ export class FormQueryEditor extends Page {
     constructor(identifier, mountpoint, titleSelector) {
         super(identifier, mountpoint, titleSelector);
         this.title = "Form Query Editor";
+        this.cacheLevel=2;
     }
 
     content() {
@@ -82,7 +83,8 @@ export class FormQueryEditor extends Page {
 
 <button type="submit" class="btn btn-primary">Send</button>
 <button type="button" class="btn btn-primary open-query">Open Query</button>
-<button type="button" class="btn btn-primary send-to-graphiql">Send through GraphiQL</button>
+<button type="button" class="btn btn-primary send-to-graphiql">Send to GraphiQL</button>
+<button type="button" class="btn btn-primary clear-all">Clear All</button>
 </form>
 <br>
 <h4>Result:</h4>
@@ -146,8 +148,14 @@ export class FormQueryEditor extends Page {
 
             }, 1000);
 
-
         });
+
+
+        $(".clear-all").click(function () {
+            thisdata.clearCache();
+            thisdata.reload();
+        });
+
 
 
         //alert(datetimepicker());

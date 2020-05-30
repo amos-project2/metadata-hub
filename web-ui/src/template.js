@@ -142,11 +142,12 @@ export class Template {
         let thisdata = this;
         for (let value of this.navGroups) {
             for (let value2 of value.data.navElements) {
+                value2.contentLoader.onRegister();
                 $("#nav-element-" + value2.selectorName).click(function () {
                     $(".nav-item").removeClass("active");//remove from all
 
                     if (thisdata.currentSelectedElement != null) {
-                        thisdata.currentSelectedElement.contentLoader.onUnMountIntern();//content-unloader
+                        thisdata.currentSelectedElement.contentLoader.unmount();//content-unloader
                         if (thisdata.currentSelectedElementGroup !== value.data) {
                             $(".container-" + thisdata.currentSelectedElementGroup.parent_nav).hide();
                             $(".x" + thisdata.currentSelectedElementGroup.parent_nav).removeClass("active_sidebar");
@@ -161,7 +162,7 @@ export class Template {
 
 
                     $(this).closest(".nav-item").addClass("active");
-                    value2.contentLoader.onMountIntern();//content-unloader
+                    value2.contentLoader.mount();//content-unloader
                     thisdata.currentSelectedElement = value2;
                     thisdata.currentSelectedElementGroup = value.data;
                     // alert("hey: " + value2.name);

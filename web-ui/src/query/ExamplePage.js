@@ -31,4 +31,16 @@ export class ExamplePage extends Page {
         //often you dont need that method
     }
 
+    onFirstLoad() {
+        //this method is called on the first-load
+    }
+
+    onLoad() {
+        //this method is called on each load
+    }
+
+    onUnLoad() {
+        //this method is called on each unload
+    }
+
 }
