@@ -44,7 +44,7 @@ npm run runtime-build //this command you can use, if the server is in the IDEA s
 
 #### How you can extend web-ui
 
-I wrote a small framewor for this, so that we can split the pages into different files.
+I wrote a small framework for this, so that we can split the pages into different files.
 Webpack bundles it to a Single-page-application.
 
 There is a template.js file. Here you must hook in your pages.
@@ -111,13 +111,48 @@ export class FormQueryEditor extends Page {
         //often you dont need that method
     }
 
+    onFirstLoad() {
+        //this method is called on the first-load
+    }
+
+    onLoad() {
+        //this method is called on each load
+    }
+
+    onUnLoad() {
+        //this method is called on each unload
+    }
+
+
 }
 ```
 here you see a example, how you can subclass from Page.
 
-Dont forget to add the imports in all files and use the export-keyword.
+Don't forget to add the imports in all files and use the export-keyword.
 
-**Caching:** //TODO
+**Caching:**
+
+```javascript
+
+ /**
+ * level = 0 -> no cache
+ * level = 1 -> cache into javascript-memory, but remove from dome + onUnMountCall()
+ * level = 2 -> cache, dont remove from dome + hide() + onUnMountCall()
+ * level = 3 -> cache, dont remove from dome + hide() + no onMount()-call, if cache have data + no onUnMountCall()
+ */
+
+    //this variable you should override in the subclasses, to adjust the cache-behaviour
+    this.cacheLevel = 0;
+
+
+
+    //you also can call in the subclasses the following methods, to clear the cache
+    super.clearCache();
+
+    //and reload a fresh site
+    super.reload();
+
+```
 
 **Check if there is no Code error:**
 
