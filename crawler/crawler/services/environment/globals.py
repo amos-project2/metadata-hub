@@ -12,7 +12,13 @@ class Env:
     # Host the crawler should run on
     CRAWLER_HOST = None
     # Port the crawler should run on
-    CRAWLER_PORT=None
+    CRAWLER_PORT = None
+    # Path of Linux exiftool
+    EXIFTOOL_LINUX = None
+    # Path of Windows exiftool
+    EXIFTOOL_WINDOWS = None
+    # Schema file for crawler config
+    SCHEMA_CRAWLER_CONFIG = None
 
 
 env = Env()
