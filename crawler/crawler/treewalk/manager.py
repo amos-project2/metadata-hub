@@ -110,7 +110,7 @@ class TreeWalkManager:
         crawl_config = json.dumps(config._data)
         analyzedDirectories = json.dumps({})
         # Write the initial entry into the database
-        start = f"""INSERT INTO crawls (dir_path, name, status, crawl_config, analyzed_files, starting_time)
+        start = f"""INSERT INTO crawls (dir_path, name, status, crawl_config, analyzed_dirs, starting_time)
                     VALUES('{dir_path}', '---', 'Running', '{crawl_config}', '{analyzedDirectories}', '{datetime.now()}')
                     RETURNING id"""
         dbID = dbConnectionPool.insert_new_record(start)
