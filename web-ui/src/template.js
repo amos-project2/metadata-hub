@@ -4,6 +4,7 @@ import {GraphiqlConsole} from "./graphiql/Graphiql-console";
 import {FormQueryEditor} from "./query/FormQueryEditor";
 import {GraphqlQueryEditor} from "./query/GraphqlQueryEditor";
 import {CrawlerConfig} from "./crawler/CrawlerConfig";
+import {HashQuery} from "./query/HashQuery";
 
 class NavElement {
     constructor(name, selectorName, contentLoader) {
@@ -80,6 +81,7 @@ export class Template {
 
         this.addNavGroup("nav_query", function (n) {
             n.addOneNavElement(new NavElement("Form-Query", "form-query", new FormQueryEditor(thisdata, "form-query")));
+            n.addOneNavElement(new NavElement("Hash Query", "hash-query", new HashQuery(thisdata, "hash-query")));
             n.addOneNavElement(new NavElement("GraphQL-Query", "graphql-query", new GraphqlQueryEditor(thisdata, "graphql-query")));
 
         });

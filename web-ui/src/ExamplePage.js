@@ -1,5 +1,5 @@
 
-import {Page} from "../Page";
+import {Page} from "./Page";
 
 export class ExamplePage extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
