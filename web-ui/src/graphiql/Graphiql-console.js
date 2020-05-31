@@ -13,6 +13,9 @@ export class GraphiqlConsole extends Page {
         this.title = "GraphiQl-Console";
         this.init = false;
         this.cacheLevel=3;
+
+        this.signalToRemoveGoBackToEditor=false;
+        console.log(parent);
     }
 
     content() {
@@ -37,17 +40,36 @@ export class GraphiqlConsole extends Page {
         //is important to be also here, cause of rendering problems else
         $("#graphql-stuff").removeClass("hide_active");
 
-        if (!this.init) {
-            this.init = true;
 
-            let graphiqlReact=React.createElement(GraphiQL, {
-                fetcher: graphQLFetcher
+            let graphiqlReact;
+            let querydata=`query{}`;
+        if (this.parent.storage.query_inject !== null) {
+            querydata = this.parent.storage.query_inject;
+            this.parent.storage.query_inject=null;
+        }
+
+        if (this.parent.storage.openedFromEditor) {
+            $("#small-nav-bar").append(`
+            <div class="row justify-content-md-center go-to-editor-div mb-3">
+            <button type="button" class="btn btn-primary go-to-editor">Go Back To Editor</button>
+            </div>
+            `);
+            this.parent.storage.openedFromEditor=false;
+            this.signalToRemoveGoBackToEditor=true;
+
+            $(".go-to-editor").click(function(){
+                $("#nav-element-form-query").trigger("click");
             });
+        }
+
+                graphiqlReact = React.createElement(GraphiQL, {
+                    fetcher: graphQLFetcher,
+                    query: querydata
+                });
+
 
 
             ReactDOM.render(graphiqlReact,document.getElementById('graphql-stuff'));
-
-        }
 
     }
 
@@ -57,10 +79,22 @@ export class GraphiqlConsole extends Page {
 
     onUnLoad() {
         $("#graphql-stuff").addClass("hide_active");
+
+        if (this.signalToRemoveGoBackToEditor) {
+            this.signalToRemoveGoBackToEditor=false;
+            $(".go-to-editor-div").remove();
+        }
     }
 
     onLoad() {
-        $("#graphql-stuff").removeClass("hide_active");
+
+        if (this.parent.storage.query_inject !== null) {
+            this.clearCache();
+            this.reload();
+        } else {
+            $("#graphql-stuff").removeClass("hide_active");
+        }
+
     }
 
 }

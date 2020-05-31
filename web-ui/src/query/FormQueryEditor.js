@@ -12,7 +12,7 @@ export class FormQueryEditor extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         super(parent, identifier, mountpoint, titleSelector);
         this.title = "Form Query Editor";
-        this.cacheLevel=3;
+        this.cacheLevel = 3;
     }
 
     content() {
@@ -92,7 +92,16 @@ export class FormQueryEditor extends Page {
 <pre id="json" class="q_result"></pre>
 </div>
 
+${this.getModalCode()}
 
+`;
+
+
+    }
+
+    getModalCode() {
+
+        return `
 <div class="modal fade" id="graphql-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -106,16 +115,13 @@ export class FormQueryEditor extends Page {
         <pre id="graphql-code-content"></pre>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+        <button type="button" class="btn btn-primary send-to-graphiql" data-dismiss="modal">Send to GraphiQL</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
-</div>
+</div>`;
 
-
-
-
-        `;
     }
 
     onMount() {
@@ -140,13 +146,9 @@ export class FormQueryEditor extends Page {
 
         $(".send-to-graphiql").click(function () {
 
+            thisdata.parent.storage.query_inject = thisdata.buildAndGetGraphQlQuery();
+            thisdata.parent.storage.openedFromEditor = true;
             $("#nav-element-graphiql-console").trigger("click");
-            setTimeout(function () {
-
-                alert(thisdata.buildAndGetGraphQlQuery());
-                //TODO inject, prettify, and execute, remove alert^^
-
-            }, 1000);
 
         });
 
@@ -155,7 +157,6 @@ export class FormQueryEditor extends Page {
             thisdata.clearCache();
             thisdata.reload();
         });
-
 
 
         //alert(datetimepicker());

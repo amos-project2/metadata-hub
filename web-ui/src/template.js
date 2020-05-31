@@ -64,7 +64,10 @@ export class Template {
 
     constructor() {
         this.thisdata = this;
-        this.store = {};
+        this.storage = {
+            query_inject: null,
+            openedFromEditor: null,
+        };
         this.data = "";
         this.navbar = "";
         this.navGroups = [];
@@ -225,6 +228,7 @@ export class Template {
 
       <div class="container-fluid">
         <h1 class="mt-4 our-title"></h1>
+        <div id="small-nav-bar"></div>
         <div id="graphql-stuff" style=" margin:0; height:calc(100vh - 150px); min-height: 300px;" class="hide_active"></div>
         <div class="our-content"></div>
         </div>
