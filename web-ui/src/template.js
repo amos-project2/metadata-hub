@@ -91,9 +91,7 @@ export class Template {
         });
 
         this.addNavGroup("nav_crawler", function (n) {
-            n.addOneNavElement(new NavElement("crawler1", "crawler1", new Page(thisdata, "crawler1")));
-            n.addOneNavElement(new NavElement("crawler2", "crawler2", new Page(thisdata, "crawler2")));
-            n.addOneNavElement(new NavElement("Crawler Config", "crawler-config", new CrawlerConfig(thisdata, "crawler-config")));
+              n.addOneNavElement(new NavElement("Crawler Config", "crawler-config", new CrawlerConfig(thisdata, "crawler-config")));
         });
 
 
@@ -178,7 +176,7 @@ export class Template {
         }
         $(".nav-query").click(function () { $("#nav-element-form-query").trigger("click"); });
         $(".nav-graphiql").click(function () { $("#nav-element-graphiql-console").trigger("click"); });
-        $(".nav-crawler").click(function () { $("#nav-element-crawler1").trigger("click"); });
+        $(".nav-crawler").click(function () { $("#nav-element-crawler-config").trigger("click"); });
         $(".nav-status").click(function () { $("#nav-element-testname").trigger("click"); });
         $(".nav-help").click(function () { $("#nav-element-help1").trigger("click"); });
         $(".nav-about").click(function () { $("#nav-element-about1").trigger("click"); });
@@ -199,10 +197,10 @@ export class Template {
         <a href="#" class="list-group-item list-group-item-action bg-light nav-query xnav_query">Query</a>
         <a href="#" class="list-group-item list-group-item-action bg-light nav-graphiql xnav_graphiql">GraphiQl</a>
         <a href="#" class="list-group-item list-group-item-action bg-light nav-crawler xnav_crawler">Crawler</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-status xnav_status">Status</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-help xnav_help">Help</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-about xnav_about">About</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-logout xnav_logout">Logout</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light nav-status xnav_status" style="display:none">Status</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light nav-help xnav_help" style="display:none">Help</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light nav-about xnav_about" style="display:none">About</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light nav-logout xnav_logout" style="display:none">Logout</a>
       </div>
     </div>
 
