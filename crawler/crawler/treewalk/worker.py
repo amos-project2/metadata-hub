@@ -117,16 +117,24 @@ class Worker(Process):
             bool: string with the extracted values
 
         """
+        # Make validity check (if any of these are missing, the element can't be inserted into the database)
+        for element in ['Directory', 'FileName', 'FileType', 'FileSize']:
+            if element not in exif:
+                return '0'
+
+
+        # Extract the metadata for the 'files' table
         for i in ['Directory', 'FileName', 'FileType']:
             try:
                 value += f"'{exif[i]}', "
             except:
-                value += 'NULL'
+                value += 'NULL, '
         for i in ['FileSize']:
             try:
-                value += f"'{exif[i][:-3]}', "
+                print(exif[i])
+                value += f"'{exif[i].split(' ')[0]}', "
             except:
-                value += 'NULL'
+                value += 'NULL, '
         for i in ['FileAccessDate', 'FileModifyDate', 'FileCreationDate']:
             try:
                 valueTmp = f"'{exif[i]}"
@@ -143,7 +151,7 @@ class Worker(Process):
             package (List[str]): list of directories to process.
 
         """
-        pathEx = "exiftool/exiftoolLinux/exiftool"
+        pathEx = self._config.get_exiftool_executable()
         _logger.debug(f'Doing work ({self.pid}).')
 
         # for directory in package:
@@ -156,6 +164,11 @@ class Worker(Process):
             for result in metadata:
                 # get the values
                 values = self.createInsert(result, value)
+                if values == '0':
+                    #TODO Remove debuging print
+                    print('Can\'t insert element into database because a core value is missing')
+                    print(result)
+                    continue
                 # compute the hash256
                 with open(f"{result['Directory']}/{result['FileName']}", "rb") as file:
                     bytes = file.read()
