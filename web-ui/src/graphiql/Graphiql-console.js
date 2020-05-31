@@ -65,7 +65,8 @@ export class GraphiqlConsole extends Page {
 
                 graphiqlReact = React.createElement(GraphiQL, {
                     fetcher: graphQLFetcher,
-                    query: querydata
+                    query: querydata,
+                    docExplorerOpen: true
                 });
 
 
