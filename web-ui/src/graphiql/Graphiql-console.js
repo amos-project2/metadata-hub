@@ -48,6 +48,7 @@ export class GraphiqlConsole extends Page {
             this.parent.storage.query_inject=null;
         }
 
+
         if (this.parent.storage.openedFromEditor) {
             $("#small-nav-bar").append(`
             <div class="row justify-content-md-center go-to-editor-div mb-3">

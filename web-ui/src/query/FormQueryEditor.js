@@ -49,11 +49,11 @@ export class FormQueryEditor extends Page {
   <div class="form-row">
     <div class="form-group col-md-6">
       <label for="fq-createFileTimeRangeStart">Start-DateTime</label>
-      <input type="text" class="form-control" id="fq-createFileTimeRangeStart">
+      <input type="text" class="form-control" id="fq-createFileTimeRangeStart" placeholder="2020-05-22 07:19:29">
     </div>
      <div class="form-group col-md-6">
       <label for="fq-createFileTimeRangeEnd">End-DateTime</label>
-      <input type="text" class="form-control" id="fq-createFileTimeRangeEnd">
+      <input type="text" class="form-control" id="fq-createFileTimeRangeEnd" placeholder="2020-07-28 20:35:22">
     </div>
     </div>
 
