@@ -43,7 +43,7 @@ export class Page {
             this.clearCachex = false;
             elem = createRandomElem();
             $("." + elem).html(this.content());
-            this.onMount();
+            this.onMountx();
         } else {
 
 
@@ -51,16 +51,16 @@ export class Page {
                 case 0:
                     elem = createRandomElem();
                     $("." + elem).html(this.content());
-                    this.onMount();
+                    this.onMountx();
                     break;
                 case 1:
                     elem = createRandomElem();
                     $("." + elem).html(this.cachedInMemory);
-                    this.onMount();
+                    this.onMountx();
                     break;
                 case 2:
                     elem = this.cachedElem;
-                    this.onMount();
+                    this.onMountx();
                     break;
                 case 3:
                     elem = this.cachedElem;
@@ -81,14 +81,47 @@ export class Page {
 
     }
 
+
+
     //to-ovveride
     onMount() {}
+
+
+    //Dont override
+    onMountx() {
+        this.init_popover();
+        this.onMount();
+    }
+
+    init_popover() {
+
+        $('.pover').attr( "href", "#" );
+        $('.pover').attr( "tabindex", "0" );
+        $('.pover').click(function(event) {
+            event.preventDefault();
+        });
+        $('.pover').popover({
+            trigger: 'focus',
+            container: 'body',
+            html: true
+        });
+
+
+    }
+
 
     //to-ovveride
     onLoad() {};
 
     //to-ovveride
     onFirstLoad() {}
+
+
+    //Dont-override
+    onUnLoadx() {
+        $('.pover').popover('hide');
+        this.onUnLoad();
+    }
 
     //to-ovveride
     onUnLoad() {}
@@ -108,29 +141,32 @@ export class Page {
             case 0:
                 //ee jquery::detach(), eventually interessting for caching purposes
                 $("." + elem).hide(1, function () { $("." + elem).remove()});
-                this.onUnLoad();
+                this.onUnLoadx();
                 this.onUnMount();
                 break;
             case 1:
                 this.cachedInMemory = $("." + elem).html();
                 $("." + elem).hide(1, function () { $("." + elem).remove()});
-                this.onUnLoad();
+                this.onUnLoadx();
                 this.onUnMount();
                 break;
             case 2:
                 this.cachedElem = elem;
                 $("." + elem).hide(1);
-                this.onUnLoad();
+                this.onUnLoadx();
                 this.onUnMount();
 
                 break;
             case 3:
                 this.cachedElem = elem;
                 $("." + elem).hide(1);
-                this.onUnLoad();
+                this.onUnLoadx();
                 break;
         }
     }
+
+
+
 
     //to-ovveride
     onUnMount() {}

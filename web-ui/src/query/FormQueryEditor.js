@@ -21,11 +21,11 @@ export class FormQueryEditor extends Page {
   <div class="form-row">
 
     <div class="form-group col-md-6">
-      <label for="fq-query-Name">Query-Name</label>
+      <label for="fq-query-Name">Query-Name <a class="pover" title="Query-Name" data-content="The Name, which is saved with the query here into the database to find it later again.">[?]</a></label>
       <input type="text" class="form-control" id="fq-query-Name">
     </div>
     <div class="form-group col-md-6">
-      <label for="fq-owner">Owner</label>
+      <label for="fq-owner">Owner <a class="pover" title="Owner" data-content="The Owner, which is saved with the query here into the database.">[?]</a></label>
       <input type="text" class="form-control" id="fq-owner">
     </div>
   </div>
@@ -48,18 +48,18 @@ export class FormQueryEditor extends Page {
 
   <div class="form-row">
     <div class="form-group col-md-6">
-      <label for="fq-createFileTimeRangeStart">Start-DateTime</label>
+      <label for="fq-createFileTimeRangeStart">Start-DateTime <a class="pover" title="Start-DateTime" data-content="It collects all files, which are older (created-time) than Start-DateTime">[?]</a></label>
       <input type="text" class="form-control" id="fq-createFileTimeRangeStart" placeholder="2020-05-22 07:19:29">
     </div>
      <div class="form-group col-md-6">
-      <label for="fq-createFileTimeRangeEnd">End-DateTime</label>
+      <label for="fq-createFileTimeRangeEnd">End-DateTime <a class="pover" title="End-DateTime" data-content="It collects all files, which are younger (created-time) than End-DateTime">[?]</a></label>
       <input type="text" class="form-control" id="fq-createFileTimeRangeEnd" placeholder="2020-07-28 20:35:22">
     </div>
     </div>
 
   <div class="form-row">
    <div class="form-group col-md-12">
-      <label for="fq-limit">Limit</label>
+      <label for="fq-limit">Limit <a class="pover" title="Limit" data-content="The max output limit.<br>Empty means no limit.">[?]</a></label>
       <input type="text" class="form-control" id="fq-limit">
     </div>
     </div>
@@ -69,7 +69,7 @@ export class FormQueryEditor extends Page {
   </div>
 
   <div class="form-row">
-<div class="col-md-12">Which Attributes (empty means all attributes):</div>
+<div class="col-md-12">Which Attributes: <a class="pover" title="Which Attributes" data-content="Here you can limit the result to the specific metadata attributes.<br>If you dont add least one, then you get a result of all">[?]</a></div>
 </div>
 
 
@@ -125,6 +125,7 @@ ${this.getModalCode()}
     }
 
     onMount() {
+
 
         this.helperMethod();
         let thisdata = this;
@@ -289,6 +290,10 @@ query
     }
 
     onRegister() {
+
+    }
+
+    onUnLoad() {
 
     }
 
