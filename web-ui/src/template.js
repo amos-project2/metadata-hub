@@ -79,8 +79,9 @@ export class Template {
         let thisdata = this;
 
         this.addNavGroup("nav_query", function (n) {
-            n.addOneNavElement(new NavElement("GraphQL-Query", "graphql-query", new GraphqlQueryEditor(thisdata, "graphql-query")));
             n.addOneNavElement(new NavElement("Form-Query", "form-query", new FormQueryEditor(thisdata, "form-query")));
+            n.addOneNavElement(new NavElement("GraphQL-Query", "graphql-query", new GraphqlQueryEditor(thisdata, "graphql-query")));
+
         });
 
         this.addNavGroup("nav_graphiql", function (n) {
@@ -173,7 +174,7 @@ export class Template {
                 })
             }
         }
-        $(".nav-query").click(function () { $("#nav-element-graphql-query").trigger("click"); });
+        $(".nav-query").click(function () { $("#nav-element-form-query").trigger("click"); });
         $(".nav-graphiql").click(function () { $("#nav-element-graphiql-console").trigger("click"); });
         $(".nav-crawler").click(function () { $("#nav-element-crawler1").trigger("click"); });
         $(".nav-status").click(function () { $("#nav-element-testname").trigger("click"); });
