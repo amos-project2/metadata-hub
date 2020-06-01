@@ -17,7 +17,7 @@ type Query{
         Default PatternOption is "included"
     file_name_option: Different PatternOptions can be used, which change how "file_name" gets compared to other Strings.
     file_type: Only returns file metadate where the file type is exactly "file_type"
-    size: Only returns file metadata of a certain size depending on the used IntOption. Default IntOption is "exact".
+    size: Only returns file metadata of a certain size depending on the used IntOption. Default IntOption is "equal".
     size_option: Here the IntOption for "size" can be specified.
     !Notice to timestamps!: timestamps follow the ISO 8601 standard, e.g. "2004-10-19 10:23:54+02", if no timezone is specified
         it is assumed to be in the system's timezone, if no time is specified "00:00:00" is used.
@@ -34,14 +34,14 @@ type Query{
         Both lists have to be the same length as their ordering relates them to each other.
         Default PatternOption is "included".
     metadata_options: Different PatternOptions can be used for metadata_values. The index in metadata_option relates to the index
-        in meta_data_values e.g. metadata_option[1] will be used for metadata_value[1]. Both lists don't have to be the same length.
+        in meta_data_values e.g. metadata_option[1] will be used for metadata_value[1]. If used both lists need to have the same length.
     selected_attributes: For all file metadata only the specified metadata attributes are returned.
     limitFetchingSize: Limits how many files will get fetched by the search.
     """
     searchForFileMetadata(file_id: Int, crawl_id: Int, dir_path: String, dir_path_option: PatternOption,
         file_name: String, file_name_option: PatternOption, file_type: String, size: Int, size_option: IntOption,
         start_creation_time: String, end_creation_time: String, start_access_time: String, end_access_time: String,
-        start_modification_time: String, end_modification_time: String, file_hash: Int,
+        start_modification_time: String, end_modification_time: String, file_hash: String,
         metadata_attributes: [String!], metadata_values:[String!], metadata_options: [PatternOption!],
         selected_attributes: [String!], limitFetchingSize: Int) : [File]
 }
