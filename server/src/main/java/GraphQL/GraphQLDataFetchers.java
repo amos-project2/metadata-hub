@@ -52,8 +52,11 @@ public class GraphQLDataFetchers
         };
     }
 
+    @SuppressWarnings("unchecked")
     private String buildSQLQuery(Map<String, Object> graphQLArguments){
 
+        //TODO SQLInjection Prevention is needed!
+        //TODO Don't select every field only the wanted ones (SELECT *) -> (SELECT id, metadata...)
         StringBuilder stringBuilder = new StringBuilder("Select * From public.files ");
         if (graphQLArguments.size() > 0) {
             stringBuilder.append("WHERE ");
@@ -75,17 +78,17 @@ public class GraphQLDataFetchers
                 String dir_path_option = (String) graphQLArguments.get("dir_path_option");
                 switch (dir_path_option) {
                     case "exactMatch":
-                        stringBuilder.append(" dir_path = \'").append(dir_path).append("\' AND ");
+                        stringBuilder.append(" dir_path = '").append(dir_path).append("' AND ");
                         break;
                     case "included":
-                        stringBuilder.append(" dir_path LIKE \'%").append(dir_path).append("%\' AND ");
+                        stringBuilder.append(" dir_path LIKE '%").append(dir_path).append("%' AND ");
                         break;
                     case "excluded":
-                        stringBuilder.append(" dir_path NOT LIKE \'%").append(dir_path).append("%\' AND ");
+                        stringBuilder.append(" dir_path NOT LIKE '%").append(dir_path).append("%' AND ");
                         break;
                 }
             }else{
-                stringBuilder.append(" dir_path LIKE \'%").append(dir_path).append("%\' AND ");
+                stringBuilder.append(" dir_path LIKE '%").append(dir_path).append("%' AND ");
             }
         }
 
@@ -95,22 +98,22 @@ public class GraphQLDataFetchers
                 String file_name_option = (String) graphQLArguments.get("file_name_option");
                 switch (file_name_option) {
                     case "exactMatch":
-                        stringBuilder.append(" name = \'").append(file_name).append("\' AND ");
+                        stringBuilder.append(" name = '").append(file_name).append("' AND ");
                         break;
                     case "included":
-                        stringBuilder.append(" name LIKE \'%").append(file_name).append("%\' AND ");
+                        stringBuilder.append(" name LIKE '%").append(file_name).append("%' AND ");
                         break;
                     case "excluded":
-                        stringBuilder.append(" name NOT LIKE \'%").append(file_name).append("%\' AND ");
+                        stringBuilder.append(" name NOT LIKE '%").append(file_name).append("%' AND ");
                         break;
                 }
             }else{
-                stringBuilder.append(" name LIKE \'%").append(file_name).append("%\' AND ");
+                stringBuilder.append(" name LIKE '%").append(file_name).append("%' AND ");
             }
         }
 
         if(graphQLArguments.containsKey("file_type")){
-            stringBuilder.append(" type = \'").append(graphQLArguments.get("file_type")).append("\' AND ");
+            stringBuilder.append(" type = '").append(graphQLArguments.get("file_type")).append("' AND ");
         }
 
         if(graphQLArguments.containsKey("size")){
@@ -134,34 +137,35 @@ public class GraphQLDataFetchers
         }
 
         if(graphQLArguments.containsKey("start_creation_time")) {
-            stringBuilder.append(" creation_time >= \'").append(graphQLArguments.get("start_creation_time")).append("\' AND ");
+            stringBuilder.append(" creation_time >= '").append(graphQLArguments.get("start_creation_time")).append("' AND ");
         }
 
         if(graphQLArguments.containsKey("end_creation_time")) {
-            stringBuilder.append(" creation_time < \'").append(graphQLArguments.get("end_creation_time")).append("\' AND ");
+            stringBuilder.append(" creation_time < '").append(graphQLArguments.get("end_creation_time")).append("' AND ");
         }
 
         if(graphQLArguments.containsKey("start_access_time")) {
-            stringBuilder.append(" access_time >= \'").append(graphQLArguments.get("start_access_time")).append("\' AND ");
+            stringBuilder.append(" access_time >= '").append(graphQLArguments.get("start_access_time")).append("' AND ");
         }
 
         if(graphQLArguments.containsKey("end_access_time")) {
-            stringBuilder.append(" access_time < \'").append(graphQLArguments.get("end_access_time")).append("\' AND ");
+            stringBuilder.append(" access_time < '").append(graphQLArguments.get("end_access_time")).append("' AND ");
         }
 
         if(graphQLArguments.containsKey("start_modification_time")) {
-            stringBuilder.append(" modification_time >= \'").append(graphQLArguments.get("start_modification_time")).append("\' AND ");
+            stringBuilder.append(" modification_time >= '").append(graphQLArguments.get("start_modification_time")).append("' AND ");
         }
 
         if(graphQLArguments.containsKey("end_modification_time")) {
-            stringBuilder.append(" modification_time < \'").append(graphQLArguments.get("end_modification_time")).append("\' AND ");
+            stringBuilder.append(" modification_time < '").append(graphQLArguments.get("end_modification_time")).append("' AND ");
         }
 
         if(graphQLArguments.containsKey("file_hash")) {
-            stringBuilder.append(" file_hash = \'").append(graphQLArguments.get("file_hash")).append("\' AND ");
+            stringBuilder.append(" file_hash = '").append(graphQLArguments.get("file_hash")).append("' AND ");
         }
 
         //METADATA
+        //TODO Maybe there is a more beautiful solution using GraphQL, except using 3 seperate lists
         if(graphQLArguments.containsKey("metadata_attributes") && graphQLArguments.containsKey("metadata_values")){
             List<String> metadata_attributes = (List<String>) graphQLArguments.get("metadata_attributes");
             List<String> metadata_values = (List<String>) graphQLArguments.get("metadata_values");
@@ -173,24 +177,24 @@ public class GraphQLDataFetchers
                             String metadata_option = metadata_options.get(i);
                             switch (metadata_option){
                                 case "exactMatch":
-                                    stringBuilder.append(" metadata ->> \'").append(metadata_attributes.get(i))
-                                        .append("\' = \'").append(metadata_values.get(i)). append("\' AND ");
+                                    stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
+                                        .append("' = '").append(metadata_values.get(i)). append("' AND ");
                                     break;
                                 case "included":
-                                    stringBuilder.append(" metadata ->> \'").append(metadata_attributes.get(i))
-                                        .append("\' LIKE \'%").append(metadata_values.get(i)). append("%\' AND ");
+                                    stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
+                                        .append("' LIKE '%").append(metadata_values.get(i)). append("%' AND ");
                                     break;
                                 case "excluded":
-                                    stringBuilder.append(" metadata ->> \'").append(metadata_attributes.get(i))
-                                        .append("\' NOT LIKE \'%").append(metadata_values.get(i)). append("%\' AND ");
+                                    stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
+                                        .append("' NOT LIKE '%").append(metadata_values.get(i)). append("%' AND ");
                                     break;
                             }
                         }
                     }
                 }else{
                     for(int i = 0; i < metadata_attributes.size(); i++){
-                        stringBuilder.append(" metadata ->> \'").append(metadata_attributes.get(i))
-                            .append("\' LIKE \'%").append(metadata_values.get(i)). append("%\' AND ");
+                        stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
+                            .append("' LIKE '%").append(metadata_values.get(i)). append("%' AND ");
                     }
                 }
             }
@@ -204,6 +208,7 @@ public class GraphQLDataFetchers
         return stringBuilder.toString();
     }
 
+    @SuppressWarnings("unchecked")
     private List<File> queryDatabase(String sqlQuery, ArrayList<String> selected_attributes) throws SQLException, IOException {
         HikariDataSource dataSource = databaseProvider.getHikariDataSource();
 
@@ -214,10 +219,6 @@ public class GraphQLDataFetchers
             try (ResultSet rs = selectStmt.executeQuery()) {
                 ArrayList<File> files = new ArrayList<>();
                 while (rs.next()) {
-
-                    String crawl_id = rs.getString("crawl_id");
-                    String dir_path = rs.getString("dir_path");
-
                     String jsonFileMetadata = rs.getString("metadata");
                     ArrayList<Metadatum> file_metadata = new ArrayList<>();
                     ObjectMapper mapper = new ObjectMapper();
