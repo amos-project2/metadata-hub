@@ -63,8 +63,9 @@ class NavGroup {
 
 export class Template {
 
-    constructor() {
+    constructor(graphQlFetcher) {
         this.thisdata = this;
+        this.graphQlFetcher = graphQlFetcher;
         this.storage = {
             query_inject: null,
             openedFromEditor: null,

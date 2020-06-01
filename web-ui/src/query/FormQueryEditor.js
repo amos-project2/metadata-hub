@@ -89,7 +89,7 @@ export class FormQueryEditor extends Page {
 <br>
 <h4>Result:</h4>
 <div>
-<pre id="json" class="q_result"></pre>
+<pre class="q_result"></pre>
 </div>
 
 ${this.getModalCode()}
@@ -258,15 +258,7 @@ query
 
     graphqlfetcher(query, func) {
 
-        const URL = "graphql/";
-
-        fetch(URL, {
-            crossOrigin: null,
-            method: "post",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({query: query})
-        }).then(function (response) {
-            console.log(response);
+        this.parent.graphQlFetcher.fetchFromServerB(query).then(function (response) {
             if (response.ok)
                 return response.json();
             else

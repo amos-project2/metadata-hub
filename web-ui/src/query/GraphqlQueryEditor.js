@@ -4,7 +4,7 @@ export class GraphqlQueryEditor extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         super(parent, identifier, mountpoint, titleSelector);
         this.title = "GraphQl Query Editor";
-        this.cacheLevel=3;
+        this.cacheLevel = 3;
     }
 
     content() {
@@ -19,7 +19,7 @@ export class GraphqlQueryEditor extends Page {
 <br>
 <h4>Result:</h4>
 <div>
-<pre id="json" class="q_result"></pre>
+<pre class="q_result3"></pre>
 </div>
 
 
@@ -28,18 +28,11 @@ export class GraphqlQueryEditor extends Page {
 
     onMount() {
 
+        let thisdata=this;
         $(".q-send-query-editor").submit(function (event) {
             event.preventDefault();
-            // alert($("#q_textInput").val());
-            const URL = "graphql/";
-            // const URL = "http://localhost:8080/graphql/";
 
-            fetch(URL, {
-                crossOrigin: null,
-                method: "post",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({query: $("#q_textInput").val()})
-            }).then(function (response) {
+            thisdata.parent.graphQlFetcher.fetchFromServerB($("#q_textInput").val()).then(function (response) {
                 console.log(response);
                 if (response.ok)
                     return response.json();
@@ -47,10 +40,10 @@ export class GraphqlQueryEditor extends Page {
                     throw new Error('Error in the HTTP-Answer');
             })
                 .then(function (json) {
-                    $(".q_result").text(JSON.stringify(json, undefined, 2));
+                    $(".q_result3").text(JSON.stringify(json, undefined, 2));
                 })
                 .catch(function (err) {
-                    $(".q_result").text("Error: " + err);
+                    $(".q_result3").text("Error: " + err);
                 });
 
 
