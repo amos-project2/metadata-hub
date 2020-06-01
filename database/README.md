@@ -60,11 +60,11 @@ dir_path(text)            -> starting directory of the crawl
 name(text)                -> specified name of the crawler
 status(text)              -> status of the crawl (running, finished, suspended, abborted, ...)
 crawl_config(text)        -> latest used crawl_config by the crawl, only for user-presentation purposes
-analyzed_files(jsonb)     -> array of currently analyzed files at "update_time"
+analyzed_dirs(jsonb)      -> array of currently analyzed dirs at "update_time"
 starting_time(date)       -> start time of the crawler job
 finished_time(date)       -> the end of the first crawler-job
 update_time(date)         -> time of the latest update of the crawl data
-analyzed_files_hash(text) -> sha-256 hash of analyzed_files (uses trigger to create hash on inserting and updating)
+analyzed_dirs_hash(text)  -> sha-256 hash of analyzed_dirs (uses trigger to create hash on inserting and updating)
 ```
 ##### files
 ```

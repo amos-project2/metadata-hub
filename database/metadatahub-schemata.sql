@@ -5,7 +5,7 @@
 -- Dumped from database version 12.2
 -- Dumped by pg_dump version 12.2
 
--- Started on 2020-05-29 21:17:19
+-- Started on 2020-05-31 00:55:09
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -29,7 +29,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 --
 -- TOC entry 2885 (class 0 OID 0)
 -- Dependencies: 2
--- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner:
+-- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner: 
 --
 
 COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
@@ -37,21 +37,21 @@ COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
 
 --
 -- TOC entry 245 (class 1255 OID 16741)
--- Name: analyzed_files_hash_trigger_function(); Type: FUNCTION; Schema: public; Owner: metadatahub
+-- Name: analyzed_dirs_hash_trigger_function(); Type: FUNCTION; Schema: public; Owner: metadatahub
 --
 
-CREATE FUNCTION public.analyzed_files_hash_trigger_function() RETURNS trigger
+CREATE FUNCTION public.analyzed_dirs_hash_trigger_function() RETURNS trigger
     LANGUAGE plpgsql
     AS $$BEGIN
     IF tg_op = 'INSERT' OR tg_op = 'UPDATE' THEN
-        NEW.analyzed_files_hash = encode(digest(NEW.analyzed_files::text, 'sha256'), 'hex')::text;
+        NEW.analyzed_dirs_hash = encode(digest(NEW.analyzed_dirs::text, 'sha256'), 'hex')::text;
         RETURN NEW;
     END IF;
 END;
 $$;
 
 
-ALTER FUNCTION public.analyzed_files_hash_trigger_function() OWNER TO metadatahub;
+ALTER FUNCTION public.analyzed_dirs_hash_trigger_function() OWNER TO metadatahub;
 
 SET default_tablespace = '';
 
@@ -68,11 +68,11 @@ CREATE TABLE public.crawls (
     name text NOT NULL,
     status text,
     crawl_config text,
-    analyzed_files jsonb NOT NULL,
+    analyzed_dirs jsonb NOT NULL,
     starting_time timestamp with time zone,
     finished_time timestamp with time zone,
     update_time timestamp with time zone,
-    analyzed_files_hash text
+    analyzed_dirs_hash text
 );
 
 
@@ -242,18 +242,18 @@ ALTER TABLE ONLY public.files
 
 --
 -- TOC entry 2752 (class 2620 OID 16843)
--- Name: crawls analyzed_files_hash_insert; Type: TRIGGER; Schema: public; Owner: metadatahub
+-- Name: crawls analyzed_dirs_hash_insert; Type: TRIGGER; Schema: public; Owner: metadatahub
 --
 
-CREATE TRIGGER analyzed_files_hash_insert BEFORE INSERT ON public.crawls FOR EACH ROW EXECUTE FUNCTION public.analyzed_files_hash_trigger_function();
+CREATE TRIGGER analyzed_dirs_hash_insert BEFORE INSERT ON public.crawls FOR EACH ROW EXECUTE FUNCTION public.analyzed_dirs_hash_trigger_function();
 
 
 --
 -- TOC entry 2753 (class 2620 OID 16844)
--- Name: crawls analyzed_files_hash_update; Type: TRIGGER; Schema: public; Owner: metadatahub
+-- Name: crawls analyzed_dirs_hash_update; Type: TRIGGER; Schema: public; Owner: metadatahub
 --
 
-CREATE TRIGGER analyzed_files_hash_update BEFORE UPDATE ON public.crawls FOR EACH ROW WHEN ((new.analyzed_files IS DISTINCT FROM old.analyzed_files)) EXECUTE FUNCTION public.analyzed_files_hash_trigger_function();
+CREATE TRIGGER analyzed_dirs_hash_update BEFORE UPDATE ON public.crawls FOR EACH ROW WHEN ((new.analyzed_dirs IS DISTINCT FROM old.analyzed_dirs)) EXECUTE FUNCTION public.analyzed_dirs_hash_trigger_function();
 
 
 --
@@ -283,7 +283,7 @@ ALTER TABLE ONLY public.file_generic_data_eav
     ADD CONSTRAINT file_id FOREIGN KEY (file_generic_id) REFERENCES public.files(id);
 
 
--- Completed on 2020-05-29 21:17:19
+-- Completed on 2020-05-31 00:55:10
 
 --
 -- PostgreSQL database dump complete
