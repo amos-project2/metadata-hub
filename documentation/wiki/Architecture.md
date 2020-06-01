@@ -33,7 +33,9 @@ below.
 The interaction of these components is depicted in the following graphic
 and explained below.
 
-``TODO`` **ADD PICTURE**
+<p align="center">
+    <img alt="Ooops, there should have been the logo :(" src=https://github.com/amos-project2/metadata-hub/blob/ce42678a35d31314d4d427dc805d7c7f8672cc0b/documentation/images/architecture.png width="50%" height="50%"/>
+</p>
 
 Both the server and the crawler communicate with the database.
 Both the server and the crawler are accessible via the user's web browser.
