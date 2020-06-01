@@ -33,9 +33,9 @@ below.
 The interaction of these components is depicted in the following graphic
 and explained below.
 
-<p align="center">
-    <img alt="Ooops, there should have been the logo :(" src=https://github.com/amos-project2/metadata-hub/blob/ce42678a35d31314d4d427dc805d7c7f8672cc0b/documentation/images/architecture.png width="50%" height="50%"/>
-</p>
+
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/80a7f8b2d957d19a4988b07c315b5565f1c343d4/documentation/images/architecture_prev.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/ce42678a35d31314d4d427dc805d7c7f8672cc0b/documentation/images/architecture.png)
+
 
 Both the server and the crawler communicate with the database.
 Both the server and the crawler are accessible via the user's web browser.

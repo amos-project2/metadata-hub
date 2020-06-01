@@ -1,6 +1,5 @@
-<p align="center">
-    <img alt="Ooops, there should have been the logo :(" src=https://github.com/amos-project2/metadata-hub/blob/8764db84876c347f9f142f34d30a2410960852ee/documentation/images/logo.png width="50%" height="50%"/>
-</p>
+
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/80a7f8b2d957d19a4988b07c315b5565f1c343d4/documentation/images/logo_prev.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/8764db84876c347f9f142f34d30a2410960852ee/documentation/images/logo.png)
 
 # Metadata-Hub
 
