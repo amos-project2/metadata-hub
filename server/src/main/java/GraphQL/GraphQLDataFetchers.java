@@ -69,7 +69,7 @@ public class GraphQLDataFetchers
      * sel_attributes: If specified, fetches solely the selected attributes
      */
     @SuppressWarnings({"rawtypes"})
-    public DataFetcher searchFetcher()
+    public DataFetcher searchForFileMetadataFetcher()
     {
         return (DataFetcher<List<File>>) dataFetchingEnvironment ->
         {
