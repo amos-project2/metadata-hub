@@ -27,3 +27,9 @@ This metadata is stored in a designated metadata store, thereby generating an
 easy-to-access and persistent index of the whole file system.
 Finally, existing end-user applications will be able to query and consume the
 collected metadata.
+
+## Wiki
+This wiki is the official documentation of the Metadata-Hub project.
+All included images are preview images that are linked to the larger original
+image.
+Simply click on the image to view it in higher resolution.
