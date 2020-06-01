@@ -1,4 +1,5 @@
 import {Page} from "../Page";
+import {ResultPresenter} from "../buisnesslogic/ResultPresenter";
 // // import {datenrangepicker} from "daterangepicker";
 // import moment from 'moment';
 //
@@ -14,6 +15,7 @@ export class FormQueryEditor extends Page {
         this.title = "Form Query Editor";
         this.cacheLevel = 3;
         this.graphQlFetcher=this.parent.dependencies.graphQlFetcher;
+        this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
     }
 
     content() {
@@ -88,10 +90,8 @@ export class FormQueryEditor extends Page {
 <button type="button" class="btn btn-primary clear-all">Clear All</button>
 </form>
 <br>
-<h4>Result:</h4>
-<div>
-<pre class="q_result"></pre>
-</div>
+<div class="resultView1"></div>
+
 
 ${this.getModalCode()}
 
@@ -127,14 +127,19 @@ ${this.getModalCode()}
 
     onMount() {
 
+        $(".resultView1").html(this.resultPresenter.getHtml());
 
         this.helperMethod();
         let thisdata = this;
+
         $(".q-send-query-form-editor").submit(function (event) {
-            event.preventDefault();
-            thisdata.graphQlFetcher.fetchAdvanced(thisdata.buildAndGetGraphQlQuery(), function (sucess, json, jsonString) {
-                $(".q_result").text(jsonString);
-            });
+              event.preventDefault();
+            thisdata.resultPresenter.generateResultAndInjectIntoDom(thisdata.buildAndGetGraphQlQuery());
+
+            // thisdata.graphQlFetcher.fetchAdvanced(thisdata.buildAndGetGraphQlQuery(), function (sucess, json, jsonString) {
+            //     $(".q_result").text(jsonString);
+            //     thisdata.resultPresenter.addDataToResult(jsonString);
+            // });
         });
 
         $(".open-query").click(function () {
