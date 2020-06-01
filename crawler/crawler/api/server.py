@@ -67,7 +67,7 @@ def _get_response(
     return resp
 
 
-@app.route('/pause', methods=['POST'])
+@app.route('/pause', methods=['GET', 'POST'])
 def pause() -> flask.Response:
     """API endpoint to pause the current crawler execution.
 
@@ -91,7 +91,7 @@ def pause() -> flask.Response:
     )
 
 
-@app.route('/continue', methods=['POST'])
+@app.route('/continue', methods=['GET', 'POST'])
 def unpause() -> flask.Response:
     """API endpoint to continue a paused execution of the crawler.
 
@@ -115,7 +115,7 @@ def unpause() -> flask.Response:
 
 
 
-@app.route('/stop', methods=['POST'])
+@app.route('/stop', methods=['GET', 'POST'])
 def stop() -> flask.Response:
     """API endpoint to stop the current execution of the crawler.
 
@@ -158,7 +158,7 @@ def info() -> flask.Response:
     )
 
 
-@app.route('/start', methods=['POST'])
+@app.route('/start', methods=['GET', 'POST'])
 def start() -> flask.Response:
     """API endpoint to retrive start the crawler with a certain configuration.
 
@@ -226,7 +226,7 @@ def config():
     return flask.render_template('config.html', message=message)
 
 
-@app.route('/shutdown', methods=['POST'])
+@app.route('/shutdown', methods=['GET', 'POST'])
 def shutdown():
     treewalk.shutdown()
     func = flask.request.environ.get('werkzeug.server.shutdown')
