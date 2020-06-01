@@ -41,8 +41,8 @@ host    replication     all             ::1/128                 md5
 ```console
 psql -Upostgres -W -f metadatahub-role.sql
 psql -Upostgres -W -f metadatahub-database.sql
-psql metadatahubtest -Umetadatahub -W -f metadatahub-schemata.sql
-psql metadatahubtest -Umetadatahub -W -f metadatahub-data.sql
+psql metadatahub -Umetadatahub -W -f metadatahub-schemata.sql
+psql metadatahub -Umetadatahub -W -f metadatahub-data.sql
 ```
 
 ##### On Windows:
