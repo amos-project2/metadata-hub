@@ -6,28 +6,47 @@ export class GraphQlFetcher {
     }
 
     //it returns a future
-    fetchFromServerA(query, variables) {
-        return this.fetchFromServerHelper(JSON.stringify({query: query, variables: variables}));
+    fetchA(query, variables) {
+        return this.fetchHelper(JSON.stringify({query: query, variables: variables}));
     }
 
     //it returns a future
-    fetchFromServerB(query) {
-        return this.fetchFromServerHelper(JSON.stringify({query: query}));
+    fetchB(query) {
+        return this.fetchHelper(JSON.stringify({query: query}));
     }
 
     //it returns a future
-    fetchFromServerC(graphQLParams) {
-        return this.fetchFromServerHelper(JSON.stringify(graphQLParams));
+    fetchC(graphQLParams) {
+        return this.fetchHelper(JSON.stringify(graphQLParams));
     }
 
     //private, and returns a future
-    fetchFromServerHelper(body) {
+    fetchHelper(body) {
         return fetch(this.endpoint, {
             crossOrigin: null,
             method: "post",
             headers: {"Content-Type": "application/json"},
             body: body
         });
+    }
+
+
+    fetchAdvanced(query, func) {
+
+        this.fetchB(query).then(function (response) {
+            if (response.ok)
+                return response.json();
+            else
+                func(false, null, 'Error in the HTTP-Answer');
+            // throw new Error('Error in the HTTP-Answer');
+        })
+            .then(function (json) {
+                func(true, json, JSON.stringify(json, undefined, 2));
+            })
+            .catch(function (err) {
+                func(false, null, JSON.stringify(json, undefined, 2));
+            });
+
     }
 
 

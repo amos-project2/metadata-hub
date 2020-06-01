@@ -5,7 +5,8 @@ export class HashQuery extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         super(parent, identifier, mountpoint, titleSelector);
         this.title = "Hash Query";
-        this.cacheLevel = 4;
+        this.cacheLevel = 3;
+        this.graphQlFetcher=this.parent.dependencies.graphQlFetcher;
         //here you set the title-attribut
         //you can here also set the caching_behavour and much more
         //take a look in class Page

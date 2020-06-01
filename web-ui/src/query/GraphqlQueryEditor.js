@@ -5,6 +5,7 @@ export class GraphqlQueryEditor extends Page {
         super(parent, identifier, mountpoint, titleSelector);
         this.title = "GraphQl Query Editor";
         this.cacheLevel = 3;
+        this.graphQlFetcher=this.parent.dependencies.graphQlFetcher;
     }
 
     content() {
@@ -31,20 +32,9 @@ export class GraphqlQueryEditor extends Page {
         let thisdata=this;
         $(".q-send-query-editor").submit(function (event) {
             event.preventDefault();
-
-            thisdata.parent.graphQlFetcher.fetchFromServerB($("#q_textInput").val()).then(function (response) {
-                console.log(response);
-                if (response.ok)
-                    return response.json();
-                else
-                    throw new Error('Error in the HTTP-Answer');
-            })
-                .then(function (json) {
-                    $(".q_result3").text(JSON.stringify(json, undefined, 2));
-                })
-                .catch(function (err) {
-                    $(".q_result3").text("Error: " + err);
-                });
+            thisdata.graphQlFetcher.fetchAdvanced($("#q_textInput").val(), function (sucess, json, jsonString) {
+                $(".q_result3").text(jsonString);
+            });
 
 
         });

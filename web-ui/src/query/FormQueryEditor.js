@@ -13,6 +13,7 @@ export class FormQueryEditor extends Page {
         super(parent, identifier, mountpoint, titleSelector);
         this.title = "Form Query Editor";
         this.cacheLevel = 3;
+        this.graphQlFetcher=this.parent.dependencies.graphQlFetcher;
     }
 
     content() {
@@ -131,11 +132,9 @@ ${this.getModalCode()}
         let thisdata = this;
         $(".q-send-query-form-editor").submit(function (event) {
             event.preventDefault();
-            thisdata.graphqlfetcher(thisdata.buildAndGetGraphQlQuery(), function (sucess, json, jsonString) {
-
+            thisdata.graphQlFetcher.fetchAdvanced(thisdata.buildAndGetGraphQlQuery(), function (sucess, json, jsonString) {
                 $(".q_result").text(jsonString);
-
-            })
+            });
         });
 
         $(".open-query").click(function () {
@@ -255,27 +254,6 @@ query
         return query
 
     }
-
-    graphqlfetcher(query, func) {
-
-        this.parent.graphQlFetcher.fetchFromServerB(query).then(function (response) {
-            if (response.ok)
-                return response.json();
-            else
-                func(false, null, 'Error in the HTTP-Answer');
-            // throw new Error('Error in the HTTP-Answer');
-        })
-            .then(function (json) {
-                func(true, json, JSON.stringify(json, undefined, 2));
-                // $(".q_result").text(JSON.stringify(json, undefined, 2));
-            })
-            .catch(function (err) {
-                func(false, null, JSON.stringify(json, undefined, 2));
-                //$(".q_result").text("Error: " + err);
-            });
-
-    }
-
 
     onUnMount() {
 

@@ -5,9 +5,13 @@ import {Template} from "./template";
 import {GraphQlFetcher} from "./buisnesslogic/GraphQlFetcher";
 
 
-let graphQlFetcher =new GraphQlFetcher("graphql/");
+// let graphQlFetcher =
 
-let template = new Template(graphQlFetcher);
+let dependencies={
+    graphQlFetcher:new GraphQlFetcher("graphql/"),
+}
+
+let template = new Template(dependencies);
 
 
 

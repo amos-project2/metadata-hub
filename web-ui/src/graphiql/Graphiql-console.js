@@ -4,8 +4,6 @@ import ReactDOM from 'react-dom';
 import "graphiql/graphiql.min.css";
 import GraphiQL from 'graphiql';
 
-import fetch from 'isomorphic-fetch';
-
 
 export class GraphiqlConsole extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
@@ -13,6 +11,7 @@ export class GraphiqlConsole extends Page {
         this.title = "GraphiQl-Console";
         this.init = false;
         this.cacheLevel = 3;
+        this.graphQlFetcher=this.parent.dependencies.graphQlFetcher;
 
         this.signalToRemoveGoBackToEditor = false;
         console.log(parent);
@@ -20,7 +19,6 @@ export class GraphiqlConsole extends Page {
 
     content() {
         return "";
-        //return `<div id="my-graphi-console" style="height: 80vh; margin: 0"></div>`;
     }
 
     onMount() {
@@ -53,7 +51,7 @@ export class GraphiqlConsole extends Page {
         }
 
         function graphQLFetcher(graphQLParams) {
-            return thisdata.parent.graphQlFetcher.fetchFromServerC(graphQLParams)
+            return thisdata.graphQlFetcher.fetchC(graphQLParams)
                 .then(response => response.json());
         }
 
