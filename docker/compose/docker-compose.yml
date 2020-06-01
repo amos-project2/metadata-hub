@@ -27,7 +27,6 @@ services:
             - POSTGRES_PASSWORD=metadatahub
         volumes:
             - $PWD/../../database/metadatahub-schemata.sql:/docker-entrypoint-initdb.d/10-init.sql
-            - $PWD/../../database/metadatahub-random_simple_data.sql:/docker-entrypoint-initdb.d/20-init.sql
             - ${DATABASE_STORAGE}:/var/lib/postgresql/data
         ports:
             - ${DATABASE_PORT}:5432

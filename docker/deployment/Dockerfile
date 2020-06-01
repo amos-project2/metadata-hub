@@ -33,7 +33,6 @@ RUN /etc/init.d/postgresql start && \
         psql -f database/metadatahub-role.sql && \
         psql -f database/metadatahub-database.sql && \
         psql metadatahub -f database/metadatahub-schemata.sql && \
-        psql metadatahub -f database/metadatahub-random_simple_data.sql && \
     scripts/database.sh
 USER root
 # Install crawler dependencies
