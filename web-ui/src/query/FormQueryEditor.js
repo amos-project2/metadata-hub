@@ -9,9 +9,10 @@ import {Page} from "../Page";
 
 
 export class FormQueryEditor extends Page {
-    constructor(identifier, mountpoint, titleSelector) {
-        super(identifier, mountpoint, titleSelector);
+    constructor(parent, identifier, mountpoint, titleSelector) {
+        super(parent, identifier, mountpoint, titleSelector);
         this.title = "Form Query Editor";
+        this.cacheLevel = 3;
     }
 
     content() {
@@ -20,11 +21,11 @@ export class FormQueryEditor extends Page {
   <div class="form-row">
 
     <div class="form-group col-md-6">
-      <label for="fq-query-Name">Query-Name</label>
+      <label for="fq-query-Name">Query-Name <a class="pover" title="Query-Name" data-content="The Name, which is saved with the query here into the database to find it later again.">[?]</a></label>
       <input type="text" class="form-control" id="fq-query-Name">
     </div>
     <div class="form-group col-md-6">
-      <label for="fq-owner">Owner</label>
+      <label for="fq-owner">Owner <a class="pover" title="Owner" data-content="The Owner, which is saved with the query here into the database.">[?]</a></label>
       <input type="text" class="form-control" id="fq-owner">
     </div>
   </div>
@@ -43,37 +44,47 @@ export class FormQueryEditor extends Page {
         <label class="custom-control-label" for="fq-includeVsExclude">Include VS Exclude</label>
     </div>
 </div>
+</div>
 
+  <div class="form-row">
     <div class="form-group col-md-6">
-      <label for="fq-createFileTimeRangeStart">Start-DateTime</label>
-      <input type="text" class="form-control" id="fq-createFileTimeRangeStart">
+      <label for="fq-createFileTimeRangeStart">Start-DateTime <a class="pover" title="Start-DateTime" data-content="It collects all files, which are older (created-time) than Start-DateTime">[?]</a></label>
+      <input type="text" class="form-control" id="fq-createFileTimeRangeStart" placeholder="2020-05-22 07:19:29">
     </div>
      <div class="form-group col-md-6">
-      <label for="fq-createFileTimeRangeEnd">End-DateTime</label>
-      <input type="text" class="form-control" id="fq-createFileTimeRangeEnd">
+      <label for="fq-createFileTimeRangeEnd">End-DateTime <a class="pover" title="End-DateTime" data-content="It collects all files, which are younger (created-time) than End-DateTime">[?]</a></label>
+      <input type="text" class="form-control" id="fq-createFileTimeRangeEnd" placeholder="2020-07-28 20:35:22">
+    </div>
     </div>
 
+  <div class="form-row">
    <div class="form-group col-md-12">
-      <label for="fq-limit">Limit</label>
+      <label for="fq-limit">Limit <a class="pover" title="Limit" data-content="The max output limit.<br>Empty means no limit.">[?]</a></label>
       <input type="text" class="form-control" id="fq-limit">
     </div>
+    </div>
 
-<div class="col-md-12"><hr></div>
+  <div class="form-row">
+     <div class="col-md-12"><hr></div>
+  </div>
 
-<div class="col-md-12">Which Attributes (empty means all attributes):</div>
-<div class="fg-attribut-container" style="width: 100%">
+  <div class="form-row">
+<div class="col-md-12">Which Attributes: <a class="pover" title="Which Attributes" data-content="Here you can limit the result to the specific metadata attributes.<br>If you dont add least one, then you get a result of all">[?]</a></div>
+</div>
+
+
+<div class="fg-attribut-container form-row">
 
      <div class="form-group col-md-4 fg-attribut-element">
           <input type="text" class="form-control attribut-element-input">
      </div>
-
-
 </div>
-  </div>
+
 
 <button type="submit" class="btn btn-primary">Send</button>
 <button type="button" class="btn btn-primary open-query">Open Query</button>
-<button type="button" class="btn btn-primary send-to-graphiql">Send through GraphiQL</button>
+<button type="button" class="btn btn-primary send-to-graphiql">Send to GraphiQL</button>
+<button type="button" class="btn btn-primary clear-all">Clear All</button>
 </form>
 <br>
 <h4>Result:</h4>
@@ -81,7 +92,16 @@ export class FormQueryEditor extends Page {
 <pre id="json" class="q_result"></pre>
 </div>
 
+${this.getModalCode()}
 
+`;
+
+
+    }
+
+    getModalCode() {
+
+        return `
 <div class="modal fade" id="graphql-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -95,19 +115,17 @@ export class FormQueryEditor extends Page {
         <pre id="graphql-code-content"></pre>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+        <button type="button" class="btn btn-primary send-to-graphiql" data-dismiss="modal">Send to GraphiQL</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
-</div>
+</div>`;
 
-
-
-
-        `;
     }
 
     onMount() {
+
 
         this.helperMethod();
         let thisdata = this;
@@ -129,15 +147,16 @@ export class FormQueryEditor extends Page {
 
         $(".send-to-graphiql").click(function () {
 
+            thisdata.parent.storage.query_inject = thisdata.buildAndGetGraphQlQuery();
+            thisdata.parent.storage.openedFromEditor = true;
             $("#nav-element-graphiql-console").trigger("click");
-            setTimeout(function () {
 
-                alert(thisdata.buildAndGetGraphQlQuery());
-                //TODO inject, prettify, and execute, remove alert^^
-
-            }, 1000);
+        });
 
 
+        $(".clear-all").click(function () {
+            thisdata.clearCache();
+            thisdata.reload();
         });
 
 
@@ -271,6 +290,10 @@ query
     }
 
     onRegister() {
+
+    }
+
+    onUnLoad() {
 
     }
 

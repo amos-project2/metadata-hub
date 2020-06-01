@@ -1,9 +1,10 @@
 import {Page} from "../Page";
 
 export class GraphqlQueryEditor extends Page {
-    constructor(identifier, mountpoint, titleSelector) {
-        super(identifier, mountpoint, titleSelector);
+    constructor(parent, identifier, mountpoint, titleSelector) {
+        super(parent, identifier, mountpoint, titleSelector);
         this.title = "GraphQl Query Editor";
+        this.cacheLevel=3;
     }
 
     content() {
@@ -31,7 +32,7 @@ export class GraphqlQueryEditor extends Page {
             event.preventDefault();
             // alert($("#q_textInput").val());
             const URL = "graphql/";
-           // const URL = "http://localhost:8080/graphql/";
+            // const URL = "http://localhost:8080/graphql/";
 
             fetch(URL, {
                 crossOrigin: null,

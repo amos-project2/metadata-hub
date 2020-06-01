@@ -4,6 +4,7 @@ import {GraphiqlConsole} from "./graphiql/Graphiql-console";
 import {FormQueryEditor} from "./query/FormQueryEditor";
 import {GraphqlQueryEditor} from "./query/GraphqlQueryEditor";
 import {CrawlerConfig} from "./crawler/CrawlerConfig";
+import {HashQuery} from "./query/HashQuery";
 
 class NavElement {
     constructor(name, selectorName, contentLoader) {
@@ -64,6 +65,10 @@ export class Template {
 
     constructor() {
         this.thisdata = this;
+        this.storage = {
+            query_inject: null,
+            openedFromEditor: null,
+        };
         this.data = "";
         this.navbar = "";
         this.navGroups = [];
@@ -72,49 +77,49 @@ export class Template {
         this.currentSelectedElement = null;
         this.currentSelectedElementGroup = null;
 
-
+        let thisdata = this;
 
         this.addNavGroup("nav_query", function (n) {
-            n.addOneNavElement(new NavElement("GraphQL-Query", "graphql-query", new GraphqlQueryEditor("graphql-query")));
-            n.addOneNavElement(new NavElement("Form-Query", "form-query", new FormQueryEditor("form-query")));
+            n.addOneNavElement(new NavElement("Form-Query", "form-query", new FormQueryEditor(thisdata, "form-query")));
+            n.addOneNavElement(new NavElement("Hash Query", "hash-query", new HashQuery(thisdata, "hash-query")));
+            n.addOneNavElement(new NavElement("GraphQL-Query", "graphql-query", new GraphqlQueryEditor(thisdata, "graphql-query")));
+
         });
 
         this.addNavGroup("nav_graphiql", function (n) {
-            n.addOneNavElement(new NavElement("GraphiQL-Console", "graphiql-console", new GraphiqlConsole("graphiql-console")));
+            n.addOneNavElement(new NavElement("GraphiQL-Console", "graphiql-console", new GraphiqlConsole(thisdata, "graphiql-console")));
         });
 
         this.addNavGroup("nav_crawler", function (n) {
-            n.addOneNavElement(new NavElement("crawler1", "crawler1", new Page("crawler1")));
-            n.addOneNavElement(new NavElement("crawler2", "crawler2", new Page("crawler2")));
-            n.addOneNavElement(new NavElement("Crawler Config", "crawler-config", new CrawlerConfig("crawler-config")));
+              n.addOneNavElement(new NavElement("Crawler Config", "crawler-config", new CrawlerConfig(thisdata, "crawler-config")));
         });
 
 
         this.addNavGroup("nav_status", function (n) {
-            n.addOneNavElement(new NavElement("Testname", "testname", new Testname("testname")));
-            n.addOneNavElement(new NavElement("Testname2", "testname2", new Page("testname2")));
-            n.addMoreNavElementsToOneGroup("MyDropdown", [new NavElement("Testname3", "testname3", new Page("testname3")),
-                new NavElement("Testname4", "testname4", new Page("testname4")),
+            n.addOneNavElement(new NavElement("Testname", "testname", new Testname(thisdata, "testname")));
+            n.addOneNavElement(new NavElement("Testname2", "testname2", new Page(thisdata, "testname2")));
+            n.addMoreNavElementsToOneGroup("MyDropdown", [new NavElement("Testname3", "testname3", new Page(thisdata, "testname3")),
+                new NavElement("Testname4", "testname4", new Page(thisdata, "testname4")),
                 new NavElement("divider"),
-                new NavElement("Testname5", "testname5", new Page("testname5"))
+                new NavElement("Testname5", "testname5", new Page(thisdata, "testname5"))
             ]);
-            n.addOneNavElement(new NavElement("Testname6", "testname6", new Page("testname6")));
+            n.addOneNavElement(new NavElement("Testname6", "testname6", new Page(thisdata, "testname6")));
         });
 
         this.addNavGroup("nav_help", function (n) {
-            n.addOneNavElement(new NavElement("help1", "help1", new Page("help1")));
-            n.addOneNavElement(new NavElement("help1", "help2", new Page("help2")));
+            n.addOneNavElement(new NavElement("help1", "help1", new Page(thisdata, "help1")));
+            n.addOneNavElement(new NavElement("help1", "help2", new Page(thisdata, "help2")));
         });
 
 
         this.addNavGroup("nav_about", function (n) {
-            n.addOneNavElement(new NavElement("about1", "about1", new Page("about1")));
-            n.addOneNavElement(new NavElement("about1", "about2", new Page("about2")));
+            n.addOneNavElement(new NavElement("about1", "about1", new Page(thisdata, "about1")));
+            n.addOneNavElement(new NavElement("about1", "about2", new Page(thisdata, "about2")));
         });
 
 
         this.addNavGroup("nav_logout", function (n) {
-            n.addOneNavElement(new NavElement("Logout", "logout", new Page("logout")));
+            n.addOneNavElement(new NavElement("Logout", "logout", new Page(thisdata, "logout")));
         });
 
         this.generateTemplate()
@@ -142,11 +147,12 @@ export class Template {
         let thisdata = this;
         for (let value of this.navGroups) {
             for (let value2 of value.data.navElements) {
+                value2.contentLoader.onRegister();
                 $("#nav-element-" + value2.selectorName).click(function () {
                     $(".nav-item").removeClass("active");//remove from all
 
                     if (thisdata.currentSelectedElement != null) {
-                        thisdata.currentSelectedElement.contentLoader.onUnMountIntern();//content-unloader
+                        thisdata.currentSelectedElement.contentLoader.unmount();//content-unloader
                         if (thisdata.currentSelectedElementGroup !== value.data) {
                             $(".container-" + thisdata.currentSelectedElementGroup.parent_nav).hide();
                             $(".x" + thisdata.currentSelectedElementGroup.parent_nav).removeClass("active_sidebar");
@@ -161,16 +167,16 @@ export class Template {
 
 
                     $(this).closest(".nav-item").addClass("active");
-                    value2.contentLoader.onMountIntern();//content-unloader
+                    value2.contentLoader.mount();//content-unloader
                     thisdata.currentSelectedElement = value2;
                     thisdata.currentSelectedElementGroup = value.data;
                     // alert("hey: " + value2.name);
                 })
             }
         }
-        $(".nav-query").click(function () { $("#nav-element-graphql-query").trigger("click"); });
+        $(".nav-query").click(function () { $("#nav-element-form-query").trigger("click"); });
         $(".nav-graphiql").click(function () { $("#nav-element-graphiql-console").trigger("click"); });
-        $(".nav-crawler").click(function () { $("#nav-element-crawler1").trigger("click"); });
+        $(".nav-crawler").click(function () { $("#nav-element-crawler-config").trigger("click"); });
         $(".nav-status").click(function () { $("#nav-element-testname").trigger("click"); });
         $(".nav-help").click(function () { $("#nav-element-help1").trigger("click"); });
         $(".nav-about").click(function () { $("#nav-element-about1").trigger("click"); });
@@ -191,10 +197,10 @@ export class Template {
         <a href="#" class="list-group-item list-group-item-action bg-light nav-query xnav_query">Query</a>
         <a href="#" class="list-group-item list-group-item-action bg-light nav-graphiql xnav_graphiql">GraphiQl</a>
         <a href="#" class="list-group-item list-group-item-action bg-light nav-crawler xnav_crawler">Crawler</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-status xnav_status">Status</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-help xnav_help">Help</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-about xnav_about">About</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-logout xnav_logout">Logout</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light nav-status xnav_status" style="display:none">Status</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light nav-help xnav_help" style="display:none">Help</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light nav-about xnav_about" style="display:none">About</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light nav-logout xnav_logout" style="display:none">Logout</a>
       </div>
     </div>
 
@@ -223,6 +229,7 @@ export class Template {
 
       <div class="container-fluid">
         <h1 class="mt-4 our-title"></h1>
+        <div id="small-nav-bar"></div>
         <div id="graphql-stuff" style=" margin:0; height:calc(100vh - 150px); min-height: 300px;" class="hide_active"></div>
         <div class="our-content"></div>
         </div>

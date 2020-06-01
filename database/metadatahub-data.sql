@@ -1,133 +1,88 @@
- 
 --
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 12.2 (Ubuntu 12.2-4)
--- Dumped by pg_dump version 12.2 (Ubuntu 12.2-4)
+-- Dumped from database version 12.2
+-- Dumped by pg_dump version 12.2
 
--- Started on 2020-05-11 03:31:56 CEST
+-- Started on 2020-05-29 21:18:10
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
+--SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- TOC entry 3009 (class 0 OID 16410)
--- Dependencies: 207
--- Data for Name: file_generic; Type: TABLE DATA; Schema: public; Owner: metadatahub
+-- TOC entry 2881 (class 0 OID 16796)
+-- Dependencies: 204
+-- Data for Name: crawls; Type: TABLE DATA; Schema: public; Owner: metadatahub
 --
 
-COPY public.file_generic ("tree_walk_id", sub_dir_path, name, file_typ, size, file_create_date, file_modify_date, id, metadata, file_access_date) FROM stdin;
-1	/testDir/	hund1.jpg	JPEG	7100	2020-05-10 01:30:02+02	2020-05-06 01:28:07+02	1	{"FileName": "hund1.jpg", "FileSize": "7.1 kB", "FileType": "JPEG", "MIMEType": "image/jpeg", "Directory": "../../testDir/crawler test 2", "ImageSize": "300x168", "ImageWidth": 300, "Megapixels": 0.05, "SourceFile": "../../testDir/crawler test 2/hund.jpg", "ImageHeight": 168, "JFIFVersion": 1.01, "XResolution": 1, "YResolution": 1, "BitsPerSample": 8, "FileAccessDate": "2020:05:10 01:30:02+02:00", "FileCreateDate": "2020:05:10 01:30:02+02:00", "FileModifyDate": "2020:05:06 01:28:07+02:00", "ResolutionUnit": "None", "ColorComponents": 3, "EncodingProcess": "Baseline DCT, Huffman coding", "ExifToolVersion": 11.98, "FilePermissions": "rw-rw-rw-", "YCbCrSubSampling": "YCbCr4:2:0 (2 2)", "FileTypeExtension": "jpg"}	2020-05-10 01:30:02+02
-1	/testDir/crawler test 2/	hund2.jpg	JPEG	7100	2020-05-10 01:30:02+02	2020-05-06 01:28:07+02	2	{"FileName": "hund2.jpg", "FileSize": "7.1 kB", "FileType": "JPEG", "MIMEType": "image/jpeg", "Directory": "../../testDir/crawler test 2", "ImageSize": "300x168", "ImageWidth": 300, "Megapixels": 0.05, "SourceFile": "../../testDir/crawler test 2/hund.jpg", "ImageHeight": 168, "JFIFVersion": 1.01, "XResolution": 1, "YResolution": 1, "BitsPerSample": 8, "FileAccessDate": "2020:05:10 01:30:02+02:00", "FileCreateDate": "2020:05:10 01:30:02+02:00", "FileModifyDate": "2020:05:06 01:28:07+02:00", "ResolutionUnit": "None", "ColorComponents": 3, "EncodingProcess": "Baseline DCT, Huffman coding", "ExifToolVersion": 11.98, "FilePermissions": "rw-rw-rw-", "YCbCrSubSampling": "YCbCr4:2:0 (2 2)", "FileTypeExtension": "jpg"}	2020-05-10 01:30:02+02
-1	/testDir/crawler test 2/onemore/	hund3.jpg	JPEG	7100	2020-05-10 01:30:02+02	2020-05-06 01:28:07+02	3	{"FileName": "hund3.jpg", "FileSize": "7.1 kB", "FileType": "JPEG", "MIMEType": "image/jpeg", "Directory": "../../testDir/crawler test 2", "ImageSize": "300x168", "ImageWidth": 300, "Megapixels": 0.05, "SourceFile": "../../testDir/crawler test 2/hund.jpg", "ImageHeight": 168, "JFIFVersion": 1.01, "XResolution": 1, "YResolution": 1, "BitsPerSample": 8, "FileAccessDate": "2020:05:10 01:30:02+02:00", "FileCreateDate": "2020:05:10 01:30:02+02:00", "FileModifyDate": "2020:05:06 01:28:07+02:00", "ResolutionUnit": "None", "ColorComponents": 3, "EncodingProcess": "Baseline DCT, Huffman coding", "ExifToolVersion": 11.98, "FilePermissions": "rw-rw-rw-", "YCbCrSubSampling": "YCbCr4:2:0 (2 2)", "FileTypeExtension": "jpg"}	2020-05-10 01:30:02+02
-1	/testDir/crawler test 2/anotherdir/	hund4.jpg	JPEG	7100	2020-05-10 01:30:02+02	2020-05-06 01:28:07+02	4	{"FileName": "hund4.jpg", "FileSize": "7.1 kB", "FileType": "JPEG", "MIMEType": "image/jpeg", "Directory": "../../testDir/crawler test 2", "ImageSize": "300x168", "ImageWidth": 300, "Megapixels": 0.05, "SourceFile": "../../testDir/crawler test 2/hund.jpg", "ImageHeight": 168, "JFIFVersion": 1.01, "XResolution": 1, "YResolution": 1, "BitsPerSample": 8, "FileAccessDate": "2020:05:10 01:30:02+02:00", "FileCreateDate": "2020:05:10 01:30:02+02:00", "FileModifyDate": "2020:05:06 01:28:07+02:00", "ResolutionUnit": "None", "ColorComponents": 3, "EncodingProcess": "Baseline DCT, Huffman coding", "ExifToolVersion": 11.98, "FilePermissions": "rw-rw-rw-", "YCbCrSubSampling": "YCbCr4:2:0 (2 2)", "FileTypeExtension": "jpg"}	2020-05-10 01:30:02+02
+COPY public.crawls (id, dir_path, name, status, crawl_config, analyzed_dirs, starting_time, finished_time, update_time, analyzed_dirs_hash) FROM stdin;
+2	/dir	f	f	f	["cat1.jpg"]	2102-01-01 00:00:00+01	2102-01-01 00:00:00+01	2102-01-01 00:00:00+01	238674c35ca98afaa6054cb049295c2705aae6ef1370701ea9a511a60af6b8c3
+1	/home	hallo	up	config	["hello"]	2120-12-23 00:00:00+01	2120-12-23 00:00:00+01	2120-12-23 00:00:00+01	c7a0f7154e64cd96c617f251dc12c4396b7234c2856ccf4860ab7af537dfcdd9
 \.
 
 
 --
--- TOC entry 3010 (class 0 OID 16419)
+-- TOC entry 2883 (class 0 OID 16807)
+-- Dependencies: 206
+-- Data for Name: files; Type: TABLE DATA; Schema: public; Owner: metadatahub
+--
+
+COPY public.files (id, crawl_id, dir_path, name, type, size, metadata, creation_time, access_time, modification_time, file_hash) FROM stdin;
+1	1	/home/testdir	hund.jpg	JPEG	1000	{"FileName": "hund.jpg"}	2012-12-24 00:00:00+01	2012-12-24 00:00:00+01	2012-12-24 00:00:00+01	<placeholder>
+2	1	/home/testdir/dir1	cat.gif	GIF	244	{"FileName": "cat.gif"}	2011-05-03 00:00:00+02	2011-05-03 00:00:00+02	2011-05-03 00:00:00+02	<placeholder>
+3	1	/home/testdir/dir2	horse.html	HTML	12	{"FileName": "horse.html"}	2008-06-16 00:00:00+02	2008-06-16 00:00:00+02	2008-06-16 00:00:00+02	<placeholder>
+\.
+
+
+--
+-- TOC entry 2885 (class 0 OID 16824)
 -- Dependencies: 208
 -- Data for Name: file_generic_data_eav; Type: TABLE DATA; Schema: public; Owner: metadatahub
 --
 
-COPY public.file_generic_data_eav (tree_walk_id, file_generic_id, attribute, value, unit, id) FROM stdin;
-1	1	SourceFile	../../testDir/crawler test 2/hund.jpg	\N	1
-1	1	ExifToolVersion	11.98	\N	2
-1	1	FileName	hund.jpg	\N	3
-1	1	Directory	../../testDir/crawler test 2	\N	4
-1	1	FileSize	7.1 kB	\N	5
-1	1	FileModifyDate	2020:05:06 01:28:07+02:00	\N	6
-1	1	FileAccessDate	2020:05:10 01:30:02+02:00	\N	7
-1	1	FileCreateDate	2020:05:10 01:30:02+02:00	\N	8
-1	1	FilePermissions	rw-rw-rw-	\N	9
-1	1	FileType	JPEG	\N	10
-1	1	FileTypeExtension	jpg	\N	11
-1	1	MIMEType	image/jpeg	\N	12
-1	1	JFIFVersion	1.01	\N	13
-1	1	ResolutionUnit	None	\N	14
-1	1	XResolution	1	\N	15
-1	1	YResolution	1	\N	16
-1	1	ImageWidth	300\n	\N	17
-1	1	ImageHeight	168	\N	18
-1	1	EncodingProcess	Baseline DCT, Huffman coding	\N	19
-1	1	BitsPerSample	8	\N	20
-1	1	ColorComponents	3	\N	21
-1	1	YCbCrSubSampling	YCbCr4:2:0 (2 2)	\N	22
-1	1	ImageSize	300x168	\N	23
-1	1	Megapixels	0.050	\N	24
+COPY public.file_generic_data_eav (id, tree_walk_id, file_generic_id, attribute, value, unit) FROM stdin;
 \.
 
 
 --
--- TOC entry 3004 (class 0 OID 16386)
--- Dependencies: 202
--- Data for Name: testtable; Type: TABLE DATA; Schema: public; Owner: metadatahub
+-- TOC entry 2891 (class 0 OID 0)
+-- Dependencies: 203
+-- Name: crawls_id_seq; Type: SEQUENCE SET; Schema: public; Owner: metadatahub
 --
 
-COPY public.testtable (id, testvalue, nezahl) FROM stdin;
-1	irgend ein Text	634678
-2	noch ein Text, also der zweite hmmm	4445
-\.
+SELECT pg_catalog.setval('public.crawls_id_seq', 0, true);
 
 
 --
--- TOC entry 3007 (class 0 OID 16399)
--- Dependencies: 205
--- Data for Name: tree_walk; Type: TABLE DATA; Schema: public; Owner: metadatahub
---
-
-COPY public.tree_walk (id, name, notes, root_path, created_time, finished_time, status, crawl_config, crawl_update_time, save_in_gerneric_table) FROM stdin;
-1	my treewalk	a few notes i can add, if i want	/home/myTreewalkData/	2020-05-11 01:28:07+02	2020-05-11 03:28:07+02	3	\N	2020-05-11 03:28:07+02	t
-\.
-
-
---
--- TOC entry 3017 (class 0 OID 0)
--- Dependencies: 204
--- Name: TreeWalks_id_seq; Type: SEQUENCE SET; Schema: public; Owner: metadatahub
---
-
-SELECT pg_catalog.setval('public."TreeWalks_id_seq"', 1, true);
-
-
---
--- TOC entry 3018 (class 0 OID 0)
--- Dependencies: 209
+-- TOC entry 2892 (class 0 OID 0)
+-- Dependencies: 207
 -- Name: file_generic_data_eav_id_seq; Type: SEQUENCE SET; Schema: public; Owner: metadatahub
 --
 
-SELECT pg_catalog.setval('public.file_generic_data_eav_id_seq', 24, true);
+SELECT pg_catalog.setval('public.file_generic_data_eav_id_seq', 0, true);
 
 
 --
--- TOC entry 3019 (class 0 OID 0)
--- Dependencies: 206
--- Name: files_generic_id_seq; Type: SEQUENCE SET; Schema: public; Owner: metadatahub
+-- TOC entry 2893 (class 0 OID 0)
+-- Dependencies: 205
+-- Name: files_id_seq; Type: SEQUENCE SET; Schema: public; Owner: metadatahub
 --
 
-SELECT pg_catalog.setval('public.files_generic_id_seq', 1, true);
+SELECT pg_catalog.setval('public.files_id_seq', 0, true);
 
 
---
--- TOC entry 3020 (class 0 OID 0)
--- Dependencies: 203
--- Name: testtable_id_seq; Type: SEQUENCE SET; Schema: public; Owner: metadatahub
---
-
-SELECT pg_catalog.setval('public.testtable_id_seq', 2, true);
-
-
--- Completed on 2020-05-11 03:31:57 CEST
+-- Completed on 2020-05-29 21:18:10
 
 --
 -- PostgreSQL database dump complete
 --
+
