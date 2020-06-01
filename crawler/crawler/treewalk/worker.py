@@ -131,8 +131,8 @@ class Worker(Process):
                 value += 'NULL, '
         for i in ['FileSize']:
             try:
-                print(exif[i])
-                value += f"'{exif[i].split(' ')[0]}', "
+                val = self.getSize(exif[i])
+                value += f"'{val}', "
             except:
                 value += 'NULL, '
         for i in ['FileAccessDate', 'FileModifyDate', 'FileCreationDate']:
@@ -142,6 +142,30 @@ class Worker(Process):
             except:
                 value += "'-infinity', "
         return value
+
+
+    def getSize(self, size:str) -> str:
+        """Convert the size into bytes
+
+        Args:
+            size (str): the exif output for size
+
+        Returns:
+            str: string with the value in bytes
+
+        """
+
+        unit = size.split(' ')[1]
+        multipl = 1
+        if unit[0] == 'k':
+            multipl = 1000
+        elif unit[0] == 'm':
+            multipl = 1000000
+        elif unit[0] == 'g':
+            multipl = 1000000000
+        elif unit[0] == 't':
+            multipl = 1000000000000
+        return f"{int(size.split(' ')[0]) * multipl}"
 
 
     def _do_work(self, package: List[str]) -> None:
@@ -190,7 +214,6 @@ class Worker(Process):
         """
         _logger.debug(f'Cleaning up process with PID {self.pid}')
 
-        # TODO: TREEWALK - CLOSE THE DATABASE CONNECTION
         # self._db_connection.close()
 
         # Empty the work package list. Otherwise BrokenPipe errors will appear

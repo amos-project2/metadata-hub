@@ -94,7 +94,8 @@ class TreeWalkManager:
             number_of_workers=number_of_workers,
             already_processed=alreadyProcessed
         )
-
+        for element in split:
+            work_packages[0].append([element])
         # Create the connection dictionary for the database
         connectionData = {
             'user': environment.env.DATABASE_USER,

@@ -49,10 +49,16 @@ class DatabaseConnection:
             insert_cmd (dict): a single INSERT query to Postgres database
 
         """
-        #pprint("----Insert-Done-----")
         con = self.dbConnectionPool.getconn()
         curs = con.cursor()
-        curs.execute(insert_cmd)
+        try:
+            curs.execute(insert_cmd)
+        except Exception as e:
+            print(e)
+            self.dbConnectionPool.putconn(con)
+            print('Error execution the insert command')
+            print(insert_cmd)
+            return 0
         try:
             dbID = curs.fetchone()[0]
         except:
