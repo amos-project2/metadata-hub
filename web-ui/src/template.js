@@ -197,7 +197,7 @@ export class Template {
       <div class="list-group list-group-flush">
         <a href="#" class="list-group-item list-group-item-action bg-light nav-query xnav_query">Query</a>
         <a href="#" class="list-group-item list-group-item-action bg-light nav-graphiql xnav_graphiql">GraphiQl</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-crawler xnav_crawler">Crawler</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light nav-crawler xnav_crawler" style="display: none">Crawler</a>
         <a href="#" class="list-group-item list-group-item-action bg-light nav-status xnav_status" style="display:none">Status</a>
         <a href="#" class="list-group-item list-group-item-action bg-light nav-help xnav_help" style="display:none">Help</a>
         <a href="#" class="list-group-item list-group-item-action bg-light nav-about xnav_about" style="display:none">About</a>
