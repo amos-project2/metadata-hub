@@ -1,4 +1,5 @@
 import {Page} from "../Page";
+import {ResultPresenter} from "../buisnesslogic/ResultPresenter";
 // // import {datenrangepicker} from "daterangepicker";
 // import moment from 'moment';
 //
@@ -13,6 +14,9 @@ export class FormQueryEditor extends Page {
         super(parent, identifier, mountpoint, titleSelector);
         this.title = "Form Query Editor";
         this.cacheLevel = 3;
+        this.graphQlFetcher=this.parent.dependencies.graphQlFetcher;
+        this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
+        this.filterFirstElement = this.getFilterElement();
     }
 
     content() {
@@ -31,20 +35,22 @@ export class FormQueryEditor extends Page {
   </div>
 
 
-  <div class="form-row">
-    <div class="form-group col-md-6">
-      <label for="fq-filePattern">Pattern*</label>
-      <input type="text" class="form-control" id="fq-filePattern">
-    </div>
-<div class="form-group col-md-6">
-    <div class="custom-control custom-switch">
-<!--        <label for="fq-includeVsExclude">Include/Exclude</label><br>-->
-<br>
-        <input type="checkbox" class="custom-control-input" id="fq-includeVsExclude">
-        <label class="custom-control-label" for="fq-includeVsExclude">Include VS Exclude</label>
-    </div>
-</div>
-</div>
+<!--  <div class="form-row">-->
+<!--    <div class="form-group col-md-6">-->
+<!--      <label for="fq-filePattern">Pattern*</label>-->
+<!--      <input type="text" class="form-control" id="fq-filePattern">-->
+<!--    </div>-->
+<!--<div class="form-group col-md-6">-->
+<!--    <div class="custom-control custom-switch">-->
+<!--&lt;!&ndash;        <label for="fq-includeVsExclude">Include/Exclude</label><br>&ndash;&gt;-->
+<!--<br>-->
+<!--        <input type="checkbox" class="custom-control-input" id="fq-includeVsExclude">-->
+<!--        <label class="custom-control-label" for="fq-includeVsExclude">Include VS Exclude</label>-->
+<!--    </div>-->
+<!--</div>-->
+<!--</div>-->
+
+
 
   <div class="form-row">
     <div class="form-group col-md-6">
@@ -63,6 +69,20 @@ export class FormQueryEditor extends Page {
       <input type="text" class="form-control" id="fq-limit">
     </div>
     </div>
+
+  <div class="form-row">
+     <div class="col-md-12"><hr></div>
+  </div>
+
+
+  <div class="form-row">
+<div class="col-md-12">Filter: <a class="pover" title="Filter" data-content="Select a filter option. With the checkbox you can include(checked)/exclude(unchecked) this filter.<br>Specify on which metadataattribut you want to use the filter. In the last Input must insert the value<br>For example: Pattern include FileName dog">[?]</a></div>
+</div>
+
+<div class="fg-filter-container">
+${this.filterFirstElement}
+</div>
+
 
   <div class="form-row">
      <div class="col-md-12"><hr></div>
@@ -87,10 +107,8 @@ export class FormQueryEditor extends Page {
 <button type="button" class="btn btn-primary clear-all">Clear All</button>
 </form>
 <br>
-<h4>Result:</h4>
-<div>
-<pre id="json" class="q_result"></pre>
-</div>
+<div class="resultView1"></div>
+
 
 ${this.getModalCode()}
 
@@ -126,16 +144,20 @@ ${this.getModalCode()}
 
     onMount() {
 
+        $(".resultView1").html(this.resultPresenter.getHtml());
 
         this.helperMethod();
+        this.helperMethod2();
         let thisdata = this;
+
         $(".q-send-query-form-editor").submit(function (event) {
-            event.preventDefault();
-            thisdata.graphqlfetcher(thisdata.buildAndGetGraphQlQuery(), function (sucess, json, jsonString) {
+              event.preventDefault();
+            thisdata.resultPresenter.generateResultAndInjectIntoDom(thisdata.buildAndGetGraphQlQuery());
 
-                $(".q_result").text(jsonString);
-
-            })
+            // thisdata.graphQlFetcher.fetchAdvanced(thisdata.buildAndGetGraphQlQuery(), function (sucess, json, jsonString) {
+            //     $(".q_result").text(jsonString);
+            //     thisdata.resultPresenter.addDataToResult(jsonString);
+            // });
         });
 
         $(".open-query").click(function () {
@@ -210,6 +232,42 @@ ${this.getModalCode()}
     }
 
 
+    helperMethod2() {
+
+        let dhis_state = this;
+
+        $(".fg-metadata-attribute").focusout(function () {
+            if ($(".fg-metadata-attribute").length < 2) {return;}
+
+            if ($(this).val() === "") {
+                $(this).parent().remove();
+            }
+        });
+
+        $(".fg-metadata-attribute").focusin(function () {
+            let dhis = this;
+            let emptyTextField = false;
+            $(".fg-metadata-attribute").each(function () {
+                if (dhis !== this) {
+                    // alert($(this).val());
+                    if ($(this).val() == "") { emptyTextField = true; }
+                }
+            });
+
+            if (!emptyTextField) {
+                $(".fg-filter-container").append(dhis_state.getFilterElement());
+
+                dhis_state.helperMethod2();//IMPORTANT: re-add the listener to the new created element(s)
+            }
+
+        });
+    }
+
+
+
+
+
+
     buildAndGetGraphQlQuery() {
 
         let filepattern = $("#fq-filePattern").val();
@@ -256,31 +314,29 @@ query
 
     }
 
-    graphqlfetcher(query, func) {
+    getFilterElement() {
+        return `
+  <div class="form-row">
+     <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <select class="custom-select fg-filter-option" id="inputGroupSelect02">
+    <option selected value="0">Pattern</option>
+    <option value="1">Equal</option>
+    <option value="2">Exists (Attribute)</option>
+    <option value="3">Greather Than</option>
+    <option value="4">Lower Than</option>
+  </select>
+                <div class="input-group-text">
+          <input type="checkbox" checked class="fg-include-exclude">
+          </div>
 
-        const URL = "graphql/";
 
-        fetch(URL, {
-            crossOrigin: null,
-            method: "post",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({query: query})
-        }).then(function (response) {
-            console.log(response);
-            if (response.ok)
-                return response.json();
-            else
-                func(false, null, 'Error in the HTTP-Answer');
-            // throw new Error('Error in the HTTP-Answer');
-        })
-            .then(function (json) {
-                func(true, json, JSON.stringify(json, undefined, 2));
-                // $(".q_result").text(JSON.stringify(json, undefined, 2));
-            })
-            .catch(function (err) {
-                func(false, null, JSON.stringify(json, undefined, 2));
-                //$(".q_result").text("Error: " + err);
-            });
+          </div>
+          <input type="text" class="form-control fg-metadata-attribute" placeholder="Metadata-Attribute">
+          <input type="text" class="form-control fg-metadata-value" placeholder="Value">
+        </div>
+    </div>`;
+
 
     }
 

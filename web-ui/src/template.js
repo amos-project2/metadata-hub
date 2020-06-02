@@ -63,8 +63,9 @@ class NavGroup {
 
 export class Template {
 
-    constructor() {
+    constructor(dependencies) {
         this.thisdata = this;
+        this.dependencies=dependencies;
         this.storage = {
             query_inject: null,
             openedFromEditor: null,
