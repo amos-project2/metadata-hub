@@ -42,15 +42,19 @@ class Worker(Process):
             work_packages: Queue,
             command_queue: Queue,
             config: Config,
-            db_connection: DatabaseConnection,
+            connectionInfo: dict,
+            # db_connection: DatabaseConnection,
             tree_walk_id: int
     ):
         super(Worker, self).__init__()
         self.work_packages = work_packages
         self.command_queue = command_queue
         self._config = config
-        self._db_connection = db_connection
+        self.connectionInfo = connectionInfo
+        # self._db_connection = db_connection
         self._tree_walk_id = tree_walk_id
+        self.dbConnectionPool = DatabaseConnection(self.connectionInfo, 1)
+
 
 
     def run(self) -> None:
@@ -175,6 +179,7 @@ class Worker(Process):
             package (List[str]): list of directories to process.
 
         """
+
         pathEx = self._config.get_exiftool_executable()
         _logger.debug(f'Doing work ({self.pid}).')
 
@@ -198,7 +203,7 @@ class Worker(Process):
                     bytes = file.read()
                     hash256 = hashlib.sha256(bytes).hexdigest()
                 # insert into the database
-                self._db_connection.insert_new_record(insertin + values + "'{}'".format(json.dumps(result)) + ', ' + f"'{hash256}'" + ')')
+                self.dbConnectionPool.insert_new_record(insertin + values + "'{}'".format(json.dumps(result)) + ', ' + f"'{hash256}'" + ')')
 
         except Exception as e:
             print(e)
@@ -213,7 +218,7 @@ class Worker(Process):
 
         """
         _logger.debug(f'Cleaning up process with PID {self.pid}')
-
+        self.dbConnectionPool.closeall()
         # self._db_connection.close()
 
         # Empty the work package list. Otherwise BrokenPipe errors will appear

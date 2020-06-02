@@ -82,8 +82,6 @@ class TreeWalkManager:
             config.get_options_power_level()
         )
 
-        #TODO remove me
-        print(number_of_workers)
 
         TRACER = tracing.Tracer(config._data)
         alreadyProcessed = TRACER.get_processed_nodes()
@@ -126,7 +124,8 @@ class TreeWalkManager:
                 work_packages=queue,
                 command_queue=command_queue,
                 config=config,
-                db_connection=dbConnectionPool,
+                connectionInfo=connectionData,
+                #db_connection=dbConnectionPool,
                 tree_walk_id=dbID
             )
             self._workers.append(worker)
