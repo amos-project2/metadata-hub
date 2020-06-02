@@ -338,17 +338,26 @@ ${this.getModalCode()}
         }
 
 
+        let query_header=`
+   ${limit}
+   ${startDate} ${endDate} ${startDateUpdated} ${endDateUpdated}
+   ${options_options} ${options_attributes} ${options_values}
+   ${attributes}
+        `;
+
+        if (query_header.trim() === "") {
+            query_header = "";
+        } else {
+            query_header=`(
+            ${query_header}
+  )`
+        }
 
         let query = `
 query
 {
   searchForFileMetadata
-  (
-     ${limit}
-     ${startDate} ${endDate} ${startDateUpdated} ${endDateUpdated}
-     ${options_options} ${options_attributes} ${options_values}
-     ${attributes}
-  )
+  ${query_header}
   {
     id,
     crawl_id,
