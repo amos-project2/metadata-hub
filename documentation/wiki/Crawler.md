@@ -7,7 +7,7 @@ The interface can be accessed in a web browser, by using the address and port sp
 starting the docker container. The following gif shows an example of the interface:
 
 
-* [Interface access example](https://raw.githubusercontent.com/amos-project2/metadata-hub/cdd429035c5933281a85758d5feb2e619a6be19c/documentation/gifs/interface_access.gif)
+* [Interface access example](https://raw.githubusercontent.com/amos-project2/metadata-hub/eda6d067e7121ea233456067e1e84e53a50aa9c1/documentation/gifs/crawler-config.gif)
 
 
 The different options have the following meaning:
