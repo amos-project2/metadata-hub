@@ -54,11 +54,11 @@ This section will shortly explain how to access the tree walk interface
 , as well as the different configuration options provided.
 
 The interface can be accessed in a web browser, by using the address and port specified while
-starting the docker container. The following gif shows an example of the interface.
+starting the docker container. The following gif shows an example of the interface:
 
-<p align="center">
-    <img alt="Ooops, there should have been the logo :(" src=https://github.com/amos-project2/metadata-hub/blob/cdd429035c5933281a85758d5feb2e619a6be19c/documentation/gifs/interface_access.gif width="50%" height="50%"/>
-</p>
+
+* [Interface access example](https://raw.githubusercontent.com/amos-project2/metadata-hub/cdd429035c5933281a85758d5feb2e619a6be19c/documentation/gifs/interface_access.gif)
+
 
 The different options have the following meaning:
 * **Input directories**<br>
