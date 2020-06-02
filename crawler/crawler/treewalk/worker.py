@@ -27,7 +27,7 @@ from psycopg2.extensions import connection
 from crawler.services.config import Config
 from crawler.connectPG.connector import DatabaseConnection
 
-from crawler.crawler.services.tracing import Tracer
+from crawler.services.tracing import Tracer
 
 _logger = logging.getLogger(__name__)
 
