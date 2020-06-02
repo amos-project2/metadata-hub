@@ -97,10 +97,10 @@ public class GraphQLDataFetchers
                         stringBuilder.append(" dir_path NOT LIKE '%").append(dir_path).append("%' AND ");
                         break;
                     case "bigger":
-                        stringBuilder.append(" dir_path < '").append(dir_path).append("' AND ");
+                        stringBuilder.append(" dir_path > '").append(dir_path).append("' AND ");
                         break;
                     case "smaller":
-                        stringBuilder.append(" dir_path > '").append(dir_path).append("' AND ");
+                        stringBuilder.append(" dir_path < '").append(dir_path).append("' AND ");
                         break;
                     case "exists":
                         stringBuilder.append(" dir_path IS NOT NULL AND");
@@ -227,12 +227,12 @@ public class GraphQLDataFetchers
                                 case "bigger":
                                     stringBuilder.append("(CASE WHEN metadata ->> '").append(metadata_attributes.get(i))
                                 .append("' IS NOT NULL THEN metadata ->> '").append(metadata_attributes.get(i))
-                                        .append("'::text < '").append(metadata_values.get(i)).append("' ELSE TRUE END) AND ");
+                                        .append("'::text > '").append(metadata_values.get(i)).append("' ELSE TRUE END) AND ");
                                     break;
                                 case "smaller":
                                     stringBuilder.append("(CASE WHEN metadata ->> '").append(metadata_attributes.get(i))
                                 .append("' IS NOT NULL THEN metadata ->> '").append(metadata_attributes.get(i))
-                                        .append("'::text > '").append(metadata_values.get(i)).append("' ELSE TRUE END) AND ");
+                                        .append("'::text < '").append(metadata_values.get(i)).append("' ELSE TRUE END) AND ");
                                     break;
                                 case "exists":
                                     stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
