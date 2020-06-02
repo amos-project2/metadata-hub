@@ -220,7 +220,7 @@ class Worker(Process):
 
         """
         _logger.debug(f'Cleaning up process with PID {self.pid}')
-        self.dbConnectionPool.closeall()
+        self.dbConnectionPool.dbConnectionPool.closeall()
         # self._db_connection.close()
 
         # Empty the work package list. Otherwise BrokenPipe errors will appear
