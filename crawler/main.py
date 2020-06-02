@@ -2,6 +2,7 @@
 
 
 # Python imports
+import logging
 import threading
 from sys import exit
 
@@ -18,6 +19,12 @@ if __name__ == '__main__':
     except environment.InvalidEnvironmentException as err:
         print(f'{str(err)} Aborted.')
         exit(1)
+
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s %(levelname)s %(module)s - %(funcName)s : %(message)s',
+        datefmt='%H:%M:%S %Y-%m-%d'
+    )
     thread_api = threading.Thread(target=api.start)
     thread_treewalk = threading.Thread(target=treewalk.run)
     thread_treewalk.start()
