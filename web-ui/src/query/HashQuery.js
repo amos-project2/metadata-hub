@@ -1,48 +1,66 @@
-
 import {Page} from "../Page";
+import {ResultPresenter} from "../buisnesslogic/ResultPresenter";
 
 export class HashQuery extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         super(parent, identifier, mountpoint, titleSelector);
         this.title = "Hash Query";
         this.cacheLevel = 3;
-        this.graphQlFetcher=this.parent.dependencies.graphQlFetcher;
-        //here you set the title-attribut
-        //you can here also set the caching_behavour and much more
-        //take a look in class Page
+        this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
+        this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
     }
 
     content() {
-        return `here you can fill in the normal html`;
-        //here you can return back the html content which should be shown
+        return `
+<form class="q-send-hash-editor">
+<div class="form-group" >
+ <label for="q_textInput">File-Hash</label>
+   <input type="text" class="form-control" id="h-input" placeholder="File-Hash">
+</div>
+  <button type="submit" class="btn btn-primary">Send</button>
+</form>
+<br>
+<div class="resultView2"></div>
+
+
+        `;
     }
 
     onMount() {
-        //here you can register event-listener
-        //for example: $(".hallo").click(function() {alert("asdf");});
-        //which alerts asdf each time you click on any html element with the class hallo
+        $(".resultView2").html(this.resultPresenter.getHtml());
 
-        //$("#hallo") this here would select not classes but one html-elemnt with id=hallo
+        let thisdata = this;
+        $(".q-send-hash-editor").submit(function (event) {
+            event.preventDefault();
+            thisdata.resultPresenter.generateResultAndInjectIntoDom(thisdata.getQuery());
+        });
+
     }
 
-    onUnMount() {
-        //often you dont need that method
+    getQuery() {
+        return `
+        query
+{
+  searchForFileMetadata(file_hashes: ["${$("#h-input").val()}"])
+  {
+    id,
+    crawl_id,
+    dir_path,
+    name,
+    type,
+    creation_time,
+    access_time,
+    modification_time,
+    file_hash,
+    metadata
+    {
+      name,
+      value,
+    }
+  }
+}
+        `;
     }
 
-    onRegister() {
-        //often you dont need that method
-    }
-
-    onFirstLoad() {
-        //this method is called on the first-load
-    }
-
-    onLoad() {
-        //this method is called on each load
-    }
-
-    onUnLoad() {
-        //this method is called on each unload
-    }
 
 }
