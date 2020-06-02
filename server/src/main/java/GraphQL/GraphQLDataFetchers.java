@@ -217,17 +217,17 @@ public class GraphQLDataFetchers
                                 case "included":
                                     stringBuilder.append("(CASE WHEN metadata ->> '").append(metadata_attributes.get(i))
                                 .append("' IS NOT NULL THEN metadata ->> '").append(metadata_attributes.get(i))
-                                        .append("'::text LIKE '%").append(metadata_values.get(i)). append("%' ELSE TRUE END) AND ");
+                                        .append("'::text LIKE '%").append(metadata_values.get(i)). append("%' ELSE FALSE END) AND ");
                                     break;
                                 case "excluded":
                                     stringBuilder.append("(CASE WHEN metadata ->> '").append(metadata_attributes.get(i))
                                 .append("' IS NOT NULL THEN metadata ->> '").append(metadata_attributes.get(i))
-                                        .append("'::text NOT LIKE '%").append(metadata_values.get(i)). append("%' ELSE TRUE END) AND ");
+                                        .append("'::text NOT LIKE '%").append(metadata_values.get(i)). append("%' ELSE FALSE END) AND ");
                                     break;
                                 case "bigger":
                                     stringBuilder.append("(CASE WHEN metadata ->> '").append(metadata_attributes.get(i))
                                 .append("' IS NOT NULL THEN metadata ->> '").append(metadata_attributes.get(i))
-                                        .append("'::text < '").append(metadata_values.get(i)).append("' ELSE TRUE END) AND ");
+                                        .append("'::text < '").append(metadata_values.get(i)).append("' ELSE FALSE END) AND ");
                                     break;
                                 case "smaller":
                                     stringBuilder.append("(CASE WHEN metadata ->> '").append(metadata_attributes.get(i))
