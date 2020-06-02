@@ -13,8 +13,8 @@ REQUIRED_PROPERTIES = [
     'exiftool',
     'powerLevel',
     'clearTrace',
-    'fileTypes',
-    'language',
+    #'fileTypes',
+    #'language',
     'packageSize',
     'update'
 ]
@@ -263,12 +263,12 @@ def parse(form_data: dict) -> Tuple[dict, bool]:
     power_level = _parse_power(form_data.get('powerLevel'))
     if power_level is None:
         raise APIParsingException('Invalid input field: Power Level')
-    file_types = _parse_filetypes(form_data.get('fileTypes'))
-    if file_types is None:
-        raise APIParsingException('Invalid input field: Filetypes')
-    language = _parse_language(form_data.get('language'))
-    if language is None:
-        raise APIParsingException('Invalid input field: Language')
+    # file_types = _parse_filetypes(form_data.get('fileTypes'))
+    # if file_types is None:
+    #     raise APIParsingException('Invalid input field: Filetypes')
+    # language = _parse_language(form_data.get('language'))
+    # if language is None:
+    #     raise APIParsingException('Invalid input field: Language')
     package_size = _parse_package_size(form_data.get('packageSize'))
     if package_size is None:
         raise APIParsingException('Invalid input field: Package size')
@@ -285,8 +285,6 @@ def parse(form_data: dict) -> Tuple[dict, bool]:
         'options': {
             'clearTrace': clear_trace,
             'powerLevel': power_level,
-            'fileTypes': file_types,
-            'language': language,
             'packageSize': package_size
         }
     }

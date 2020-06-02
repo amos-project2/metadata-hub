@@ -94,8 +94,6 @@
             "required": [
                 "powerLevel",
                 "clearTrace",
-                "fileTypes",
-                "language",
                 "packageSize"
             ]
         }
