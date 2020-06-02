@@ -66,15 +66,15 @@ docker run \
 The following values have to be specified by the user:
 
 * ``HOST_SERVER_PORT``<br>
-  The port that publishes the *server* with the graphical user interface for
-  data querying on the *host* machine.
+  The port that publishes the *server* with the graphical user interface
+  for data querying on the *host* machine.
 
 * ``HOST_CRAWLER_PORT``<br>
-  The port that publishes the *crawler* for starting/stopping/etc. the
-  crawling mechanism on the *host* machine.
+  The port that publishes the API of the *crawler* on the *host* machine.
 
 * ``DATA``<br>
-  The directory/filesystem you want to crawl.
+  This directory will be mounted inside the container and therefore is
+  accessible for the crawler.
 
 The ports *8080* and *9000* must not change thus they are required for internal
 communication.
@@ -89,8 +89,10 @@ docker run \
     amosproject2/metadatahub
 ```
 
-You should be able to access both *localhost:9999* and *localhost:9998* for
-the corresponding services.
+If you want to connect to the PostgreSQL database directly, provide an
+additional ``-p 9997:5432``. This will publish the running PostgreSQL instance
+on your host machine. You should be able to access both ``localhost:9999`` and
+``localhost:9998`` for the corresponding services.
 
 If you encounter any errors, please refer to the
 [FAQ](https://github.com/amos-project2/metadata-hub/wiki/FAQ) section.
