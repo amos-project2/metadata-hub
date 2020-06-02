@@ -11,6 +11,7 @@
   * [Crawler](https://github.com/amos-project2/metadata-hub/wiki/Crawler)
   * [Database](https://github.com/amos-project2/metadata-hub/wiki/Database)
   * [Server](https://github.com/amos-project2/metadata-hub/wiki/Server)
+  * [Web-UI](https://github.com/amos-project2/metadata-hub/wiki/Web-UI)
 
 [**Installation**](https://github.com/amos-project2/metadata-hub/wiki/Installation)
 
