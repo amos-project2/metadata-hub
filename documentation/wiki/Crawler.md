@@ -57,7 +57,7 @@ The interface can be accessed in a web browser, by using the address and port sp
 starting the docker container. The following gif shows an example of the interface.
 
 <p align="center">
-    <img alt="Ooops, there should have been the logo :(" src=https://github.com/amos-project2/metadata-hub/blob/cdd429035c5933281a85758d5feb2e619a6be19c/documentation/gifs/example.gif width="50%" height="50%"/>
+    <img alt="Ooops, there should have been the logo :(" src=https://github.com/amos-project2/metadata-hub/blob/cdd429035c5933281a85758d5feb2e619a6be19c/documentation/gifs/interface_access.gif width="50%" height="50%"/>
 </p>
 
 The different options have the following meaning:
