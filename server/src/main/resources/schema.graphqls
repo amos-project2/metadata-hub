@@ -38,10 +38,10 @@ type Query{
     selected_attributes: For all file metadata only the specified metadata attributes are returned.
     limitFetchingSize: Limits how many files will get fetched by the search.
     """
-    searchForFileMetadata(file_id: [Int!], crawl_id: [Int!], dir_path: String, dir_path_option: MetadataOption,
+    searchForFileMetadata(file_ids: [Int!], crawl_ids: [Int!], dir_path: String, dir_path_option: MetadataOption,
         file_name: String, file_name_option: MetadataOption, file_type: String, size: Int, size_option: IntOption,
         start_creation_time: String, end_creation_time: String, start_access_time: String, end_access_time: String,
-        start_modification_time: String, end_modification_time: String, file_hash: [String!],
+        start_modification_time: String, end_modification_time: String, file_hashes: [String!],
         metadata_attributes: [String!], metadata_values:[String!], metadata_options: [MetadataOption!],
         selected_attributes: [String!], limitFetchingSize: Int) : [File]
 }

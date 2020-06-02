@@ -64,12 +64,22 @@ public class GraphQLDataFetchers
             return stringBuilder.toString();
         }
 
-        if(graphQLArguments.containsKey("file_id")){
-           stringBuilder.append(" id = ").append(graphQLArguments.get("file_id")).append(" AND ");
+        if(graphQLArguments.containsKey("file_ids")){
+            List<String> file_ids = (List<String>) graphQLArguments.get("file_ids");
+            stringBuilder.append(" (");
+            for (String file_id : file_ids){
+                stringBuilder.append(" file_id = ").append(file_id).append(" OR ");
+            }
+            stringBuilder.append("FALSE ) AND ");
         }
 
-        if(graphQLArguments.containsKey("crawl_id")){
-            stringBuilder.append(" crawl_id = ").append(graphQLArguments.get("crawl_id")).append(" AND ");
+        if(graphQLArguments.containsKey("crawl_ids")){
+            List<String> crawl_ids = (List<String>) graphQLArguments.get("crawl_ids");
+            stringBuilder.append(" (");
+            for (String crawl_id : crawl_ids){
+                stringBuilder.append(" crawl_ids = ").append(crawl_id).append(" OR ");
+            }
+            stringBuilder.append("FALSE ) AND ");
         }
 
         if(graphQLArguments.containsKey("dir_path")){
@@ -77,7 +87,7 @@ public class GraphQLDataFetchers
             if(graphQLArguments.containsKey("dir_path_option")){
                 String dir_path_option = (String) graphQLArguments.get("dir_path_option");
                 switch (dir_path_option) {
-                    case "exactMatch":
+                    case "equal":
                         stringBuilder.append(" dir_path = '").append(dir_path).append("' AND ");
                         break;
                     case "included":
@@ -85,6 +95,15 @@ public class GraphQLDataFetchers
                         break;
                     case "excluded":
                         stringBuilder.append(" dir_path NOT LIKE '%").append(dir_path).append("%' AND ");
+                        break;
+                    case "bigger":
+                        stringBuilder.append(" dir_path < '").append(dir_path).append("' AND ");
+                        break;
+                    case "smaller":
+                        stringBuilder.append(" dir_path > '").append(dir_path).append("' AND ");
+                        break;
+                    case "exists":
+                        stringBuilder.append(" dir_path IS NOT NULL AND");
                         break;
                 }
             }else{
@@ -97,7 +116,7 @@ public class GraphQLDataFetchers
             if(graphQLArguments.containsKey("file_name_option")){
                 String file_name_option = (String) graphQLArguments.get("file_name_option");
                 switch (file_name_option) {
-                    case "exactMatch":
+                    case "equal":
                         stringBuilder.append(" name = '").append(file_name).append("' AND ");
                         break;
                     case "included":
@@ -105,6 +124,15 @@ public class GraphQLDataFetchers
                         break;
                     case "excluded":
                         stringBuilder.append(" name NOT LIKE '%").append(file_name).append("%' AND ");
+                        break;
+                    case "bigger":
+                        stringBuilder.append(" name < '").append(file_name).append("' AND ");
+                        break;
+                    case "smaller":
+                        stringBuilder.append(" name > '").append(file_name).append("' AND ");
+                        break;
+                    case "exists":
+                        stringBuilder.append(" dir_path IS NOT NULL AND");
                         break;
                 }
             }else{
@@ -160,8 +188,13 @@ public class GraphQLDataFetchers
             stringBuilder.append(" modification_time < '").append(graphQLArguments.get("end_modification_time")).append("' AND ");
         }
 
-        if(graphQLArguments.containsKey("file_hash")) {
-            stringBuilder.append(" file_hash = '").append(graphQLArguments.get("file_hash")).append("' AND ");
+        if(graphQLArguments.containsKey("file_hashes")){
+            List<String> file_hashes = (List<String>) graphQLArguments.get("file_hashes");
+            stringBuilder.append(" (");
+            for (String file_hash : file_hashes){
+                stringBuilder.append(" file_hashes = ").append(file_hash).append(" OR ");
+            }
+            stringBuilder.append("FALSE ) AND ");
         }
 
         //METADATA
@@ -176,17 +209,29 @@ public class GraphQLDataFetchers
                         for(int i = 0; i < metadata_attributes.size(); i++){
                             String metadata_option = metadata_options.get(i);
                             switch (metadata_option){
-                                case "exactMatch":
+                                case "equal":
                                     stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
-                                        .append("' = '").append(metadata_values.get(i)). append("' AND ");
+                                        .append("'::text = '").append(metadata_values.get(i)). append("' AND ");
                                     break;
                                 case "included":
                                     stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
-                                        .append("' LIKE '%").append(metadata_values.get(i)). append("%' AND ");
+                                        .append("'::text LIKE '%").append(metadata_values.get(i)). append("%' AND ");
                                     break;
                                 case "excluded":
                                     stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
-                                        .append("' NOT LIKE '%").append(metadata_values.get(i)). append("%' AND ");
+                                        .append("'::text NOT LIKE '%").append(metadata_values.get(i)). append("%' AND ");
+                                    break;
+                                case "bigger":
+                                    stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
+                                        .append("'::text < '").append(metadata_values.get(i)).append("' AND ");
+                                    break;
+                                case "smaller":
+                                    stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
+                                        .append("'::text > '").append(metadata_values.get(i)).append("' AND ");
+                                    break;
+                                case "exists":
+                                    stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
+                                    .append("IS NOT NULL AND ");
                                     break;
                             }
                         }
