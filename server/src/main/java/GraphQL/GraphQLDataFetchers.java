@@ -65,19 +65,19 @@ public class GraphQLDataFetchers
         }
 
         if(graphQLArguments.containsKey("file_ids")){
-            List<String> file_ids = (List<String>) graphQLArguments.get("file_ids");
+            List<Integer> file_ids = (List<Integer>) graphQLArguments.get("file_ids");
             stringBuilder.append(" (");
-            for (String file_id : file_ids){
-                stringBuilder.append(" file_id = ").append(file_id).append(" OR ");
+            for (int file_id : file_ids){
+                stringBuilder.append(" id = ").append(file_id).append(" OR ");
             }
             stringBuilder.append("FALSE ) AND ");
         }
 
         if(graphQLArguments.containsKey("crawl_ids")){
-            List<String> crawl_ids = (List<String>) graphQLArguments.get("crawl_ids");
+            List<Integer> crawl_ids = (List<Integer>) graphQLArguments.get("crawl_ids");
             stringBuilder.append(" (");
-            for (String crawl_id : crawl_ids){
-                stringBuilder.append(" crawl_ids = ").append(crawl_id).append(" OR ");
+            for (Integer crawl_id : crawl_ids){
+                stringBuilder.append(" crawl_id = ").append(crawl_id).append(" OR ");
             }
             stringBuilder.append("FALSE ) AND ");
         }
@@ -192,7 +192,7 @@ public class GraphQLDataFetchers
             List<String> file_hashes = (List<String>) graphQLArguments.get("file_hashes");
             stringBuilder.append(" (");
             for (String file_hash : file_hashes){
-                stringBuilder.append(" file_hashes = ").append(file_hash).append(" OR ");
+                stringBuilder.append(" file_hash = '").append(file_hash).append("' OR ");
             }
             stringBuilder.append("FALSE ) AND ");
         }
