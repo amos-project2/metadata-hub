@@ -4,48 +4,35 @@ import ReactDOM from 'react-dom';
 import "graphiql/graphiql.min.css";
 import GraphiQL from 'graphiql';
 
-import fetch from 'isomorphic-fetch';
-
 
 export class GraphiqlConsole extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         super(parent, identifier, mountpoint, titleSelector);
         this.title = "GraphiQl-Console";
         this.init = false;
-        this.cacheLevel=3;
+        this.cacheLevel = 3;
+        this.graphQlFetcher=this.parent.dependencies.graphQlFetcher;
 
-        this.signalToRemoveGoBackToEditor=false;
+        this.signalToRemoveGoBackToEditor = false;
         console.log(parent);
     }
 
     content() {
         return "";
-        //return `<div id="my-graphi-console" style="height: 80vh; margin: 0"></div>`;
     }
 
     onMount() {
-        const URL = "graphql/";
-        // const URL = "http://localhost:8080/graphql/";
-
-        function graphQLFetcher(graphQLParams) {
-            return fetch(URL, {
-                crossOrigin: null,
-                method: "post",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(graphQLParams)
-            }).then(response => response.json());
-
-        }
+        let thisdata = this;
 
         //is important to be also here, cause of rendering problems else
         $("#graphql-stuff").removeClass("hide_active");
 
 
-            let graphiqlReact;
-            let querydata=`query{}`;
+        let graphiqlReact;
+        let querydata = `query{}`;
         if (this.parent.storage.query_inject !== null) {
             querydata = this.parent.storage.query_inject;
-            this.parent.storage.query_inject=null;
+            this.parent.storage.query_inject = null;
         }
 
 
@@ -55,23 +42,27 @@ export class GraphiqlConsole extends Page {
             <button type="button" class="btn btn-primary go-to-editor">Go Back To Editor</button>
             </div>
             `);
-            this.parent.storage.openedFromEditor=false;
-            this.signalToRemoveGoBackToEditor=true;
+            this.parent.storage.openedFromEditor = false;
+            this.signalToRemoveGoBackToEditor = true;
 
-            $(".go-to-editor").click(function(){
+            $(".go-to-editor").click(function () {
                 $("#nav-element-form-query").trigger("click");
             });
         }
 
-                graphiqlReact = React.createElement(GraphiQL, {
-                    fetcher: graphQLFetcher,
-                    query: querydata,
-                    docExplorerOpen: true
-                });
+        function graphQLFetcher(graphQLParams) {
+            return thisdata.graphQlFetcher.fetchC(graphQLParams)
+                .then(response => response.json());
+        }
+
+        graphiqlReact = React.createElement(GraphiQL, {
+            fetcher: graphQLFetcher,
+            query: querydata,
+            docExplorerOpen: true
+        });
 
 
-
-            ReactDOM.render(graphiqlReact,document.getElementById('graphql-stuff'));
+        ReactDOM.render(graphiqlReact, document.getElementById('graphql-stuff'));
 
     }
 
@@ -83,7 +74,7 @@ export class GraphiqlConsole extends Page {
         $("#graphql-stuff").addClass("hide_active");
 
         if (this.signalToRemoveGoBackToEditor) {
-            this.signalToRemoveGoBackToEditor=false;
+            this.signalToRemoveGoBackToEditor = false;
             $(".go-to-editor-div").remove();
         }
     }
