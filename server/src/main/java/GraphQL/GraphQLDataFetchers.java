@@ -251,11 +251,11 @@ public class GraphQLDataFetchers
             }
         }
 
-        if(graphQLArguments.containsKey("limitFetchingSize")) {
-            stringBuilder.append(" FETCH FIRST ").append(graphQLArguments.get("limitFetchingSize")).append(" ROWS ONLY AND ");
-        }
-
             stringBuilder.append(" TRUE");
+
+        if(graphQLArguments.containsKey("limitFetchingSize")) {
+            stringBuilder.append(" FETCH FIRST ").append(graphQLArguments.get("limitFetchingSize")).append(" ROWS ONLY");
+        }
         return stringBuilder.toString();
     }
 
