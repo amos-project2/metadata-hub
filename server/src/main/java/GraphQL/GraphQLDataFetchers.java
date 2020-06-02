@@ -44,7 +44,7 @@ public class GraphQLDataFetchers
             Map<String, Object> graphQLArguments = dataFetchingEnvironment.getArguments();
             log.info("graphQLArguments: " + graphQLArguments.toString());
 
-            final ArrayList<String> selected_attributes = dataFetchingEnvironment.getArgument("sel_attributes");
+            final ArrayList<String> selected_attributes = dataFetchingEnvironment.getArgument("selected_attributes");
 
             String sqlQuery = buildSQLQuery(graphQLArguments);
             System.out.println("sqlQuery: " + sqlQuery);
@@ -252,7 +252,7 @@ public class GraphQLDataFetchers
         }
 
         if(graphQLArguments.containsKey("limitFetchingSize")) {
-            stringBuilder.append(" FETCH FIRST ").append(graphQLArguments.get("limitFetchingSize")).append(" AND ");
+            stringBuilder.append(" FETCH FIRST ").append(graphQLArguments.get("limitFetchingSize")).append(" ROWS ONLY AND ");
         }
 
             stringBuilder.append(" TRUE");
@@ -294,7 +294,7 @@ public class GraphQLDataFetchers
             for (Map.Entry<String, String> entry : attribute_map.entrySet())
             {
                 String key = entry.getKey();
-                Object value = entry.getValue();
+                Object value = String.valueOf(entry.getValue());
                 file_metadata.add(new Metadatum(key, value.toString()));
             }
         }
@@ -302,7 +302,7 @@ public class GraphQLDataFetchers
         {
             for (String attribute : selection_attributes)
             {
-                String attr_value = attribute_map.get(attribute);
+                String attr_value = String.valueOf(attribute_map.get(attribute));
                 if(attr_value == null)
                 {
                     continue;
