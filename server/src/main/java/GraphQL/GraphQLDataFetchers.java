@@ -210,24 +210,29 @@ public class GraphQLDataFetchers
                             String metadata_option = metadata_options.get(i);
                             switch (metadata_option){
                                 case "equal":
-                                    stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
-                                        .append("'::text = '").append(metadata_values.get(i)). append("' AND ");
+                                    stringBuilder.append("(CASE WHEN metadata ->> '").append(metadata_attributes.get(i))
+                                .append("' IS NOT NULL THEN metadata ->> '").append(metadata_attributes.get(i))
+                                        .append("'::text = '").append(metadata_values.get(i)). append("' ELSE TRUE END) AND ");
                                     break;
                                 case "included":
-                                    stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
-                                        .append("'::text LIKE '%").append(metadata_values.get(i)). append("%' AND ");
+                                    stringBuilder.append("(CASE WHEN metadata ->> '").append(metadata_attributes.get(i))
+                                .append("' IS NOT NULL THEN metadata ->> '").append(metadata_attributes.get(i))
+                                        .append("'::text LIKE '%").append(metadata_values.get(i)). append("%' ELSE TRUE END) AND ");
                                     break;
                                 case "excluded":
-                                    stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
-                                        .append("'::text NOT LIKE '%").append(metadata_values.get(i)). append("%' AND ");
+                                    stringBuilder.append("(CASE WHEN metadata ->> '").append(metadata_attributes.get(i))
+                                .append("' IS NOT NULL THEN metadata ->> '").append(metadata_attributes.get(i))
+                                        .append("'::text NOT LIKE '%").append(metadata_values.get(i)). append("%' ELSE TRUE END) AND ");
                                     break;
                                 case "bigger":
-                                    stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
-                                        .append("'::text < '").append(metadata_values.get(i)).append("' AND ");
+                                    stringBuilder.append("(CASE WHEN metadata ->> '").append(metadata_attributes.get(i))
+                                .append("' IS NOT NULL THEN metadata ->> '").append(metadata_attributes.get(i))
+                                        .append("'::text < '").append(metadata_values.get(i)).append("' ELSE TRUE END) AND ");
                                     break;
                                 case "smaller":
-                                    stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
-                                        .append("'::text > '").append(metadata_values.get(i)).append("' AND ");
+                                    stringBuilder.append("(CASE WHEN metadata ->> '").append(metadata_attributes.get(i))
+                                .append("' IS NOT NULL THEN metadata ->> '").append(metadata_attributes.get(i))
+                                        .append("'::text > '").append(metadata_values.get(i)).append("' ELSE TRUE END) AND ");
                                     break;
                                 case "exists":
                                     stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
@@ -238,8 +243,9 @@ public class GraphQLDataFetchers
                     }
                 }else{
                     for(int i = 0; i < metadata_attributes.size(); i++){
-                        stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
-                            .append("' LIKE '%").append(metadata_values.get(i)). append("%' AND ");
+                        stringBuilder.append("(CASE WHEN metadata ->> '").append(metadata_attributes.get(i))
+                    .append("' IS NOT NULL THEN metadata ->> '").append(metadata_attributes.get(i))
+                            .append("'::text LIKE '%").append(metadata_values.get(i)). append("%' ELSE TRUE END) AND ");
                     }
                 }
             }
