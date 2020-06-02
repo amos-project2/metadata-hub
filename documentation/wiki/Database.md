@@ -1,10 +1,11 @@
 ##Database
-All file metadata analyzed by the crawler gets inserted in a [postgreSQL](https://www.postgresql.org/) Database.
+All file metadata analyzed by the crawler gets inserted in a [PostgreSQL](https://www.postgresql.org/) Database.
+Also information about the crawls started by the crawler Component is stored in the database.
 
 ### Database Setup
-1. Create Role
-2. Create Database
-3. Create Schemata
+1. Create the Database Role or Import the Database (/metadatahub/metadatahub-role.sql)
+2. Create the Database or Import the Database (/metadatahub/metadatahub-database.sql)
+3. Import the Schemata
 
 Default setup:
  * "database-name": "metadatahub",
@@ -27,9 +28,11 @@ metadata=> \i c:/dir/dir/metadatahub-schemata.sql
 ```
 
 ### Database-Schemata
-The database uses two tables. The "crawls" table saves information about started crawls/tree_walks.
-The "files" table saves information about all analyzed file metadata.
+The database uses two tables.
+* The "crawls" table saves information about started crawls/tree_walks.
+* The "files" table saves information about all analyzed file metadata, most metadata information lands in the jsonb-File "metadata".
 ##### crawls
+[![Ooops, there should be an image :(](https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/Database/database_crawls.JPG?raw=true)](https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/Database/database_crawls.JPG?raw=true)
 ```
 id(bigint)                -> primary key (uses autoincrement sequence)
 dir_path(text)            -> starting directory of the crawl
@@ -43,6 +46,7 @@ update_time(date)         -> time of the latest update of the crawl data
 analyzed_dirs_hash(text)  -> sha-256 hash of analyzed_dirs (uses trigger to create hash on inserting and updating)
 ```
 ##### files
+[![Ooops, there should be an image :(](https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/Database/database_files.JPG?raw=true)](https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/Database/database_files.JPG?raw=true)
 ```
 id(bigint)                -> primary key (uses autoincrement sequence)
 crawl_id(bigint)          -> foreign key "crawls.id"
