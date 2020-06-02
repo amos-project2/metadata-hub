@@ -89,7 +89,7 @@ export class FormQueryEditor extends Page {
 
 
   <div class="form-row">
-<div class="col-md-12">Filter: <a class="pover" title="Filter" data-content="Select a filter option. With the checkbox you can include(checked)/exclude(unchecked) this filter.<br>Specify on which metadataattribut you want to use the filter. In the last Input must insert the value<br>For example: Pattern include FileName dog">[?]</a></div>
+<div class="col-md-12">Filter: <a class="pover" title="Filter" data-content="Select a filter option.<br>Specify on which metadataattribut you want to use the filter. In the last Input must insert the value<br>For example: Pattern include FileName dog">[?]</a></div>
 </div>
 
 <div class="fg-filter-container">
