@@ -48,7 +48,8 @@ All these endpoints support ``GET`` and ``POST`` requests except */info* that on
   This will force a possible running execution of the tree walk to end
   and exit the crawler process.
 
-##Tree Walk Interface
+### Tree Walk Interface
+
 This section will shortly explain how to access the tree walk interface
 , as well as the different configuration options provided.
 
