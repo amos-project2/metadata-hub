@@ -54,14 +54,27 @@ export class FormQueryEditor extends Page {
 
   <div class="form-row">
     <div class="form-group col-md-6">
-      <label for="fq-createFileTimeRangeStart">Start-DateTime <a class="pover" title="Start-DateTime" data-content="It collects all files, which are older (created-time) than Start-DateTime">[?]</a></label>
+      <label for="fq-createFileTimeRangeStart">Start-DateTime (File created)<a class="pover" title="Start-DateTime" data-content="It collects all files, which are older (created-time) than Start-DateTime">[?]</a></label>
       <input type="text" class="form-control" id="fq-createFileTimeRangeStart" placeholder="2020-05-22 07:19:29">
     </div>
      <div class="form-group col-md-6">
-      <label for="fq-createFileTimeRangeEnd">End-DateTime <a class="pover" title="End-DateTime" data-content="It collects all files, which are younger (created-time) than End-DateTime">[?]</a></label>
+      <label for="fq-createFileTimeRangeEnd">End-DateTime (File created)<a class="pover" title="End-DateTime" data-content="It collects all files, which are younger (created-time) than End-DateTime">[?]</a></label>
       <input type="text" class="form-control" id="fq-createFileTimeRangeEnd" placeholder="2020-07-28 20:35:22">
     </div>
     </div>
+
+
+   <div class="form-row">
+    <div class="form-group col-md-6">
+      <label for="fq-createFileTimeRangeStartUpdated">Start-DateTime (File modified)<a class="pover" title="Start-DateTime" data-content="It collects all files, which are older (modified-time) than Start-DateTime">[?]</a></label>
+      <input type="text" class="form-control" id="fq-createFileTimeRangeStartUpdated" placeholder="2020-05-22 07:19:29">
+    </div>
+     <div class="form-group col-md-6">
+      <label for="fq-createFileTimeRangeEndUpdated">End-DateTime (File modified)<a class="pover" title="End-DateTime" data-content="It collects all files, which are younger (modified-time) than End-DateTime">[?]</a></label>
+      <input type="text" class="form-control" id="fq-createFileTimeRangeEndUpdated" placeholder="2020-07-28 20:35:22">
+    </div>
+    </div>
+
 
   <div class="form-row">
    <div class="form-group col-md-12">
@@ -270,38 +283,82 @@ ${this.getModalCode()}
 
     buildAndGetGraphQlQuery() {
 
-        let filepattern = $("#fq-filePattern").val();
-        let checkbox = $("#fq-includeVsExclude").prop('checked');
+       // let filepattern = $("#fq-filePattern").val();
+      //  let checkbox = $("#fq-includeVsExclude").prop('checked');
         let limit = $("#fq-limit").val();
         let startDate = $("#fq-createFileTimeRangeStart").val();
         let endDate = $("#fq-createFileTimeRangeEnd").val();
 
-        if (filepattern !== "") {filepattern = `pattern: "${filepattern}",`;} else {filepattern = "";}
-        if (!checkbox) {checkbox = "option: included,";} else {checkbox = "option: excluded,";}
-        if (limit !== "") {limit = `limitFetchingSize: ${limit},`;} else {limit = "";}
-        if (startDate !== "") {startDate = `startTime: "${startDate}",`;} else {startDate = "";}
-        if (endDate !== "") {endDate = `endTime: "${endDate}",`;} else {endDate = "";}
+        let startDateUpdated = $("#fq-createFileTimeRangeStartUpdated").val();
+        let endDateUpdated = $("#fq-createFileTimeRangeEndUpdated").val();
+
+       // if (filepattern !== "") {filepattern = `pattern: "${filepattern}",`;} else {filepattern = "";}
+       // if (!checkbox) {checkbox = "option: included,";} else {checkbox = "option: excluded,";}
+        if (limit !== "") {limit = `limitFetchingSize: ${limit},\n  `;} else {limit = "";}
+        if (startDate !== "") {startDate = `start_creation_time: "${startDate}",\n  `;} else {startDate = "";}
+        if (endDate !== "") {endDate = `end_creation_time: "${endDate}",\n  `;} else {endDate = "";}
+        if (startDateUpdated !== "") {startDateUpdated = `start_modification_time: "${startDateUpdated}",\n  `;} else {startDateUpdated = "";}
+        if (endDateUpdated !== "") {endDateUpdated = `end_modification_time: "${endDateUpdated}",\n  `;} else {endDateUpdated = "";}
+
+
 
         let attributes = "";
-        $(".attribut-element-input").each(function () {
-            if ($(this).val() !== "") {
-                attributes += `"${$(this).val()}", `;
+        {
+            $(".attribut-element-input").each(function () {
+                if ($(this).val() !== "") {
+                    attributes += `"${$(this).val()}", `;
+                }
+
+            });
+
+            if (attributes !== "") {
+                attributes = `sel_attributes:[${attributes}],\n  `;
             }
-
-        });
-
-        if (attributes !== "") {
-            attributes = `sel_attributes:[${attributes}],`;
         }
+
+        let options_options="";
+        let options_attributes="";
+        let options_values="";
+        {
+            $(".fg-metadata-attribute").each(function () {
+                if ($(this).val() !== "") {
+                    options_attributes += `"${$(this).val()}", `;
+                    options_options += `"${$(this).parent().find(".fg-filter-function").val()}", `;
+                    options_values += `"${$(this).parent().find(".fg-metadata-value").val()}", `;
+                }
+
+            });
+
+            //cause all lists have to have the same size, its ok doing this so
+            if (options_attributes !== "") {
+                options_options = `metadata_options:[${options_options}],\n  `;
+                options_attributes = `metadata_attributes:[${options_attributes}],\n  `;
+                options_values = `metadata_values:[${options_values}],\n  `;
+            }
+        }
+
 
 
         let query = `
 query
 {
-  search(${filepattern} ${checkbox} ${limit} ${startDate} ${endDate} ${attributes})
+  searchForFileMetadata
+  (
+     ${limit}
+     ${startDate} ${endDate} ${startDateUpdated} ${endDateUpdated}
+     ${options_options} ${options_attributes} ${options_values}
+     ${attributes}
+  )
   {
-    sub_path,
+    id,
+    crawl_id,
+    dir_path,
     name,
+    type,
+    creation_time,
+    access_time,
+    modification_time,
+    file_hash,
     metadata
     {
       name,
@@ -312,29 +369,40 @@ query
 
         return query
 
+
+// searchForFileMetadata(file_ids: [Int!], crawl_ids: [Int!], dir_path: String, dir_path_option: MetadataOption,
+//     file_name: String, file_name_option: MetadataOption, file_type: String, size: Int, size_option: IntOption,
+//     start_creation_time: String, end_creation_time: String, start_access_time: String, end_access_time: String,
+//     start_modification_time: String, end_modification_time: String, file_hashes: [String!],
+//     metadata_attributes: [String!], metadata_values:[String!], metadata_options: [MetadataOption!],
+//     selected_attributes: [String!], limitFetchingSize: Int) : [File]
+
     }
 
+
+
     getFilterElement() {
+
+        //included, excluded, equal, bigger smaller, exists
         return `
   <div class="form-row">
      <div class="input-group mb-3">
           <div class="input-group-prepend">
-            <select class="custom-select fg-filter-option" id="inputGroupSelect02">
-    <option selected value="0">Pattern</option>
-    <option value="1">Equal</option>
-    <option value="2">Exists (Attribute)</option>
-    <option value="3">Greather Than</option>
-    <option value="4">Lower Than</option>
-  </select>
-                <div class="input-group-text">
-          <input type="checkbox" checked class="fg-include-exclude">
-          </div>
-
-
+                  <select class="custom-select fg-filter-function">
+                    <option selected value="included">Pattern included</option>
+                    <option value="excluded">Pattern excluded</option>
+                    <option value="equal">Equal</option>
+                    <option value="exists">Exists (Attribute)</option>
+                    <option value="bigger">Greather Than</option>
+                    <option value="smaller">Lower Than</option>
+                  </select>
+                  <div class="input-group-text">
+                        <input type="checkbox" checked class="fg-include-exclude">
+                  </div>
           </div>
           <input type="text" class="form-control fg-metadata-attribute" placeholder="Metadata-Attribute">
           <input type="text" class="form-control fg-metadata-value" placeholder="Value">
-        </div>
+       </div>
     </div>`;
 
 
