@@ -27,6 +27,7 @@ from psycopg2.extensions import connection
 from crawler.services.config import Config
 from crawler.connectPG.connector import DatabaseConnection
 
+from crawler.crawler.services.tracing import Tracer
 
 _logger = logging.getLogger(__name__)
 
@@ -44,7 +45,8 @@ class Worker(Process):
             config: Config,
             connectionInfo: dict,
             # db_connection: DatabaseConnection,
-            tree_walk_id: int
+            tree_walk_id: int,
+            TRACER: Tracer
     ):
         super(Worker, self).__init__()
         self.work_packages = work_packages
@@ -53,6 +55,7 @@ class Worker(Process):
         self.connectionInfo = connectionInfo
         # self._db_connection = db_connection
         self._tree_walk_id = tree_walk_id
+        self.TRACER = TRACER
         self.dbConnectionPool = DatabaseConnection(self.connectionInfo, 1)
 
 
@@ -179,7 +182,6 @@ class Worker(Process):
             package (List[str]): list of directories to process.
 
         """
-
         pathEx = self._config.get_exiftool_executable()
         _logger.debug(f'Doing work ({self.pid}).')
 
@@ -204,7 +206,7 @@ class Worker(Process):
                     hash256 = hashlib.sha256(bytes).hexdigest()
                 # insert into the database
                 self.dbConnectionPool.insert_new_record(insertin + values + "'{}'".format(json.dumps(result)) + ', ' + f"'{hash256}'" + ')')
-
+                self.TRACER.add_node(result['Directory'])
         except Exception as e:
             print(e)
 

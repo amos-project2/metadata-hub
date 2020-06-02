@@ -92,8 +92,7 @@ class TreeWalkManager:
             number_of_workers=number_of_workers,
             already_processed=alreadyProcessed
         )
-        for element in split:
-            work_packages[0].append([element])
+
         # Create the connection dictionary for the database
         connectionData = {
             'user': environment.env.DATABASE_USER,
@@ -113,20 +112,25 @@ class TreeWalkManager:
                     VALUES('{dir_path}', '---', 'Running', '{crawl_config}', '{analyzedDirectories}', '{datetime.now()}')
                     RETURNING id"""
         dbID = dbConnectionPool.insert_new_record(start)
-
+        dbConnectionPool.dbConnectionPool.closeall()
         for id_worker in range(number_of_workers):
             queue = Queue()
             command_queue = Queue()
             for index, package in enumerate(work_packages[id_worker]):
                 self._total += 1
                 queue.put(package)
+            for index, package in enumerate(split[id_worker]):
+                self._total += 1
+                queue.put(package)
+
             worker = Worker(
                 work_packages=queue,
                 command_queue=command_queue,
                 config=config,
                 connectionInfo=connectionData,
                 #db_connection=dbConnectionPool,
-                tree_walk_id=dbID
+                tree_walk_id=dbID,
+                TRACER=TRACER
             )
             self._workers.append(worker)
 
