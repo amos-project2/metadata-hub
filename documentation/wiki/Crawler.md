@@ -1,53 +1,3 @@
-* Include a more detailed information about the server component
-* Do not reference code, but focus on the major functionality
-* For example a further explanation of the API and how to use it
-
-
-
-
-### API
-
-This section will shortly explain the API of the crawler.
-All these endpoints support ``GET`` and ``POST`` requests except */info* that only supports ``GET`` requests.
-
-* **/config**<br>
-  Create a configuration for the tree walk and start it.
-  This let you create the configuration in a web interface and is the prefered way to manually configure the tree walk.
-  After submitting the configuration, a success or error page is shown.
-
-* **/start?config={CONFIG}&update=[True]**<br>
-  Start the tree walk.
-  This is the proper way to start the tree walk in a automated way.
-  * ``CONFIG`` (*required*)
-  This is the configuration of the execution.
-  It can either be a filepath pointing to a valid configuration file or a valid JSON configuration.
-  * ``update`` (*optional*)
-  By providing *update=True*, a possible running execution will be stopped and
-  the new one will be started. Without providing *update* or with *update=False*,
-  the request will be ignored if a execution is running/paused.
-
-* **/pause**<br>
-  Pause a currently running execution of the tree walk.
-  The request will be ignored when the tree walk is currently not running.
-  The execution can be continued or stopped later on
-
-* **/continue**<br>
-  Continue a paused execution of the tree walk.
-  The request will be ignored if the tree walk is not paused.
-
-* **/stop**<br>
-  Stop a running or paused execution of the tree walk.
-  The request will be ignored if the tree walk is neither paused nor running.
-
-* **/info**<br>
-  Retrieve information about the current status of the tree walk.
-  Useful to check the status and progress of a possible running execution.
-
-* **/shutdown**<br>
-  Shutdown the crawler completely.
-  This will force a possible running execution of the tree walk to end
-  and exit the crawler process.
-
 ### Tree Walk Interface
 
 This section will shortly explain how to access the tree walk interface
@@ -57,7 +7,7 @@ The interface can be accessed in a web browser, by using the address and port sp
 starting the docker container. The following gif shows an example of the interface:
 
 
-* [Interface access example](https://raw.githubusercontent.com/amos-project2/metadata-hub/cdd429035c5933281a85758d5feb2e619a6be19c/documentation/gifs/interface_access.gif)
+* [Interface access example](https://raw.githubusercontent.com/amos-project2/metadata-hub/eda6d067e7121ea233456067e1e84e53a50aa9c1/documentation/gifs/crawler-config.gif)
 
 
 The different options have the following meaning:
@@ -107,3 +57,48 @@ The different options have the following meaning:
   This field determines, if the submission that is about to be sent to the crawler will
   replace the old one. If no is selected the crawler will not accept a new submission and
   prompt the user to wait.
+
+
+### API
+
+This section will shortly explain the API of the crawler.
+All these endpoints support ``GET`` and ``POST`` requests except */info* that only supports ``GET`` requests.
+
+* **/config**<br>
+  Create a configuration for the tree walk and start it.
+  This endpoint provides the interface described above.
+  After submitting the configuration, a success or error page is shown.
+
+* **/start?config={CONFIG}&update=[True]**<br>
+  Start the tree walk.
+  This is the proper way to start the tree walk in a automated way.
+  * ``CONFIG`` (*required*)
+  This is the configuration of the execution.
+  It can either be a filepath pointing to a valid configuration file or a valid JSON configuration.
+  * ``update`` (*optional*)
+  By providing *update=True*, a possible running execution will be stopped and
+  the new one will be started. Without providing *update* or with *update=False*,
+  the request will be ignored if a execution is running/paused.
+
+* **/pause**<br>
+  Pause a currently running execution of the tree walk.
+  The request will be ignored when the tree walk is currently not running.
+  The execution can be continued or stopped later on
+
+* **/continue**<br>
+  Continue a paused execution of the tree walk.
+  The request will be ignored if the tree walk is not paused.
+
+* **/stop**<br>
+  Stop a running or paused execution of the tree walk.
+  The request will be ignored if the tree walk is neither paused nor running.
+
+* **/info**<br>
+  Retrieve information about the current status of the tree walk.
+  Useful to check the status and progress of a possible running execution.
+
+* **/shutdown**<br>
+  Shutdown the crawler completely.
+  This will force a possible running execution of the tree walk to end
+  and exit the crawler process.
+
