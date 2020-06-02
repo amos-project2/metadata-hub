@@ -165,7 +165,7 @@ public class GraphQLDataFetchers
         }
 
         //METADATA
-        //TODO Maybe there is a more beautiful solution using GraphQL, except using 3 seperate lists
+        //TODO Maybe there is a more beautiful solution using GraphQL, than using 3 separate lists
         if(graphQLArguments.containsKey("metadata_attributes") && graphQLArguments.containsKey("metadata_values")){
             List<String> metadata_attributes = (List<String>) graphQLArguments.get("metadata_attributes");
             List<String> metadata_values = (List<String>) graphQLArguments.get("metadata_values");

@@ -8,8 +8,8 @@ type Query{
     If no options are specified, all file metadata is returned.
 
     Search Options:
-    file_id: Only returns file metadata belonging to the exact file_id
-    crawl_id: Only returns file metadata belonging to the exact crawl_id
+    file_id: Only returns file metadata belonging to one of the file ids in the list.
+    crawl_id: Only returns file metadata belonging to one of the crawl ids in the list.
     dir_path: Only returns file metadata where their directory path matches the specified pattern.
         Default PatternOption is "included".
     dir_path_option: Different PatternOptions can be used, which change how "dir_path" gets compared to other Strings.
@@ -27,7 +27,7 @@ type Query{
     end_access_time: Only returns file metadata, which got accessed earlier than "end_access_time".
     start_modification_time: Only returns file metadata, which got modified later or at the same point as "start_modification_time".
     end_modification_time: Only returns file metadata, which got modified earlier than "end_modification_time".
-    file_hash: Only returns file metadata where the file exactly has the same sha_254 hash.
+    file_hash: Only returns file metadata where the file has the same sha_254 hash as the hashes in the list.
     metadata_attributes: (see in metadata_values)
     metadata_values: Only returns file metadata, where the file has the attribute specified in
         metadata_attributes and its value matches the value of metadata_values. Different PatternOptions can be used.
@@ -38,24 +38,30 @@ type Query{
     selected_attributes: For all file metadata only the specified metadata attributes are returned.
     limitFetchingSize: Limits how many files will get fetched by the search.
     """
-    searchForFileMetadata(file_id: Int, crawl_id: Int, dir_path: String, dir_path_option: PatternOption,
-        file_name: String, file_name_option: PatternOption, file_type: String, size: Int, size_option: IntOption,
+    searchForFileMetadata(file_id: [Int!], crawl_id: [Int!], dir_path: String, dir_path_option: MetadataOption,
+        file_name: String, file_name_option: MetadataOption, file_type: String, size: Int, size_option: IntOption,
         start_creation_time: String, end_creation_time: String, start_access_time: String, end_access_time: String,
-        start_modification_time: String, end_modification_time: String, file_hash: String,
-        metadata_attributes: [String!], metadata_values:[String!], metadata_options: [PatternOption!],
+        start_modification_time: String, end_modification_time: String, file_hash: [String!],
+        metadata_attributes: [String!], metadata_values:[String!], metadata_options: [MetadataOption!],
         selected_attributes: [String!], limitFetchingSize: Int) : [File]
 }
 
 """
-Different options for checking for patterns in Strings:
-exactMatch: the String has to exactly match the pattern
+Different options for checking Strings for patterns:
 included: the String has the pattern included
 excluded: the String does not! have the pattern included
+equal: the String has to exactly match the pattern
+bigger: the String has to be lexicographically bigger than the pattern
+smaller: the String has to be lexicogarphicaly smaller than the pattern
+exists: the String is not NULL
 """
-enum PatternOption{
-    exactMatch
+enum MetadataOption{
     included
     excluded
+    equal
+    bigger
+    smaller
+    exists
 }
 
 """
