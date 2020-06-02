@@ -312,7 +312,7 @@ ${this.getModalCode()}
             });
 
             if (attributes !== "") {
-                attributes = `sel_attributes:[${attributes}],\n  `;
+                attributes = `selected_attributes:[${attributes}],\n  `;
             }
         }
 
@@ -323,7 +323,7 @@ ${this.getModalCode()}
             $(".fg-metadata-attribute").each(function () {
                 if ($(this).val() !== "") {
                     options_attributes += `"${$(this).val()}", `;
-                    options_options += `"${$(this).parent().find(".fg-filter-function").val()}", `;
+                    options_options += `${$(this).parent().find(".fg-filter-function").val()}, `;
                     options_values += `"${$(this).parent().find(".fg-metadata-value").val()}", `;
                 }
 
@@ -338,17 +338,26 @@ ${this.getModalCode()}
         }
 
 
+        let query_header=`
+   ${limit}
+   ${startDate} ${endDate} ${startDateUpdated} ${endDateUpdated}
+   ${options_options} ${options_attributes} ${options_values}
+   ${attributes}
+        `;
+
+        if (query_header.trim() === "") {
+            query_header = "";
+        } else {
+            query_header=`(
+            ${query_header}
+  )`
+        }
 
         let query = `
 query
 {
   searchForFileMetadata
-  (
-     ${limit}
-     ${startDate} ${endDate} ${startDateUpdated} ${endDateUpdated}
-     ${options_options} ${options_attributes} ${options_values}
-     ${attributes}
-  )
+  ${query_header}
   {
     id,
     crawl_id,
@@ -396,7 +405,7 @@ query
                     <option value="bigger">Greather Than</option>
                     <option value="smaller">Lower Than</option>
                   </select>
-                  <div class="input-group-text">
+                  <div class="input-group-text" style="display:none;">
                         <input type="checkbox" checked class="fg-include-exclude">
                   </div>
           </div>
