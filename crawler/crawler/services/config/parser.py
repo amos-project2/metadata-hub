@@ -10,6 +10,7 @@ from typing import Any
 
 # Local imports
 from .typedef import Config
+import crawler.services.environment as environment
 
 
 class ConfigParsingException(Exception):
@@ -21,16 +22,9 @@ class ConfigParser:
     """This class takes care of parsing the crawler configuration"""
 
 
-    # FIXME: This should have a more reliable solution
-    _SCHEMA_FILE = '../../../../../configs/crawler-config.schema'
-
-
     def __init__(self, data: Any):
         self._data = data
-        schema_filepath = os.path.abspath(os.path.join(
-            __file__, ConfigParser._SCHEMA_FILE
-        ))
-        with open(schema_filepath, 'r') as fpointer:
+        with open(environment.env.SCHEMA_CRAWLER_CONFIG, 'r') as fpointer:
             self._schema = json.load(fpointer)
 
 
@@ -59,7 +53,14 @@ class ConfigParser:
         except jsonschema.ValidationError as err:
             print(err)
             raise ConfigParsingException('JSON data does not apply the schema')
-        result = Config(self._data)
+        platform = self._data.get('options').get('exiftool')
+        exiftool = environment.env.EXIFTOOL_LINUX
+        if platform == 'Windows':
+            exiftool = environment.env.EXIFTOOL_WINDOWS
+        result = Config(
+            data=self._data,
+            exiftool=exiftool
+        )
         return result
 
 

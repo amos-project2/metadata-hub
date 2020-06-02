@@ -1,15 +1,17 @@
 """Basic server implementation for REST API interface.
 
 This module contains the REST interface for communication with the crawler.
+
+FIXME: Check the error codes and update them.
 """
 
 
 # Python imports
 import json
-import threading
+import logging
 
 
-# 3rd party modules
+# 3rd party imports
 import flask
 
 
@@ -27,8 +29,45 @@ app = flask.Flask(
     static_folder='../../static'
 )
 
+_logger_werkzeug = logging.getLogger('werkzeug')
+_logger_werkzeug.setLevel(logging.ERROR)
 
-@app.route('/pause', methods=['POST'])
+
+def _get_response(
+        status_ok: bool,
+        message: str,
+        command: str,
+        error_code: int
+) -> flask.Response:
+    """[summary]
+
+    Args:
+        status_ok (bool): [description]
+        message (str): [description]
+        command (str): [description]
+        error_code (int): [description]
+
+    Returns:
+        flask.Response: [description]
+    """
+    if status_ok:
+        data = {'message': message}
+        resp = flask.Response(
+            json.dumps(data),
+            status=defaults.STATUS_OK,
+            mimetype=defaults.MIMETYPE_JSON
+        )
+        return resp
+    data = {'error': message}
+    resp = flask.Response(
+        json.dumps(data),
+        status=error_code,
+        mimetype=defaults.MIMETYPE_JSON
+    )
+    return resp
+
+
+@app.route('/pause', methods=['GET', 'POST'])
 def pause() -> flask.Response:
     """API endpoint to pause the current crawler execution.
 
@@ -42,17 +81,17 @@ def pause() -> flask.Response:
         flask.Response: HTTP response
 
     """
-
-    # TODO: pause functionality
-
-    resp = flask.Response(
-        status=defaults.STATUS_OK,
-        mimetype=defaults.MIMETYPE_JSON
+    treewalk.pause()
+    status_ok, message, command = treewalk.get_response()
+    return _get_response(
+        status_ok=status_ok,
+        message=message,
+        command=command,
+        error_code=defaults.STATUS_CONFLICT
     )
-    return resp
 
 
-@app.route('/continue', methods=['POST'])
+@app.route('/continue', methods=['GET', 'POST'])
 def unpause() -> flask.Response:
     """API endpoint to continue a paused execution of the crawler.
 
@@ -65,37 +104,37 @@ def unpause() -> flask.Response:
         flask.Response: HTTP response
 
     """
-
-    # TODO: unpause functionality
-
-    resp = flask.Response(
-        status=defaults.STATUS_OK,
-        mimetype=defaults.MIMETYPE_JSON
+    treewalk.unpause()
+    status_ok, message, command = treewalk.get_response()
+    return _get_response(
+        status_ok=status_ok,
+        message=message,
+        command=command,
+        error_code=defaults.STATUS_CONFLICT
     )
-    return resp
 
 
-@app.route('/stop', methods=['POST'])
+
+@app.route('/stop', methods=['GET', 'POST'])
 def stop() -> flask.Response:
     """API endpoint to stop the current execution of the crawler.
 
     Stopping the current execution of the crawler.
     On success, the response status 200 is set.
     On Failure, the internal server error 500 is set.
-    If the crawler isn't running, the response status 409 is set.
 
     Returns:
         flask.Response: HTTP response
 
     """
-
-    # TODO: activate pause mechanism here and return success/error
-
-    resp = flask.Response(
-        status=defaults.STATUS_OK,
-        mimetype=defaults.MIMETYPE_JSON
+    treewalk.stop()
+    status_ok, message, command = treewalk.get_response()
+    return _get_response(
+        status_ok=status_ok,
+        message=message,
+        command=command,
+        error_code=defaults.STATUS_INTERNAL_SERVER_ERROR
     )
-    return resp
 
 
 @app.route('/info', methods=['GET'])
@@ -109,25 +148,17 @@ def info() -> flask.Response:
         flask.Response: HTTP response
 
     """
-
-    # TODO: info functionality
-
-    msg = {
-        'message': {
-            'status': 'Not running',
-            'config': {},
-            'progress': f'{0.0} %'
-        }
-    }
-    resp = flask.Response(
-        json.dumps(msg),
-        status=defaults.STATUS_OK,
-        mimetype=defaults.MIMETYPE_JSON
+    treewalk.info()
+    status_ok, message, command = treewalk.get_response()
+    return _get_response(
+        status_ok=status_ok,
+        message=message,
+        command=command,
+        error_code=defaults.STATUS_INTERNAL_SERVER_ERROR
     )
-    return resp
 
 
-@app.route('/start', methods=['POST'])
+@app.route('/start', methods=['GET', 'POST'])
 def start() -> flask.Response:
     """API endpoint to retrive start the crawler with a certain configuration.
 
@@ -159,12 +190,19 @@ def start() -> flask.Response:
             mimetype=defaults.MIMETYPE_JSON
         )
         return resp
-    treewalk.add_config_queue(config)
-    resp = flask.Response(
-        status=defaults.STATUS_OK,
-        mimetype=defaults.MIMETYPE_JSON
+    update = flask.request.args.get('update', '').lower()
+    if update == 'true':
+        update = True
+    else:
+        update = False
+    treewalk.start(config, update)
+    status_ok, message, command = treewalk.get_response()
+    return _get_response(
+        status_ok=status_ok,
+        message=message,
+        command=command,
+        error_code=defaults.STATUS_INTERNAL_SERVER_ERROR
     )
-    return resp
 
 
 @app.route('/config', methods=['GET', 'POST'])
@@ -172,7 +210,7 @@ def config():
     if flask.request.method == 'GET':
         return flask.render_template('config.html')
     try:
-        result = parsing.parse(flask.request.form)
+        result, update = parsing.parse(flask.request.form)
     except parsing.APIParsingException as err:
         message = f'Failed. {str(err)}'
         return flask.render_template('config.html', message=message)
@@ -181,17 +219,27 @@ def config():
         config = parser.parse()
     except config_service.ConfigParsingException as error:
         return flask.render_template('config.html', message=str(error))
-    treewalk.add_config_queue(config)
-    return flask.render_template('config.html', message='Success')
+    treewalk.start(config, update)
+    status_ok, message, command = treewalk.get_response()
+    if status_ok:
+        return flask.render_template('config.html', message='Success')
+    return flask.render_template('config.html', message=message)
 
 
-@app.route('/shutdown', methods=['POST'])
+@app.route('/shutdown', methods=['GET', 'POST'])
 def shutdown():
+    treewalk.shutdown()
+    func = flask.request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        # TODO handle error
+        return None
+    func()
     resp = flask.Response(
         status=defaults.STATUS_OK,
         mimetype=defaults.MIMETYPE_JSON
     )
     return resp
+
 
 
 @app.route('/', methods=['GET'])
