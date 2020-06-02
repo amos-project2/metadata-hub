@@ -236,7 +236,7 @@ public class GraphQLDataFetchers
                                     break;
                                 case "exists":
                                     stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
-                                    .append("IS NOT NULL AND ");
+                                    .append("' IS NOT NULL AND ");
                                     break;
                             }
                         }
