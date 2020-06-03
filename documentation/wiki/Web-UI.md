@@ -27,13 +27,13 @@ _The following fields are for limiting the resultset related to different dateti
  * **Greater Than:** _The attribut-value must be greater than value_
  * **Lower Than:** _The attribut-value must be lower than value_
 
-//TODO gify from filter
+[See an Example from the filter](https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/gifs/webui/filter-webui.gif)
 
 **Which Attributes (List):**
 
 * **Attribute:** _Here you can insert the Name of an attribute_
 
-//TODO gify from attribut
+[See an Example from the attribute-selection](https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/gifs/webui/which-attributes.gif)
 
 
 If you press the send-button the form-data are converted to a _GraphQL-Query_ in the background. It is sended and you get the result as json. You also can introspect the _GraphQL-Query_, send the query to the _GraphiQL-Console_ for better formatting and changing the query with the help of the _GraphiQl-console_. You also have the possibility to clear the whole form.
