@@ -1,6 +1,7 @@
 """Connection to database and perform query."""
 
 import psycopg2
+from psycopg2 import pool
 from pprint import pprint
 
 class DatabaseConnection:
@@ -18,16 +19,17 @@ class DatabaseConnection:
         """
         try:
             # Establish connection pool
-            self.dbConnectionPool = psycopg2.pool.SimpleConnectionPool(1, powerLevel
-                                                                  , user=db_info['user'],
-                                                                  password=db_info['password'],
-                                                                  host=db_info['host'],
-                                                                  port=db_info['port'],
-                                                                  database=db_info['dbname'])
+            self.dbConnectionPool = psycopg2.pool.SimpleConnectionPool(1, powerLevel,
+                                                                user=db_info['user'],
+                                                                password=db_info['password'],
+                                                                host=db_info['host'],
+                                                                port=db_info['port'],
+                                                                database=db_info['dbname'])
 
-        except:
-            print('Error while creating the ThreadPool')
-
+        # except:
+        #     print('Error while creating the ThreadPool')
+        except Exception as e:
+            print(e)
 
         #     # database info in a string
         #     db_info_str = "dbname='{b}' user='{c}' host='{d}' password='{e}' port='{f}' \
@@ -47,10 +49,16 @@ class DatabaseConnection:
             insert_cmd (dict): a single INSERT query to Postgres database
 
         """
-        #pprint("----Insert-Done-----")
         con = self.dbConnectionPool.getconn()
         curs = con.cursor()
-        curs.execute(insert_cmd)
+        try:
+            curs.execute(insert_cmd)
+        except Exception as e:
+            print(e)
+            self.dbConnectionPool.putconn(con)
+            print('Error execution the insert command')
+            print(insert_cmd)
+            return 0
         try:
             dbID = curs.fetchone()[0]
         except:

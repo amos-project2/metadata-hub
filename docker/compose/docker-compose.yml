@@ -18,7 +18,7 @@ services:
             - ${CRAWLER_PORT}:9000
 
     database:
-        image: postgres:latest
+        image: "postgres:latest"
         container_name: "metadata-hub.database"
         env_file:
             - ./.env
@@ -27,7 +27,6 @@ services:
             - POSTGRES_PASSWORD=metadatahub
         volumes:
             - $PWD/../../database/metadatahub-schemata.sql:/docker-entrypoint-initdb.d/10-init.sql
-            - $PWD/../../database/metadatahub-data.sql:/docker-entrypoint-initdb.d/20-init.sql
             - ${DATABASE_STORAGE}:/var/lib/postgresql/data
         ports:
             - ${DATABASE_PORT}:5432

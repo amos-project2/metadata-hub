@@ -1,9 +1,9 @@
 
-import {Page} from "../Page";
+import {Page} from "./Page";
 
 export class ExamplePage extends Page {
-    constructor(identifier, mountpoint, titleSelector) {
-        super(identifier, mountpoint, titleSelector);
+    constructor(parent, identifier, mountpoint, titleSelector) {
+        super(parent, identifier, mountpoint, titleSelector);
         this.title = "Example Page";
         //here you set the title-attribut
         //you can here also set the caching_behavour and much more
@@ -29,6 +29,18 @@ export class ExamplePage extends Page {
 
     onRegister() {
         //often you dont need that method
+    }
+
+    onFirstLoad() {
+        //this method is called on the first-load
+    }
+
+    onLoad() {
+        //this method is called on each load
+    }
+
+    onUnLoad() {
+        //this method is called on each unload
     }
 
 }

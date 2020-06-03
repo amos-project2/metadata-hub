@@ -1,9 +1,9 @@
 {
     "paths": {
-        "inputs": [{"path":"", "recursive":true}],
-        "output":"",
-        "trace": "",
-        "exiftool":""
+        "inputs": [{"path":"..\\..\\testDir\\input", "recursive":true}],
+        "output":"..\\..\\testDir\\output",
+        "trace": "..\\..\\testDir\\ttrace.txt",
+        "exiftool":"exiftool\\exiftoolWindows\\exiftool.exe"
     },
     "options": {
         "powerLevel": 1,
@@ -13,9 +13,9 @@
     },
     "db_info": {
         "dbname": "metadatahub",
-        "user": "",
-        "host": "", 
-        "password": "",
+        "user": "metadatahub",
+        "host": "localhost",
+        "password": "metadatahub",
         "port": "5432"
     }
 }
