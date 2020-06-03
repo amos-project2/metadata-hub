@@ -47,7 +47,6 @@ public class GraphQLDataFetchers
             final ArrayList<String> selected_attributes = dataFetchingEnvironment.getArgument("selected_attributes");
 
             String sqlQuery = buildSQLQuery(graphQLArguments);
-            System.out.println("sqlQuery: " + sqlQuery);
             return queryDatabase(sqlQuery, selected_attributes);
         };
     }
