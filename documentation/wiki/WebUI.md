@@ -1,4 +1,3 @@
-# Query
 ## Form-Query
 Here you can use a special form to ask for the file-data. You can use there advanced filters and limit the json-output to metadata which you are interessted in.
 

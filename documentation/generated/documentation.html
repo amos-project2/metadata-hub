@@ -710,7 +710,7 @@ if("undefined"==typeof jQuery)throw new Error("Bootstrap's JavaScript requires j
 <p><a href="#About"><strong>About</strong></a></p>
 <p><a href="#Architecture"><strong>Architecture</strong></a></p>
 <p><a href="#Documentation"><strong>Documentation</strong></a></p>
-<ul class="nav"><li class="active"><a href="#Crawler">Crawler</a></li><li><a href="#Database">Database</a></li><li><a href="#Server">Server</a></li><li><a href="https://github.com/amos-project2/metadata-hub/wiki/Web-UI">Web-UI</a></li></ul><p><a href="#Installation"><strong>Installation</strong></a></p>
+<ul class="nav"><li class="active"><a href="#Crawler">Crawler</a></li><li><a href="#Database">Database</a></li><li><a href="#Server">Server</a></li><li><a href="#WebUI">WebUI</a></li></ul><p><a href="#Installation"><strong>Installation</strong></a></p>
 <p><a href="#Usage"><strong>Usage</strong></a></p>
 <p><a href="#FAQ"><strong>FAQ</strong></a></p>
 
@@ -1031,6 +1031,59 @@ Most metadata will be in the field &quot;metadata&quot;, which is a list of &quo
     limitFetchingSize: Limits how many files will <span class="hljs-keyword">get</span> fetched <span class="hljs-keyword">by</span> <span class="hljs-keyword">the</span> search.</pre><h2 id="web-user-interface">Web User Interface</h2>
 <p>Using the Web UI a User can send queries in GraphQL syntax, but it also provides a form query, where different search options
 can be used without knowing GraphQL syntax. More information about the Web UI can be found in its own documentation page.</p>
+<p class="page" id="WebUI"></p><h1>WebUI</h1>
+<h2 id="form-query">Form-Query</h2>
+<p>Here you can use a special form to ask for the file-data. You can use there advanced filters and limit the json-output to metadata which you are interessted in. </p>
+<p><strong>The following Inputs are possible:</strong></p>
+<p><a href="https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/images/webui/webui-form-example.png"><img src="https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/images/webui/webui-form-example.png" /></a></p>
+<ul>
+<li><strong>Query-Name:</strong> <em>A name for the query, to find this executed query later easier</em></li>
+<li><strong>Owner:</strong> <em>A name of the owner, which is saved along the name, to see who executed the query</em></li>
+</ul>
+<p><em>The following fields are for limiting the resultset related to different datetimes, the files have</em></p>
+<ul>
+<li><strong>Start-DateTime (File created)</strong></li>
+<li><strong>End-DateTime (File created)</strong></li>
+<li><strong>Start-DateTime (File modified)</strong></li>
+<li><p><strong>End-DateTime (File modified)</strong></p>
+</li>
+<li><p><strong>Limit:</strong> <em>The result contains at maximum limit entries. No input means all entries.</em></p>
+</li>
+</ul>
+<p><strong>Filter (List):</strong></p>
+<ul>
+<li><strong>Filter-Function:</strong> <em>The filter function which take place</em><ul>
+<li><strong>Pattern included:</strong> <em>The attribut-value must contain the value</em></li>
+<li><strong>Pattern excluded:</strong> <em>The attribut-value may not contain the value</em></li>
+<li><strong>Equal:</strong> <em>The attribut-value must be exaclty the value</em></li>
+<li><strong>Exists (Attribute):</strong> <em>The attribut have to exists.</em></li>
+<li><strong>Greater Than:</strong> <em>The attribut-value must be greater than value</em></li>
+<li><strong>Lower Than:</strong> <em>The attribut-value must be lower than value</em></li>
+</ul>
+</li>
+</ul>
+<p><a href="https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/gifs/webui/filter-webui.gif">See an Example from the filter</a></p>
+<p><strong>Which Attributes (List):</strong></p>
+<ul>
+<li><strong>Attribute:</strong> <em>Here you can insert the Name of an attribute</em></li>
+</ul>
+<p><a href="https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/gifs/webui/which-attributes.gif">See an Example from the attribute-selection</a></p>
+<p>If you press the send-button the form-data are converted to a <em>GraphQL-Query</em> in the background. It is sended and you get the result as json. You also can introspect the <em>GraphQL-Query</em>, send the query to the <em>GraphiQL-Console</em> for better formatting and changing the query with the help of the <em>GraphiQl-console</em>. You also have the possibility to clear the whole form.</p>
+<h2 id="hash-query">Hash Query</h2>
+<p>Here you can enter a <em>file-hash</em>. If it is in the database, you get all informations about that file. You get all meta-data. Also you get some informations about the <em>path</em> and the <em>crawl</em>, which scanned the file.</p>
+<h2 id="graphql-query">GraphQl-Query</h2>
+<p>Here you can enter <em>GraphQL-Code</em> and execute it. The result is in json.</p>
+<h1 id="graphiql">GraphiQl</h1>
+<h2 id="graphiql-console">GraphiQl-Console</h2>
+<p>Here you can use the <em>GraphiQl-Console</em>. It&#39;s a editor, where you can enter your GraphQl-Code. Its highlighted.
+More options you have there:</p>
+<ul>
+<li><strong>Get more informations about our used graphQl-Endpoint in the Docu</strong>. (You have to click to the Docu-Button)</li>
+<li><strong>You can re-exucute old queries. They are cached locally on your computer.</strong></li>
+<li><strong>Pretify your entered graphql-code.</strong></li>
+<li><strong>Execute the graphql-code and get the result as json.</strong></li>
+</ul>
+<p>More informations about GraphQl and GraphiQL you can find in the <a href="#Server">server-section</a>.</p>
 <p class="page" id="Installation"></p><h1><strong>Installation</strong></h1>
 <p>This chapter will show you how to install the software requirements
 and the Metadata-Hub application.
