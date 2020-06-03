@@ -1,4 +1,4 @@
-##Database
+## Database
 All file metadata analyzed by the crawler gets inserted in a [PostgreSQL](https://www.postgresql.org/) Database.
 Also information about the crawls started by the crawler Component is stored in the database.
 
@@ -16,7 +16,7 @@ Default setup:
 
  If another setup wants to be used metadata-hub/configs need to be adapted.
 
-#####Loading the Schemata:
+##### Loading the Schemata:
 psql command for Linux
 ```console
 psql metadatahub -Umetadatahub -W -f metadatahub-schemata.sql
