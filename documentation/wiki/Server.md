@@ -53,7 +53,7 @@ Most metadata will be in the field "metadata", which is a list of "Metadatum" Ob
 
 [![Ooops, there should be an image :(](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/Metadatum.PNG?raw=true)](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/Metadatum.PNG?raw=true)
 
-"Metadatum" is the object types that represents one metadatum of a file.
+"Metadatum" is the object type that represents one metadatum of a file.
 #### searchForFileMetadata()
 [![Ooops, there should be an image :(](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/searchForMetadata().PNG?raw=true)](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/searchForMetadata().PNG?raw=true)
 
