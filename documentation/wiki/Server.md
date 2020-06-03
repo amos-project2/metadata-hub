@@ -1,5 +1,5 @@
 # Server
-This component uses [GraphQL-Java](https://graphql-jave.com) to query the postgreSQL database for file metadata information.
+This component uses [GraphQL-Java](https://graphql-java.com) to query the postgreSQL database for file metadata information.
 User can directly interact with the API or use the Web User Interface to retrieve metadata information.
 
 ## Application Programming Interface
@@ -25,5 +25,7 @@ in which fields of metadata we are interested in, in our example that is the nam
 A more complicated GraphQL query looks like this:
 
 ## Web User Interface
+Using the Web UI a User can send queries in GraphQL syntax, but it also provides a form query, where different search options
+can be used without knowing GraphQL syntax. More information about the Web UI can be found in its own documentation page.
 
 
