@@ -5,6 +5,7 @@ import {FormQueryEditor} from "./query/FormQueryEditor";
 import {GraphqlQueryEditor} from "./query/GraphqlQueryEditor";
 import {CrawlerConfig} from "./crawler/CrawlerConfig";
 import {HashQuery} from "./query/HashQuery";
+import {Blub} from "./crawler/Blub";
 
 class NavElement {
     constructor(name, selectorName, contentLoader) {
@@ -84,6 +85,7 @@ export class Template {
             n.addOneNavElement(new NavElement("Form-Query", "form-query", new FormQueryEditor(thisdata, "form-query")));
             n.addOneNavElement(new NavElement("Hash Query", "hash-query", new HashQuery(thisdata, "hash-query")));
             n.addOneNavElement(new NavElement("GraphQL-Query", "graphql-query", new GraphqlQueryEditor(thisdata, "graphql-query")));
+            n.addOneNavElement(new NavElement("BLUB", "blub", new Blub(thisdata, "blub")));
 
         });
 
@@ -197,7 +199,7 @@ export class Template {
       <div class="list-group list-group-flush">
         <a href="#" class="list-group-item list-group-item-action bg-light nav-query xnav_query">Query</a>
         <a href="#" class="list-group-item list-group-item-action bg-light nav-graphiql xnav_graphiql">GraphiQl</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-crawler xnav_crawler" style="display: none">Crawler</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light nav-crawler xnav_crawler">Crawler</a>
         <a href="#" class="list-group-item list-group-item-action bg-light nav-status xnav_status" style="display:none">Status</a>
         <a href="#" class="list-group-item list-group-item-action bg-light nav-help xnav_help" style="display:none">Help</a>
         <a href="#" class="list-group-item list-group-item-action bg-light nav-about xnav_about" style="display:none">About</a>

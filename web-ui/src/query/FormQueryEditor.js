@@ -176,7 +176,7 @@ ${this.getModalCode()}
         $(".open-query").click(function () {
 
             $("#graphql-code-content").text(thisdata.buildAndGetGraphQlQuery());
-            $('#graphql-modal').modal()
+            $('#graphql-modal').modal();
 
         });
 

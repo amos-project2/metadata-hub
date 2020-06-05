@@ -35,7 +35,10 @@ public class JerseyServer
         BASE_URI = UriBuilder.fromUri("http://" + config.getProperty("server-host") + "/")
             .port(Integer.parseInt(config.getProperty("server-port"))).build();
         this.graphQL = graphQl;
-        resourceConfig = new ResourceConfig(MainController.class);
+       // resourceConfig = new ResourceConfig(MainController.class);
+        resourceConfig = new ResourceConfig();
+        resourceConfig.register(new MainController());
+
         resourceConfig.register(ErrorHandler.class);
         this.server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, resourceConfig, false);
     }
