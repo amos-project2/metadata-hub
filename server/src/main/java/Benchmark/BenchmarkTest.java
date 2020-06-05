@@ -1,27 +1,15 @@
 package Benchmark;
 
-import Model.File;
-import Model.Metadatum;
 import Start.Registry;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zaxxer.hikari.HikariDataSource;
-import lombok.SneakyThrows;
-import org.jooq.tools.json.JSONArray;
-import org.jooq.tools.json.JSONObject;
-import org.jooq.tools.json.JSONParser;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Map;
 
 public class BenchmarkTest
 {

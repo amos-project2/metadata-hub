@@ -1,8 +1,8 @@
 package GraphQL;
 
 import Database.DatabaseProvider;
-import Model.Metadatum;
-import Model.File;
+import GraphQL.Model.Metadatum;
+import GraphQL.Model.File;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zaxxer.hikari.HikariDataSource;
 import graphql.schema.DataFetcher;
@@ -26,14 +26,9 @@ public class GraphQLDataFetchers
 
     /**
      * Data Fetcher is used by this GraphQL Query:
-     * searchForPattern(pattern: String!, option: PatternOption!) : [File]
+     * searchForPattern(options...) : [File]
      *
-     * Function:
-     * If option == included: Searches for all files with "pattern" in their pathname
-     * If option == excluded: Searches for all files without "pattern" in their pathname
-     *
-     * Options:
-     * sel_attributes: If specified, fetches solely the selected attributes
+     * Concrete method description can be find in the schema.graphqls
      */
     @SuppressWarnings({"rawtypes"})
     public DataFetcher searchForFileMetadataFetcher()
@@ -46,216 +41,9 @@ public class GraphQLDataFetchers
 
             final ArrayList<String> selected_attributes = dataFetchingEnvironment.getArgument("selected_attributes");
 
-            String sqlQuery = buildSQLQuery(graphQLArguments);
+            String sqlQuery = PreparedStatementCreator.buildSQLQuery(graphQLArguments);
             return queryDatabase(sqlQuery, selected_attributes);
         };
-    }
-
-    @SuppressWarnings("unchecked")
-    private String buildSQLQuery(Map<String, Object> graphQLArguments){
-
-        //TODO SQLInjection Prevention is needed!
-        //TODO Don't select every field only the wanted ones (SELECT *) -> (SELECT id, metadata...)
-        StringBuilder stringBuilder = new StringBuilder("Select * From public.files ");
-        if (graphQLArguments.size() > 0) {
-            stringBuilder.append("WHERE ");
-        } else {
-            return stringBuilder.toString();
-        }
-
-        if(graphQLArguments.containsKey("file_ids")){
-            List<Integer> file_ids = (List<Integer>) graphQLArguments.get("file_ids");
-            stringBuilder.append(" (");
-            for (int file_id : file_ids){
-                stringBuilder.append(" id = ").append(file_id).append(" OR ");
-            }
-            stringBuilder.append("FALSE ) AND ");
-        }
-
-        if(graphQLArguments.containsKey("crawl_ids")){
-            List<Integer> crawl_ids = (List<Integer>) graphQLArguments.get("crawl_ids");
-            stringBuilder.append(" (");
-            for (Integer crawl_id : crawl_ids){
-                stringBuilder.append(" crawl_id = ").append(crawl_id).append(" OR ");
-            }
-            stringBuilder.append("FALSE ) AND ");
-        }
-
-        if(graphQLArguments.containsKey("dir_path")){
-            String dir_path = (String) graphQLArguments.get("dir_path");
-            if(graphQLArguments.containsKey("dir_path_option")){
-                String dir_path_option = (String) graphQLArguments.get("dir_path_option");
-                switch (dir_path_option) {
-                    case "equal":
-                        stringBuilder.append(" dir_path = '").append(dir_path).append("' AND ");
-                        break;
-                    case "included":
-                        stringBuilder.append(" dir_path LIKE '%").append(dir_path).append("%' AND ");
-                        break;
-                    case "excluded":
-                        stringBuilder.append(" dir_path NOT LIKE '%").append(dir_path).append("%' AND ");
-                        break;
-                    case "bigger":
-                        stringBuilder.append(" dir_path > '").append(dir_path).append("' AND ");
-                        break;
-                    case "smaller":
-                        stringBuilder.append(" dir_path < '").append(dir_path).append("' AND ");
-                        break;
-                    case "exists":
-                        stringBuilder.append(" dir_path IS NOT NULL AND");
-                        break;
-                }
-            }else{
-                stringBuilder.append(" dir_path LIKE '%").append(dir_path).append("%' AND ");
-            }
-        }
-
-        if(graphQLArguments.containsKey("file_name")){
-            String file_name = (String) graphQLArguments.get("file_name");
-            if(graphQLArguments.containsKey("file_name_option")){
-                String file_name_option = (String) graphQLArguments.get("file_name_option");
-                switch (file_name_option) {
-                    case "equal":
-                        stringBuilder.append(" name = '").append(file_name).append("' AND ");
-                        break;
-                    case "included":
-                        stringBuilder.append(" name LIKE '%").append(file_name).append("%' AND ");
-                        break;
-                    case "excluded":
-                        stringBuilder.append(" name NOT LIKE '%").append(file_name).append("%' AND ");
-                        break;
-                    case "bigger":
-                        stringBuilder.append(" name < '").append(file_name).append("' AND ");
-                        break;
-                    case "smaller":
-                        stringBuilder.append(" name > '").append(file_name).append("' AND ");
-                        break;
-                    case "exists":
-                        stringBuilder.append(" dir_path IS NOT NULL AND");
-                        break;
-                }
-            }else{
-                stringBuilder.append(" name LIKE '%").append(file_name).append("%' AND ");
-            }
-        }
-
-        if(graphQLArguments.containsKey("file_type")){
-            stringBuilder.append(" type = '").append(graphQLArguments.get("file_type")).append("' AND ");
-        }
-
-        if(graphQLArguments.containsKey("size")){
-            Integer size = (Integer) graphQLArguments.get("size");
-            if(graphQLArguments.containsKey("size_option")){
-                String size_option = (String) graphQLArguments.get("size_option");
-                switch (size_option) {
-                    case "equal":
-                        stringBuilder.append(" size = ").append(size).append(" AND ");
-                        break;
-                    case "bigger":
-                        stringBuilder.append(" size > ").append(size).append(" AND ");
-                        break;
-                    case "smaller":
-                        stringBuilder.append(" size < ").append(size).append(" AND ");
-                        break;
-                }
-            }else{
-                stringBuilder.append(" size = ").append(graphQLArguments.get("size")).append(" AND ");
-            }
-        }
-
-        if(graphQLArguments.containsKey("start_creation_time")) {
-            stringBuilder.append(" creation_time >= '").append(graphQLArguments.get("start_creation_time")).append("' AND ");
-        }
-
-        if(graphQLArguments.containsKey("end_creation_time")) {
-            stringBuilder.append(" creation_time < '").append(graphQLArguments.get("end_creation_time")).append("' AND ");
-        }
-
-        if(graphQLArguments.containsKey("start_access_time")) {
-            stringBuilder.append(" access_time >= '").append(graphQLArguments.get("start_access_time")).append("' AND ");
-        }
-
-        if(graphQLArguments.containsKey("end_access_time")) {
-            stringBuilder.append(" access_time < '").append(graphQLArguments.get("end_access_time")).append("' AND ");
-        }
-
-        if(graphQLArguments.containsKey("start_modification_time")) {
-            stringBuilder.append(" modification_time >= '").append(graphQLArguments.get("start_modification_time")).append("' AND ");
-        }
-
-        if(graphQLArguments.containsKey("end_modification_time")) {
-            stringBuilder.append(" modification_time < '").append(graphQLArguments.get("end_modification_time")).append("' AND ");
-        }
-
-        if(graphQLArguments.containsKey("file_hashes")){
-            List<String> file_hashes = (List<String>) graphQLArguments.get("file_hashes");
-            stringBuilder.append(" (");
-            for (String file_hash : file_hashes){
-                stringBuilder.append(" file_hash = '").append(file_hash).append("' OR ");
-            }
-            stringBuilder.append("FALSE ) AND ");
-        }
-
-        //METADATA
-        //TODO Maybe there is a more beautiful solution using GraphQL, than using 3 separate lists
-        if(graphQLArguments.containsKey("metadata_attributes") && graphQLArguments.containsKey("metadata_values")){
-            List<String> metadata_attributes = (List<String>) graphQLArguments.get("metadata_attributes");
-            List<String> metadata_values = (List<String>) graphQLArguments.get("metadata_values");
-            if(metadata_attributes.size() == metadata_values.size()){
-                if(graphQLArguments.containsKey("metadata_options")){
-                    List<String> metadata_options = (List<String>) graphQLArguments.get("metadata_options");
-                    if(metadata_options.size() == metadata_values.size()){
-                        for(int i = 0; i < metadata_attributes.size(); i++){
-                            String metadata_option = metadata_options.get(i);
-                            switch (metadata_option){
-                                case "equal":
-                                    stringBuilder.append("(CASE WHEN metadata ->> '").append(metadata_attributes.get(i))
-                                .append("' IS NOT NULL THEN metadata ->> '").append(metadata_attributes.get(i))
-                                        .append("'::text = '").append(metadata_values.get(i)). append("' ELSE TRUE END) AND ");
-                                    break;
-                                case "included":
-                                    stringBuilder.append("(CASE WHEN metadata ->> '").append(metadata_attributes.get(i))
-                                .append("' IS NOT NULL THEN metadata ->> '").append(metadata_attributes.get(i))
-                                        .append("'::text LIKE '%").append(metadata_values.get(i)). append("%' ELSE TRUE END) AND ");
-                                    break;
-                                case "excluded":
-                                    stringBuilder.append("(CASE WHEN metadata ->> '").append(metadata_attributes.get(i))
-                                .append("' IS NOT NULL THEN metadata ->> '").append(metadata_attributes.get(i))
-                                        .append("'::text NOT LIKE '%").append(metadata_values.get(i)). append("%' ELSE TRUE END) AND ");
-                                    break;
-                                case "bigger":
-                                    stringBuilder.append("(CASE WHEN metadata ->> '").append(metadata_attributes.get(i))
-                                .append("' IS NOT NULL THEN metadata ->> '").append(metadata_attributes.get(i))
-                                        .append("'::text > '").append(metadata_values.get(i)).append("' ELSE TRUE END) AND ");
-                                    break;
-                                case "smaller":
-                                    stringBuilder.append("(CASE WHEN metadata ->> '").append(metadata_attributes.get(i))
-                                .append("' IS NOT NULL THEN metadata ->> '").append(metadata_attributes.get(i))
-                                        .append("'::text < '").append(metadata_values.get(i)).append("' ELSE TRUE END) AND ");
-                                    break;
-                                case "exists":
-                                    stringBuilder.append(" metadata ->> '").append(metadata_attributes.get(i))
-                                    .append("' IS NOT NULL AND ");
-                                    break;
-                            }
-                        }
-                    }
-                }else{
-                    for(int i = 0; i < metadata_attributes.size(); i++){
-                        stringBuilder.append("(CASE WHEN metadata ->> '").append(metadata_attributes.get(i))
-                    .append("' IS NOT NULL THEN metadata ->> '").append(metadata_attributes.get(i))
-                            .append("'::text LIKE '%").append(metadata_values.get(i)). append("%' ELSE TRUE END) AND ");
-                    }
-                }
-            }
-        }
-
-            stringBuilder.append(" TRUE");
-
-        if(graphQLArguments.containsKey("limitFetchingSize")) {
-            stringBuilder.append(" FETCH FIRST ").append(graphQLArguments.get("limitFetchingSize")).append(" ROWS ONLY");
-        }
-        return stringBuilder.toString();
     }
 
     @SuppressWarnings("unchecked")
