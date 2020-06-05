@@ -47,7 +47,7 @@ public class GraphQLProvider
     {
         return RuntimeWiring.newRuntimeWiring()
             .type(newTypeWiring("Query")
-                .dataFetcher(GraphQLSchemaDefinition.QUERY_NAME, graphQLDataFetchers.searchForFileMetadataFetcher()))
+                .dataFetcher("searchForFileMetadata", graphQLDataFetchers.searchForFileMetadataFetcher()))
 
             .build();
     }
