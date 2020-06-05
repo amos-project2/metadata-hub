@@ -21,8 +21,10 @@ In the curly brackets there are even more fields, like name, id, metadata, they 
 "metadata" is a field of "File" but its a object on its own so we have to define again
 in which fields of metadata we are interested in, in our example that is the name and value field.
 ```
+
 A more complicated GraphQL query looks like this:
 [![Ooops, there should be an image :(](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/complicated_graphQL.PNG?raw=true)](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/complicated_graphQL.PNG?raw=true)
+
 ```
 Now our new query has 6 arguments.
 The values we have set for start_creation_time and end_creation_time only return files, which were exactly created at "2020-06-02 03:05:45".
@@ -55,7 +57,7 @@ Most metadata will be in the field "metadata", which is a list of "Metadatum" Ob
 
 "Metadatum" is the object type that represents one metadatum of a file.
 #### searchForFileMetadata()
-[![Ooops, there should be an image :(](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/searchForMetadata().PNG?raw=true)](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/searchForMetadata().PNG?raw=true)
+[![Ooops, there should be an image :(](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/searchForMetadata.PNG?raw=true)](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/searchForMetadata.PNG?raw=true)
 
 "searchForFileMetadata()" is our only GraphQL query and it offers a lot of options to specify which file metadata we want to have returned.
 ```
