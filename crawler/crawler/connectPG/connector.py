@@ -53,12 +53,9 @@ class DatabaseConnection:
         curs = con.cursor()
         try:
             curs.execute(insert_cmd)
-        except Exception as e:
-            print(e)
+        except:
             self.dbConnectionPool.putconn(con)
-            print('Error execution the insert command')
-            print(insert_cmd)
-            return 0
+            raise
         try:
             dbID = curs.fetchone()[0]
         except:

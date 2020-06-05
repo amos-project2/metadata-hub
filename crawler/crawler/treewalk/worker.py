@@ -196,10 +196,11 @@ class Worker(Process):
         # create the default insert for the database
         insertin = ('INSERT INTO files '
                     '(crawl_id, dir_path, name, type, size, creation_time, access_time, modification_time, metadata'
-                    ', file_hash) ')
+                    ', file_hash) '
+                    'VALUES ')
         # create the value string with the tree walk id already inserted
-        value = (f'VALUES (\'{self._tree_walk_id}\', ')
-
+        value = (f'\'{self._tree_walk_id}\', ')
+        inserts = []
         for result in metadata:
             # get the exif output for file x
             values = self.createInsert(result, value)
@@ -207,7 +208,7 @@ class Worker(Process):
             # Check if result is valid
             if values == '0':
                 #TODO Remove debuging print
-                print('Can\'t insert element into database because a core value is missing')
+                print('Can\'t insert element into database because a core value is missing:')
                 print(result)
                 continue
             # compute the hash256 and add it to the values string
@@ -215,10 +216,25 @@ class Worker(Process):
                 bytes = file.read()
                 hash256 = hashlib.sha256(bytes).hexdigest()
 
-            # insert into the database
-            self.dbConnectionPool.insert_new_record(insertin + values + "'{}'".format(json.dumps(result)) + ', ' + f"'{hash256}'" + ')')
-            self.TRACER.add_node(result['Directory'])
+            # add the value string to the rest for insert batching
+            inserts.append(f'({values}\'{json.dumps(result)}\', \'{hash256}\')')
 
+        # insert into the database
+        try:
+            self.dbConnectionPool.insert_new_record(insertin + ','.join(inserts))
+            # TODO Add the tracing into table crawls here
+        except Exception as e:
+            # TODO Remove the print below after testing
+            print("There was an error inserting the batched results")
+            print(e)
+
+            # Try to insert each command indiviually and print out the problematic result
+            for insert in inserts:
+                try:
+                    self.dbConnectionPool.insert_new_record(insertin + insert)
+                except Exception as e:
+                    print('Unable to insert command:')
+                    print(e)
 
 
 
