@@ -29,7 +29,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 --
 -- TOC entry 2885 (class 0 OID 0)
 -- Dependencies: 2
--- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner:
 --
 
 COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
@@ -153,8 +153,8 @@ CREATE TABLE public.files (
     crawl_id bigint NOT NULL,
     dir_path text NOT NULL,
     name text NOT NULL,
-    type text NOT NULL,
-    size bigint NOT NULL,
+    type text,
+    size bigint,
     metadata jsonb NOT NULL,
     creation_time timestamp with time zone NOT NULL,
     access_time timestamp with time zone NOT NULL,
