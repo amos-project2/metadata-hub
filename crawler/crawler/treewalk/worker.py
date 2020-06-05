@@ -121,7 +121,7 @@ class Worker(Process):
             value (str): the fist part of the string
 
         Returns:
-            bool: string with the extracted values
+            str: string with the extracted values
 
         """
         # Make validity check (if any of these are missing, the element can't be inserted into the database)
@@ -185,30 +185,40 @@ class Worker(Process):
         pathEx = self._config.get_exiftool_executable()
         _logger.debug(f'Doing work ({self.pid}).')
 
-        # for directory in package:
-        #     values = f"('{self._tree_walk_id}', '{directory}', name, type, size, metadata)"
-        insertin = f"""INSERT INTO files (crawl_id, dir_path, name, type, size, creation_time, access_time, modification_time, metadata, file_hash) """
-        value = f"VALUES ('{self._tree_walk_id}', "
+        # Use the exiftool and create a json from the output for easier processing
         try:
             process = subprocess.Popen([f'{pathEx}', '-json', *package], stdout=subprocess.PIPE)
             metadata = json.load(process.stdout)
-            for result in metadata:
-                # get the values
-                values = self.createInsert(result, value)
-                if values == '0':
-                    #TODO Remove debuging print
-                    print('Can\'t insert element into database because a core value is missing')
-                    print(result)
-                    continue
-                # compute the hash256
-                with open(f"{result['Directory']}/{result['FileName']}", "rb") as file:
-                    bytes = file.read()
-                    hash256 = hashlib.sha256(bytes).hexdigest()
-                # insert into the database
-                self.dbConnectionPool.insert_new_record(insertin + values + "'{}'".format(json.dumps(result)) + ', ' + f"'{hash256}'" + ')')
-                self.TRACER.add_node(result['Directory'])
-        except Exception as e:
-            print(e)
+        except:
+            print(f'Error executing the exiftool in process {self.pid}')
+            return
+
+        # create the default insert for the database
+        insertin = ('INSERT INTO files '
+                    '(crawl_id, dir_path, name, type, size, creation_time, access_time, modification_time, metadata'
+                    ', file_hash) ')
+        # create the value string with the tree walk id already inserted
+        value = (f'VALUES (\'{self._tree_walk_id}\', ')
+
+        for result in metadata:
+            # get the exif output for file x
+            values = self.createInsert(result, value)
+            # TODO remove constraints in the database
+            # Check if result is valid
+            if values == '0':
+                #TODO Remove debuging print
+                print('Can\'t insert element into database because a core value is missing')
+                print(result)
+                continue
+            # compute the hash256 and add it to the values string
+            with open(f"{result['Directory']}/{result['FileName']}", "rb") as file:
+                bytes = file.read()
+                hash256 = hashlib.sha256(bytes).hexdigest()
+
+            # insert into the database
+            self.dbConnectionPool.insert_new_record(insertin + values + "'{}'".format(json.dumps(result)) + ', ' + f"'{hash256}'" + ')')
+            self.TRACER.add_node(result['Directory'])
+
 
 
 
