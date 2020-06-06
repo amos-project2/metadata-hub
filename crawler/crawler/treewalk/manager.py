@@ -106,13 +106,17 @@ class TreeWalkManager:
         # Create input values for the database insert
         dir_path = ", ".join([inputs['path'] for inputs in config.get_paths_inputs()])
         crawl_config = json.dumps(config._data)
-        analyzedDirectories = json.dumps({})
+        #analyzedDirectories = json.dumps({})
+        analyzedDirectories = json.dumps({"analyzed directories": []})
         # Write the initial entry into the database
+        # start = f"""INSERT INTO crawls (dir_path, name, status, crawl_config, analyzed_dirs, starting_time)
+        #             VALUES('{dir_path}', '---', 'Running', '{crawl_config}', '{analyzedDirectories}', '{datetime.now()}')
+        #             RETURNING id"""
         start = f"""INSERT INTO crawls (dir_path, name, status, crawl_config, analyzed_dirs, starting_time)
-                    VALUES('{dir_path}', '---', 'Running', '{crawl_config}', '{analyzedDirectories}', '{datetime.now()}')
-                    RETURNING id"""
+                            VALUES('{dir_path}', '---', 'Running', '{crawl_config}', '{analyzedDirectories}', '{datetime.now()}')
+                            RETURNING id"""
         dbID = dbConnectionPool.insert_new_record(start)
-        dbConnectionPool.dbConnectionPool.closeall()
+        dbConnectionPool.con.close()
         for id_worker in range(number_of_workers):
             queue = Queue()
             command_queue = Queue()
@@ -128,7 +132,6 @@ class TreeWalkManager:
                 command_queue=command_queue,
                 config=config,
                 connectionInfo=connectionData,
-                #db_connection=dbConnectionPool,
                 tree_walk_id=dbID,
                 TRACER=TRACER
             )

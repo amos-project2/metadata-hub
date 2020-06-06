@@ -204,7 +204,6 @@ class Worker(Process):
         for result in metadata:
             # get the exif output for file x
             values = self.createInsert(result, value)
-            # TODO remove constraints in the database
             # Check if result is valid
             if values == '0':
                 #TODO Remove debuging print
@@ -215,14 +214,13 @@ class Worker(Process):
             with open(f"{result['Directory']}/{result['FileName']}", "rb") as file:
                 bytes = file.read()
                 hash256 = hashlib.sha256(bytes).hexdigest()
-
             # add the value string to the rest for insert batching
             inserts.append(f'({values}\'{json.dumps(result)}\', \'{hash256}\')')
 
         # insert into the database
         try:
             self.dbConnectionPool.insert_new_record(insertin + ','.join(inserts))
-            # TODO Add the tracing into table crawls here
+            self.dbConnectionPool.update_status(self._tree_walk_id, package)
         except Exception as e:
             # TODO Remove the print below after testing
             print("There was an error inserting the batched results")
