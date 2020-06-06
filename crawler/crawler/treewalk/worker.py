@@ -220,12 +220,12 @@ class Worker(Process):
         # insert into the database
         try:
             self.dbConnectionPool.insert_new_record(insertin + ','.join(inserts))
-            self.dbConnectionPool.update_status(self._tree_walk_id, package)
+            try:
+                self.dbConnectionPool.update_status(self._tree_walk_id, package)
+            except:
+                print("Error updating the database.")
         except Exception as e:
-            # TODO Remove the print below after testing
-            print("There was an error inserting the batched results")
-            print(e)
-
+            print("There was an error inserting the batched results,\nInserting results individually.")
             # Try to insert each command indiviually and print out the problematic result
             for insert in inserts:
                 try:
@@ -233,6 +233,10 @@ class Worker(Process):
                 except Exception as e:
                     print('Unable to insert command:')
                     print(e)
+            try:
+                self.dbConnectionPool.update_status(self._tree_walk_id, package)
+            except:
+                print("Error updating the database.")
 
 
 

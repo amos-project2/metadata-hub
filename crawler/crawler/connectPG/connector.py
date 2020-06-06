@@ -79,11 +79,8 @@ class DatabaseConnection:
         """Updates a row in table crawls according to the tree walk progress.
 
         Args:
-            table (str): table to update
-            row (int): id of the row
-            condition (List[str]): list of conditions that need to be fullfilled
-            value (str): The value in the table that needs to be updated
-            newValue: The value to write into the new row
+            crawlID (int): id of the row to be updated
+            package (List[str]): Directories the treewalk has handled
         """
         curs = self.con.cursor()
         get_current = ('SELECT * '
