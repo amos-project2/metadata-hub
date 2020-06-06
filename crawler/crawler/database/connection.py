@@ -10,7 +10,6 @@ from typing import List
 
 # 3rd party modules
 import psycopg2
-import psycopg2.pool
 
 
 # Local imports
@@ -23,21 +22,18 @@ _logger = logging.getLogger(__name__)
 class DatabaseConnection:
 
 
-    def __init__(self, db_info: dict, num_connections: int = 1) -> None:
+    def __init__(self, db_info: dict) -> None:
         """Initialize the connection to Postgre Database.
 
         Args:
             db_info (dict): connection data of the database
-            num_connections (int): number of connections of the pool
 
         Raises:
             VallueError: when creating the connection failed
 
         """
         try:
-            self._connection_pool = psycopg2.pool.SimpleConnectionPool(
-                1,
-                num_connections,
+            self.con = psycopg2.connect(
                 user=db_info['user'],
                 password=db_info['password'],
                 host=db_info['host'],
@@ -48,40 +44,68 @@ class DatabaseConnection:
             raise ValueError(f'Database initialization error: {err}')
 
 
-    def insert_new_record(self, insert_cmd: str) -> int:
-        """Execute a SQL command.
+    def update_status(self, crawlID:int, package:List[str]):
+        """Updates a row in table crawls according to the tree walk progress.
 
         Args:
-            cmd (str): a single command to execute
+            crawlID (int): id of the row to be updated
+            package (List[str]): Directories the treewalk has handled
+        """
+        curs = self.con.cursor()
+        get_current = ('SELECT * '
+                      'FROM crawls '
+                      f'WHERE id = {crawlID}')
 
-        Returns:
-            int: 0 on error,
+        curs.execute(get_current)
+        get = curs.fetchone()
+        get[5]["analyzed directories"].extend(package)
+        update_dirs = ('UPDATE crawls '
+                       f'SET analyzed_dirs = \'{json.dumps(get[5])}\', update_time = \'{datetime.now()}\''
+                       f'WHERE id = {crawlID}')
+        curs.execute(update_dirs)
+        curs.close()
+        self.con.commit()
+
+        return
+
+
+    def insert_new_record(self, insert_cmd: str) -> int:
+        """Insert a new record to a row in connected database.
+
+        Args:
+            insert_cmd (dict): a single INSERT query to Postgres database
 
         """
-        con = self._connection_pool.getconn()
-        curs = con.cursor()
+        curs = self.con.cursor()
         try:
             curs.execute(insert_cmd)
-        except Exception as err:
-            _logger.error(f'Failed inserting new record. ') # FIXME Add {err} agina
-            self._connection_pool.putconn(con)
-            return 0
+        except:
+            raise
         try:
             dbID = curs.fetchone()[0]
         except:
             dbID = 0
         curs.close()
-        con.commit()
-        self._connection_pool.putconn(con)
+        self.con.commit()
         return dbID
 
 
-    def insert_crawl(self, config: Config, analyzed_dirs: List[str] = []) -> int:
+    def insert_crawl(self, config: Config) -> int:
+        """TODO: Add docstring
+
+        Args:
+            config (Config): [description]
+            analyzed_dirs (List[str], optional): [description]. Defaults to [].
+
+        Returns:
+            int: [description]
+
+        """
         crawl_config = json.dumps(config.get_data())
         dir_path = ', '.join(
             [inputs['path'] for inputs in config.get_paths_inputs()]
         )
-        analyzed_dirs = json.dumps(analyzed_dirs)
+        analyzed_dirs = json.dumps({"analyzed directories": []})
         starting_time = datetime.datetime.now()
         cmd = (
             f'INSERT INTO crawls '
@@ -90,41 +114,22 @@ class DatabaseConnection:
             f'\'{crawl_config}\', \'{analyzed_dirs}\', \'{starting_time}\')'
             f'RETURNING id'
         )
-        con = self._connection_pool.getconn()
-        curs = con.cursor()
+        curs = self.con.cursor()
         try:
             curs.execute(cmd)
-        except Exception as err:
-            self._connection_pool.putconn(con)
-            return 0
-        try:
-            db_id = curs.fetchone()[0]
         except:
-            db_id = 0
+            raise
+        try:
+            dbID = curs.fetchone()[0]
+        except:
+            dbID = 0
         curs.close()
-        con.commit()
-        self._connection_pool.putconn(con)
-        return db_id
+        self.con.commit()
+        return dbID
 
 
     def close(self) -> None:
         self._connection_pool.closeall()
-
-
-    def update_analyzed_dirs(
-            self,
-            tree_walk_id: int,
-            analyzed_dirs: List[str]
-    ) -> None:
-        """Update the analyzed directories for given crawl.
-
-        # TODO TREEWALK - Implement me :)
-
-        Args:
-            tree_walk_id (int): ID of the TreeWalk execution
-            analyzed_dirs (List[str]): list of processed directories
-        """
-        pass
 
 
     def set_crawl_state(

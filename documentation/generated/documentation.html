@@ -710,7 +710,7 @@ if("undefined"==typeof jQuery)throw new Error("Bootstrap's JavaScript requires j
 <p><a href="#About"><strong>About</strong></a></p>
 <p><a href="#Architecture"><strong>Architecture</strong></a></p>
 <p><a href="#Documentation"><strong>Documentation</strong></a></p>
-<ul class="nav"><li class="active"><a href="#Crawler">Crawler</a></li><li><a href="#Database">Database</a></li><li><a href="#Server">Server</a></li></ul><p><a href="#Installation"><strong>Installation</strong></a></p>
+<ul class="nav"><li class="active"><a href="#Crawler">Crawler</a></li><li><a href="#Database">Database</a></li><li><a href="#Server">Server</a></li><li><a href="#WebUI">WebUI</a></li></ul><p><a href="#Installation"><strong>Installation</strong></a></p>
 <p><a href="#Usage"><strong>Usage</strong></a></p>
 <p><a href="#FAQ"><strong>FAQ</strong></a></p>
 
@@ -899,17 +899,191 @@ and exit the crawler process.</p>
 </li>
 </ul>
 <p class="page" id="Database"></p><h1>Database</h1>
+<h2 id="database">Database</h2>
+<p>All file metadata analyzed by the crawler gets inserted in a <a href="https://www.postgresql.org/">PostgreSQL</a> Database.
+Also information about the crawls started by the crawler Component is stored in the database.</p>
+<h3 id="database-setup">Database Setup</h3>
+<ol>
+<li>Create the Database Role or Import the Database (/metadatahub/metadatahub-role.sql)</li>
+<li>Create the Database or Import the Database (/metadatahub/metadatahub-database.sql)</li>
+<li>Import the Schemata</li>
+</ol>
+<p>Default setup:</p>
 <ul>
-<li>Include a more detailed information about the server component</li>
-<li>Do not reference code, but focus on the major functionality</li>
-<li>For example a further explanation of the API and how to use it</li>
+<li>&quot;database-name&quot;: &quot;metadatahub&quot;,</li>
+<li>&quot;database-host&quot;: &quot;localhost&quot;,</li>
+<li>&quot;database-port&quot;: 5432,</li>
+<li>&quot;database-user&quot;: &quot;metadatahub&quot;,</li>
+<li><p>&quot;database-password&quot;: &quot;metadatahub&quot;,</p>
+<p>If another setup wants to be used metadata-hub/configs need to be adapted.</p>
+</li>
+</ul>
+<h5 id="loading-the-schemata-">Loading the Schemata:</h5>
+<p>psql command for Linux</p>
+<pre class="hljs">psql metadatahub -Umetadatahub -W -f metadatahub-schemata.sql</pre><p>psql command for Windows</p>
+<pre class="hljs">metadata=&gt; \i c:/dir/dir/metadatahub-schemata.sql</pre><h3 id="database-schemata">Database-Schemata</h3>
+<p>The database uses two tables.</p>
+<ul>
+<li>The &quot;crawls&quot; table saves information about started crawls/tree_walks.</li>
+<li>The &quot;files&quot; table saves information about all analyzed file metadata, most metadata information lands in the jsonb-File &quot;metadata&quot;.<h5 id="crawls">crawls</h5>
+<a href="https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/Database/database_crawls.JPG?raw=true"><img src="https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/Database/database_crawls.JPG?raw=true" /></a><pre class="hljs">id<span class="hljs-function"><span class="hljs-params">(bigint)</span>                -&gt;</span> primary key (uses autoincrement sequence)
+dir_path<span class="hljs-function"><span class="hljs-params">(text)</span>            -&gt;</span> starting directory <span class="hljs-keyword">of</span> the crawl
+name<span class="hljs-function"><span class="hljs-params">(text)</span>                -&gt;</span> specified name <span class="hljs-keyword">of</span> the crawler
+status<span class="hljs-function"><span class="hljs-params">(text)</span>              -&gt;</span> status <span class="hljs-keyword">of</span> the crawl (running, finished, suspended, abborted, ...)
+crawl_config<span class="hljs-function"><span class="hljs-params">(text)</span>        -&gt;</span> latest used crawl_config <span class="hljs-keyword">by</span> the crawl, only <span class="hljs-keyword">for</span> user-presentation purposes
+analyzed_dirs<span class="hljs-function"><span class="hljs-params">(jsonb)</span>      -&gt;</span> array <span class="hljs-keyword">of</span> currently analyzed dirs at <span class="hljs-string">"update_time"</span>
+starting_time<span class="hljs-function"><span class="hljs-params">(date)</span>       -&gt;</span> start time <span class="hljs-keyword">of</span> the crawler job
+finished_time<span class="hljs-function"><span class="hljs-params">(date)</span>       -&gt;</span> the end <span class="hljs-keyword">of</span> the first crawler-job
+update_time<span class="hljs-function"><span class="hljs-params">(date)</span>         -&gt;</span> time <span class="hljs-keyword">of</span> the latest update <span class="hljs-keyword">of</span> the crawl data
+analyzed_dirs_hash<span class="hljs-function"><span class="hljs-params">(text)</span>  -&gt;</span> sha-<span class="hljs-number">256</span> hash <span class="hljs-keyword">of</span> analyzed_dirs (uses trigger <span class="hljs-keyword">to</span> create hash <span class="hljs-literal">on</span> inserting <span class="hljs-keyword">and</span> updating)</pre><h5 id="files">files</h5>
+<a href="https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/Database/database_files.JPG?raw=true"><img src="https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/Database/database_files.JPG?raw=true" /></a><pre class="hljs"><span class="hljs-function"><span class="hljs-title">id</span><span class="hljs-params">(bigint)</span></span>                -&gt; primary key (uses autoincrement sequence)
+<span class="hljs-function"><span class="hljs-title">crawl_id</span><span class="hljs-params">(bigint)</span></span>          -&gt; foreign key <span class="hljs-string">"crawls.id"</span>
+<span class="hljs-function"><span class="hljs-title">dir_path</span><span class="hljs-params">(text)</span></span>            -&gt; absolute path of the file
+<span class="hljs-function"><span class="hljs-title">name</span><span class="hljs-params">(text)</span></span>                -&gt; name of the file
+<span class="hljs-function"><span class="hljs-title">type</span><span class="hljs-params">(text)</span></span>                -&gt; type of the file
+<span class="hljs-function"><span class="hljs-title">size</span><span class="hljs-params">(bigint)</span></span>              -&gt; the size <span class="hljs-keyword">in</span> bytes
+<span class="hljs-function"><span class="hljs-title">metadata</span><span class="hljs-params">(jsonb)</span></span>           -&gt; metadata of the file
+<span class="hljs-function"><span class="hljs-title">creation_time</span><span class="hljs-params">(date)</span></span>       -&gt; <span class="hljs-selector-tag">time</span> the file was created
+<span class="hljs-function"><span class="hljs-title">access_time</span><span class="hljs-params">(date)</span></span>         -&gt; <span class="hljs-selector-tag">time</span> the file was last accessed
+<span class="hljs-function"><span class="hljs-title">modification_time</span><span class="hljs-params">(date)</span></span>   -&gt; <span class="hljs-selector-tag">time</span> the file was last modified
+<span class="hljs-function"><span class="hljs-title">file_hash</span><span class="hljs-params">(text)</span></span>           -&gt; sha-<span class="hljs-number">256</span> hash of the file</pre></li>
 </ul>
 <p class="page" id="Server"></p><h1>Server</h1>
+<h1 id="server">Server</h1>
+<p>This component uses <a href="https://graphql-java.com">GraphQL-Java</a> to query the postgreSQL database for file metadata information.
+User can directly interact with the API or use the Web User Interface to retrieve metadata information.</p>
+<h2 id="application-programming-interface">Application Programming Interface</h2>
+<p>The queries are sent to the http-server using the http POST method.
+Port and URI of the server are set by the configuration file (metdatahub/configs/environments.deployment.json).
+The default Port is 8080 and the default URI is localhost and the path to the http POST interface is &quot;/graphql&quot;.</p>
+<p>Using all that information we can now send GraphQL-queries to the server.
+When the server is running a GraphiQL test console can be found here: <a href="http://localhost:8080/testconsole/">http://localhost:8080/testconsole/</a>
+In the console we find information about the querys syntax and what it will retrieve.
+For the next two queries we will use the GraphiQL console to demonstrate GraphQL.</p>
 <ul>
-<li>Include a more detailed information about the server component</li>
-<li>Do not reference code, but focus on the major functionality</li>
-<li>For example a further explanation of the API and how to use it</li>
+<li>A very simple GraphQL query looks like this:
+<a href="https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/server/simple_graphQL.JPG?raw=true"><img src="https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/server/simple_graphQL.JPG?raw=true" /></a><pre class="hljs">On <span class="hljs-keyword">the</span> left side we can see <span class="hljs-keyword">the</span> query <span class="hljs-keyword">and</span> <span class="hljs-keyword">on</span> <span class="hljs-keyword">the</span> right <span class="hljs-keyword">the</span> <span class="hljs-literal">result</span>.
+The Query <span class="hljs-string">"searchForFileMetadata()"</span> has two Arguments, a <span class="hljs-built_in">list</span> <span class="hljs-keyword">of</span> <span class="hljs-built_in">file</span> ids <span class="hljs-keyword">and</span> a <span class="hljs-built_in">list</span> <span class="hljs-keyword">of</span> metadata attributes we want <span class="hljs-keyword">to</span> have returned.
+In <span class="hljs-keyword">the</span> curly brackets there are even more fields, like <span class="hljs-built_in">name</span>, <span class="hljs-built_in">id</span>, metadata, they are fields <span class="hljs-keyword">of</span> <span class="hljs-keyword">the</span> object <span class="hljs-string">"File"</span>
+<span class="hljs-keyword">and</span> they define how <span class="hljs-keyword">the</span> <span class="hljs-literal">result</span> will look like.
+<span class="hljs-string">"metadata"</span> <span class="hljs-keyword">is</span> a field <span class="hljs-keyword">of</span> <span class="hljs-string">"File"</span> <span class="hljs-keyword">but</span> <span class="hljs-keyword">its</span> a object <span class="hljs-keyword">on</span> <span class="hljs-keyword">its</span> own so we have <span class="hljs-keyword">to</span> define again
+<span class="hljs-keyword">in</span> which fields <span class="hljs-keyword">of</span> metadata we are interested <span class="hljs-keyword">in</span>, <span class="hljs-keyword">in</span> our example <span class="hljs-keyword">that</span> <span class="hljs-keyword">is</span> <span class="hljs-keyword">the</span> <span class="hljs-built_in">name</span> <span class="hljs-keyword">and</span> value field.</pre></li>
 </ul>
+<p>A more complicated GraphQL query looks like this:
+<a href="https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/complicated_graphQL.PNG?raw=true"><img src="https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/complicated_graphQL.PNG?raw=true" /></a></p>
+<pre class="hljs">Now our new query has 6 arguments.
+The <span class="hljs-keyword">values</span> we have <span class="hljs-keyword">set</span> <span class="hljs-keyword">for</span> start_creation_time <span class="hljs-keyword">and</span> end_creation_time <span class="hljs-keyword">only</span> <span class="hljs-keyword">return</span> files, which were exactly created <span class="hljs-keyword">at</span> <span class="hljs-string">"2020-06-02 03:05:45"</span>.
+The three lists metadata_attributes, metadata_values <span class="hljs-keyword">and</span> metadata_options <span class="hljs-keyword">are</span> related <span class="hljs-keyword">to</span> <span class="hljs-keyword">each</span> other.
+<span class="hljs-keyword">In</span> this example we look <span class="hljs-keyword">for</span> <span class="hljs-keyword">all</span> Files that have a metadata <span class="hljs-keyword">attribute</span> <span class="hljs-keyword">of</span> <span class="hljs-string">"ImageWidth"</span> that has a <span class="hljs-keyword">value</span> which <span class="hljs-keyword">is</span> smaller <span class="hljs-keyword">than</span> <span class="hljs-string">"4000"</span>.
+<span class="hljs-keyword">And</span> <span class="hljs-keyword">all</span> Files that have a <span class="hljs-string">"Filetype"</span> <span class="hljs-keyword">attribute</span> which have the pattern <span class="hljs-string">"GIF"</span> included <span class="hljs-keyword">in</span> their value.
+The <span class="hljs-keyword">list</span> <span class="hljs-keyword">of</span> selected_attributes specifies that we <span class="hljs-keyword">are</span> <span class="hljs-keyword">only</span> interested <span class="hljs-keyword">in</span> the metadata <span class="hljs-keyword">attributes</span> <span class="hljs-string">"ImageWidth"</span>, <span class="hljs-string">"Filter"</span> <span class="hljs-keyword">and</span> <span class="hljs-string">"Duration"</span>.
+Those <span class="hljs-keyword">are</span> the <span class="hljs-keyword">only</span> ones that <span class="hljs-keyword">are</span> returned <span class="hljs-keyword">to</span> us <span class="hljs-keyword">by</span> the query.
+
+The searchForFileMetadata <span class="hljs-keyword">query</span> <span class="hljs-keyword">returns</span> an <span class="hljs-keyword">Object</span> <span class="hljs-keyword">Type</span> named <span class="hljs-string">"File"</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">now</span> we have specified
+that the <span class="hljs-keyword">query</span> reutrns <span class="hljs-keyword">all</span> the <span class="hljs-keyword">fields</span> <span class="hljs-keyword">of</span> <span class="hljs-string">"File"</span>.
+(<span class="hljs-string">"id"</span>, <span class="hljs-string">"crawl_id"</span>, <span class="hljs-string">"dir_path"</span>, <span class="hljs-string">"name"</span>, <span class="hljs-string">"type"</span>, <span class="hljs-string">"creation_time"</span>, ... , <span class="hljs-string">"metadata"</span>)</pre><h3 id="graphql-schema">GraphQL Schema</h3>
+<p>Now we will take a closer look at the Graphl Schema which defines the syntax of our query.
+Only the most important information is displayed here.
+The exact schema can be found in /metadata-hub/server/src/main/resources/schema.graphqls</p>
+<h4 id="file">File</h4>
+<p><a href="https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/File.PNG?raw=true"><img src="https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/File.PNG?raw=true" /></a></p>
+<p>&quot;File&quot; is our object type which gets returned by searchForFileMeta and represent our files in the server. It has different fields which are also represented in some way in the database.
+Most metadata will be in the field &quot;metadata&quot;, which is a list of &quot;Metadatum&quot; Object Types. The &quot;Metadatum&quot; Object Type can be seen directly below.</p>
+<h4 id="metadatum">Metadatum</h4>
+<p><a href="https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/Metadatum.PNG?raw=true"><img src="https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/Metadatum.PNG?raw=true" /></a></p>
+<p>&quot;Metadatum&quot; is the object type that represents one metadatum of a file.</p>
+<h4 id="searchforfilemetadata-">searchForFileMetadata()</h4>
+<p><a href="https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/searchForMetadata.PNG?raw=true"><img src="https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/searchForMetadata.PNG?raw=true" /></a></p>
+<p>&quot;searchForFileMetadata()&quot; is our only GraphQL query and it offers a lot of options to specify which file metadata we want to have returned.</p>
+<pre class="hljs">searchForFileMetadata:
+    Searches <span class="hljs-keyword">for</span> all <span class="hljs-built_in">file</span> metadata dependent <span class="hljs-keyword">on</span> <span class="hljs-keyword">the</span> specified search options.
+    If no options are specified, all <span class="hljs-built_in">file</span> metadata <span class="hljs-keyword">is</span> returned.
+
+    Search Options:
+    file_id: Only returns <span class="hljs-built_in">file</span> metadata belonging <span class="hljs-keyword">to</span> one <span class="hljs-keyword">of</span> <span class="hljs-keyword">the</span> <span class="hljs-built_in">file</span> ids <span class="hljs-keyword">in</span> <span class="hljs-keyword">the</span> <span class="hljs-built_in">list</span>.
+    crawl_id: Only returns <span class="hljs-built_in">file</span> metadata belonging <span class="hljs-keyword">to</span> one <span class="hljs-keyword">of</span> <span class="hljs-keyword">the</span> crawl ids <span class="hljs-keyword">in</span> <span class="hljs-keyword">the</span> <span class="hljs-built_in">list</span>.
+    dir_path: Only returns <span class="hljs-built_in">file</span> metadata <span class="hljs-keyword">where</span> their directory path matches <span class="hljs-keyword">the</span> specified pattern.
+        Default PatternOption <span class="hljs-keyword">is</span> <span class="hljs-string">"included"</span>.
+    dir_path_option: Different PatternOptions can be used, which change how <span class="hljs-string">"dir_path"</span> gets compared <span class="hljs-keyword">to</span> other Strings.
+    file_name: Only returns <span class="hljs-built_in">file</span> metadata <span class="hljs-keyword">where</span> their file_name matches <span class="hljs-keyword">the</span> specified pattern.
+        Default PatternOption <span class="hljs-keyword">is</span> <span class="hljs-string">"included"</span>
+    file_name_option: Different PatternOptions can be used, which change how <span class="hljs-string">"file_name"</span> gets compared <span class="hljs-keyword">to</span> other Strings.
+    file_type: Only returns <span class="hljs-built_in">file</span> metadate <span class="hljs-keyword">where</span> <span class="hljs-keyword">the</span> <span class="hljs-built_in">file</span> type <span class="hljs-keyword">is</span> exactly <span class="hljs-string">"file_type"</span>
+    size: Only returns <span class="hljs-built_in">file</span> metadata <span class="hljs-keyword">of</span> a certain size depending <span class="hljs-keyword">on</span> <span class="hljs-keyword">the</span> used IntOption. Default IntOption <span class="hljs-keyword">is</span> <span class="hljs-string">"equal"</span>.
+    size_option: Here <span class="hljs-keyword">the</span> IntOption <span class="hljs-keyword">for</span> <span class="hljs-string">"size"</span> can be specified.
+    !Notice <span class="hljs-keyword">to</span> timestamps!: timestamps follow <span class="hljs-keyword">the</span> ISO <span class="hljs-number">8601</span> standard, e.g. <span class="hljs-string">"2004-10-19 10:23:54+02"</span>, <span class="hljs-keyword">if</span> no timezone <span class="hljs-keyword">is</span> specified
+        <span class="hljs-keyword">it</span> <span class="hljs-keyword">is</span> assumed <span class="hljs-keyword">to</span> be <span class="hljs-keyword">in</span> <span class="hljs-keyword">the</span> system's timezone, <span class="hljs-keyword">if</span> no <span class="hljs-built_in">time</span> <span class="hljs-keyword">is</span> specified <span class="hljs-string">"00:00:00"</span> <span class="hljs-keyword">is</span> used.
+    start_creation_time: Only returns <span class="hljs-built_in">file</span> metadata, which got created later <span class="hljs-keyword">or</span> <span class="hljs-keyword">at</span> <span class="hljs-keyword">the</span> same point <span class="hljs-keyword">as</span> <span class="hljs-string">"start_creation_time"</span>.
+    end_creation_time: Only returns <span class="hljs-built_in">file</span> metadata, which got created earlier than <span class="hljs-string">"end_creation_time"</span>.
+    start_access_time: Only returns <span class="hljs-built_in">file</span> metadata, which got accessed later <span class="hljs-keyword">or</span> <span class="hljs-keyword">at</span> <span class="hljs-keyword">the</span> same point <span class="hljs-keyword">as</span> <span class="hljs-string">"start_access_time"</span>.
+    end_access_time: Only returns <span class="hljs-built_in">file</span> metadata, which got accessed earlier than <span class="hljs-string">"end_access_time"</span>.
+    start_modification_time: Only returns <span class="hljs-built_in">file</span> metadata, which got modified later <span class="hljs-keyword">or</span> <span class="hljs-keyword">at</span> <span class="hljs-keyword">the</span> same point <span class="hljs-keyword">as</span> <span class="hljs-string">"start_modification_time"</span>.
+    end_modification_time: Only returns <span class="hljs-built_in">file</span> metadata, which got modified earlier than <span class="hljs-string">"end_modification_time"</span>.
+    file_hash: Only returns <span class="hljs-built_in">file</span> metadata <span class="hljs-keyword">where</span> <span class="hljs-keyword">the</span> <span class="hljs-built_in">file</span> has <span class="hljs-keyword">the</span> same sha_254 hash <span class="hljs-keyword">as</span> <span class="hljs-keyword">the</span> hashes <span class="hljs-keyword">in</span> <span class="hljs-keyword">the</span> <span class="hljs-built_in">list</span>.
+    metadata_attributes: (see <span class="hljs-keyword">in</span> metadata_values)
+    metadata_values: Only returns <span class="hljs-built_in">file</span> metadata, <span class="hljs-keyword">where</span> <span class="hljs-keyword">the</span> <span class="hljs-built_in">file</span> has <span class="hljs-keyword">the</span> attribute specified <span class="hljs-keyword">in</span>
+        metadata_attributes <span class="hljs-keyword">and</span> <span class="hljs-keyword">its</span> value matches <span class="hljs-keyword">the</span> value <span class="hljs-keyword">of</span> metadata_values. Different PatternOptions can be used.
+        Both lists have <span class="hljs-keyword">to</span> be <span class="hljs-keyword">the</span> same <span class="hljs-built_in">length</span> <span class="hljs-keyword">as</span> their ordering relates them <span class="hljs-keyword">to</span> each other.
+        Default PatternOption <span class="hljs-keyword">is</span> <span class="hljs-string">"included"</span>.
+    metadata_options: Different PatternOptions can be used <span class="hljs-keyword">for</span> metadata_values. The index <span class="hljs-keyword">in</span> metadata_option relates <span class="hljs-keyword">to</span> <span class="hljs-keyword">the</span> index
+        <span class="hljs-keyword">in</span> meta_data_values e.g. metadata_option[<span class="hljs-number">1</span>] will be used <span class="hljs-keyword">for</span> metadata_value[<span class="hljs-number">1</span>]. If used both lists need <span class="hljs-keyword">to</span> have <span class="hljs-keyword">the</span> same <span class="hljs-built_in">length</span>.
+    selected_attributes: For all <span class="hljs-built_in">file</span> metadata only <span class="hljs-keyword">the</span> specified metadata attributes are returned.
+    limitFetchingSize: Limits how many files will <span class="hljs-keyword">get</span> fetched <span class="hljs-keyword">by</span> <span class="hljs-keyword">the</span> search.</pre><h2 id="web-user-interface">Web User Interface</h2>
+<p>Using the Web UI a User can send queries in GraphQL syntax, but it also provides a form query, where different search options
+can be used without knowing GraphQL syntax. More information about the Web UI can be found in its own documentation page.</p>
+<p class="page" id="WebUI"></p><h1>WebUI</h1>
+<h2 id="form-query">Form-Query</h2>
+<p>Here you can use a special form to ask for the file-data. You can use there advanced filters and limit the json-output to metadata which you are interessted in. </p>
+<p><strong>The following Inputs are possible:</strong></p>
+<p><a href="https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/images/webui/webui-form-example.png"><img src="https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/images/webui/webui-form-example.png" /></a></p>
+<ul>
+<li><strong>Query-Name:</strong> <em>A name for the query, to find this executed query later easier</em></li>
+<li><strong>Owner:</strong> <em>A name of the owner, which is saved along the name, to see who executed the query</em></li>
+</ul>
+<p><em>The following fields are for limiting the resultset related to different datetimes, the files have</em></p>
+<ul>
+<li><strong>Start-DateTime (File created)</strong></li>
+<li><strong>End-DateTime (File created)</strong></li>
+<li><strong>Start-DateTime (File modified)</strong></li>
+<li><p><strong>End-DateTime (File modified)</strong></p>
+</li>
+<li><p><strong>Limit:</strong> <em>The result contains at maximum limit entries. No input means all entries.</em></p>
+</li>
+</ul>
+<p><strong>Filter (List):</strong></p>
+<ul>
+<li><strong>Filter-Function:</strong> <em>The filter function which take place</em><ul>
+<li><strong>Pattern included:</strong> <em>The attribut-value must contain the value</em></li>
+<li><strong>Pattern excluded:</strong> <em>The attribut-value may not contain the value</em></li>
+<li><strong>Equal:</strong> <em>The attribut-value must be exaclty the value</em></li>
+<li><strong>Exists (Attribute):</strong> <em>The attribut have to exists.</em></li>
+<li><strong>Greater Than:</strong> <em>The attribut-value must be greater than value</em></li>
+<li><strong>Lower Than:</strong> <em>The attribut-value must be lower than value</em></li>
+</ul>
+</li>
+</ul>
+<p><a href="https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/gifs/webui/filter-webui.gif">See an Example from the filter</a></p>
+<p><strong>Which Attributes (List):</strong></p>
+<ul>
+<li><strong>Attribute:</strong> <em>Here you can insert the Name of an attribute</em></li>
+</ul>
+<p><a href="https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/gifs/webui/which-attributes.gif">See an Example from the attribute-selection</a></p>
+<p>If you press the send-button the form-data are converted to a <em>GraphQL-Query</em> in the background. It is sended and you get the result as json. You also can introspect the <em>GraphQL-Query</em>, send the query to the <em>GraphiQL-Console</em> for better formatting and changing the query with the help of the <em>GraphiQl-console</em>. You also have the possibility to clear the whole form.</p>
+<h2 id="hash-query">Hash Query</h2>
+<p>Here you can enter a <em>file-hash</em>. If it is in the database, you get all informations about that file. You get all meta-data. Also you get some informations about the <em>path</em> and the <em>crawl</em>, which scanned the file.</p>
+<h2 id="graphql-query">GraphQl-Query</h2>
+<p>Here you can enter <em>GraphQL-Code</em> and execute it. The result is in json.</p>
+<h1 id="graphiql">GraphiQl</h1>
+<h2 id="graphiql-console">GraphiQl-Console</h2>
+<p>Here you can use the <em>GraphiQl-Console</em>. It&#39;s a editor, where you can enter your GraphQl-Code. Its highlighted.
+More options you have there:</p>
+<ul>
+<li><strong>Get more informations about our used graphQl-Endpoint in the Docu</strong>. (You have to click to the Docu-Button)</li>
+<li><strong>You can re-exucute old queries. They are cached locally on your computer.</strong></li>
+<li><strong>Pretify your entered graphql-code.</strong></li>
+<li><strong>Execute the graphql-code and get the result as json.</strong></li>
+</ul>
+<p>More informations about GraphQl and GraphiQL you can find in the <a href="#Server">server-section</a>.</p>
 <p class="page" id="Installation"></p><h1><strong>Installation</strong></h1>
 <p>This chapter will show you how to install the software requirements
 and the Metadata-Hub application.

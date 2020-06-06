@@ -103,10 +103,7 @@ class TreeWalkManager(threading.Thread):
                 directory
                 for worker_package in packages for directory in worker_package
             ]
-            self._db_connection.update_analyzed_dirs(
-                tree_walk_id=self._tree_walk_id,
-                analyzed_dirs=analyzed_dirs
-            )
+            self._db_connection.update_status(self._tree_walk_id, analyzed_dirs)
             self._workers_finished.clear()
 
         def work_split() -> None:
@@ -123,10 +120,7 @@ class TreeWalkManager(threading.Thread):
                 _, queue = self._workers[index]
                 queue.put((communication.WORKER_PACKAGE, package))
             self._workers_finished.wait()
-            self._db_connection.update_analyzed_dirs(
-                tree_walk_id=self._tree_walk_id,
-                analyzed_dirs=[directory]
-            )
+            self._db_connection.update_status(self._tree_walk_id, [directory])
             self._workers_finished.clear()
 
         def check() -> bool:
@@ -342,7 +336,7 @@ class TreeWalkManager(threading.Thread):
             )
             # Prepare analyzed dirs
             # FIXME: GET ALREADY PROCESSED NODES HERE
-            analyzed_dirs = []
+            analyzedDirectories = json.dumps({"analyzed directories": []})
             # Prepare work packages
             work_packages, split = tree_walk.create_work_packages(
                 inputs=config.get_paths_inputs(),

@@ -97,7 +97,7 @@ class Worker(multiprocessing.Process):
             value (str): the fist part of the string
 
         Returns:
-            bool: string with the extracted values
+            str: string with the extracted values
 
         """
         # Make validity check (if any of these are missing, the element can't be inserted into the database)
@@ -162,31 +162,50 @@ class Worker(multiprocessing.Process):
             package (List[str]): work package to process
 
         """
-        # for directory in package:
-        #     values = f"('{self._tree_walk_id}', '{directory}', name, type, size, metadata)"
-        insertin = f"""INSERT INTO files (crawl_id, dir_path, name, type, size, creation_time, access_time, modification_time, metadata, file_hash) """
-        value = f"VALUES ('{self._tree_walk_id}', "
+
+        # Execute ExifTool
         try:
             process = subprocess.Popen([f'{self._exiftool}', '-json', *package], stdout=subprocess.PIPE)
             metadata = json.load(process.stdout)
-            for result in metadata:
-                # get the values
-                values = self.createInsert(result, value)
-                if values == '0':
-                    #TODO Remove debuging print
-                    print('Can\'t insert element into database because a core value is missing')
-                    print(result)
-                    continue
-                # compute the hash256
-                with open(f"{result['Directory']}/{result['FileName']}", "rb") as file:
-                    bytes = file.read()
-                    hash256 = hashlib.sha256(bytes).hexdigest()
-                # insert into the database
-                self._db_connection.insert_new_record(insertin + values + "'{}'".format(json.dumps(result)) + ', ' + f"'{hash256}'" + ')')
-                # TODO Add directory to analyzed dirs if it was a usual work package
+        except:
+            _logger.error(f'Process {self.pid}: Error executing the exiftool in process.')
+            return
+        # create the default insert for the database
+        insertin = ('INSERT INTO files '
+                    '(crawl_id, dir_path, name, type, size, creation_time, access_time, modification_time, metadata'
+                    ', file_hash) '
+                    'VALUES ')
+        # create the value string with the tree walk id already inserted
+        value = (f'\'{self._tree_walk_id}\', ')
+        inserts = []
+        for result in metadata:
+            # get the exif output for file x
+            values = self.createInsert(result, value)
+            # Check if result is valid
+            if values == '0':
+                _logger.warning('Can\'t insert element into database because validity check failed.')
+                continue
+            # compute the hash256 and add it to the values string
+            with open(f"{result['Directory']}/{result['FileName']}", "rb") as file:
+                bytes = file.read()
+                hash256 = hashlib.sha256(bytes).hexdigest()
+            # add the value string to the rest for insert batching
+            inserts.append(f'({values}\'{json.dumps(result)}\', \'{hash256}\')')
+
+        # insert into the database
+        try:
+            self._db_connection.insert_new_record(insertin + ','.join(inserts))
         except Exception as e:
-            # print(e)
-            pass
+            _logger.warning(
+                'There was an error inserting the batched results, inserting individually.'
+            )
+            # Try to insert each command indiviually and print out the problematic result
+            for insert in inserts:
+                try:
+                    self._db_connection.insert_new_record(insertin + insert)
+                except Exception as e:
+                    _logger.warning('Failed inserting single file again.')
+
         # Check if all workers are done
         # The last one sets the finished event
         with self._lock:
