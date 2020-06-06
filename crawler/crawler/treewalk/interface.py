@@ -9,57 +9,18 @@ working queue so the tree walk can process the request.
 
 # Python imports
 import logging
-from queue import Queue
 from typing import Tuple
 
 
 # Local imports
 from crawler.services.config import Config
-from crawler.treewalk.manager import TreeWalkManager
+import crawler.communication as communication
 
 
-# Globals (module)
-_response = Queue()
-_config_queue = Queue()
-_command_queue = Queue()
-_manager = TreeWalkManager()
 _logger = logging.getLogger(__name__)
 
 
-def run() -> None:
-    """Run the tree walk component.
-
-    Wait for configurations to process provided by the API.
-
-    """
-    while True:
-        command = _command_queue.get()
-        if command == TreeWalkManager.COMMAND_START:
-            _logger.info(f'Starting TreeWalk with given config.')
-            config = _config_queue.get()
-            response = _manager.start(config)
-        if command == TreeWalkManager.COMMAND_PAUSE:
-            _logger.info(f'Pausing current execution of TreeWalk.')
-            response = _manager.pause()
-        if command == TreeWalkManager.COMMAND_UNPAUSE:
-            _logger.info(f'Continuing paused execution of TreeWalk.')
-            response = _manager.unpause()
-        if command == TreeWalkManager.COMMAND_STOP:
-            _logger.info(f'Stopping TreeWalk.')
-            response = _manager.stop()
-        if command == TreeWalkManager.COMMAND_INFO:
-            _logger.info(f'Providing info about TreeWalk state.')
-            response = _manager.info()
-        if command == TreeWalkManager.COMMAND_SHUTDOWN:
-            _logger.info(f'Shutting TreeWalk down.')
-            response = _manager.stop()
-            break
-        _response.put((response, command))
-    _logger.info(f'Exiting TreeWalk interface.')
-    _response.put((response, command))
-
-
-def start(config: Config, update: bool) -> None:
+def start(config: Config, update: bool) -> Tuple[bool, str, str]:
     """Start the TreeWalk.
 
     If update is set to True, a possible running execution will be stopped
@@ -69,61 +30,98 @@ def start(config: Config, update: bool) -> None:
         config (Config): new configuration
         update (bool): force update of current execution
 
+    Returns:
+        Tuple[bool, str, str]: (status, message, command)
+
     """
     if update:
-        _command_queue.put(TreeWalkManager.COMMAND_STOP)
-        # Throw first response away of stop
-        get_response()
-    _config_queue.put(config)
-    _command_queue.put(TreeWalkManager.COMMAND_START)
+        communication.manager_queue_input.put((communication.MANAGER_STOP, None))
+        # Ignore response of command stop
+        communication.manager_queue_output.get()
+    communication.manager_queue_input.put((communication.MANAGER_START, config))
+    message, _ = communication.manager_queue_output.get()
+    return (
+        message == communication.MANAGER_OK,
+        message,
+        communication.MANAGER_PAUSE
+    )
 
 
-def pause() -> None:
-    """Pause the TreeWalk."""
-    _command_queue.put(TreeWalkManager.COMMAND_PAUSE)
-
-
-def unpause() -> None:
-    """Continue the paused TreeWalk."""
-    _command_queue.put(TreeWalkManager.COMMAND_UNPAUSE)
-
-
-def stop() -> None:
-    """Stop the TreeWalk."""
-    _command_queue.put(TreeWalkManager.COMMAND_STOP)
-
-
-def info() -> None:
-    """Info about the TreeWalk.
-
-    Information can be pulled via the get_response function.
-
-    """
-    _command_queue.put(TreeWalkManager.COMMAND_INFO)
-
-
-def shutdown():
-    """Terminate the TreeWalk."""
-    _command_queue.put(TreeWalkManager.COMMAND_SHUTDOWN)
-
-
-def get_response() -> Tuple[bool, str, str]:
-    """Get the response of the last command.
-
-    The info command does not return the default OK message on success but
-    a dict in any case, so it needs an extra check.
+def pause() -> Tuple[bool, str, str]:
+    """Pause the TreeWalk.
 
     Returns:
-        Tuple[bool, str, str]:
-            True on success, False on failure
-            response message
-            command
+        Tuple[bool, str, str]: (status, message, command)
 
     """
-    respone_msg, command = _response.get()
-    if command == TreeWalkManager.COMMAND_INFO:
-        result = (True, respone_msg, command)
-    else:
-        status = respone_msg == TreeWalkManager.RESPONSE_OK
-        result = (status, respone_msg, command)
-    return result
+    communication.manager_queue_input.put((communication.MANAGER_PAUSE, None))
+    message, _ = communication.manager_queue_output.get()
+    return (
+        message == communication.MANAGER_OK,
+        message,
+        communication.MANAGER_PAUSE
+    )
+
+
+def unpause() -> Tuple[bool, str, str]:
+    """Continue the paused TreeWalk.
+
+    Returns:
+        Tuple[bool, str, str]: (status, message, command)
+
+    """
+    communication.manager_queue_input.put((communication.MANAGER_UNPAUSE, None))
+    message, _ = communication.manager_queue_output.get()
+    return (
+        message == communication.MANAGER_OK,
+        message,
+        communication.MANAGER_PAUSE
+    )
+
+
+def stop() -> Tuple[bool, str, str]:
+    """Stop the TreeWalk.
+
+    Returns:
+        Tuple[bool, str, str]: (status, message, command)
+
+    """
+    communication.manager_queue_input.put((communication.MANAGER_STOP, None))
+    message, _ = communication.manager_queue_output.get()
+    return (
+        message == communication.MANAGER_OK,
+        message,
+        communication.MANAGER_PAUSE
+    )
+
+
+def info() -> Tuple[bool, dict, str]:
+    """Retrieve information about the current state  of the TreeWalk.
+
+    Returns:
+        Tuple[bool, dict, str]: (status, data, command)
+
+    """
+    communication.manager_queue_input.put((communication.MANAGER_INFO, None))
+    message, data = communication.manager_queue_output.get()
+    return (
+        message == communication.MANAGER_OK,
+        data,
+        communication.MANAGER_PAUSE
+    )
+
+
+def shutdown() -> Tuple[bool, str, str]:
+    """Retrieve information about the current state  of the TreeWalk.
+
+    Returns:
+        Tuple[bool, str, str]: (status, message, command)
+
+    """
+    communication.manager_queue_input.put((communication.MANAGER_SHUTDOWN, None))
+    message, _ = communication.manager_queue_output.get()
+    return (
+        message == communication.MANAGER_OK,
+        message,
+        communication.MANAGER_PAUSE
+    )

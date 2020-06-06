@@ -81,8 +81,7 @@ def pause() -> flask.Response:
         flask.Response: HTTP response
 
     """
-    treewalk.pause()
-    status_ok, message, command = treewalk.get_response()
+    status_ok, message, command = treewalk.pause()
     return _get_response(
         status_ok=status_ok,
         message=message,
@@ -104,8 +103,7 @@ def unpause() -> flask.Response:
         flask.Response: HTTP response
 
     """
-    treewalk.unpause()
-    status_ok, message, command = treewalk.get_response()
+    status_ok, message, command = treewalk.unpause()
     return _get_response(
         status_ok=status_ok,
         message=message,
@@ -127,8 +125,7 @@ def stop() -> flask.Response:
         flask.Response: HTTP response
 
     """
-    treewalk.stop()
-    status_ok, message, command = treewalk.get_response()
+    status_ok, message, command = treewalk.stop()
     return _get_response(
         status_ok=status_ok,
         message=message,
@@ -148,11 +145,10 @@ def info() -> flask.Response:
         flask.Response: HTTP response
 
     """
-    treewalk.info()
-    status_ok, message, command = treewalk.get_response()
+    status_ok, data, command = treewalk.info()
     return _get_response(
         status_ok=status_ok,
-        message=message,
+        message=data,
         command=command,
         error_code=defaults.STATUS_INTERNAL_SERVER_ERROR
     )
@@ -195,8 +191,7 @@ def start() -> flask.Response:
         update = True
     else:
         update = False
-    treewalk.start(config, update)
-    status_ok, message, command = treewalk.get_response()
+    status_ok, message, command = treewalk.start(config, update)
     return _get_response(
         status_ok=status_ok,
         message=message,
@@ -219,8 +214,7 @@ def config():
         config = parser.parse()
     except config_service.ConfigParsingException as error:
         return flask.render_template('config.html', message=str(error))
-    treewalk.start(config, update)
-    status_ok, message, command = treewalk.get_response()
+    status_ok, message, command = treewalk.start(config, update)
     if status_ok:
         return flask.render_template('config.html', message='Success')
     return flask.render_template('config.html', message=message)
@@ -228,6 +222,7 @@ def config():
 
 @app.route('/shutdown', methods=['GET', 'POST'])
 def shutdown():
+    # FIXME: Get response from interface and evaluate
     treewalk.shutdown()
     func = flask.request.environ.get('werkzeug.server.shutdown')
     if func is None:
@@ -241,7 +236,6 @@ def shutdown():
     return resp
 
 
-
 @app.route('/', methods=['GET'])
 def home():
     resp = flask.Response(
@@ -250,7 +244,7 @@ def home():
     )
     return resp
 
-
+    treewalk.start(config, update)
 def start() -> None:
     """Start the Flask application."""
     app.run(

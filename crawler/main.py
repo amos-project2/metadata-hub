@@ -26,6 +26,8 @@ if __name__ == '__main__':
         datefmt='%H:%M:%S %Y-%m-%d'
     )
     thread_api = threading.Thread(target=api.start)
-    thread_treewalk = threading.Thread(target=treewalk.run)
+    thread_treewalk = treewalk.TreeWalkManager()
     thread_treewalk.start()
     thread_api.start()
+    thread_api.join()
+    thread_treewalk.join()
