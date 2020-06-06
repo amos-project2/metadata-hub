@@ -163,10 +163,29 @@ class Worker(multiprocessing.Process):
 
         """
 
+        def clean_up():
+            # Check if all workers are done
+            # The last one sets the finished event
+            with self._lock:
+                self._counter.value += 1
+                if self._counter.value == self._num_workers:
+                    self._counter.value = 0
+                    self._finished.set()
+                    _logger.debug(f'Process {self.pid}: finished as last.')
+
+        # If the package is already empty
+        if not package:
+            clean_up()
+            return
         # Execute ExifTool
         try:
             process = subprocess.Popen([f'{self._exiftool}', '-json', *package], stdout=subprocess.PIPE)
-            metadata = json.load(process.stdout)
+            output = str(process.stdout.read(), 'utf-8') # FIXME better solution?
+            if output:
+                metadata = json.loads(output)
+            else:
+                clean_up()
+                return
         except:
             _logger.error(f'Process {self.pid}: Error executing the exiftool in process.')
             return
@@ -205,15 +224,7 @@ class Worker(multiprocessing.Process):
                     self._db_connection.insert_new_record(insertin + insert)
                 except Exception as e:
                     _logger.warning('Failed inserting single file again.')
-
-        # Check if all workers are done
-        # The last one sets the finished event
-        with self._lock:
-            self._counter.value += 1
-            if self._counter.value == self._num_workers:
-                self._counter.value = 0
-                self._finished.set()
-                _logger.debug(f'Process {self.pid}: finished as last.')
+        clean_up()
 
 
     def _clean_up(self) -> None:
