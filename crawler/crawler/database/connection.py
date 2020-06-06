@@ -4,7 +4,7 @@
 # Python imports
 import json
 import logging
-import datetime
+from datetime import datetime
 from typing import List
 
 
@@ -106,7 +106,7 @@ class DatabaseConnection:
             [inputs['path'] for inputs in config.get_paths_inputs()]
         )
         analyzed_dirs = json.dumps({"analyzed directories": []})
-        starting_time = datetime.datetime.now()
+        starting_time = datetime.now()
         cmd = (
             f'INSERT INTO crawls '
             f'(dir_path, name, status, crawl_config, analyzed_dirs, starting_time) '
@@ -129,7 +129,7 @@ class DatabaseConnection:
 
 
     def close(self) -> None:
-        self._connection_pool.closeall()
+        self.con.close()
 
 
     def set_crawl_state(
