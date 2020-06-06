@@ -1,8 +1,8 @@
 package GraphQL;
 
 import Database.DatabaseProvider;
-import GraphQL.Model.Metadatum;
-import GraphQL.Model.File;
+import GraphQL.Model.*;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zaxxer.hikari.HikariDataSource;
 import graphql.schema.DataFetcher;
@@ -39,9 +39,10 @@ public class GraphQLDataFetchers
             Map<String, Object> graphQLArguments = dataFetchingEnvironment.getArguments();
             log.info("graphQLArguments: " + graphQLArguments.toString());
 
-            final ArrayList<String> selected_attributes = dataFetchingEnvironment.getArgument("selected_attributes");
+            final ArrayList<String> selected_attributes = dataFetchingEnvironment.getArgument(GraphQLSchemaDefinition.QUERY_SELECTED_ATTRIBUTES);
 
             String sqlQuery = PreparedStatementCreator.buildSQLQuery(graphQLArguments);
+            log.info("SQLQuery: " + sqlQuery);
             return queryDatabase(sqlQuery, selected_attributes);
         };
     }
@@ -51,22 +52,27 @@ public class GraphQLDataFetchers
         HikariDataSource dataSource = databaseProvider.getHikariDataSource();
 
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement selectStmt = connection.prepareStatement
+             PreparedStatement preparedStatement = connection.prepareStatement
                  (sqlQuery)) {
-            System.out.println(selectStmt.toString());
-            try (ResultSet rs = selectStmt.executeQuery()) {
+
+            log.info("PreparedStatement: " + preparedStatement);
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+
                 ArrayList<File> files = new ArrayList<>();
                 while (rs.next()) {
-                    String jsonFileMetadata = rs.getString("metadata");
-                    ArrayList<Metadatum> file_metadata = new ArrayList<>();
-                    ObjectMapper mapper = new ObjectMapper();
-                    Map<String, String> metadata_map = mapper.readValue(jsonFileMetadata, Map.class);
-                    addSelectedAttributes(file_metadata, selected_attributes,  metadata_map);
 
-                    files.add(new File(rs.getString("id"), rs.getString("crawl_id"),
-                        rs.getString("dir_path"), rs.getString("name"), rs.getString("type"),
-                        rs.getString("size") ,file_metadata, rs.getString("creation_time"), rs.getString("modification_time"),
-                        rs.getString("access_time"), rs.getString("file_hash")));
+                    String jsonFileMetadata = rs.getString(GraphQLSchemaDefinition.FILE_METADATA);
+                    ArrayList<Metadatum> file_metadata = new ArrayList<>();
+                    Map<String, String> db_metadata = new ObjectMapper().readValue(jsonFileMetadata, Map.class);
+                    addSelectedAttributes(file_metadata, selected_attributes,  db_metadata);
+
+                    files.add(
+                        new File(rs.getString(GraphQLSchemaDefinition.FILE_ID), rs.getString(GraphQLSchemaDefinition.FILE_CRAWL_ID),
+                        rs.getString(GraphQLSchemaDefinition.FILE_DIR_PATH), rs.getString(GraphQLSchemaDefinition.FILE_NAME), rs.getString(GraphQLSchemaDefinition.FILE_TYPE),
+                        rs.getString(GraphQLSchemaDefinition.FILE_SIZE) ,file_metadata, rs.getString(GraphQLSchemaDefinition.FILE_CREATION_TIME),
+                        rs.getString(GraphQLSchemaDefinition.FILE_MODIFICATION_TIME), rs.getString(GraphQLSchemaDefinition.FILE_ACCESS_TIME),
+                        rs.getString(GraphQLSchemaDefinition.FILE_FILE_HASH))
+                    );
 
                 }
 
@@ -75,10 +81,10 @@ public class GraphQLDataFetchers
         }
     }
 
-    private void addSelectedAttributes(ArrayList<Metadatum> file_metadata, ArrayList<String> selection_attributes, Map<String, String> attribute_map) {
-        if (selection_attributes == null)
+    private void addSelectedAttributes(ArrayList<Metadatum> file_metadata, ArrayList<String> selected_attributes, Map<String, String> db_metadata) {
+        if (selected_attributes == null)
         {
-            for (Map.Entry<String, String> entry : attribute_map.entrySet())
+            for (Map.Entry<String, String> entry : db_metadata.entrySet())
             {
                 String key = entry.getKey();
                 Object value = String.valueOf(entry.getValue());
@@ -87,9 +93,9 @@ public class GraphQLDataFetchers
         }
         else
         {
-            for (String attribute : selection_attributes)
+            for (String attribute : selected_attributes)
             {
-                String attr_value = String.valueOf(attribute_map.get(attribute));
+                String attr_value = String.valueOf(db_metadata.get(attribute));
                 if(attr_value == null)
                 {
                     continue;
