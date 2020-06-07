@@ -1,12 +1,11 @@
 package GraphQL;
 
-import Database.DatabaseProvider;
+import Database.Database;
 import GraphQL.Model.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.zaxxer.hikari.HikariDataSource;
 import graphql.schema.DataFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,12 +22,12 @@ import java.util.*;
 public class MainGraphQLDataFetchers
 {
     private static final Logger log = LoggerFactory.getLogger(MainGraphQLDataFetchers.class);
-    private final DatabaseProvider databaseProvider;
+    private final Database database;
 
     @Inject
-    public MainGraphQLDataFetchers(DatabaseProvider databaseProvider)
+    public MainGraphQLDataFetchers(Database database)
     {
-        this.databaseProvider = databaseProvider;
+        this.database = database;
     }
 
     /**
@@ -57,9 +56,9 @@ public class MainGraphQLDataFetchers
     @SuppressWarnings("unchecked")
     private List<File> queryDatabase(String sqlQuery, ArrayList<String> selected_attributes) throws SQLException, IOException
     {
-        HikariDataSource dataSource = databaseProvider.getHikariDataSource();
+        //HikariDataSource dataSource = databaseProvider.getHikariDataSource();
 
-        try (Connection connection = dataSource.getConnection();
+        try (Connection connection = database.getJDBCConnection();
              PreparedStatement preparedStatement = connection.prepareStatement
                  (sqlQuery))
         {

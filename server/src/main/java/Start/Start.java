@@ -1,5 +1,6 @@
 package Start;
 
+import Benchmark.BenchmarkTest;
 import Config.ApplicationConfig;
 
 import Config.Config;
@@ -47,7 +48,7 @@ public class Start
 
         System.out.println("all services are started");
 
-        //new BenchmarkTest(registry).doBenchmark();
+        //new BenchmarkTest(dependenciesContainer).doBenchmark();
 
 
         if (Start.isIntegrationTest)

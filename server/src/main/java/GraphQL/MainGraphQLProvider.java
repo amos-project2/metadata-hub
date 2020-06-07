@@ -1,6 +1,6 @@
 package GraphQL;
 
-import Database.DatabaseProvider;
+import Database.Database;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.google.inject.Singleton;
@@ -25,7 +25,7 @@ import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 public class MainGraphQLProvider
 {
     private final MainGraphQLDataFetchers mainGraphQLDataFetchers;
-    private final DatabaseProvider databaseProvider;
+    private final Database database;
     @Getter private GraphQL graphQL;
 
     public MainGraphQLProvider init() throws IOException

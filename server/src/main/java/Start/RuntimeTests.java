@@ -1,6 +1,6 @@
 package Start;
 
-import Database.DatabaseProvider;
+import Database.Database;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Injector;
 import graphql.ExecutionResult;
@@ -34,15 +34,15 @@ public class RuntimeTests
     public void databaseTest() throws SQLException
     {
 //        DatabaseProvider databaseProvider = registry.getDatabaseProvider();
-        DatabaseProvider databaseProvider=injector.getInstance(DatabaseProvider.class);
+        Database database =injector.getInstance(Database.class);
         try
         {
             //with jooq
-            Result<Record> records = databaseProvider.getDslContext().resultQuery("SELECT * FROM public.testtable").fetch();
+            Result<Record> records = database.getDslContext().resultQuery("SELECT * FROM public.testtable").fetch();
             System.out.println(records);
 
             //with normal jdbc
-            try (Connection connection = databaseProvider.getHikariDataSource().getConnection())
+            try (Connection connection = database.gC())
             {
                 ResultSet resultSet = connection.prepareStatement("SELECT * FROM public.testtable").executeQuery();
                 resultSet.next();

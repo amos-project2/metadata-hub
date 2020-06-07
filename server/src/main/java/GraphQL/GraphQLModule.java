@@ -1,6 +1,6 @@
 package GraphQL;
 
-import Database.DatabaseProvider;
+import Database.Database;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -27,9 +27,9 @@ public class GraphQLModule extends AbstractModule
 
     @Provides
     @Singleton
-    static GraphQL provideGraphQL(MainGraphQLDataFetchers mainGraphQLDataFetchers, DatabaseProvider databaseProvider) throws IOException
+    static GraphQL provideGraphQL(MainGraphQLDataFetchers mainGraphQLDataFetchers, Database database) throws IOException
     {
-        return new MainGraphQLProvider(mainGraphQLDataFetchers, databaseProvider).init().getGraphQL();
+        return new MainGraphQLProvider(mainGraphQLDataFetchers, database).init().getGraphQL();
     }
 
 

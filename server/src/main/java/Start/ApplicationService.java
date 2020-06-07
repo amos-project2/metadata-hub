@@ -1,6 +1,6 @@
 package Start;
 
-import Database.DatabaseProvider;
+import Database.Database;
 import JerseyServer.JerseyServer;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -9,26 +9,26 @@ import com.google.inject.Singleton;
 @Singleton
 public class ApplicationService
 {
-    @Inject DatabaseProvider databaseProvider;
+    @Inject Database database;
     @Inject JerseyServer jerseyServer;
 
 
     public void startAll()
     {
-        this.databaseProvider.start();
+        this.database.start();
         this.jerseyServer.start();
     }
 
     public void shutdownAll()
     {
         this.jerseyServer.shutdown();
-        this.databaseProvider.shutdown();
+        this.database.shutdown();
     }
 
     public void shutdownNowAll()
     {
         this.jerseyServer.shutdownNow();
-        this.databaseProvider.shutdown();
+        this.database.shutdown();
     }
 
 }

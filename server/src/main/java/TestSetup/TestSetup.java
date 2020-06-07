@@ -2,7 +2,7 @@ package TestSetup;
 
 import Config.ApplicationConfig;
 import Config.Config;
-import Database.DatabaseProvider;
+import Database.Database;
 import GraphQL.MainGraphQLDataFetchers;
 import GraphQL.MainGraphQLProvider;
 import JerseyServer.JerseyServer;
@@ -23,9 +23,9 @@ public class TestSetup {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        DatabaseProvider databaseProvider = new DatabaseProvider(config);
-        MainGraphQLDataFetchers mainGraphQLDataFetchers = new MainGraphQLDataFetchers(databaseProvider);
-        MainGraphQLProvider mainGraphQLProvider = new MainGraphQLProvider(mainGraphQLDataFetchers, databaseProvider);
+        Database database = new Database(config);
+        MainGraphQLDataFetchers mainGraphQLDataFetchers = new MainGraphQLDataFetchers(database);
+        MainGraphQLProvider mainGraphQLProvider = new MainGraphQLProvider(mainGraphQLDataFetchers, database);
         try {
             testServer = new JerseyServer(mainGraphQLProvider.init().getGraphQL(), config);
         } catch (IOException e) {
