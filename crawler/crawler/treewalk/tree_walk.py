@@ -79,10 +79,16 @@ def create_work_packages(
                     split.append(element[0])
                     directorySize.remove(element)
                     continue
-        workPackages.append(workPackageTmp[0])
+
+        filesTmp = []
+        for directory in workPackageTmp[0]:
+                for root, subdirs, files in os.walk(directory):
+                    for file in files:
+                        filesTmp.append(root + '/' + file)
+                    break
+        workPackages.append(filesTmp)
         if len(directorySize) < 1:
             break
-
     result = [[] for _ in range(number_of_workers)]
     for number, package in enumerate(workPackages):
         index = number % number_of_workers

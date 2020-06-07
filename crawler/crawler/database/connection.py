@@ -14,7 +14,7 @@ import psycopg2
 
 # Local imports
 from crawler.services.config import Config
-
+import crawler.communication as communication
 
 _logger = logging.getLogger(__name__)
 
@@ -55,17 +55,20 @@ class DatabaseConnection:
         get_current = ('SELECT * '
                       'FROM crawls '
                       f'WHERE id = {crawlID}')
-
-        curs.execute(get_current)
-        get = curs.fetchone()
-        get[5]["analyzed directories"].extend(package)
-        update_dirs = ('UPDATE crawls '
-                       f'SET analyzed_dirs = \'{json.dumps(get[5])}\', update_time = \'{datetime.now()}\''
-                       f'WHERE id = {crawlID}')
-        curs.execute(update_dirs)
-        curs.close()
-        self.con.commit()
-
+        try:
+            curs.execute(get_current)
+            get = curs.fetchone()
+            get[5]["analyzed directories"].extend(package)
+            update_dirs = ('UPDATE crawls '
+                           f'SET analyzed_dirs = \'{json.dumps(get[5])}\', update_time = \'{datetime.now()}\''
+                           f'WHERE id = {crawlID}')
+            curs.execute(update_dirs)
+            curs.close()
+            self.con.commit()
+        except:
+            _logger.warning('"Error updating database status"')
+            curs.close()
+            self.con.rollback()
         return
 
 
@@ -80,6 +83,7 @@ class DatabaseConnection:
         try:
             curs.execute(insert_cmd)
         except:
+            _logger.warning('"Error inserting data into database"')
             curs.close()
             self.con.rollback()
             raise
@@ -112,7 +116,7 @@ class DatabaseConnection:
         cmd = (
             f'INSERT INTO crawls '
             f'(dir_path, name, status, crawl_config, analyzed_dirs, starting_time) '
-            f'VALUES(\'{dir_path}\', \'---\', \'Running\', '
+            f'VALUES(\'{dir_path}\', \'---\', \'running\', '
             f'\'{crawl_config}\', \'{analyzed_dirs}\', \'{starting_time}\')'
             f'RETURNING id'
         )
@@ -120,6 +124,9 @@ class DatabaseConnection:
         try:
             curs.execute(cmd)
         except:
+            _logger.warning('"Error updating database"')
+            curs.close()
+            self.con.rollback()
             raise
         try:
             dbID = curs.fetchone()[0]
@@ -141,11 +148,47 @@ class DatabaseConnection:
     ) -> None:
         """Update the status of the crawl.
 
-        # TODO TREEWALK - Implement me :)
-
         Args:
             tree_walk_id (int): ID of the TreeWalk execution
             status (str): status to set
 
         """
-        pass
+
+        curs = self.con.cursor()
+        get_current = ('SELECT * '
+                       'FROM crawls '
+                       f'WHERE id = {tree_walk_id}')
+        try:
+            curs.execute(get_current)
+            get = curs.fetchone()
+
+            if status == communication.CRAWL_STATUS_FINISHED:
+                update_status = ('UPDATE crawls '
+                               f'SET finished_time = \'{datetime.now()}\', status = \'{communication.CRAWL_STATUS_FINISHED}\''
+                               f'WHERE id = {tree_walk_id}')
+            elif status == communication.CRAWL_STATUS_PAUSED:
+                update_status = ('UPDATE crawls '
+                               f'SET status = \'{communication.CRAWL_STATUS_PAUSED}\''
+                               f'WHERE id = {tree_walk_id}')
+            elif status == communication.CRAWL_STATUS_RUNNING:
+                update_status = ('UPDATE crawls '
+                               f'SET status = \'{communication.CRAWL_STATUS_RUNNING}\''
+                               f'WHERE id = {tree_walk_id}')
+            elif status == communication.CRAWL_STATUS_ABORTED:
+                update_status = ('UPDATE crawls '
+                               f'SET status = \'{communication.CRAWL_STATUS_ABORTED}\''
+                               f'WHERE id = {tree_walk_id}')
+            else:
+                _logger.warning('"Error updating database state, state not recognized"')
+                return
+
+            curs.execute(update_status)
+            curs.close()
+            self.con.commit()
+        except:
+            _logger.warning('"Error updating database state"')
+            curs.close()
+            self.con.rollback()
+
+
+

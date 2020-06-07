@@ -178,17 +178,8 @@ class Worker(multiprocessing.Process):
         if not package:
             clean_up()
             return
-
-        # Execute ExifTool
-        files1 = []
-        for directory in package:
-            for root, subdirs, files in os.walk(directory):
-                for file in files:
-                    files1.append(root+'/'+file)
-                break
-
         try:
-            process = subprocess.Popen([f'{self._exiftool}', '-json', *files1], stdout=subprocess.PIPE)
+            process = subprocess.Popen([f'{self._exiftool}', '-json', *package], stdout=subprocess.PIPE)
             output = str(process.stdout.read(), 'utf-8') # FIXME better solution?
             if output:
                 metadata = json.loads(output)
@@ -198,6 +189,7 @@ class Worker(multiprocessing.Process):
         except:
             _logger.error(f'Process {self.pid}: Error executing the exiftool in process.')
             return
+
         # create the default insert for the database
         insertin = ('INSERT INTO files '
                     '(crawl_id, dir_path, name, type, size, creation_time, access_time, modification_time, metadata'
@@ -206,9 +198,7 @@ class Worker(multiprocessing.Process):
         # create the value string with the tree walk id already inserted
         value = (f'\'{self._tree_walk_id}\', ')
         inserts = []
-        total = 0
         for result in metadata:
-            total+=1
             # get the exif output for file x
             values = self.createInsert(result, value)
             # Check if result is valid

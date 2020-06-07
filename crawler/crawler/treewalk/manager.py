@@ -15,9 +15,9 @@ from typing import Tuple, Any
 
 
 # Local imports
-import crawler.treewalk.state as state
-import crawler.treewalk.worker as worker_mod
-import crawler.treewalk.tree_walk as tree_walk
+from . import tree_walk as tree_walk
+from . import state as state
+from . import worker as worker_mod
 import crawler.database as database
 import crawler.communication as communication
 import crawler.services.environment as environment
