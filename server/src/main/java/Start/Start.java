@@ -1,17 +1,18 @@
 package Start;
 
-import Benchmark.BenchmarkTest;
 import Config.ApplicationConfig;
-import Config.JsonValideException;
+
 import Config.Config;
+import Config.ConfigModule;
+import Database.DatabaseModule;
+import GraphQL.GraphQLModule;
+import JerseyServer.HttpServerModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import graphql.GraphQL;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 
 public class Start
@@ -33,6 +34,15 @@ public class Start
             System.exit(-1);
             return;
         }
+
+        Injector injector = Guice.createInjector(
+            new ConfigModule(config),
+            new DatabaseModule(),
+            new GraphQLModule(),
+            new HttpServerModule());
+        DatabaseModule instance = injector.getInstance(DatabaseModule.class);
+        GraphQL instance2 = injector.getInstance(GraphQL.class);
+
 
         Registry registry = new Registry();
 

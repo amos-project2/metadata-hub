@@ -2,6 +2,7 @@ package JerseyServer;
 
 import Config.Config;
 import Start.Start;
+import com.google.inject.Inject;
 import graphql.GraphQL;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -26,9 +27,9 @@ public class JerseyServer
     private final ResourceConfig resourceConfig;
     private final HttpServer server;
 
-    @Getter
-    private static GraphQL graphQLCheat;
+    @Getter private static GraphQL graphQLCheat;
 
+    @Inject
     public JerseyServer(GraphQL graphQl, Config config)
     {
         this.config = config;

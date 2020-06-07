@@ -2,6 +2,7 @@ package Database;
 
 import Config.Config;
 import Start.Start;
+import com.google.inject.Inject;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.Getter;
@@ -19,6 +20,7 @@ public class DatabaseProvider
     //TODO implement (maybe using jooq)
 
 
+    @Inject
     public DatabaseProvider(Config config)
     {
         this.config = config;
