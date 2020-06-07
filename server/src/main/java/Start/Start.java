@@ -4,6 +4,7 @@ import Benchmark.BenchmarkTest;
 import Config.ApplicationConfig;
 
 import Config.*;
+import Database.Database;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,10 +91,12 @@ public class Start
         this.dependenciesContainer = new DependenciesContainer(this.config);
     }
 
-    private void startApplication()
+    private void startApplication() throws SQLException
     {
         ApplicationService applicationService = this.dependenciesContainer.getInjector().getInstance(ApplicationService.class);
         applicationService.startAll();
+//        Database instance = this.dependenciesContainer.getInjector().getInstance(Database.class);
+//        System.out.println(instance.gC());
     }
 
     private  void executeRuntimeTests()

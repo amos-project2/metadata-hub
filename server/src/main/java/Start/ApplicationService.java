@@ -1,6 +1,6 @@
 package Start;
 
-import Database.Database;
+import Database.DatabaseService;
 import JerseyServer.JerseyServer;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -9,7 +9,7 @@ import com.google.inject.Singleton;
 @Singleton
 public class ApplicationService
 {
-    @Inject Database database;
+    @Inject DatabaseService database;
     @Inject JerseyServer jerseyServer;
 
 

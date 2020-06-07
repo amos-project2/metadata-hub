@@ -6,6 +6,7 @@ import Database.Database;
 import GraphQL.MainGraphQLDataFetchers;
 import GraphQL.MainGraphQLProvider;
 import JerseyServer.JerseyServer;
+import Start.DependenciesContainer;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -16,14 +17,14 @@ public class TestSetup {
     public static JerseyServer testServer;
     public static Client testClient;
 
-    public static void setupServer(){
+    public static void setupServer(DependenciesContainer dependenciesContainer){
         Config config = null;
         try {
             config = new ApplicationConfig(null, System.getenv("METADATAHUB_SERVER_CONFIG")).getConfig();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Database database = new Database(config);
+        Database database = dependenciesContainer.getInjector().getInstance(Database.class);
         MainGraphQLDataFetchers mainGraphQLDataFetchers = new MainGraphQLDataFetchers(database);
         MainGraphQLProvider mainGraphQLProvider = new MainGraphQLProvider(mainGraphQLDataFetchers, database);
         try {
