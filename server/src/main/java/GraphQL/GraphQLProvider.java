@@ -3,6 +3,7 @@ package GraphQL;
 import Database.DatabaseProvider;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import com.google.inject.Singleton;
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
@@ -20,6 +21,7 @@ import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 
 
 @RequiredArgsConstructor
+@Singleton
 public class GraphQLProvider
 {
     private final GraphQLDataFetchers graphQLDataFetchers;

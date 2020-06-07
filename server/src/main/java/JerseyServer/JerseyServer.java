@@ -3,6 +3,7 @@ package JerseyServer;
 import Config.Config;
 import Start.Start;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import graphql.GraphQL;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 //@RequiredArgsConstructor
+@Singleton
 public class JerseyServer
 {
     private final GraphQL graphQL;

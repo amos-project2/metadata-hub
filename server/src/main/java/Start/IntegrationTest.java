@@ -18,11 +18,11 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 public class IntegrationTest
 {
     private static final Logger log = LoggerFactory.getLogger(IntegrationTest.class);
-    private final Registry registry;
+    private final DependenciesContainer dependenciesContainer;
 
-    public IntegrationTest(Registry registry)
+    public IntegrationTest(DependenciesContainer dependenciesContainer)
     {
-        this.registry = registry;
+        this.dependenciesContainer = dependenciesContainer;
     }
 
     //here you can start the integration-tests

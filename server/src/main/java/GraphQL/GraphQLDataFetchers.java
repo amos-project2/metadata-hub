@@ -5,6 +5,7 @@ import GraphQL.Model.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.zaxxer.hikari.HikariDataSource;
 import graphql.schema.DataFetcher;
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ import java.util.*;
 
 
 //@RequiredArgsConstructor
+@Singleton
 public class GraphQLDataFetchers
 {
     private static final Logger log = LoggerFactory.getLogger(GraphQLDataFetchers.class);

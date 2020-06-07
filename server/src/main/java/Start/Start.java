@@ -3,13 +3,6 @@ package Start;
 import Config.ApplicationConfig;
 
 import Config.Config;
-import Config.ConfigModule;
-import Database.DatabaseModule;
-import GraphQL.GraphQLModule;
-import JerseyServer.HttpServerModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import graphql.GraphQL;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,20 +28,16 @@ public class Start
             return;
         }
 
-        Injector injector = Guice.createInjector(
-            new ConfigModule(config),
-            new DatabaseModule(),
-            new GraphQLModule(),
-            new HttpServerModule());
-        DatabaseModule instance = injector.getInstance(DatabaseModule.class);
-        GraphQL instance2 = injector.getInstance(GraphQL.class);
+        DependenciesContainer dependenciesContainer = new DependenciesContainer(config);
+        ApplicationService applicationService = dependenciesContainer.getInjector().getInstance(ApplicationService.class);
+        applicationService.startAll();
 
 
-        Registry registry = new Registry();
+        //Registry registry = new Registry();
 
 
         //this is not related to our integration-tests
-        RuntimeTests runtimeTests = new RuntimeTests(registry);
+        RuntimeTests runtimeTests = new RuntimeTests(dependenciesContainer);
         /**
          * you can add there tests, activate, deactivate, however you want
          */
@@ -63,10 +52,11 @@ public class Start
 
         if (Start.isIntegrationTest)
         {
-            IntegrationTest integrationTest = new IntegrationTest(registry);
+            IntegrationTest integrationTest = new IntegrationTest(dependenciesContainer);
             boolean result = integrationTest.testAll();
 
-            registry.shutdown();
+            //registry.shutdown();
+            applicationService.shutdownAll();
 
             if (result)
             {
