@@ -1,8 +1,8 @@
 package Start;
 
 import Database.DatabaseProvider;
-import GraphQL.GraphQLDataFetchers;
-import GraphQL.GraphQLProvider;
+import GraphQL.MainGraphQLDataFetchers;
+import GraphQL.MainGraphQLProvider;
 import JerseyServer.JerseyServer;
 import lombok.Getter;
 
@@ -12,16 +12,16 @@ import java.io.IOException;
 public class Registry
 {
     @Getter private final DatabaseProvider databaseProvider;
-    @Getter private final GraphQLDataFetchers graphQLDataFetchers;
-    @Getter private final GraphQLProvider graphQLProvider;
+    @Getter private final MainGraphQLDataFetchers mainGraphQLDataFetchers;
+    @Getter private final MainGraphQLProvider mainGraphQLProvider;
     @Getter private final JerseyServer jerseyServer;
 
     public Registry() throws IOException
     {
         databaseProvider = new DatabaseProvider(Start.getConfig());
-        graphQLDataFetchers = new GraphQLDataFetchers(databaseProvider);
-        graphQLProvider = new GraphQLProvider(graphQLDataFetchers, databaseProvider);
-        jerseyServer = new JerseyServer(graphQLProvider.init().getGraphQL(), Start.getConfig());
+        mainGraphQLDataFetchers = new MainGraphQLDataFetchers(databaseProvider);
+        mainGraphQLProvider = new MainGraphQLProvider(mainGraphQLDataFetchers, databaseProvider);
+        jerseyServer = new JerseyServer(mainGraphQLProvider.init().getGraphQL(), Start.getConfig());
         jerseyServer.start();
     }
 

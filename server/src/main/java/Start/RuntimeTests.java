@@ -1,8 +1,6 @@
 package Start;
 
 import Database.DatabaseProvider;
-import GraphQL.GraphQLProvider;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Injector;
 import graphql.ExecutionResult;

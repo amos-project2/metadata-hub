@@ -22,13 +22,13 @@ import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 
 @RequiredArgsConstructor
 @Singleton
-public class GraphQLProvider
+public class MainGraphQLProvider
 {
-    private final GraphQLDataFetchers graphQLDataFetchers;
+    private final MainGraphQLDataFetchers mainGraphQLDataFetchers;
     private final DatabaseProvider databaseProvider;
     @Getter private GraphQL graphQL;
 
-    public GraphQLProvider init() throws IOException
+    public MainGraphQLProvider init() throws IOException
     {
         URL url = Resources.getResource("schema.graphqls");
         String sdl = Resources.toString(url, Charsets.UTF_8);
@@ -49,7 +49,7 @@ public class GraphQLProvider
     {
         return RuntimeWiring.newRuntimeWiring()
             .type(newTypeWiring("Query")
-                .dataFetcher(GraphQLSchemaDefinition.QUERY_NAME, graphQLDataFetchers.searchForFileMetadataFetcher()))
+                .dataFetcher(GraphQLSchemaDefinition.QUERY_NAME, mainGraphQLDataFetchers.searchForFileMetadataFetcher()))
 
             .build();
     }

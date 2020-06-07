@@ -3,15 +3,13 @@ package TestSetup;
 import Config.ApplicationConfig;
 import Config.Config;
 import Database.DatabaseProvider;
-import GraphQL.GraphQLDataFetchers;
-import GraphQL.GraphQLProvider;
+import GraphQL.MainGraphQLDataFetchers;
+import GraphQL.MainGraphQLProvider;
 import JerseyServer.JerseyServer;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
-import java.util.Properties;
 
 public class TestSetup {
 
@@ -26,10 +24,10 @@ public class TestSetup {
             e.printStackTrace();
         }
         DatabaseProvider databaseProvider = new DatabaseProvider(config);
-        GraphQLDataFetchers graphQLDataFetchers = new GraphQLDataFetchers(databaseProvider);
-        GraphQLProvider graphQLProvider = new GraphQLProvider(graphQLDataFetchers, databaseProvider);
+        MainGraphQLDataFetchers mainGraphQLDataFetchers = new MainGraphQLDataFetchers(databaseProvider);
+        MainGraphQLProvider mainGraphQLProvider = new MainGraphQLProvider(mainGraphQLDataFetchers, databaseProvider);
         try {
-            testServer = new JerseyServer(graphQLProvider.init().getGraphQL(), config);
+            testServer = new JerseyServer(mainGraphQLProvider.init().getGraphQL(), config);
         } catch (IOException e) {
             e.printStackTrace();
         }

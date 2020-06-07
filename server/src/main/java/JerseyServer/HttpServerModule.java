@@ -1,14 +1,6 @@
 package JerseyServer;
 
-import Config.Config;
-import Database.DatabaseProvider;
-import GraphQL.GraphQLDataFetchers;
-import GraphQL.GraphQLProvider;
-import Start.Start;
 import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import graphql.GraphQL;
 
 public class HttpServerModule extends AbstractModule
 {

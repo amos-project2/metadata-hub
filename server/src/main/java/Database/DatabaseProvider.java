@@ -13,7 +13,10 @@ import org.jooq.impl.DSL;
 
 import java.util.Properties;
 
-//TODO rename to DatabaseConnector
+
+/**
+ * Its a provider and a Service, cause we can start and stop the connection to the database here too
+ */
 @Singleton
 public class DatabaseProvider
 {

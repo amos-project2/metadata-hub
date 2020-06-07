@@ -19,15 +19,14 @@ import java.sql.SQLException;
 import java.util.*;
 
 
-//@RequiredArgsConstructor
 @Singleton
-public class GraphQLDataFetchers
+public class MainGraphQLDataFetchers
 {
-    private static final Logger log = LoggerFactory.getLogger(GraphQLDataFetchers.class);
+    private static final Logger log = LoggerFactory.getLogger(MainGraphQLDataFetchers.class);
     private final DatabaseProvider databaseProvider;
 
     @Inject
-    public GraphQLDataFetchers(DatabaseProvider databaseProvider)
+    public MainGraphQLDataFetchers(DatabaseProvider databaseProvider)
     {
         this.databaseProvider = databaseProvider;
     }

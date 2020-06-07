@@ -4,7 +4,6 @@ import Database.DatabaseProvider;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.throwingproviders.ThrowingProviderBinder;
 import graphql.GraphQL;
 
 import java.io.IOException;
@@ -28,9 +27,9 @@ public class GraphQLModule extends AbstractModule
 
     @Provides
     @Singleton
-    static GraphQL provideGraphQL(GraphQLDataFetchers graphQLDataFetchers, DatabaseProvider databaseProvider) throws IOException
+    static GraphQL provideGraphQL(MainGraphQLDataFetchers mainGraphQLDataFetchers, DatabaseProvider databaseProvider) throws IOException
     {
-        return new GraphQLProvider(graphQLDataFetchers, databaseProvider).init().getGraphQL();
+        return new MainGraphQLProvider(mainGraphQLDataFetchers, databaseProvider).init().getGraphQL();
     }
 
 
