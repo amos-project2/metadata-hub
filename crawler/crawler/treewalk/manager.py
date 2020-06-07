@@ -110,7 +110,7 @@ class TreeWalkManager(threading.Thread):
             """Work on the work packages that have to be split across workers."""
             directory = self._work_packages_split.pop()
             files = [
-                os.path.abspath(fpath)
+                os.path.join(directory, fpath)
                 for fpath in os.listdir(directory)
             ]
             tmp_lists = [[] for _ in range(self._num_workers)]
@@ -153,12 +153,10 @@ class TreeWalkManager(threading.Thread):
             _logger.debug('Running single work package for each worker')
             work_single()
             return check()
-        """
         if self._work_packages_split:
             _logger.debug('Running split work package for each worker')
             work_split()
             return check()
-        """
         done()
         return True
 

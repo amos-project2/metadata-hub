@@ -76,8 +76,7 @@ def create_work_packages(
                 directorySize.remove(element)
             else:
                 if element[1] > X:
-                    split.append([element[0]])
-                    # workPackages.append([element[0]])
+                    split.append(element[0])
                     directorySize.remove(element)
                     continue
         workPackages.append(workPackageTmp[0])
@@ -88,11 +87,7 @@ def create_work_packages(
     for number, package in enumerate(workPackages):
         index = number % number_of_workers
         result[index].append(package)
-    split1 = [[] for _ in range(number_of_workers)]
-    for number, package in enumerate(split):
-        index = number % number_of_workers
-        split1[index].append(package)
-    return result, split1
+    return result, split
 
 def get_number_of_workers(power_level: int):
     return int(power_level * 0.25 * psutil.cpu_count(logical=False))
