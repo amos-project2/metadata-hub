@@ -18,7 +18,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-//@RequiredArgsConstructor
 @Singleton
 public class JerseyServer
 {
@@ -28,8 +27,7 @@ public class JerseyServer
     private static URI BASE_URI;
     private final ResourceConfig resourceConfig;
     private final HttpServer server;
-
-    @Getter private static GraphQL graphQLCheat;
+    private boolean isStarted = false;
 
     @Inject
     public JerseyServer(GraphQL graphQl, Config config)
@@ -38,15 +36,16 @@ public class JerseyServer
         BASE_URI = UriBuilder.fromUri("http://" + config.getProperty("server-host") + "/")
             .port(Integer.parseInt(config.getProperty("server-port"))).build();
         this.graphQL = graphQl;
-        resourceConfig = new ResourceConfig(MainController.class);
+        resourceConfig = new ResourceConfig(/*MainController.class*/);
+        resourceConfig.register(new MainController(config, this.graphQL));
         resourceConfig.register(ErrorHandler.class);
         this.server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, resourceConfig, false);
     }
 
     public void start()
     {
-        if (graphQLCheat != null) throw new RuntimeException("Server is/was already started");
-        graphQLCheat = graphQL;
+        if (isStarted) throw new RuntimeException("Server is/was already started");
+        isStarted = true;
 
         try
         {
@@ -61,9 +60,7 @@ public class JerseyServer
                 }
             }));
 
-
             server.start();
-
 
             System.out.println("Jersey-Server started\n");
             System.out.println("Listening-Address: " + config.getProperty("server-host") + " | Port: " + config.getProperty("server-port"));
@@ -71,7 +68,6 @@ public class JerseyServer
             System.out.println("GRAPHQL-ENDPOINT: http://localhost:" + config.getProperty("server-port") + "/graphql/?query=hey");
             System.out.println("GRAPHQL-TEST-CONSOLE: http://localhost:" + config.getProperty("server-port") + "/testconsole/");
 
-            //Thread.currentThread().join();
         }
         catch (IOException ex)
         {

@@ -19,13 +19,14 @@ import java.util.Properties;
 public class MainController
 {
     private final GraphQL graphQl;
-    private static final Config config = Start.getConfig();
+    private final Config config;
 
-    public MainController()
+    public MainController(Config config, GraphQL graphQL)
     {
-        System.out.println("graphQL added: " + (JerseyServer.getGraphQLCheat() != null));
-        this.graphQl = JerseyServer.getGraphQLCheat();
+        this.graphQl = graphQL;
+        this.config = config;
     }
+
 
     //graphQL-Endpoint
 
@@ -157,10 +158,6 @@ public class MainController
         InputStream is = classloader.getResourceAsStream("static-files/main.bundle.js");
         return is;
     }
-
-
-
-
 
 
     private String loadFile(String fileName) throws IOException
