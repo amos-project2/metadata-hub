@@ -180,8 +180,15 @@ class Worker(multiprocessing.Process):
             return
 
         # Execute ExifTool
+        files1 = []
+        for directory in package:
+            for root, subdirs, files in os.walk(directory):
+                for file in files:
+                    files1.append(root+'/'+file)
+                break
+
         try:
-            process = subprocess.Popen([f'{self._exiftool}', '-json', *package], stdout=subprocess.PIPE)
+            process = subprocess.Popen([f'{self._exiftool}', '-json', *files1], stdout=subprocess.PIPE)
             output = str(process.stdout.read(), 'utf-8') # FIXME better solution?
             if output:
                 metadata = json.loads(output)
