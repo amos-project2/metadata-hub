@@ -9,6 +9,7 @@ are required for speeding up the execution time.
 
 # Python imports
 import json
+import os
 import queue
 import hashlib
 import logging
@@ -101,7 +102,7 @@ class Worker(multiprocessing.Process):
 
         """
         # Make validity check (if any of these are missing, the element can't be inserted into the database)
-        for element in ['Directory', 'FileName', 'FileType', 'FileSize']:
+        for element in ['Directory', 'FileName']:
             if element not in exif:
                 return '0'
 
@@ -177,6 +178,7 @@ class Worker(multiprocessing.Process):
         if not package:
             clean_up()
             return
+
         # Execute ExifTool
         try:
             process = subprocess.Popen([f'{self._exiftool}', '-json', *package], stdout=subprocess.PIPE)
@@ -197,7 +199,9 @@ class Worker(multiprocessing.Process):
         # create the value string with the tree walk id already inserted
         value = (f'\'{self._tree_walk_id}\', ')
         inserts = []
+        total = 0
         for result in metadata:
+            total+=1
             # get the exif output for file x
             values = self.createInsert(result, value)
             # Check if result is valid

@@ -80,6 +80,8 @@ class DatabaseConnection:
         try:
             curs.execute(insert_cmd)
         except:
+            curs.close()
+            self.con.rollback()
             raise
         try:
             dbID = curs.fetchone()[0]
