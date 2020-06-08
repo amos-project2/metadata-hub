@@ -1,6 +1,6 @@
 ## Database
-All file metadata analyzed by the crawler gets inserted in a [PostgreSQL](https://www.postgresql.org/) Database.
-Also information about the crawls started by the crawler Component is stored in the database.
+All file metadata analyzed by the crawler gets inserted in a [PostgreSQL](https://www.postgresql.org/) database.
+As well as information about the crawls, which get started by the crawler Component, are stored in the database.
 
 ### Database Setup
 1. Create the Database Role or Import the Database (/metadatahub/metadatahub-role.sql)
@@ -38,7 +38,7 @@ id(bigint)                -> primary key (uses autoincrement sequence)
 dir_path(text)            -> starting directory of the crawl
 name(text)                -> specified name of the crawler
 status(text)              -> status of the crawl (running, finished, suspended, abborted, ...)
-crawl_config(text)        -> latest used crawl_config by the crawl, only for user-presentation purposes
+crawl_config(text)        -> latest used crawl_config by the crawl
 analyzed_dirs(jsonb)      -> array of currently analyzed dirs at "update_time"
 starting_time(date)       -> start time of the crawler job
 finished_time(date)       -> the end of the first crawler-job
@@ -60,3 +60,5 @@ access_time(date)         -> time the file was last accessed
 modification_time(date)   -> time the file was last modified
 file_hash(text)           -> sha-256 hash of the file
 ```
+##### files.metadata
+[![Ooops, there should be an image :(](https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/Database/database_files.JPG?raw=true)](https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/Database/database_files.JPG?raw=true)

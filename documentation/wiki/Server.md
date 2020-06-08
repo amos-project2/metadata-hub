@@ -3,9 +3,9 @@ This component uses [GraphQL-Java](https://graphql-java.com) to query the postgr
 User can directly interact with the API or use the Web User Interface to retrieve metadata information.
 
 ## Application Programming Interface
-The queries are sent to the http-server using the http POST method.
+The GraphQL queries are sent to the http-server using the http POST method.
 Port and URI of the server are set by the configuration file (metdatahub/configs/environments.deployment.json).
-The default Port is 8080 and the default URI is localhost and the path to the http POST interface is "/graphql".
+The default Port is 8080, and the default URI is localhost, and the path to the http POST interface is "/graphql".
 
 Using all that information we can now send GraphQL-queries to the server.
 When the server is running a GraphiQL test console can be found here: http://localhost:8080/testconsole/
@@ -41,7 +41,7 @@ that the query reutrns all the fields of "File".
 
 ### GraphQL Schema
 
-Now we will take a closer look at the Graphl Schema which defines the syntax of our query.
+Now we will take a closer look at the GraphQL Schema which defines the syntax of our query.
 Only the most important information is displayed here.
 The exact schema can be found in /metadata-hub/server/src/main/resources/schema.graphqls
 
@@ -49,7 +49,8 @@ The exact schema can be found in /metadata-hub/server/src/main/resources/schema.
 
 [![Ooops, there should be an image :(](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/File.PNG?raw=true)](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/File.PNG?raw=true)
 
-"File" is our object type which gets returned by searchForFileMeta and represent our files in the server. It has different fields which are also represented in some way in the database.
+"File" is our object type which gets returned by the query searchForFileMeta() and represents our files in the server.
+It has different fields which are also represented in some way in the database.
 Most metadata will be in the field "metadata", which is a list of "Metadatum" Object Types. The "Metadatum" Object Type can be seen directly below.
 #### Metadatum
 
@@ -59,7 +60,9 @@ Most metadata will be in the field "metadata", which is a list of "Metadatum" Ob
 #### searchForFileMetadata()
 [![Ooops, there should be an image :(](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/searchForMetadata.PNG?raw=true)](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/searchForMetadata.PNG?raw=true)
 
-"searchForFileMetadata()" is our only GraphQL query and it offers a lot of options to specify which file metadata we want to have returned.
+"searchForFileMetadata()" is our only GraphQL query, and it offers a lot of options to specify which file metadata we want to have returned.
+Using the options metadata_attributes, metadata_values, metadata_options it can query for any metadatum using the specified options.
+An example can be seen above, in the "complicated GraphQL" query example.
 ```
 searchForFileMetadata:
     Searches for all file metadata dependent on the specified search options.
@@ -96,6 +99,19 @@ searchForFileMetadata:
     selected_attributes: For all file metadata only the specified metadata attributes are returned.
     limitFetchingSize: Limits how many files will get fetched by the search.
 ```
+###MetadataOption
+[![Ooops, there should be an image :(](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/searchForMetadata.PNG?raw=true)](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/searchForMetadata.PNG?raw=true)
+These are the options that can be used on metadata attributes to check for specific values.
+````
+Different options for checking Strings for patterns:
+included: the String has the pattern included
+excluded: the String does not! have the pattern included
+equal: the String has to exactly match the pattern
+bigger: the String has to be lexicographically bigger than the pattern
+smaller: the String has to be lexicogarphicaly smaller than the pattern
+exists: the String is not NULL
+````
+
 ## Web User Interface
 Using the Web UI a User can send queries in GraphQL syntax, but it also provides a form query, where different search options
 can be used without knowing GraphQL syntax. More information about the Web UI can be found in its own documentation page.
