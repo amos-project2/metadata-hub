@@ -1,4 +1,4 @@
-package JerseyServer;
+package JerseyServer.Impl;
 
 import Start.Start;
 import org.slf4j.Logger;

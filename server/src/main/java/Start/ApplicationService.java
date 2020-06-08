@@ -1,7 +1,7 @@
 package Start;
 
 import Database.DatabaseService;
-import JerseyServer.JerseyServer;
+import JerseyServer.HttpServer;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -10,7 +10,7 @@ import com.google.inject.Singleton;
 public class ApplicationService
 {
     @Inject DatabaseService database;
-    @Inject JerseyServer jerseyServer;
+    @Inject HttpServer jerseyServer;
 
 
     public void startAll()

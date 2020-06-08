@@ -1,48 +1,46 @@
-package JerseyServer;
+package JerseyServer.Impl;
 
 import Config.Config;
-import Start.Start;
+import HttpController.Impl.MainControllerImpl;
+import HttpController.MainController;
+import JerseyServer.HttpServer;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import graphql.GraphQL;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Singleton
-public class JerseyServer
+public class JerseyServerImpl implements HttpServer
 {
     private final GraphQL graphQL;
 
     private Config config;
     private static URI BASE_URI;
     private final ResourceConfig resourceConfig;
-    private final HttpServer server;
+    private final org.glassfish.grizzly.http.server.HttpServer server;
     private boolean isStarted = false;
 
     @Inject
-    public JerseyServer(GraphQL graphQl, Config config)
+    public JerseyServerImpl(GraphQL graphQl, Config config)
     {
         this.config = config;
         BASE_URI = UriBuilder.fromUri("http://" + config.getProperty("server-host") + "/")
             .port(Integer.parseInt(config.getProperty("server-port"))).build();
         this.graphQL = graphQl;
         resourceConfig = new ResourceConfig(/*MainController.class*/);
-        resourceConfig.register(new MainController(config, this.graphQL));
+        resourceConfig.register(new MainControllerImpl(config, this.graphQL));
         resourceConfig.register(ErrorHandler.class);
         this.server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, resourceConfig, false);
     }
 
-    public void start()
+    @Override public void start()
     {
         if (isStarted) throw new RuntimeException("Server is/was already started");
         isStarted = true;
@@ -71,16 +69,16 @@ public class JerseyServer
         }
         catch (IOException ex)
         {
-            Logger.getLogger(JerseyServer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(HttpServer.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    public void shutdown()
+    @Override public void shutdown()
     {
         this.server.shutdown();
     }
 
-    public void shutdownNow()
+    @Override public void shutdownNow()
     {
         this.server.shutdownNow();
     }

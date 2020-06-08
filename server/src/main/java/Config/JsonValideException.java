@@ -1,6 +1,5 @@
 package Config;
 
-import Config.Config;
 
 public class JsonValideException extends Exception
 {

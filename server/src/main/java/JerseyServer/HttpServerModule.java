@@ -1,21 +1,15 @@
 package JerseyServer;
 
+import JerseyServer.Impl.JerseyServerImpl;
 import com.google.inject.AbstractModule;
+import com.google.inject.Singleton;
 
 public class HttpServerModule extends AbstractModule
 {
-//    @Provides
-//    @Singleton
-//    static JerseyServer provideDatabaseController(GraphQL graphQL, Config config)
-//    {
-//        return new JerseyServer(graphQL, config);
-//    }
-
-
     @Override
     protected void configure()
     {
-       // this.bind(JerseyServer.class).to(JerseyServer.class).in(Singleton.class);
+        this.bind(HttpServer.class).to(JerseyServerImpl.class).in(Singleton.class);
     }
 
 }

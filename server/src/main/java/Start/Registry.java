@@ -1,13 +1,5 @@
 package Start;
 
-import Database.Database;
-import GraphQL.MainGraphQLDataFetchers;
-import GraphQL.MainGraphQLProvider;
-import JerseyServer.JerseyServer;
-import lombok.Getter;
-
-import java.io.IOException;
-
 //TODO maybe seperate registry and creation of its elements
 public class Registry
 {

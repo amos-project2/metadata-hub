@@ -2,6 +2,7 @@ package Config.Impl;
 
 import Config.ApplicationConfig;
 import Config.Config;
+import Config.JsonValideException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import org.slf4j.Logger;

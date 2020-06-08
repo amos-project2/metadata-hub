@@ -1,7 +1,7 @@
-package JerseyServer;
+package HttpController.Impl;
 
 import Config.Config;
-import Start.Start;
+import HttpController.MainController;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.ExecutionResult;
@@ -12,28 +12,24 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.*;
 import java.util.Map;
-import java.util.Properties;
 
-@Path("/")
-@Singleton
-public class MainController
+
+public class MainControllerImpl implements MainController
 {
     private final GraphQL graphQl;
     private final Config config;
 
-    public MainController(Config config, GraphQL graphQL)
+    public MainControllerImpl(Config config, GraphQL graphQL)
     {
         this.graphQl = graphQL;
         this.config = config;
+        System.out.println("createddddd");
     }
 
 
     //graphQL-Endpoint
 
-    @POST
-    @Produces("application/json")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Path("/graphql")
+
     public String graphQLEndpointJsonInput(String jsonData) throws IOException
     {
         ObjectMapper mapper = new ObjectMapper();
@@ -49,9 +45,7 @@ public class MainController
         return this.graphQlEndpoint(query, variables);
     }
 
-    @POST
-    @Produces("application/json")
-    @Path("/graphql")
+
     public String graphQLEndpointTextInput(String bodyData) throws IOException
     {
         String query = bodyData == null ? "" : bodyData;
@@ -61,9 +55,6 @@ public class MainController
     }
 
 
-    @GET
-    @Produces("application/json")
-    @Path("/graphql")
     public String graphQLEndpointGetInput(@QueryParam("query") String queryData) throws IOException
     {
         String query = queryData == null ? "" : queryData;
@@ -73,7 +64,7 @@ public class MainController
     }
 
 
-    public String graphQlEndpoint(String query, String variables) throws JsonProcessingException
+    @Override public String graphQlEndpoint(String query, String variables) throws JsonProcessingException
     {
         ExecutionResult execute;
 
@@ -93,9 +84,7 @@ public class MainController
 
     //graphQL-debugging-console
 
-    @GET
-    @Produces({MediaType.TEXT_HTML})
-    @Path("/testconsole")
+
     public String getTestConsole() throws IOException
     {
         String out = this.loadFile("graphiql/graphiql.html");
@@ -107,17 +96,13 @@ public class MainController
 
     //for testing purposes:
 
-    @GET
-    @Produces("text/plain")
-    @Path("/error1")
+
     public String getError1()
     {
         throw new WebApplicationException("error 1", 403);
     }
 
-    @GET
-    @Produces("text/plain")
-    @Path("/error2")
+
     public String getError2() throws Exception
     {
         //a none WebApplicationException, the message here may not be propagated to the client
@@ -128,9 +113,6 @@ public class MainController
     //web-ui-output
 
 
-    @GET
-    @Produces({MediaType.TEXT_HTML})
-    @Path("/")
     public String getIndexHtml() throws IOException
     {
         String out = this.loadFile("web-ui/index.html");
@@ -139,9 +121,7 @@ public class MainController
         return content;
     }
 
-    @GET
-    @Produces({"application/javascript"})
-    @Path("/bundle.js")
+
     public InputStream getBundleJs() throws IOException
     {
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
@@ -149,9 +129,7 @@ public class MainController
         return is;
     }
 
-    @GET
-    @Produces({"application/javascript"})
-    @Path("/main.bundle.js")
+
     public InputStream getMainBundleJs() throws IOException
     {
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
