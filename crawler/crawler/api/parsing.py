@@ -8,8 +8,6 @@ from typing import Dict, Any, List, Union, Tuple
 #: Required keys of the form data
 REQUIRED_PROPERTIES = [
     'inputs',
-    'output',
-    'trace',
     'exiftool',
     'powerLevel',
     'clearTrace',
@@ -71,36 +69,6 @@ def _parse_inputs(inputs: str) -> List[Dict[str, Union[str, bool]]]:
         return result
     except ValueError:
         return None
-
-
-def _parse_output(output: str) -> str:
-    """Parse the output directory
-
-    Args:
-        output (str): output input
-
-    Returns:
-        str: input or None on error
-
-    """
-    if not _check_input_type(output):
-        return None
-    return output
-
-
-def _parse_trace(trace: str) -> str:
-    """Parse the trace file.
-
-    Args:
-        trace (str): trace file input
-
-    Returns:
-        str: input or None on error
-
-    """
-    if not _check_input_type(trace):
-        return None
-    return trace
 
 
 def _parse_exiftool(exiftool: str) -> str:
@@ -248,12 +216,6 @@ def parse(form_data: dict) -> Tuple[dict, bool]:
     inputs = _parse_inputs(form_data.get('inputs'))
     if inputs is None:
         raise APIParsingException('Invalid input field: Input directories')
-    output = _parse_output(form_data.get('output'))
-    if output is None:
-        raise APIParsingException('Invalid input field: Output directory')
-    trace = _parse_trace(form_data.get('trace'))
-    if trace is None:
-        raise APIParsingException('Invalid input field: Trace file')
     exiftool = _parse_exiftool(form_data.get('exiftool'))
     if exiftool is None:
         raise APIParsingException('Invalid input field: ExifTool')
@@ -278,8 +240,6 @@ def parse(form_data: dict) -> Tuple[dict, bool]:
     result = {
         'paths': {
             'inputs': inputs,
-            'output': output,
-            'trace': trace,
             'exiftool': exiftool
         },
         'options': {
