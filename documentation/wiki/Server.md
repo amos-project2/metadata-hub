@@ -99,7 +99,7 @@ searchForFileMetadata:
     selected_attributes: For all file metadata only the specified metadata attributes are returned.
     limitFetchingSize: Limits how many files will get fetched by the search.
 ```
-###MetadataOption
+### MetadataOption
 [![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/f137a84ebb7c7d10349c14ef065435de22ca475d/documentation/images/server/server_metadata_option.PNG)](https://raw.githubusercontent.com/amos-project2/metadata-hub/f137a84ebb7c7d10349c14ef065435de22ca475d/documentation/images/server/server_metadata_option.PNG)
 <br>These are the options that can be used on metadata attributes to check for specific values.
 ````
