@@ -1,8 +1,10 @@
-package GraphQL;
+package GraphQL.Provider.Impl;
 
-import Database.Database;
+import GraphQL.Fetcher.MainGraphQLDataFetchers;
+import GraphQL.Provider.MainGraphQLProvider;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
@@ -11,6 +13,7 @@ import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.Getter;
+import GraphQL.*;
 import lombok.RequiredArgsConstructor;
 
 
@@ -19,15 +22,15 @@ import java.net.URL;
 
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 
-
 @RequiredArgsConstructor
 @Singleton
-public class MainGraphQLProvider
+public class MainGraphQLProviderImpl implements MainGraphQLProvider
 {
     private final MainGraphQLDataFetchers mainGraphQLDataFetchers;
-    private final Database database;
     @Getter private GraphQL graphQL;
 
+
+    @Override
     public MainGraphQLProvider init() throws IOException
     {
         URL url = Resources.getResource("schema.graphqls");

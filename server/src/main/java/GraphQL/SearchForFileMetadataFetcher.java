@@ -1,12 +1,11 @@
 package GraphQL;
 
 import Database.Database;
-import GraphQL.Model.*;
-
+import GraphQL.Model.File;
+import GraphQL.Model.Metadatum;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import graphql.schema.DataFetcher;
+import graphql.schema.DataFetchingEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,43 +14,36 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-
-@Singleton
-public class MainGraphQLDataFetchers
+public class SearchForFileMetadataFetcher implements DataFetcher
 {
-    private static final Logger log = LoggerFactory.getLogger(MainGraphQLDataFetchers.class);
+
+    private static final Logger log = LoggerFactory.getLogger(SearchForFileMetadataFetcher.class);
+
     private final Database database;
 
-    @Inject
-    public MainGraphQLDataFetchers(Database database)
+    public SearchForFileMetadataFetcher(Database database)
     {
         this.database = database;
     }
 
-    /**
-     * Data Fetcher is used by this GraphQL Query:
-     * searchForPattern(options...) : [File]
-     * <p>
-     * Concrete method description can be find in the schema.graphqls
-     */
+    @Override
     @SuppressWarnings({"rawtypes"})
-    public DataFetcher searchForFileMetadataFetcher()
+    public Object get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception
     {
-        return (DataFetcher<List<File>>) dataFetchingEnvironment ->
-        {
 
-            Map<String, Object> graphQLArguments = dataFetchingEnvironment.getArguments();
-            log.info("graphQLArguments: " + graphQLArguments.toString());
+        Map<String, Object> graphQLArguments = dataFetchingEnvironment.getArguments();
+        log.info("graphQLArguments: " + graphQLArguments.toString());
 
-            final ArrayList<String> selected_attributes = dataFetchingEnvironment.getArgument(GraphQLSchemaDefinition.QUERY_SELECTED_ATTRIBUTES);
+        final ArrayList<String> selected_attributes = dataFetchingEnvironment.getArgument(GraphQLSchemaDefinition.QUERY_SELECTED_ATTRIBUTES);
 
-            String sqlQuery = PreparedStatementCreator.buildSQLQuery(graphQLArguments);
-            log.info("SQLQuery: " + sqlQuery);
-            return queryDatabase(sqlQuery, selected_attributes);
-        };
-    }
+        String sqlQuery = PreparedStatementCreator.buildSQLQuery(graphQLArguments);
+        log.info("SQLQuery: " + sqlQuery);
+        return queryDatabase(sqlQuery, selected_attributes);
+    };
 
     @SuppressWarnings("unchecked")
     private List<File> queryDatabase(String sqlQuery, ArrayList<String> selected_attributes) throws SQLException, IOException
