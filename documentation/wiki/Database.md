@@ -32,7 +32,7 @@ The database uses two tables.
 * The "crawls" table saves information about started crawls/tree_walks.
 * The "files" table saves information about all analyzed file metadata, most metadata information lands in the jsonb-File "metadata".
 ##### crawls
-[![Ooops, there should be an image :(](https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/Database/database_crawls.JPG?raw=true)](https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/Database/database_crawls.JPG?raw=true)
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/f137a84ebb7c7d10349c14ef065435de22ca475d/documentation/images/database/database_crawls.PNG)](https://raw.githubusercontent.com/amos-project2/metadata-hub/f137a84ebb7c7d10349c14ef065435de22ca475d/documentation/images/database/database_crawls.PNG)
 ```
 id(bigint)                -> primary key (uses autoincrement sequence)
 dir_path(text)            -> starting directory of the crawl
@@ -46,7 +46,7 @@ update_time(date)         -> time of the latest update of the crawl data
 analyzed_dirs_hash(text)  -> sha-256 hash of analyzed_dirs (uses trigger to create hash on inserting and updating)
 ```
 ##### files
-[![Ooops, there should be an image :(](https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/Database/database_files.JPG?raw=true)](https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/Database/database_files.JPG?raw=true)
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/f137a84ebb7c7d10349c14ef065435de22ca475d/documentation/images/database/database_files.PNG)](https://raw.githubusercontent.com/amos-project2/metadata-hub/f137a84ebb7c7d10349c14ef065435de22ca475d/documentation/images/database/database_files.PNG)
 ```
 id(bigint)                -> primary key (uses autoincrement sequence)
 crawl_id(bigint)          -> foreign key "crawls.id"
@@ -61,4 +61,4 @@ modification_time(date)   -> time the file was last modified
 file_hash(text)           -> sha-256 hash of the file
 ```
 ##### files.metadata
-[![Ooops, there should be an image :(](https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/Database/database_files.JPG?raw=true)](https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/Database/database_files.JPG?raw=true)
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/f137a84ebb7c7d10349c14ef065435de22ca475d/documentation/images/database/database_file_metadata.PNG)](https://raw.githubusercontent.com/amos-project2/metadata-hub/f137a84ebb7c7d10349c14ef065435de22ca475d/documentation/images/database/database_file_metadata.PNG)

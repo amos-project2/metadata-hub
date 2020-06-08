@@ -12,7 +12,7 @@ When the server is running a GraphiQL test console can be found here: http://loc
 In the console we find information about the querys syntax and what it will retrieve.
 For the next two queries we will use the GraphiQL console to demonstrate GraphQL.
 * A very simple GraphQL query looks like this:
-[![Ooops, there should be an image :(](https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/server/simple_graphQL.JPG?raw=true)](https://github.com/amos-project2/metadata-hub/blob/java_application/documentation/images/server/simple_graphQL.JPG?raw=true)
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/f137a84ebb7c7d10349c14ef065435de22ca475d/documentation/images/server/simple_graphQL.JPG)](https://raw.githubusercontent.com/amos-project2/metadata-hub/f137a84ebb7c7d10349c14ef065435de22ca475d/documentation/images/server/simple_graphQL.JPG)
 ```
 On the left side we can see the query and on the right the result.
 The Query "searchForFileMetadata()" has two Arguments, a list of file ids and a list of metadata attributes we want to have returned.
@@ -23,7 +23,7 @@ in which fields of metadata we are interested in, in our example that is the nam
 ```
 
 A more complicated GraphQL query looks like this:
-[![Ooops, there should be an image :(](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/complicated_graphQL.PNG?raw=true)](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/complicated_graphQL.PNG?raw=true)
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/f137a84ebb7c7d10349c14ef065435de22ca475d/documentation/images/server/complicated_graphQL.PNG)](https://raw.githubusercontent.com/amos-project2/metadata-hub/f137a84ebb7c7d10349c14ef065435de22ca475d/documentation/images/server/complicated_graphQL.PNG)
 
 ```
 Now our new query has 6 arguments.
@@ -100,8 +100,8 @@ searchForFileMetadata:
     limitFetchingSize: Limits how many files will get fetched by the search.
 ```
 ###MetadataOption
-[![Ooops, there should be an image :(](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/searchForMetadata.PNG?raw=true)](https://github.com/amos-project2/metadata-hub/blob/develop/documentation/images/server/searchForMetadata.PNG?raw=true)
-These are the options that can be used on metadata attributes to check for specific values.
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/f137a84ebb7c7d10349c14ef065435de22ca475d/documentation/images/server/server_metadata_option.PNG)](https://raw.githubusercontent.com/amos-project2/metadata-hub/f137a84ebb7c7d10349c14ef065435de22ca475d/documentation/images/server/server_metadata_option.PNG)
+<br>These are the options that can be used on metadata attributes to check for specific values.
 ````
 Different options for checking Strings for patterns:
 included: the String has the pattern included
