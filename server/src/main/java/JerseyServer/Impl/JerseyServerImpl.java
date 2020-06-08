@@ -2,10 +2,8 @@ package JerseyServer.Impl;
 
 import Config.Config;
 import HttpController.Impl.MainControllerImpl;
-import HttpController.MainController;
 import JerseyServer.HttpServer;
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import graphql.GraphQL;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;

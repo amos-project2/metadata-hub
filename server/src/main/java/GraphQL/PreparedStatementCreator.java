@@ -1,7 +1,6 @@
 package GraphQL;
 
 import Database.DatabaseSchemaDefinition;
-import com.google.common.graph.Graph;
 
 import java.util.List;
 import java.util.Map;

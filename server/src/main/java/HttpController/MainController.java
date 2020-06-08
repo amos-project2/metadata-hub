@@ -2,7 +2,6 @@ package HttpController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;

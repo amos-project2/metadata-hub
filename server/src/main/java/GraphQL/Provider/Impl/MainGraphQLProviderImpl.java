@@ -1,11 +1,10 @@
 package GraphQL.Provider.Impl;
 
 import GraphQL.Fetcher.MainGraphQLDataFetchers;
+import GraphQL.GraphQLSchemaDefinition;
 import GraphQL.Provider.MainGraphQLProvider;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
@@ -13,9 +12,7 @@ import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.Getter;
-import GraphQL.*;
 import lombok.RequiredArgsConstructor;
-
 
 import java.io.IOException;
 import java.net.URL;

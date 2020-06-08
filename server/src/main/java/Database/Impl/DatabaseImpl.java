@@ -4,7 +4,6 @@ import Config.Config;
 import Database.Database;
 import Database.DatabaseService;
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.Getter;

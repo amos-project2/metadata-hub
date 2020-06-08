@@ -2,10 +2,8 @@ package GraphQL.Fetcher.Impl;
 
 import Database.Database;
 import GraphQL.Fetcher.MainGraphQLDataFetchers;
-
 import GraphQL.SearchForFileMetadataFetcher;
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import graphql.schema.DataFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

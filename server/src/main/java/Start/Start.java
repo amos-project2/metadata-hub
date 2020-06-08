@@ -1,8 +1,7 @@
 package Start;
 
 import Config.ApplicationConfig;
-
-import Config.*;
+import Config.Config;
 import Config.JsonValideException;
 import lombok.Getter;
 import org.slf4j.Logger;

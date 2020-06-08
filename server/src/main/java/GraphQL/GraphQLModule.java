@@ -1,10 +1,8 @@
 package GraphQL;
 
-import Database.Database;
 import GraphQL.Fetcher.Impl.MainGraphQLDataFetchersImpl;
 import GraphQL.Fetcher.MainGraphQLDataFetchers;
 import GraphQL.Provider.Impl.MainGraphQLProviderImpl;
-import GraphQL.Provider.MainGraphQLProvider;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
