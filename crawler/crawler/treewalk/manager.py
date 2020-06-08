@@ -99,20 +99,22 @@ class TreeWalkManager(threading.Thread):
                 _, queue = self._workers[index]
                 queue.put((communication.WORKER_PACKAGE, package))
             self._workers_finished.wait()
-            analyzed_dirs = [
-                directory
+            # The single packages contain file names, so retrive the directories here
+            analyzed_dirs = list(set([
+                os.path.dirname(directory)
                 for worker_package in packages for directory in worker_package
-            ]
+            ]))
             self._db_connection.update_status(self._tree_walk_id, analyzed_dirs)
             self._workers_finished.clear()
 
         def work_split() -> None:
             """Work on the work packages that have to be split across workers."""
             directory = self._work_packages_split.pop()
-            files = [
-                os.path.join(directory, fpath)
-                for fpath in os.listdir(directory)
+            entries = [
+                os.path.join(directory, entry)
+                for entry in os.listdir(directory)
             ]
+            files = [entry for entry in entries if os.path.isfile(entry)]
             tmp_lists = [[] for _ in range(self._num_workers)]
             for index, fpath in enumerate(files):
                 tmp_lists[index % len(tmp_lists)].append(fpath)
