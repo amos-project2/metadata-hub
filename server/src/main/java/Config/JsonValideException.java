@@ -1,4 +1,4 @@
-package Config.Impl;
+package Config;
 
 import Config.Config;
 

@@ -1,7 +1,6 @@
 package Config;
 
 import Config.Impl.ApplicationConfigImpl;
-import Config.Impl.JsonValideException;
 
 import java.io.IOException;
 import java.util.Map;

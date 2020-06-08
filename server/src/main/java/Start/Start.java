@@ -3,7 +3,7 @@ package Start;
 import Config.ApplicationConfig;
 
 import Config.*;
-import Config.Impl.JsonValideException;
+import Config.JsonValideException;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
