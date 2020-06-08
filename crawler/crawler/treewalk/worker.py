@@ -110,7 +110,9 @@ class Worker(multiprocessing.Process):
         # Extract the metadata for the 'files' table
         for i in ['Directory', 'FileName', 'FileType']:
             try:
-                value += f"'{exif[i]}', "
+                # FIXME: Quickfix for handling ' in filenames
+                tmp = exif[i].replace("\'", "\'\'")
+                value += f"'{tmp}', "
             except:
                 value += 'NULL, '
         for i in ['FileSize']:
@@ -199,6 +201,12 @@ class Worker(multiprocessing.Process):
         value = (f'\'{self._tree_walk_id}\', ')
         inserts = []
         for result in metadata:
+
+            # FIXME: Quickfix for handling ' in filenames
+            for key, val in result.items():
+                if isinstance(val, str) and "\'" in val:
+                    result[key] = val.replace("\'", "\'\'")
+
             # get the exif output for file x
             values = self.createInsert(result, value)
             # Check if result is valid
@@ -206,7 +214,7 @@ class Worker(multiprocessing.Process):
                 _logger.warning('Can\'t insert element into database because validity check failed.')
                 continue
             # compute the hash256 and add it to the values string
-            with open(f"{result['Directory']}/{result['FileName']}", "rb") as file:
+            with open(f"{result['Directory']}/{result['FileName']}".replace("\'\'", "\'"), "rb") as file:
                 bytes = file.read()
                 hash256 = hashlib.sha256(bytes).hexdigest()
             # add the value string to the rest for insert batching
