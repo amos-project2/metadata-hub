@@ -1,10 +1,9 @@
 package Start;
 
-import Benchmark.BenchmarkTest;
 import Config.ApplicationConfig;
 
 import Config.*;
-import Database.Database;
+import Config.Impl.JsonValideException;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,8 +94,6 @@ public class Start
     {
         ApplicationService applicationService = this.dependenciesContainer.getInjector().getInstance(ApplicationService.class);
         applicationService.startAll();
-//        Database instance = this.dependenciesContainer.getInjector().getInstance(Database.class);
-//        System.out.println(instance.gC());
     }
 
     private  void executeRuntimeTests()

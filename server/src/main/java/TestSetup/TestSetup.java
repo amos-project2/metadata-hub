@@ -1,7 +1,7 @@
 package TestSetup;
 
-import Config.ApplicationConfig;
 import Config.Config;
+import Config.Impl.ApplicationConfigImpl;
 import Database.Database;
 import GraphQL.MainGraphQLDataFetchers;
 import GraphQL.MainGraphQLProvider;
@@ -20,7 +20,7 @@ public class TestSetup {
     public static void setupServer(DependenciesContainer dependenciesContainer){
         Config config = null;
         try {
-            config = new ApplicationConfig(null, System.getenv("METADATAHUB_SERVER_CONFIG")).getConfig();
+            config = new ApplicationConfigImpl(null, System.getenv("METADATAHUB_SERVER_CONFIG")).getConfig();
         } catch (Exception e) {
             e.printStackTrace();
         }
