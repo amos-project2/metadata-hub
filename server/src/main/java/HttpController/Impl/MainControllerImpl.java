@@ -23,7 +23,6 @@ public class MainControllerImpl implements MainController
     {
         this.graphQl = graphQL;
         this.config = config;
-        System.out.println("createddddd");
     }
 
 
