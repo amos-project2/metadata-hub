@@ -54,3 +54,17 @@ More options you have there:
 * **Execute the graphql-code and get the result as json.**
 
 More informations about GraphQl and GraphiQL you can find in the [server-section](https://github.com/amos-project2/metadata-hub/wiki/Server).
+
+# Impressions
+
+
+**[A short video as overview over the webui](https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/gifs/webui/complete-overview.gif)**
+
+
+
+**Two pictures about using special metadata attributes in the filter and selection area**
+
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/images/webui/specialAttributes.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/images/webui/specialAttributes.png)
+
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/images/webui/specialAttributesResult.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/images/webui/specialAttributesResult.png)
+
