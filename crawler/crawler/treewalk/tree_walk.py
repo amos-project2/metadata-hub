@@ -82,10 +82,10 @@ def create_work_packages(
 
         filesTmp = []
         for directory in workPackageTmp[0]:
-                for root, subdirs, files in os.walk(directory):
-                    for file in files:
-                        filesTmp.append(root + '/' + file)
-                    break
+            for root, subdirs, files in os.walk(directory):
+                for file in files:
+                    filesTmp.append(root + '/' + file)
+                break
         workPackages.append(filesTmp)
         if len(directorySize) < 1:
             break
