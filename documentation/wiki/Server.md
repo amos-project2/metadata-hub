@@ -1,4 +1,4 @@
-# Server
+## Server
 This component uses [GraphQL-Java](https://graphql-java.com) to query the postgreSQL database for file metadata information.
 User can directly interact with the API or use the Web User Interface to retrieve metadata information.
 
