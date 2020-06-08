@@ -16,7 +16,7 @@ import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@Singleton
+
 public class JerseyServerImpl implements HttpServer
 {
     private final GraphQL graphQL;

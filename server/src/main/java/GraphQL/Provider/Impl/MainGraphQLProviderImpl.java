@@ -23,7 +23,6 @@ import java.net.URL;
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 
 @RequiredArgsConstructor
-@Singleton
 public class MainGraphQLProviderImpl implements MainGraphQLProvider
 {
     private final MainGraphQLDataFetchers mainGraphQLDataFetchers;

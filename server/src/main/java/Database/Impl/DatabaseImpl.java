@@ -21,7 +21,6 @@ import java.util.Properties;
  * Its a provider and a Service, cause we can start and stop the connection to the database here too
  * So the name Database here is the best option
  */
-@Singleton
 public class DatabaseImpl implements Database, DatabaseService
 {
     private final HikariConfig hikariConfig;
