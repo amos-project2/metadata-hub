@@ -195,7 +195,7 @@ class Worker(multiprocessing.Process):
         # create the default insert for the database
         insertin = ('INSERT INTO files '
                     '(crawl_id, dir_path, name, type, size, creation_time, access_time, modification_time, metadata'
-                    ', file_hash) '
+                    ', file_hash, deleted) '
                     'VALUES ')
         # create the value string with the tree walk id already inserted
         value = (f'\'{self._tree_walk_id}\', ')
@@ -218,7 +218,7 @@ class Worker(multiprocessing.Process):
                 bytes = file.read()
                 hash256 = hashlib.sha256(bytes).hexdigest()
             # add the value string to the rest for insert batching
-            inserts.append(f'({values}\'{json.dumps(result)}\', \'{hash256}\')')
+            inserts.append(f'({values}\'{json.dumps(result)}\', \'{hash256}\', \'False\')')
 
         # insert into the database
         try:

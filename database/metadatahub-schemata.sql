@@ -159,7 +159,9 @@ CREATE TABLE public.files (
     creation_time timestamp with time zone NOT NULL,
     access_time timestamp with time zone NOT NULL,
     modification_time timestamp with time zone NOT NULL,
-    file_hash text NOT NULL
+    file_hash text NOT NULL,
+    deleted boolean NOT NULL,
+    deleted_time timestamp
 );
 
 
