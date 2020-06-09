@@ -1,7 +1,10 @@
 package JerseyServer.Impl;
 
 import Config.Config;
-import HttpController.Impl.MainControllerImpl;
+import HttpController.CrawlerProxyController;
+import HttpController.GraphQLController;
+import HttpController.TestconsoleController;
+import HttpController.WebuiController;
 import JerseyServer.HttpServer;
 import com.google.inject.Inject;
 import graphql.GraphQL;
@@ -26,19 +29,28 @@ public class JerseyServerImpl implements HttpServer
     private boolean isStarted = false;
 
     @Inject
-    public JerseyServerImpl(GraphQL graphQl, Config config)
+    public JerseyServerImpl(GraphQL graphQl, Config config,
+                            CrawlerProxyController c0, GraphQLController c1,
+                            TestconsoleController c2, WebuiController c3
+    )
     {
         this.config = config;
         BASE_URI = UriBuilder.fromUri("http://" + config.getProperty("server-host") + "/")
             .port(Integer.parseInt(config.getProperty("server-port"))).build();
         this.graphQL = graphQl;
-        resourceConfig = new ResourceConfig(/*MainController.class*/);
-        resourceConfig.register(new MainControllerImpl(config, this.graphQL));
+
+        resourceConfig = new ResourceConfig();
+        resourceConfig.register(c0);
+        resourceConfig.register(c1);
+        resourceConfig.register(c2);
+        resourceConfig.register(c3);
+
         resourceConfig.register(ErrorHandler.class);
         this.server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, resourceConfig, false);
     }
 
-    @Override public void start()
+    @Override
+    public void start()
     {
         if (isStarted) throw new RuntimeException("Server is/was already started");
         isStarted = true;
@@ -71,12 +83,14 @@ public class JerseyServerImpl implements HttpServer
         }
     }
 
-    @Override public void shutdown()
+    @Override
+    public void shutdown()
     {
         this.server.shutdown();
     }
 
-    @Override public void shutdownNow()
+    @Override
+    public void shutdownNow()
     {
         this.server.shutdownNow();
     }
