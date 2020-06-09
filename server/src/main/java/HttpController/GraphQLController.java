@@ -58,10 +58,10 @@ public class GraphQLController
     @GET
     @Produces("application/json")
     @Path("/graphql")
-    public String graphQLEndpointGetInput(@QueryParam("query") String queryData) throws IOException
+    public String graphQLEndpointGetInput(@QueryParam("query") String queryData, @QueryParam("variables") String variables) throws IOException
     {
         String query = queryData == null ? "" : queryData;
-        String variables = "";
+        variables = variables == null ? "" : variables;
 
         return this.graphQlEndpoint(query, variables);
     }
