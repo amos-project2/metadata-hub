@@ -45,9 +45,6 @@ export class HashQuery extends Page {
 
         $(".q-send-hash-editor").submit(function (event) {
             event.preventDefault();
-            let filepath_input = $("#hash_file").val();
-            if( filepath_input != null){
-            }
             thisdata.resultPresenter.generateResultAndInjectIntoDom(thisdata.getQuery());
         });
 
@@ -63,12 +60,15 @@ export class HashQuery extends Page {
                 var binary = event.target.result;
                 console.log(binary);
                 var shaHash = CryptoJS.SHA256(binary).toString();
+                $("#h-input").val(shaHash);
                 console.log("ShaHash: " + shaHash);
             };
 
             // reader.readAsText(file);
             reader.readAsBinaryString(file);
             // reader.readAsDataURL(file);
+
+
         });
 
     }
