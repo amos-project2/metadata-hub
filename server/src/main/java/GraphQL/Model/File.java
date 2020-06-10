@@ -1,4 +1,4 @@
-package GraphQL.Model;
+package Model;
 
 import lombok.Data;
 
