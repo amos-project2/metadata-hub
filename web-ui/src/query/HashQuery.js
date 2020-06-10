@@ -1,6 +1,11 @@
 import {Page} from "../Page";
 import {ResultPresenter} from "../buisnesslogic/ResultPresenter";
 import * as CryptoJS from "crypto-js";
+//import {hex_sha256} from "./sha256Calculator";
+//import {sha256} from "./s2.js";
+
+
+
 
 export class HashQuery extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
@@ -43,31 +48,60 @@ export class HashQuery extends Page {
 
         let thisdata = this;
 
+        var sha256 = require('js-sha256'); //THIS HERE YOU HAVE TO ADD
+
+
         $(".q-send-hash-editor").submit(function (event) {
             event.preventDefault();
             thisdata.resultPresenter.generateResultAndInjectIntoDom(thisdata.getQuery());
         });
 
-        $("#hash_file").change(function(event){
-            event.preventDefault();
+        var input = $("#hash_file");
+        input.bind('change', function(event) {
+            let file = input[0].files[0];
+           const buffer= file.arrayBuffer();
 
-            var file = event.target.files[0];
-            console.log(file);
+
+
+           // alert(sha256.update(buffer));
+            //console.log(event);
+           // var file = event.target.files[0];
+          //  console.log(file);
             var reader = new FileReader();
 
             reader.onload = function(event){
                 console.log(event.target);
                 var binary = event.target.result;
                 console.log(binary);
+                //alert(sha256.update(binary));
                 var shaHash = CryptoJS.SHA256(binary).toString();
+                var blablub=CryptoJS.SHA256(binary);
+                console.log("hatschi");
+                console.log(hex_sha256(binary));
+                // var shaHash = CryptoJS.MD5(binary).toString();
                 $("#h-input").val(shaHash);
                 console.log("ShaHash: " + shaHash);
             };
 
             // reader.readAsText(file);
-            reader.readAsBinaryString(file);
+           // reader.readAsBinaryString(file);
+            reader.readAsArrayBuffer(file); //I DONT TESTET IT WITH BINARYSTRING
             // reader.readAsDataURL(file);
 
+
+
+            reader.onloadend = function (event) {
+                var binary = event.target.result;
+                var shaHash = CryptoJS.SHA256(binary).toString();
+
+
+                //THIS HERE IS THE IMPORTANT CHANGE
+                // npm install js-sha256
+                $("#h-input").val(sha256.update(binary));
+
+               // alert(shaHash);
+
+            };
 
         });
 
