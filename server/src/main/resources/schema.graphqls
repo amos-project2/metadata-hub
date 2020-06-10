@@ -82,6 +82,7 @@ type File{
     dir_path: String!
     name: String!
     type: String!
+    size: String
     metadata: [Metadatum!]!
     creation_time: String
     access_time: String

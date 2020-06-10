@@ -1,9 +1,6 @@
 package GraphQLQueryTests;
 
 import TestSetup.TestSetup;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.jooq.JSON;
-import org.jooq.meta.derby.sys.Sys;
 import org.jooq.tools.json.JSONArray;
 import org.jooq.tools.json.JSONObject;
 import org.jooq.tools.json.JSONParser;
@@ -11,14 +8,12 @@ import org.jooq.tools.json.ParseException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-
 
 import static org.junit.Assert.assertEquals;
 

@@ -1,6 +1,8 @@
-package GraphQL;
+package GraphQL.Provider.Impl;
 
-import Database.DatabaseProvider;
+import GraphQL.Fetcher.MainGraphQLDataFetchers;
+import GraphQL.GraphQLSchemaDefinition;
+import GraphQL.Provider.MainGraphQLProvider;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import graphql.GraphQL;
@@ -12,21 +14,20 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-
 import java.io.IOException;
 import java.net.URL;
 
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 
-
 @RequiredArgsConstructor
-public class GraphQLProvider
+public class MainGraphQLProviderImpl implements MainGraphQLProvider
 {
-    private final GraphQLDataFetchers graphQLDataFetchers;
-    private final DatabaseProvider databaseProvider;
+    private final MainGraphQLDataFetchers mainGraphQLDataFetchers;
     @Getter private GraphQL graphQL;
 
-    public GraphQLProvider init() throws IOException
+
+    @Override
+    public MainGraphQLProvider init() throws IOException
     {
         URL url = Resources.getResource("schema.graphqls");
         String sdl = Resources.toString(url, Charsets.UTF_8);
@@ -47,7 +48,7 @@ public class GraphQLProvider
     {
         return RuntimeWiring.newRuntimeWiring()
             .type(newTypeWiring("Query")
-                .dataFetcher("searchForFileMetadata", graphQLDataFetchers.searchForFileMetadataFetcher()))
+                .dataFetcher(GraphQLSchemaDefinition.QUERY_NAME, mainGraphQLDataFetchers.searchForFileMetadataFetcher()))
 
             .build();
     }

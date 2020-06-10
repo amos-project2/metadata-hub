@@ -1,4 +1,6 @@
-package Config;
+package Config.Impl;
+
+import Config.Config;
 
 import java.util.Properties;
 

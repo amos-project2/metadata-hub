@@ -1,6 +1,7 @@
-package Config;
+package Config.Impl;
 
-import graphql.validation.rules.KnownTypeNames;
+import Config.Config;
+import Config.JsonValideException;
 import lombok.Getter;
 
 import java.util.Map;

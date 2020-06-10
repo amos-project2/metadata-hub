@@ -1,10 +1,10 @@
 package Start;
 
-import Database.DatabaseProvider;
-import GraphQL.GraphQLProvider;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import Database.Database;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Injector;
 import graphql.ExecutionResult;
+import graphql.GraphQL;
 import org.jooq.Record;
 import org.jooq.Result;
 
@@ -19,21 +19,30 @@ import java.sql.SQLException;
  */
 public class RuntimeTests
 {
-    private final Registry registry;
+    private final DependenciesContainer dependenciesContainer;
+    private final Injector injector;
+    // private final Registry registry;
 
-    public RuntimeTests(Registry registry) {this.registry = registry;}
+    //public RuntimeTests(Registry registry) {this.registry = registry;}
+
+    public RuntimeTests(DependenciesContainer dependenciesContainer)
+    {
+        this.dependenciesContainer = dependenciesContainer;
+        this.injector=dependenciesContainer.getInjector();
+    }
 
     public void databaseTest() throws SQLException
     {
-        DatabaseProvider databaseProvider = registry.getDatabaseProvider();
+//        DatabaseProvider databaseProvider = registry.getDatabaseProvider();
+        Database database =injector.getInstance(Database.class);
         try
         {
             //with jooq
-            Result<Record> records = databaseProvider.getDslContext().resultQuery("SELECT * FROM public.testtable").fetch();
+            Result<Record> records = database.getDslContext().resultQuery("SELECT * FROM public.testtable").fetch();
             System.out.println(records);
 
             //with normal jdbc
-            try (Connection connection = databaseProvider.getHikariDataSource().getConnection())
+            try (Connection connection = database.gC())
             {
                 ResultSet resultSet = connection.prepareStatement("SELECT * FROM public.testtable").executeQuery();
                 resultSet.next();
@@ -50,9 +59,10 @@ public class RuntimeTests
 
     public void graphQLTest() throws IOException
     {
-        GraphQLProvider graphQLProvider = registry.getGraphQLProvider();
+        //GraphQLProvider graphQLProvider = registry.getGraphQLProvider();
+        GraphQL graphQL = injector.getInstance(GraphQL.class);
 
-        ExecutionResult execute = graphQLProvider.init().getGraphQL().execute("query {teststuff(id: \"1\") {id, testvalue}}");
+        ExecutionResult execute = graphQL.execute("query {teststuff(id: \"1\") {id, testvalue}}");
 
         System.out.println(execute);
         String json = new ObjectMapper().writeValueAsString(execute.toSpecification());

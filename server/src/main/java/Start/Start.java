@@ -1,81 +1,125 @@
 package Start;
 
-import Benchmark.BenchmarkTest;
 import Config.ApplicationConfig;
-import Config.JsonValideException;
 import Config.Config;
+import Config.JsonValideException;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
+import java.sql.SQLException;
 
 
 public class Start
 {
     private static final Logger log = LoggerFactory.getLogger(Start.class);
-    public static boolean isIntegrationTest = false;
-    @Getter private static Config config;
+
+    private final String[] args;
+    public boolean isIntegrationTest = false;
+    @Getter private Config config;
+    private CLIParser cliParser;
+    private DependenciesContainer dependenciesContainer;
 
     public static void main(String[] args) throws Exception
     {
+        new Start(args).start();
+    }
+
+    public Start(String[] args)
+    {
+        this.args = args;
+    }
+
+    public void start() throws Exception
+    {
         System.out.println("AMOS-GRAPHQL-SERVER");
 
-        final CLIParser cliParser = new CLIParser(args).parse();
-        Start.isIntegrationTest = cliParser.isIntegrationTest();
-        System.out.println(Start.isIntegrationTest + " integration-test");
+        this.parseCLI();
+        this.loadConfig();//could have System.exit-side-effect
+        this.checkAndExcecuteIntegrationTest();
+        this.loadDependencies();
+        this.startApplication();
+        this.executeRuntimeTests();
+        this.executeBenchmark();
 
-        if ((config = ApplicationConfig.loadConfig(cliParser.getConfigFilePath())) == null)
+        System.out.println("all services are started");
+        Thread.currentThread().join();
+    }
+
+    private void parseCLI()
+    {
+        cliParser = new CLIParser(args).parse();
+    }
+
+    private void loadConfig() throws IOException, JsonValideException
+    {
+        if ((this.config = ApplicationConfig.loadConfig(this.cliParser.getConfigFilePath())) == null)
         {
             System.exit(-1);
-            return;
         }
+    }
 
-        Registry registry = new Registry();
+    private void checkAndExcecuteIntegrationTest()
+    {
+        boolean isIntegrationTest = this.cliParser.isIntegrationTest();
 
+        if (this.isIntegrationTest)
+        {
+            System.out.println("***** INTEGRATION-TEST *****\n\n");
+
+            IntegrationTest integrationTest = new IntegrationTest(dependenciesContainer);
+            boolean result = integrationTest.testAll();
+
+            if (result)
+            {
+                System.out.println("Integrationtest succeeded!");
+                System.exit(0);
+            }
+            else
+            {
+                System.out.println("Integrationtest failed!");
+                System.exit(-1);
+            }
+        }
+    }
+
+    private void loadDependencies()
+    {
+        this.dependenciesContainer = new DependenciesContainer(this.config);
+    }
+
+    private void startApplication() throws SQLException
+    {
+        ApplicationService applicationService = this.dependenciesContainer.getInjector().getInstance(ApplicationService.class);
+        applicationService.startAll();
+    }
+
+    private  void executeRuntimeTests()
+    {
 
         //this is not related to our integration-tests
-        RuntimeTests runtimeTests = new RuntimeTests(registry);
+        RuntimeTests runtimeTests = new RuntimeTests(this.dependenciesContainer);
         /**
          * you can add there tests, activate, deactivate, however you want
          */
         // runtimeTests.databaseTest();
         // runtimeTests.graphQLTest();
 
-
-        System.out.println("all services are started");
-
-        //new BenchmarkTest(registry).doBenchmark();
-
-
-        if (Start.isIntegrationTest)
-        {
-            IntegrationTest integrationTest = new IntegrationTest(registry);
-            boolean result = integrationTest.testAll();
-
-            registry.shutdown();
-
-            if (result)
-            {
-                System.out.println("Integrationtest succeeded!");
-                System.exit(0);
-                return;
-            }
-            else
-            {
-                System.out.println("Integrationtest failed!");
-                System.exit(-1);
-                return;
-            }
-
-        }
-
-        Thread.currentThread().join();
-
     }
+
+    private  void executeBenchmark() throws SQLException, InterruptedException
+    {
+       // new BenchmarkTest(this.dependenciesContainer).doBenchmark();
+    }
+
+
+
+
+
+
+
+
 
 
 }
