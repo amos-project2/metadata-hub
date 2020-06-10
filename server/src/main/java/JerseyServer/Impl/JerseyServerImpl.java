@@ -1,7 +1,7 @@
 package JerseyServer.Impl;
 
 import Config.Config;
-import HttpController.CrawlerProxyController;
+import HttpController.CrawlerUiProxyController;
 import HttpController.GraphQLController;
 import HttpController.TestconsoleController;
 import HttpController.WebuiController;
@@ -30,8 +30,8 @@ public class JerseyServerImpl implements HttpServer
 
     @Inject
     public JerseyServerImpl(GraphQL graphQl, Config config,
-                            CrawlerProxyController c0, GraphQLController c1,
-                            TestconsoleController c2, WebuiController c3
+							CrawlerUiProxyController c0, GraphQLController c1,
+							TestconsoleController c2, WebuiController c3
     )
     {
         this.config = config;
