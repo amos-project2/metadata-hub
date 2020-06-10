@@ -13,14 +13,13 @@ import string
 import random
 import shutil
 import argparse
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 
-# CONSTANTS
+# Constants
 _STRING_MIN_LENGTH = 4
 _STRING_MAX_LENGTH = 12
 _RANDOM_DIR_PROB = 0.95
-
 
 
 def _clean_up(message: str, working_directory: str = None) -> None:
@@ -39,46 +38,42 @@ def _clean_up(message: str, working_directory: str = None) -> None:
     print(f'Error: {message}.')
 
 
-def _create_directory(root: str, name: str = None) -> str:
+def _create_directory(root: str, name: str) -> str:
     """Wrapper for safely creating a directory
 
     Args:
         root (str): root directory to create the directory
-        name (str): optional name. Default is None
+        name (str): name of the directory
 
     Returns:
         str: absolute path of generated directory or None on error
 
     """
-    if name is None:
-        name = _get_random_name()
     dest = os.path.join(os.path.abspath(root), name)
     try:
         os.mkdir(dest)
     except OSError:
-        print(f'Cannot create directory \'{dest}\'')
         return None
     return dest
 
 
-def _get_random_name() -> str:
-    """Generate a random string
+def _get_dir_name(identifier: int) -> str:
+    """Generate a directory name.
+
+    The directory is of the form 'dir{identifier}'.
 
     Returns:
-        str: randomly generated string
+        str: directory name
 
     """
-    size = random.randint(_STRING_MIN_LENGTH, _STRING_MAX_LENGTH)
-    charset = string.ascii_uppercase + string.digits + string.ascii_lowercase
-    name = ''.join(random.choices(charset, k=size))
-    return name
+    return f'dir{identifier}'
 
 
 def _create_random_tree(
         max_dirs: int,
         max_depth: int,
         working_directory: str
-) -> Dict[str, int]:
+) -> Tuple[Dict[str, bool], int]:
     """Create a random empty directory tree.
 
     Args:
@@ -87,9 +82,13 @@ def _create_random_tree(
         working_directory (str): working directory
 
     Returns:
-        Dict[str, bool]: mapping from directory to done flag, None on error
+        Tuple[Dict[str, bool], int]:
+            mapping from directory to done flag,
+            number of created directories
 
     """
+    error = (None, -1)
+    num_created_dirs = 0
     mapping = {}
     queue = [(working_directory, 0)]
     while queue:
@@ -98,16 +97,19 @@ def _create_random_tree(
         if curr_depth == max_depth or not probability:
             continue
         num_dirs = random.randint(0, max_dirs)
-        new_directories = [
-            (_create_directory(directory), curr_depth + 1)
-            for _ in range(num_dirs)
-        ]
+        new_directories = []
+        for _ in range(num_dirs):
+            name = _get_dir_name(num_created_dirs)
+            new_directories.append(
+                (_create_directory(directory, name), curr_depth + 1)
+            )
+            num_created_dirs += 1
         if None in new_directories:
-            return None
+            return error
         for new_directory, _ in new_directories:
             mapping[new_directory] = True
         queue += new_directories
-    return mapping
+    return (mapping, num_created_dirs)
 
 
 def _get_input_files(input_directory: str) -> List[str]:
@@ -135,7 +137,7 @@ def random_tree(
         output_directory: str,
         big_directory_size: int,
         big_directory_probability: float
-) -> None:
+) -> Tuple[int, int, int]:
     """Create the random directory tree.
 
     Args:
@@ -148,12 +150,24 @@ def random_tree(
         big_directory_size (int): number of files in big directories
         big_directory_probability (float): probability of big directories
 
+    Returns:
+        Tuple[int, int, int]:
+            number of created directories
+            number of created big directories
+            number of copied files
+
     """
+    error = (0, 0, 0)
+    num_big_dirs = 0
+    num_copied_files = 0
     working_directory = _create_directory(output_directory, name)
     if working_directory is None:
-        _clean_up('Failed creating working directory', working_directory)
-        return
-    mapping = _create_random_tree(
+        _clean_up(
+            message='Failed creating working directory. Already exists',
+            working_directory=working_directory
+        )
+        return error
+    mapping, num_dirs = _create_random_tree(
         max_dirs=max_dirs,
         max_depth=max_depth,
         working_directory=working_directory
@@ -164,6 +178,7 @@ def random_tree(
     while files:
         is_big_dir = random.random() < big_directory_probability
         if is_big_dir:
+            num_big_dirs += 1
             size = big_directory_size
         else:
             size = random.randint(0, max_files)
@@ -175,10 +190,12 @@ def random_tree(
             )
         except IndexError:
             print('No directory left. Ignoring left files.')
-            return
+            return (num_dirs, num_big_dirs, num_copied_files)
         for move_file in move_files:
             shutil.copy2(move_file, dest)
+            num_copied_files += 1
         mapping[dest] = False
+    return (num_dirs, num_big_dirs, num_copied_files)
 
 
 if __name__ == '__main__':
@@ -229,7 +246,7 @@ if __name__ == '__main__':
         help='Maximum number of files in one directory'
     )
     args = parser.parse_args()
-    random_tree(
+    num_dirs, num_big_dirs, num_copied_files = random_tree(
         name=args.name,
         max_dirs=args.max_dirs,
         max_depth=args.max_depth,
@@ -239,3 +256,9 @@ if __name__ == '__main__':
         big_directory_size=args.big_directory_size,
         big_directory_probability=args.big_directory_probability
     )
+    print(f'* Created {num_dirs} directories in total.')
+    print(
+        f'* Created {num_big_dirs} big directories with each containing '
+        f'{args.big_directory_size} files.'
+    )
+    print(f'* Copied {num_copied_files} files in total.')

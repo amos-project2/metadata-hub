@@ -17,14 +17,8 @@ class Config:
     def get_paths_inputs(self) -> list:
         return self._paths.get('inputs')
 
-    def get_paths_output(self) -> str:
-        return self._paths.get('output')
-
     def get_paths_exiftool(self) -> str:
         return self._paths.get('exiftool')
-
-    def get_paths_trace(self) -> str:
-        return self._paths.get('trace')
 
     def get_options_power_level(self) -> int:
         return self._options.get('powerLevel')
