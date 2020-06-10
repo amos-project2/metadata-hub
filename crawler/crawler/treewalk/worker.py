@@ -180,6 +180,7 @@ class Worker(multiprocessing.Process):
         if not package:
             clean_up()
             return
+
         try:
             process = subprocess.Popen([f'{self._exiftool}', '-json', *package], stdout=subprocess.PIPE)
             output = str(process.stdout.read(), 'utf-8') # FIXME better solution?
@@ -200,8 +201,8 @@ class Worker(multiprocessing.Process):
         # create the value string with the tree walk id already inserted
         value = (f'\'{self._tree_walk_id}\', ')
         inserts = []
-        for result in metadata:
 
+        for result in metadata:
             # FIXME: Quickfix for handling ' in filenames
             for key, val in result.items():
                 if isinstance(val, str) and "\'" in val:
@@ -218,11 +219,27 @@ class Worker(multiprocessing.Process):
                 bytes = file.read()
                 hash256 = hashlib.sha256(bytes).hexdigest()
             # add the value string to the rest for insert batching
-            inserts.append(f'({values}\'{json.dumps(result)}\', \'{hash256}\', \'False\')')
+            inserts.append((f'({values}\'{json.dumps(result)}\', \'{hash256}\', \'False\')', (hash256, result['Directory'], result['FileName'])))
 
         # insert into the database
         try:
-            self._db_connection.insert_new_record(insertin + ','.join(inserts))
+            # Insert the result in a batched query
+            self._db_connection.insert_new_record(insertin + ','.join([x[0] for x in inserts]))
+            # Check if there was a previous entry in the database
+            # if yes: Set the tag in the database to true
+            #TODO Disabled feature for performance purposes
+            '''
+            toDelete = []
+            try:
+                for hash256 in [x[1] for x in inserts]:
+                    id = self._db_connection.check_hash(hash256[0], hash256[1], self._tree_walk_id, hash256[2])
+                    if id != 0:
+                        toDelete.append(id)
+                if len(toDelete) > 0:
+                    self._db_connection.set_deleted(toDelete)
+            except Exception as e:
+                print(e)
+            '''
         except Exception as e:
             _logger.warning(
                 'There was an error inserting the batched results, inserting individually.'
@@ -230,7 +247,8 @@ class Worker(multiprocessing.Process):
             # Try to insert each command indiviually and print out the problematic result
             for insert in inserts:
                 try:
-                    self._db_connection.insert_new_record(insertin + insert)
+                    self._db_connection.insert_new_record(insertin + insert[0])
+                    #TODO add deleted tags
                 except Exception as e:
                     _logger.warning('Failed inserting single file again.')
         clean_up()
