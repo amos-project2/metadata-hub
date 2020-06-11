@@ -6,7 +6,7 @@ export class GraphqlQueryEditor extends Page {
         super(parent, identifier, mountpoint, titleSelector);
         this.title = "GraphQl Query Editor";
         this.cacheLevel = 3;
-        this.graphQlFetcher=this.parent.dependencies.graphQlFetcher;
+        this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
         this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
     }
 
@@ -29,7 +29,7 @@ export class GraphqlQueryEditor extends Page {
     onMount() {
         $(".resultView3").html(this.resultPresenter.getHtml());
 
-        let thisdata=this;
+        let thisdata = this;
         $(".q-send-query-editor").submit(function (event) {
             event.preventDefault();
             thisdata.resultPresenter.generateResultAndInjectIntoDom($("#q_textInput").val());
