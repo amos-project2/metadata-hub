@@ -5,6 +5,9 @@ import {FormQueryEditor} from "./query/FormQueryEditor";
 import {GraphqlQueryEditor} from "./query/GraphqlQueryEditor";
 import {CrawlerConfig} from "./crawler/CrawlerConfig";
 import {HashQuery} from "./query/HashQuery";
+import {CrawlerController} from "./crawler/CrawlerController";
+import {CrawlerInfo} from "./crawler/CrawlerInfo";
+import {CrawlerScheduler} from "./crawler/CrawlerScheduler";
 
 class NavElement {
     constructor(name, selectorName, contentLoader) {
@@ -92,6 +95,9 @@ export class Template {
         });
 
         this.addNavGroup("nav_crawler", function (n) {
+              n.addOneNavElement(new NavElement("Controller", "crawler-controller", new CrawlerController(thisdata, "crawler-controller")));
+              n.addOneNavElement(new NavElement("Info", "crawler-info", new CrawlerInfo(thisdata, "crawler-info")));
+              n.addOneNavElement(new NavElement("Scheduler", "crawler-scheduler", new CrawlerScheduler(thisdata, "crawler-scheduler")));
               n.addOneNavElement(new NavElement("Crawler Config", "crawler-config", new CrawlerConfig(thisdata, "crawler-config")));
         });
 
@@ -177,7 +183,7 @@ export class Template {
         }
         $(".nav-query").click(function () { $("#nav-element-form-query").trigger("click"); });
         $(".nav-graphiql").click(function () { $("#nav-element-graphiql-console").trigger("click"); });
-        $(".nav-crawler").click(function () { $("#nav-element-crawler-config").trigger("click"); });
+        $(".nav-crawler").click(function () { $("#nav-element-crawler-controller").trigger("click"); });
         $(".nav-status").click(function () { $("#nav-element-testname").trigger("click"); });
         $(".nav-help").click(function () { $("#nav-element-help1").trigger("click"); });
         $(".nav-about").click(function () { $("#nav-element-about1").trigger("click"); });
