@@ -173,7 +173,7 @@ export class Template {
 
 
                     $(this).closest(".nav-item").addClass("active");
-                    value2.contentLoader.mount();//content-unloader
+                    value2.contentLoader.mount();//content-loader
                     thisdata.currentSelectedElement = value2;
                     thisdata.currentSelectedElementGroup = value.data;
                     // alert("hey: " + value2.name);
