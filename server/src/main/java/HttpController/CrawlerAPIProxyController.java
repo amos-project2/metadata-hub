@@ -13,19 +13,18 @@ import javax.ws.rs.core.*;
 
 /**
  *
- * This controller is for proxying the crawler-webui
- * Maybe we dont need this later
+ * This controller is for proxying the crawler-API
  *
  */
-@Path("crawlerui")
+@Path("crawlerapi")
 @Singleton
-public class CrawlerUiProxyController
+public class CrawlerAPIProxyController
 {
     private final WebTarget target;
     private final Config config;
 
     @Inject
-    public CrawlerUiProxyController(Config config)
+    public CrawlerAPIProxyController(Config config)
     {
         this.config = config;
         Client client = ClientBuilder.newClient();
@@ -33,6 +32,7 @@ public class CrawlerUiProxyController
     }
 
     @GET
+    @Produces("application/json")
     @Path("{part: .*}")
     public Response crawlerGet(@PathParam("part") String path, @Context UriInfo uriInfo)
     {
@@ -40,8 +40,8 @@ public class CrawlerUiProxyController
     }
 
     @POST
+    @Produces("application/json")
     @Path("/{part: .*}")
-    //@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response crawlerPost(@PathParam("part") String path, @Context UriInfo uriInfo, MultivaluedMap<String, String> form)
     {
@@ -52,17 +52,13 @@ public class CrawlerUiProxyController
 
     public Response crawlerGetAndPost(String path, UriInfo uriInfo, MultivaluedMap<String, String> form)
     {
-       // System.out.println(path + " PAAAATH");
-        MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
 
+        MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         WebTarget webTarget = target.path(path);
         parameters.forEach((key, values) ->
         {
-           // System.out.println(key + "-> " + values.toString());
             target.queryParam(key, values.toArray());
         });
-
-       // System.out.println(target.getUri() + "blablub");
 
         Response response;
         if (form == null)
@@ -74,29 +70,6 @@ public class CrawlerUiProxyController
             response = webTarget.request().post(Entity.form(form));
         }
 
-        String pathNormalized = path.trim().replace("/", "").toLowerCase();
-       // System.out.println(pathNormalized + " path2");
-        //System.out.println(response.getStatusInfo());
-        //System.out.println(response.getStatusInfo().toEnum() == Response.Status.OK);
-       // System.out.println(pathNormalized.equals("config"));
-
-        if (response.getStatusInfo().toEnum() == Response.Status.OK && pathNormalized.equals("config"))
-        {
-            //System.out.println("hier drinnen");
-            return this.mainPageLoad(response);
-        }
-
-
         return response;
-
-    }
-
-    private Response mainPageLoad(Response response)
-    {
-        String content = response.readEntity(String.class);
-        content = content.replaceAll("\"/", "\"");
-       // System.out.println(content);
-        return Response.ok(content, MediaType.TEXT_HTML).build();
-
     }
 }
