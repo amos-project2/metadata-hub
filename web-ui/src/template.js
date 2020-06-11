@@ -26,9 +26,10 @@ class NavGroup {
 
     addOneNavElement(navElement) {
 
+        // language=HTML
         this.data += `
             <li class="nav-item container-${this.parent_nav}" style="display:none;">
-              <a class="nav-link nav-element-${navElement.selectorName}" href="#" id="nav-element-${navElement.selectorName}">${navElement.name}</a>
+                <a class="nav-link nav-element-${navElement.selectorName}" href="#" id="nav-element-${navElement.selectorName}">${navElement.name}</a>
             </li>`;
         this.navElements.push(navElement);
 
@@ -46,20 +47,18 @@ class NavGroup {
             }
         }
 
-
+        // language=HTML
         this.data += `
             <li class="nav-item dropdown container-${this.parent_nav}" style="display:none;">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                ${dropdownName}
-              </a>
-              <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    ${dropdownName}
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
 
-              ${tmp}
+                    ${tmp}
 
-              </div>
+                </div>
             </li>`
-
-
     }
 }
 
@@ -68,7 +67,7 @@ export class Template {
 
     constructor(dependencies) {
         this.thisdata = this;
-        this.dependencies=dependencies;
+        this.dependencies = dependencies;
         this.storage = {
             query_inject: null,
             openedFromEditor: null,
@@ -95,10 +94,10 @@ export class Template {
         });
 
         this.addNavGroup("nav_crawler", function (n) {
-              n.addOneNavElement(new NavElement("Controller", "crawler-controller", new CrawlerController(thisdata, "crawler-controller")));
-              n.addOneNavElement(new NavElement("Info", "crawler-info", new CrawlerInfo(thisdata, "crawler-info")));
-              n.addOneNavElement(new NavElement("Scheduler", "crawler-scheduler", new CrawlerScheduler(thisdata, "crawler-scheduler")));
-              n.addOneNavElement(new NavElement("Crawler Config", "crawler-config", new CrawlerConfig(thisdata, "crawler-config")));
+            n.addOneNavElement(new NavElement("Controller", "crawler-controller", new CrawlerController(thisdata, "crawler-controller")));
+            n.addOneNavElement(new NavElement("Info", "crawler-info", new CrawlerInfo(thisdata, "crawler-info")));
+            n.addOneNavElement(new NavElement("Scheduler", "crawler-scheduler", new CrawlerScheduler(thisdata, "crawler-scheduler")));
+            n.addOneNavElement(new NavElement("Crawler Config", "crawler-config", new CrawlerConfig(thisdata, "crawler-config")));
         });
 
 
@@ -195,55 +194,57 @@ export class Template {
 
 
     generateTemplate() {
-        this.data = `<div class="d-flex" id="wrapper">
 
-    <!-- Sidebar -->
-    <div class="bg-light border-right" id="sidebar-wrapper">
-      <div class="sidebar-heading">Metadata-Hub</div>
-      <div class="list-group list-group-flush">
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-query xnav_query">Query</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-graphiql xnav_graphiql">GraphiQl</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-crawler xnav_crawler">Crawler</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-status xnav_status" style="display:none">Status</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-help xnav_help" style="display:none">Help</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-about xnav_about" style="display:none">About</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light nav-logout xnav_logout" style="display:none">Logout</a>
-      </div>
-    </div>
+        // language=HTML
+        this.data = `
+            <div class="d-flex" id="wrapper">
 
- <!-- /#sidebar-wrapper -->
+                <!-- Sidebar -->
+                <div class="bg-light border-right" id="sidebar-wrapper">
+                    <div class="sidebar-heading">Metadata-Hub</div>
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action bg-light nav-query xnav_query">Query</a>
+                        <a href="#" class="list-group-item list-group-item-action bg-light nav-graphiql xnav_graphiql">GraphiQl</a>
+                        <a href="#" class="list-group-item list-group-item-action bg-light nav-crawler xnav_crawler">Crawler</a>
+                        <a href="#" class="list-group-item list-group-item-action bg-light nav-status xnav_status" style="display:none">Status</a>
+                        <a href="#" class="list-group-item list-group-item-action bg-light nav-help xnav_help" style="display:none">Help</a>
+                        <a href="#" class="list-group-item list-group-item-action bg-light nav-about xnav_about" style="display:none">About</a>
+                        <a href="#" class="list-group-item list-group-item-action bg-light nav-logout xnav_logout" style="display:none">Logout</a>
+                    </div>
+                </div>
 
-    <!-- Page Content -->
-    <div id="page-content-wrapper">
+                <!-- /#sidebar-wrapper -->
 
-      <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-        <button class="btn btn-primary" id="menu-toggle">Toggle Menu</button>
+                <!-- Page Content -->
+                <div id="page-content-wrapper">
 
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
+                    <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+                        <button class="btn btn-primary" id="menu-toggle">Toggle Menu</button>
 
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
+                        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+
+                        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                            <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
+
+                                ${this.navbar}
+
+                            </ul>
+                        </div>
+                    </nav>
 
 
-           ${this.navbar}
-
-          </ul>
-        </div>
-      </nav>
-
-
-      <div class="container-fluid">
-        <h1 class="mt-4 our-title"></h1>
-        <div id="small-nav-bar"></div>
-        <div id="graphql-stuff" style=" margin:0; height:calc(100vh - 150px); min-height: 300px;" class="hide_active"></div>
-        <div class="our-content"></div>
-        </div>
-    </div>
-    <!-- /#page-content-wrapper -->
-  </div>
-  <!-- /#wrapper -->`;
+                    <div class="container-fluid">
+                        <h1 class="mt-4 our-title"></h1>
+                        <div id="small-nav-bar"></div>
+                        <div id="graphql-stuff" style=" margin:0; height:calc(100vh - 150px); min-height: 300px;" class="hide_active"></div>
+                        <div class="our-content"></div>
+                    </div>
+                </div>
+                <!-- /#page-content-wrapper -->
+            </div>
+            <!-- /#wrapper -->`;
     }
 
 

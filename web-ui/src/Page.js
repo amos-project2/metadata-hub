@@ -82,7 +82,6 @@ export class Page {
     }
 
 
-
     //to-ovveride
     onMount() {}
 
@@ -95,9 +94,9 @@ export class Page {
 
     init_popover() {
 
-        $('.pover').attr( "href", "#" );
-        $('.pover').attr( "tabindex", "0" );
-        $('.pover').click(function(event) {
+        $('.pover').attr("href", "#");
+        $('.pover').attr("tabindex", "0");
+        $('.pover').click(function (event) {
             event.preventDefault();
         });
         $('.pover').popover({
@@ -164,8 +163,6 @@ export class Page {
                 break;
         }
     }
-
-
 
 
     //to-ovveride

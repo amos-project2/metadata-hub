@@ -11,18 +11,18 @@ export class GraphqlQueryEditor extends Page {
     }
 
     content() {
+
+        // language=HTML
         return `
-<form class="q-send-query-editor">
-<div class="form-group" >
- <label for="q_textInput">GraphQL</label>
- <textarea class="form-control" id="q_textInput" rows="10" placeholder="query\n{\n  {\n\n  }\n}"></textarea>
-</div>
-  <button type="submit" class="btn btn-primary">Send</button>
-</form>
-<br>
-<div class="resultView3"></div>
-
-
+            <form class="q-send-query-editor">
+                <div class="form-group">
+                    <label for="q_textInput">GraphQL</label>
+                    <textarea class="form-control" id="q_textInput" rows="10" placeholder="query\n{\n  {\n\n  }\n}"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Send</button>
+            </form>
+            <br>
+            <div class="resultView3"></div>
         `;
     }
 
