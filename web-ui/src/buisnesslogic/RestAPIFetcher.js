@@ -4,7 +4,7 @@ export class RestAPIFetcher {
         this.endpoint = endpoint;
     }
 
-
+    //public
     fetchPost(path, formData, callback) {
         let promise = fetch(this.urlBuilder(path), {
             method: "post",
@@ -14,7 +14,7 @@ export class RestAPIFetcher {
         this.fetchToResult(promise, callback);
     }
 
-
+    //public
     fetchGet(path, callback) {
         let promise = fetch(this.urlBuilder(path), {
             method: "get",
@@ -23,7 +23,7 @@ export class RestAPIFetcher {
         this.fetchToResult(promise, callback);
     }
 
-
+    //public
     fetchJson(path, jsonData, callback) {
         let promise = fetch(this.urlBuilder(path), {
             method: "POST",
@@ -35,6 +35,13 @@ export class RestAPIFetcher {
 
         this.fetchToResult(promise, callback);
     }
+
+    //public
+    buildAndGetFormData() {
+        //see https://developer.mozilla.org/de/docs/Web/API/FormData
+        return new FormData();
+    }
+
 
     //private
     urlBuilder(path) {
@@ -49,7 +56,7 @@ export class RestAPIFetcher {
             if (response.ok)
                 return response.json();
             else {
-                  throw new Error('HTTP-ERROR: ' + response.statusText);
+                throw new Error('HTTP-ERROR: ' + response.statusText);
             }
         })
             .then(function (json) {
@@ -69,13 +76,14 @@ export class RestAPIFetcher {
 
 }
 
+//its used by the callback function in the fetchers
 class FetchResult {
 
-    static SUCCESS(){return 1;} //const
-    static NETWORK_ERROR(){return 2;}//const
-    static HTTP_ERROR(){return 3;}//const
-    static AUTH_ERROR(){return 4;}//const
-    static CRAWLER_NOT_REACHABLE(){return 5;}//const
+    static SUCCESS() {return 1;} //const
+    static NETWORK_ERROR() {return 2;}//const
+    static HTTP_ERROR() {return 3;}//const
+    static AUTH_ERROR() {return 4;}//const
+    static CRAWLER_NOT_REACHABLE() {return 5;}//const
 
 
     constructor(status, errorMessage, data) {
