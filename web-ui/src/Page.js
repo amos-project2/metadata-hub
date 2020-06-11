@@ -29,11 +29,11 @@ export class Page {
     mount() {
 
         let thisdata = this;
+        $(thisdata.titleSelector).html(thisdata.title);
 
         function createRandomElem() {
             thisdata.counter++;
             let elem = "page-" + thisdata.identifier + thisdata.counter;
-            $(thisdata.titleSelector).html(thisdata.title);
             $(thisdata.moutpoint).append(`<div class="page-content ${elem}" style="display:none;"></div>`);
             return elem;
         }
