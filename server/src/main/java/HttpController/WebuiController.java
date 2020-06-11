@@ -27,6 +27,15 @@ public class WebuiController
         this.classPathFileLoader = classPathFileLoader;
     }
 
+    private InputStream loadFromClassContext(String filePath)
+    {
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        InputStream is = classloader.getResourceAsStream(filePath);
+        return is;
+    }
+
+    //START MAIN-RESSOURCES
+
     @GET
     @Produces({MediaType.TEXT_HTML})
     @Path("/")
@@ -41,20 +50,24 @@ public class WebuiController
     @GET
     @Produces({"application/javascript"})
     @Path("/bundle.js")
-    public InputStream getBundleJs() throws IOException
+    public InputStream getBundleJs()
     {
-        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        InputStream is = classloader.getResourceAsStream("static-files/bundle.js");
-        return is;
+        return this.loadFromClassContext("static-files/bundle.js");
     }
 
     @GET
     @Produces({"application/javascript"})
     @Path("/main.bundle.js")
-    public InputStream getMainBundleJs() throws IOException
+    public InputStream getMainBundleJs()
     {
-        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        InputStream is = classloader.getResourceAsStream("static-files/main.bundle.js");
-        return is;
+        return this.loadFromClassContext("static-files/main.bundle.js");
     }
+
+
+    //End MAIN-RESSOURCES
+
+
+
+
+
 }
