@@ -8,7 +8,8 @@ import GraphiQL from 'graphiql';
 export class GraphiqlConsole extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         super(parent, identifier, mountpoint, titleSelector);
-        this.title = "GraphiQl-Console";
+        //this.title = "GraphiQl-Console"; //It is not necessary to show there information, its redundant and space-wasting
+        this.title = "";
         this.init = false;
         this.cacheLevel = 3;
         this.graphQlFetcher=this.parent.dependencies.graphQlFetcher;
