@@ -244,7 +244,7 @@ def home():
     )
     return resp
 
-    treewalk.start(config, update)
+
 def start() -> None:
     """Start the Flask application."""
     app.run(
