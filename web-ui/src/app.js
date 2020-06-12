@@ -20,7 +20,7 @@ let template = new Template(dependencies);
 
 template.injectinDomeAndRegisterListener($(".app-root"));
 template.goToPage(utilities.getUrlParam("p","form-query"));
-//$("#nav-element-form-query").trigger("click");
+
 
 
 

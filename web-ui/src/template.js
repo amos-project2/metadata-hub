@@ -178,7 +178,6 @@ export class Template {
                     }
 
                     if (thisdata.currentSelectedElementGroup !== value.data) {
-                        //alert("hi "+".container-" + value.data.parent_nav);
                         $(".container-" + value.data.parent_nav).show(1000);
                         $(".x" + value.data.parent_nav).addClass("active_sidebar");
                     }
@@ -194,7 +193,6 @@ export class Template {
                     value2.contentLoader.mount();//content-loader
                     thisdata.currentSelectedElement = value2;
                     thisdata.currentSelectedElementGroup = value.data;
-                    // alert("hey: " + value2.name);
                 })
             }
         }
@@ -214,10 +212,7 @@ export class Template {
         window.onpopstate = function(event) {
             let page=thisdata.dependencies.utilities.getUrlVars()["p"];
             thisdata.goToPage(page);
-           // console.log("location: " + document.location + ", state: " + JSON.stringify(event.state));
-        };
-
-
+            };
     }
 
     goToPage(page) {
@@ -233,16 +228,6 @@ export class Template {
         }
 
         $("#nav-element-error-404").trigger("click");
-
-        // if (this.currentSelectedElement != null) {
-        //     this.currentSelectedElement.contentLoader.unmount();//content-unloader
-        //     $(".container-" + this.currentSelectedElementGroup.parent_nav).hide();
-        //     $(".x" + this.currentSelectedElementGroup.parent_nav).removeClass("active_sidebar");
-        // }
-        // history.pushState('no-data', this.errorPage.title, '?p=' + page);
-        // this.errorPage.mount();
-
-
     }
 
 
