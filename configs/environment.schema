@@ -54,6 +54,10 @@
                 "CRITICAL"
             ]
         },
+        "crawler-db-measure-time": {
+            "description": "Measure execution times of database operations",
+            "type": "boolean"
+        },
         "server-host": {
             "description": "Host the server is running on",
             "type": "string"

@@ -24,7 +24,7 @@ _logger = logging.getLogger(__name__)
 
 class DatabaseUpdater(threading.Thread):
 
-    def __init__(self):
+    def __init__(self, db_measure_time: bool):
         super(DatabaseUpdater, self).__init__()
         self._update_interval = environment.env.CRAWLER_DB_UPDATE_INTERVAL
         self._connection_data = dict(
@@ -34,7 +34,10 @@ class DatabaseUpdater(threading.Thread):
             port=environment.env.DATABASE_PORT,
             dbname=environment.env.DATABASE_NAME
         )
-        self._db_connection =  DatabaseConnection(self._connection_data)
+        self._db_connection =  DatabaseConnection(
+            db_info=self._connection_data,
+            measure_time=db_measure_time
+        )
 
 
     def _is_to_remove(

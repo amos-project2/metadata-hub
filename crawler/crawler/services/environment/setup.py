@@ -118,6 +118,7 @@ def init() -> None:
     env.CRAWLER_HOST = instance.get('crawler-host')
     env.CRAWLER_PORT = instance.get('crawler-port')
     env.CRAWLER_LOGGING_LEVEL = instance.get('crawler-logging-level')
+    env.CRAWLER_DB_MEASURE_TIME = instance.get('crawler-db-measure-time')
     env.CRAWLER_DB_UPDATE_INTERVAL = instance.get('crawler-db-update-interval')
     env.EXIFTOOL_LINUX = exiftool_linux
     env.EXIFTOOL_WINDOWS = exiftool_windows

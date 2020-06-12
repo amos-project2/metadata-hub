@@ -15,6 +15,8 @@ class Env:
     CRAWLER_PORT = None
     # Update interval of the database
     CRAWLER_DB_UPDATE_INTERVAL = None
+    # Measure time of database operations
+    CRAWLER_DB_MEASURE_TIME = None
     # Logging level of the crawler
     CRAWLER_LOGGING_LEVEL = None
     # Path of Linux exiftool

@@ -6,8 +6,9 @@
     "database-password": "metadatahub",
     "crawler-host": "0.0.0.0",
     "crawler-port": 9000,
-    "crawler-logging-level": "ERROR",
+    "crawler-logging-level": "INFO",
     "crawler-db-update-interval": 60,
+    "crawler-db-measure-time": false,
     "server-host": "[::]",
     "server-port": 8080
 }

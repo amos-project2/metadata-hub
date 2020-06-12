@@ -28,7 +28,9 @@ if __name__ == '__main__':
     )
     thread_treewalk = treewalk.TreeWalkManager()
     thread_api = threading.Thread(target=api.start)
-    thread_database_updater = database.DatabaseUpdater()
+    thread_database_updater = database.DatabaseUpdater(
+        db_measure_time=environment.env.CRAWLER_DB_MEASURE_TIME
+    )
     thread_api.start()
     thread_treewalk.start()
     thread_database_updater.start()

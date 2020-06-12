@@ -8,6 +8,7 @@
     "crawler-port": 9000,
     "crawler-logging-level": "INFO",
     "crawler-db-update-interval": 3600,
+    "crawler-db-measure-time": false,
     "server-host": "0.0.0.0",
     "server-port": 8080
 }
