@@ -13,6 +13,10 @@ class Env:
     CRAWLER_HOST = None
     # Port the crawler should run on
     CRAWLER_PORT = None
+    # Update interval of the database
+    CRAWLER_DB_UPDATE_INTERVAL = None
+    # Logging level of the crawler
+    CRAWLER_LOGGING_LEVEL = None
     # Path of Linux exiftool
     EXIFTOOL_LINUX = None
     # Path of Windows exiftool

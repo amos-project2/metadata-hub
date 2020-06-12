@@ -21,6 +21,7 @@ from . import parsing
 import crawler.treewalk as treewalk
 import crawler.services.config as config_service
 import crawler.services.environment as environment
+import crawler.communication as communication
 
 
 app = flask.Flask(
@@ -224,6 +225,9 @@ def config():
 def shutdown():
     # FIXME: Get response from interface and evaluate
     treewalk.shutdown()
+    communication.database_updater_input.put(
+        (communication.DATABASE_UPDATER_SHUTDOWN, None)
+    )
     func = flask.request.environ.get('werkzeug.server.shutdown')
     if func is None:
         # TODO handle error

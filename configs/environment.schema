@@ -20,6 +20,7 @@
             "type": "string"
         },
         "database-port": {
+            "description": "Port the database is running on",
             "$ref": "#/definitions/port"
         },
         "database-user": {
@@ -37,6 +38,22 @@
         "crawler-port": {
             "$ref": "#/definitions/port"
         },
+        "crawler-db-update-interval": {
+            "description": "Time interval in seconds after files marked as deleted are removed",
+            "type": "integer",
+            "minumum": 0
+        },
+        "crawler-logging-level": {
+            "description": "Logging level of the crawler",
+            "type": "string",
+            "enum": [
+                "DEBUG",
+                "INFO",
+                "WARNING",
+                "ERROR",
+                "CRITICAL"
+            ]
+        },
         "server-host": {
             "description": "Host the server is running on",
             "type": "string"
@@ -53,6 +70,8 @@
         "database-password",
         "crawler-host",
         "crawler-port",
+        "crawler-db-update-interval",
+        "crawler-logging-level",
         "server-host",
         "server-port"
     ]

@@ -117,6 +117,8 @@ def init() -> None:
     env.DATABASE_PASSWORD = instance.get('database-password')
     env.CRAWLER_HOST = instance.get('crawler-host')
     env.CRAWLER_PORT = instance.get('crawler-port')
+    env.CRAWLER_LOGGING_LEVEL = instance.get('crawler-logging-level')
+    env.CRAWLER_DB_UPDATE_INTERVAL = instance.get('crawler-db-update-interval')
     env.EXIFTOOL_LINUX = exiftool_linux
     env.EXIFTOOL_WINDOWS = exiftool_windows
     env.SCHEMA_CRAWLER_CONFIG = _METADATAHUB_CRAWLER_CONFIG_SCHEMA
