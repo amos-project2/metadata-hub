@@ -6,6 +6,7 @@ export class Page {
         this.atLeastOnceMounted = false;
         this.titleSelector = titleSelector;
         this.title = "one Page Title"; //to override
+        this.titleActive = true;//to override with false, if you dont want present the title
 
 
         /**
@@ -29,7 +30,9 @@ export class Page {
     mount() {
 
         let thisdata = this;
-        $(thisdata.titleSelector).html(thisdata.title);
+        $(this.titleSelector).html("");//delete old titel in all cases
+        if (this.titleActive) {$(this.titleSelector).html(this.title);}//only set the new one if active
+        $("title").html(this.title);
 
         function createRandomElem() {
             thisdata.counter++;

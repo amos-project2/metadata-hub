@@ -8,6 +8,7 @@ import {HashQuery} from "./query/HashQuery";
 import {CrawlerController} from "./crawler/CrawlerController";
 import {CrawlerInfo} from "./crawler/CrawlerInfo";
 import {CrawlerScheduler} from "./crawler/CrawlerScheduler";
+import {ErrorPage} from "./ErrorPage";
 
 class NavElement {
     constructor(name, selectorName, contentLoader) {
@@ -29,7 +30,7 @@ class NavGroup {
         // language=HTML
         this.data += `
             <li class="nav-item container-${this.parent_nav}" style="display:none;">
-                <a class="nav-link nav-element-${navElement.selectorName}" href="#" id="nav-element-${navElement.selectorName}">${navElement.name}</a>
+                <a class="my-nav-element nav-link nav-element-${navElement.selectorName}" href="/${navElement.selectorName}" id="nav-element-${navElement.selectorName}">${navElement.name}</a>
             </li>`;
         this.navElements.push(navElement);
 
@@ -42,7 +43,7 @@ class NavGroup {
             if (value.name === "divider") {
                 tmp += ` <div class="dropdown-divider"></div>`;
             } else {
-                tmp += `<a class="dropdown-item nav-element-${value.selectorName}" href="#" id="nav-element-${value.selectorName}">${value.name}</a>`;
+                tmp += `<a class="dropdown-item my-nav-element nav-element-${value.selectorName}" href="/${value.selectorName}" id="nav-element-${value.selectorName}">${value.name}</a>`;
                 this.navElements.push(value);
             }
         }
@@ -50,7 +51,7 @@ class NavGroup {
         // language=HTML
         this.data += `
             <li class="nav-item dropdown container-${this.parent_nav}" style="display:none;">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <a class="my-nav-element nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     ${dropdownName}
                 </a>
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
@@ -80,7 +81,18 @@ export class Template {
         this.currentSelectedElement = null;
         this.currentSelectedElementGroup = null;
 
+        //this.errorPage = new ErrorPage(this, "error-404")
+
+        this.replaceState = false;
+
+
         let thisdata = this;
+
+        this.addNavGroup("nav_error", function (n) {
+            n.addOneNavElement(new NavElement("Error 404", "error-404", new ErrorPage(thisdata, "error-404")));
+
+        });
+
 
         this.addNavGroup("nav_query", function (n) {
             n.addOneNavElement(new NavElement("Form-Query", "form-query", new FormQueryEditor(thisdata, "form-query")));
@@ -154,7 +166,7 @@ export class Template {
         for (let value of this.navGroups) {
             for (let value2 of value.data.navElements) {
                 value2.contentLoader.onRegister();
-                $("#nav-element-" + value2.selectorName).click(function () {
+                $("#nav-element-" + value2.selectorName).click(function (event) {
                     $(".nav-item").removeClass("active");//remove from all
 
                     if (thisdata.currentSelectedElement != null) {
@@ -173,6 +185,12 @@ export class Template {
 
 
                     $(this).closest(".nav-item").addClass("active");
+                    if (thisdata.replaceState) {
+                        thisdata.replaceState = false;
+                        history.replaceState('no-data', value2.contentLoader.title, '?p=' + value2.selectorName);
+                    } else {
+                        history.pushState('no-data', value2.contentLoader.title, '?p=' + value2.selectorName);
+                    }
                     value2.contentLoader.mount();//content-loader
                     thisdata.currentSelectedElement = value2;
                     thisdata.currentSelectedElementGroup = value.data;
@@ -180,6 +198,9 @@ export class Template {
                 })
             }
         }
+
+        $(".my-nav-element").click(function (event) {event.preventDefault();})
+
         $(".nav-query").click(function () { $("#nav-element-form-query").trigger("click"); });
         $(".nav-graphiql").click(function () { $("#nav-element-graphiql-console").trigger("click"); });
         $(".nav-crawler").click(function () { $("#nav-element-crawler-controller").trigger("click"); });
@@ -189,6 +210,38 @@ export class Template {
         $(".nav-logout").click(function () { $("#nav-element-logout").trigger("click"); });
 
         //  $(".container-nav_query").show(4000);
+
+        window.onpopstate = function(event) {
+            let page=thisdata.dependencies.utilities.getUrlVars()["p"];
+            thisdata.goToPage(page);
+           // console.log("location: " + document.location + ", state: " + JSON.stringify(event.state));
+        };
+
+
+    }
+
+    goToPage(page) {
+       // alert(page);
+       this.replaceState=true;
+        for (let value of this.navGroups) {
+            for (let value2 of value.data.navElements) {
+                if (value2.selectorName === page) {
+                    $("#nav-element-" + value2.selectorName).trigger("click");
+                    return;
+                }
+            }
+        }
+
+        $("#nav-element-error-404").trigger("click");
+
+        // if (this.currentSelectedElement != null) {
+        //     this.currentSelectedElement.contentLoader.unmount();//content-unloader
+        //     $(".container-" + this.currentSelectedElementGroup.parent_nav).hide();
+        //     $(".x" + this.currentSelectedElementGroup.parent_nav).removeClass("active_sidebar");
+        // }
+        // history.pushState('no-data', this.errorPage.title, '?p=' + page);
+        // this.errorPage.mount();
+
 
     }
 
@@ -206,13 +259,13 @@ export class Template {
                     </div>
 
                     <div class="list-group list-group-flush">
-                        <a href="#" class="list-group-item list-group-item-action bg-light nav-query xnav_query">Query</a>
-                        <a href="#" class="list-group-item list-group-item-action bg-light nav-graphiql xnav_graphiql">GraphiQl</a>
-                        <a href="#" class="list-group-item list-group-item-action bg-light nav-crawler xnav_crawler">Crawler</a>
-                        <a href="#" class="list-group-item list-group-item-action bg-light nav-status xnav_status" style="display:none">Status</a>
-                        <a href="#" class="list-group-item list-group-item-action bg-light nav-help xnav_help" style="display:none">Help</a>
-                        <a href="#" class="list-group-item list-group-item-action bg-light nav-about xnav_about" style="display:none">About</a>
-                        <a href="#" class="list-group-item list-group-item-action bg-light nav-logout xnav_logout" style="display:none">Logout</a>
+                        <a href="/form-query" class="list-group-item list-group-item-action bg-light my-nav-element nav-query xnav_query">Query</a>
+                        <a href="/graphiql-console" class="list-group-item list-group-item-action bg-light my-nav-element nav-graphiql xnav_graphiql">GraphiQl</a>
+                        <a href="/crawler-controller" class="list-group-item list-group-item-action bg-light my-nav-element nav-crawler xnav_crawler">Crawler</a>
+                        <a href="/nav-status" class="list-group-item list-group-item-action bg-light my-nav-element nav-status xnav_status" style="display:none">Status</a>
+                        <a href="/nav-help" class="list-group-item list-group-item-action bg-light my-nav-element nav-help xnav_help" style="display:none">Help</a>
+                        <a href="/nav-about" class="list-group-item list-group-item-action bg-light my-nav-element nav-about xnav_about" style="display:none">About</a>
+                        <a href="/nav-logout" class="list-group-item list-group-item-action bg-light my-nav-element nav-logout xnav_logout" style="display:none">Logout</a>
                     </div>
                 </div>
 
