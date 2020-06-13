@@ -19,17 +19,17 @@ let dependencies = {
     utilities: utilities,
 
 }
-
+let template = new Template(dependencies);
 let jqueryMountPoint=$(".app-root");
 
-// let login = new LoginPage(jqueryMountPoint);
-// login.loadPage();
 
-let template = new Template(dependencies);
+let login = new LoginPage(template, utilities, jqueryMountPoint);
+login.loadPage();
 
 
-template.injectinDomeAndRegisterListener(jqueryMountPoint);
-template.goToPage(utilities.getUrlParam("p","form-query"));
+
+
+
 
 
 
