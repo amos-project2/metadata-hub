@@ -9,6 +9,7 @@ import {CrawlerController} from "./crawler/CrawlerController";
 import {CrawlerInfo} from "./crawler/CrawlerInfo";
 import {CrawlerScheduler} from "./crawler/CrawlerScheduler";
 import {ErrorPage} from "./ErrorPage";
+import {Logout} from "./logout/Logout";
 
 class NavElement {
     constructor(name, selectorName, contentLoader) {
@@ -137,7 +138,7 @@ export class Template {
 
 
         this.addNavGroup("nav_logout", function (n) {
-            n.addOneNavElement(new NavElement("Logout", "logout", new Page(thisdata, "logout")));
+            n.addOneNavElement(new NavElement("Logout", "logout", new Logout(thisdata, "logout")));
         });
 
         this.generateTemplate()
@@ -250,7 +251,7 @@ export class Template {
                         <a href="/nav-status" class="list-group-item list-group-item-action bg-light my-nav-element nav-status xnav_status" style="display:none">Status</a>
                         <a href="/nav-help" class="list-group-item list-group-item-action bg-light my-nav-element nav-help xnav_help" style="display:none">Help</a>
                         <a href="/nav-about" class="list-group-item list-group-item-action bg-light my-nav-element nav-about xnav_about" style="display:none">About</a>
-                        <a href="/nav-logout" class="list-group-item list-group-item-action bg-light my-nav-element nav-logout xnav_logout" style="display:none">Logout</a>
+                        <a href="/nav-logout" class="list-group-item list-group-item-action bg-light my-nav-element nav-logout xnav_logout">Logout</a>
                     </div>
                 </div>
 
