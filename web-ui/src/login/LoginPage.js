@@ -34,23 +34,13 @@ export class LoginPage {
                                 <h5 class="card-title text-center">Sign In</h5>
                                 <form class="form-signin">
                                     <div class="form-label-group">
-                                        <input type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
-                                        <label for="inputEmail">Email address</label>
+                                        <input type="text" id="your-name" class="form-control" placeholder="Your-Name" required autofocus>
+                                        <label for="your-name">Your-Name</label>
                                     </div>
-
-                                    <div class="form-label-group">
-                                        <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
-                                        <label for="inputPassword">Password</label>
-                                    </div>
-
-                                    <div class="custom-control custom-checkbox mb-3">
-                                        <input type="checkbox" class="custom-control-input" id="customCheck1">
-                                        <label class="custom-control-label" for="customCheck1">Remember password</label>
-                                    </div>
-                                    <button class="btn btn-lg btn-primary btn-block text-uppercase" type="submit">Sign in</button>
+                                    <button class="btn btn-lg btn-primary btn-block text-uppercase" type="submit">Sign in as Enduser</button>
+                                    <button class="btn btn-lg btn-primary btn-block text-uppercase" type="submit">Sign in as Admin</button>
                                     <hr class="my-4">
-                                    <button class="btn btn-lg btn-google btn-block text-uppercase" type="submit"><i class="fab fa-google mr-2"></i> Sign in with Google</button>
-                                    <button class="btn btn-lg btn-facebook btn-block text-uppercase" type="submit"><i class="fab fa-facebook-f mr-2"></i> Sign in with Facebook</button>
+                                   * The Your-Name is used for to save it along possible queries you will do. It must be not System-known
                                 </form>
                             </div>
                         </div>
