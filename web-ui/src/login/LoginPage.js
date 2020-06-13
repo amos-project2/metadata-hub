@@ -26,7 +26,6 @@ export class LoginPage {
         let thisdata=this;
 
         $(".login-action-button").click(function () {
-            alert("blub");
             thisdata.enterMainPage();
         })
     }
