@@ -12,16 +12,22 @@ export class Logout extends Page {
     content() {
         // language=HTML
         return `
-            <button class="btn btn-lg btn-primary btn-block logout-action-button" type="button">Logout</button>
-            <button class="btn btn-lg btn-primary btn-block logout-action-button" type="button">Logout with clearing the GraphiQl-History</button>
-            <button class="btn btn-lg btn-primary btn-block logout-action-button" type="button">Logout with clearing the GraphiQl-History and Your-Name</button>
+            <button class="btn btn-lg btn-primary btn-block logout-action-button1" type="button">Logout</button>
+            <button class="btn btn-lg btn-primary btn-block logout-action-button2" type="button">Logout with clearing the GraphiQl-History</button>
+            <button class="btn btn-lg btn-primary btn-block logout-action-button2" type="button">Logout with clearing the GraphiQl-History and Your-Name</button>
         `;
 
     }
 
     onMount() {
 
-        $(".logout-action-button").click(function () {
+        $(".logout-action-button1").click(function () {
+            localStorage.removeItem('logged_in');
+            window.location.href='/';
+        });
+
+        $(".logout-action-button2").click(function () {
+            localStorage.clear();
             window.location.href='/';
         });
 

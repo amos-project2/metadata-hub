@@ -10,11 +10,19 @@ export class LoginPage {
     }
 
     loadPage() {
+
+        let logged_in = localStorage.getItem('logged_in');
+        if (logged_in === "true") {
+            this.enterMainPage();
+            return;
+        }
+
         loginStyles.use();
         this.renderIntoMountpoint();
         $("title").html("Metadata-Hub");
         this.registerListener();
     }
+
 
     unLoadPage() {
         loginStyles.unuse();
@@ -23,9 +31,10 @@ export class LoginPage {
 
     registerListener() {
 
-        let thisdata=this;
+        let thisdata = this;
 
         $(".login-action-button").click(function () {
+            localStorage.setItem("logged_in", "true");
             thisdata.enterMainPage();
         })
     }
