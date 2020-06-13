@@ -10,11 +10,11 @@ $ npm run runtime-build-vendor
 $ npm run runtime-build-app
 ```
 
-3. In the folder `./target/classes/static-files` are then the output `vendor.bundle.js` and `bundle.js`
+4. In the folder `./target/classes/static-files` are then the output `vendor.bundle.js` and `bundle.js`
 
-4. Start the server and go to http://localhost:8080/, it will give you a html output, which has this two bundles included.
+5. Start the server and go to http://localhost:8080/, it will give you a html output, which has this two bundles included.
 
-5. Enjoy the WebUi
+6. Enjoy the WebUi
 
 
 #### Informations about my webpack and Bootstrap
