@@ -1,14 +1,12 @@
 const path = require('path');
-// const HtmlWebpackPlugin = require('html-webpack-plugin');
-const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+
+//const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 const webpack = require('webpack')
 
 module.exports = {
     entry: './src/app.js',
-    //context: path.resolve(__dirname, './src'),
     devtool: 'inline-source-map',
     output: {
-        //filename: 'bundle.js',
         filename: '[name].bundle.js',
         path: path.resolve(__dirname, 'dist')
     },
@@ -81,28 +79,18 @@ module.exports = {
 
     },
     plugins: [
-        new CleanWebpackPlugin(),
+        //new CleanWebpackPlugin(),
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery"
         })
-        // new HtmlWebpackPlugin(
-        //     {
-        //         title: 'Output Management',
-        //     }),
+
     ],
     optimization: {
+
         splitChunks: {
-            cacheGroups: {
-                vendor: {
-                    chunks: 'initial',
-                    name: 'vendor',
-                    test: 'vendor',
-                    enforce: true
-                },
-            }
+            chunks: 'all',
         },
-        runtimeChunk: true
     },
     mode: 'development'
 };
