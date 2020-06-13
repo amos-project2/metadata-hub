@@ -22,14 +22,14 @@ let dependencies = {
 
 let jqueryMountPoint=$(".app-root");
 
-let login = new LoginPage(jqueryMountPoint);
-login.loadPage();
+// let login = new LoginPage(jqueryMountPoint);
+// login.loadPage();
 
-// let template = new Template(dependencies);
-//
-//
-// template.injectinDomeAndRegisterListener(jqueryMountPoint);
-// template.goToPage(utilities.getUrlParam("p","form-query"));
+let template = new Template(dependencies);
+
+
+template.injectinDomeAndRegisterListener(jqueryMountPoint);
+template.goToPage(utilities.getUrlParam("p","form-query"));
 
 
 

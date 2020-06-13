@@ -60,10 +60,10 @@ public class WebuiController
 
     @GET
     @Produces({"application/javascript"})
-    @Path("/main.bundle.js")
+    @Path("/vendor.bundle.js")
     public InputStream getMainBundleJs()
     {
-        return this.loadFromClassContext("static-files/main.bundle.js");
+        return this.loadFromClassContext("static-files/vendor.bundle.js");
     }
 
 

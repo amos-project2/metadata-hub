@@ -241,12 +241,21 @@
                     </execution>
 
                     <execution>
-                        <id>webpack-build</id>
+                        <id>webpack-build-vendor</id>
                         <goals><goal>npm</goal></goals>
                         <configuration>
-                            <arguments>run dev-build</arguments>
+                            <arguments>run dev-build-vendor</arguments>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>webpack-build-app</id>
+                        <goals><goal>npm</goal></goals>
+                        <configuration>
+                            <arguments>run dev-build-app</arguments>
+                        </configuration>
+                    </execution>
+
+
                 </executions>
 
             </plugin>

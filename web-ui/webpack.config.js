@@ -1,13 +1,11 @@
 const path = require('path');
 
-//const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 const webpack = require('webpack')
 
 module.exports = {
     entry: './src/app.js',
-    devtool: 'inline-source-map',
     output: {
-        filename: '[name].bundle.js',
+        filename: 'app.bundle.js',
         path: path.resolve(__dirname, 'dist')
     },
     module: {
@@ -23,18 +21,18 @@ module.exports = {
                         // Interprets `@import` and `url()` like `import/require()` and will resolve them
                         loader: 'css-loader'
                     },
-                    {
-                        // Loader for webpack to process CSS with PostCSS
-                        loader: 'postcss-loader',
-                        options: {
-                            plugins: function () {
-                                return [
-                                    require('precss'),
-                                    require('autoprefixer')
-                                ];
-                            }
-                        }
-                    },
+                    // {
+                    //     // Loader for webpack to process CSS with PostCSS
+                    //     loader: 'postcss-loader',
+                    //     options: {
+                    //         plugins: function () {
+                    //             return [
+                    //                 require('precss'),
+                    //                 require('autoprefixer')
+                    //             ];
+                    //         }
+                    //     }
+                    // },
                     {
                         // Loads a SASS/SCSS file and compiles it to CSS
                         loader: 'sass-loader'
@@ -44,29 +42,12 @@ module.exports = {
             {
                 test: /\.lazy\.scss3$/i,
                 use: [
-                    { loader: 'style-loader', options: { injectType: 'lazyStyleTag' } },
+                    {loader: 'style-loader', options: {injectType: 'lazyStyleTag'}},
                     {loader: 'css-loader'},
                     {loader: 'sass-loader'},
                 ],
             },
-            {
-                type: 'javascript/auto',
-                test: /\.mjs$/,
-                use: [],
-                include: /node_modules/,
-            },
-            {
-                test: /\.css$/,
-                use: ['style-loader', 'css-loader'],
-            },
-            {
-                test: /\.svg$/,
-                use: [{loader: 'svg-inline-loader'}],
-            },
-            {
-                test: /\.html$/,
-                use: ['file?name=[name].[ext]'],
-            }
+
         ]
     },
     resolve: {
@@ -74,23 +55,21 @@ module.exports = {
         alias: {
             // Force all modules to use the same jquery version.
             'jquery': path.join(__dirname, 'node_modules/jquery/src/jquery')
-            }
+        }
 
 
     },
     plugins: [
-        //new CleanWebpackPlugin(),
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery"
+        }),
+        new webpack.DllReferencePlugin({
+            // context: '.',
+            manifest: require(path.resolve(__dirname, 'dist/vendor-manifest.json')),
         })
 
     ],
-    optimization: {
 
-        splitChunks: {
-            chunks: 'all',
-        },
-    },
     mode: 'development'
 };
