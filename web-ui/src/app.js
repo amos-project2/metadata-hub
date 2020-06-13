@@ -5,6 +5,11 @@ import {GraphQlFetcher} from "./buisnesslogic/GraphQlFetcher";
 import {RestAPIFetcher} from "./buisnesslogic/RestAPIFetcher";
 import {Utilities} from "./buisnesslogic/Utilities";
 
+
+import {LoginPage} from "./login/LoginPage";
+
+
+
 let utilities = new Utilities()
 
 let dependencies = {
@@ -15,11 +20,16 @@ let dependencies = {
 
 }
 
-let template = new Template(dependencies);
+let jqueryMountPoint=$(".app-root");
 
+let login = new LoginPage(jqueryMountPoint);
+login.loadPage();
 
-template.injectinDomeAndRegisterListener($(".app-root"));
-template.goToPage(utilities.getUrlParam("p","form-query"));
+// let template = new Template(dependencies);
+//
+//
+// template.injectinDomeAndRegisterListener(jqueryMountPoint);
+// template.goToPage(utilities.getUrlParam("p","form-query"));
 
 
 

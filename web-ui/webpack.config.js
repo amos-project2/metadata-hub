@@ -44,6 +44,14 @@ module.exports = {
                 ]
             },
             {
+                test: /\.lazy\.scss3$/i,
+                use: [
+                    { loader: 'style-loader', options: { injectType: 'lazyStyleTag' } },
+                    {loader: 'css-loader'},
+                    {loader: 'sass-loader'},
+                ],
+            },
+            {
                 type: 'javascript/auto',
                 test: /\.mjs$/,
                 use: [],
