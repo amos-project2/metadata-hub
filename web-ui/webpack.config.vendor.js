@@ -12,6 +12,7 @@ module.exports = {
         "graphiql",
         "graphiql/graphiql.min.css",
         "js-sha256",
+        "darkreader",
     ],
    // devtool: 'inline-source-map',
     output: {

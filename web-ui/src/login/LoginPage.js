@@ -4,11 +4,10 @@ import {Template} from "../template";
 
 export class LoginPage {
 
-    constructor(dependencies, mountpoint, styles) {
+    constructor(dependencies, mountpoint) {
         this.dependencies = dependencies
         this.utilities = dependencies.utilities;
         this.mountpoint = mountpoint;
-        this.styles = styles;
     }
 
     loadPage() {
@@ -51,7 +50,7 @@ export class LoginPage {
     }
 
     enterMainPage(defaultStartPage, usedScope) {
-        let template = new Template(this.dependencies, usedScope, this.styles);
+        let template = new Template(this.dependencies, usedScope);
         this.unLoadPage();
         template.injectinDomeAndRegisterListener(this.mountpoint);
         //this.template.goToPage(this.utilities.getUrlParam("p", "form-query"));

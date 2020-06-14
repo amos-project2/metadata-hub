@@ -11,6 +11,13 @@ import {CrawlerScheduler} from "./crawler/CrawlerScheduler";
 import {ErrorPage} from "./ErrorPage";
 import {Logout} from "./logout/Logout";
 
+import {
+    enable as enableDarkMode,
+    disable as disableDarkMode,
+    auto as followSystemColorScheme,
+} from 'darkreader';
+
+
 class NavElement {
     constructor(scope, name, selectorName, contentLoaderLambda) {
         this.scope = scope;
@@ -104,11 +111,10 @@ export class Template {
      */
 
 
-    constructor(dependencies, usedScope, styles) {
+    constructor(dependencies, usedScope) {
         // this.thisdata = this;
         this.dependencies = dependencies;
         this.usedScope = usedScope;
-        this.styles = styles;
         this.storage = {
             query_inject: null,
             openedFromEditor: null,
@@ -228,12 +234,19 @@ export class Template {
 
         $("#dark-white-toggler").change(function () {
             if (this.checked) {
-                thisdata.styles.white.unuse();
-                thisdata.styles.dark.use();
+                 thisdata.dependencies.styles.dark.use();
+
+                enableDarkMode({
+                    brightness: 100,
+                    contrast: 90,
+                    sepia: 10,
+                });
+
+
 
             } else {
-                thisdata.styles.dark.unuse();
-                thisdata.styles.white.use();
+                 thisdata.dependencies.styles.dark.unuse();
+                disableDarkMode();
             }
         });
 

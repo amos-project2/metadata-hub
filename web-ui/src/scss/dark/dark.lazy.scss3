@@ -1,3 +1,2 @@
-@import "~bootswatch/dist/darkly/variables";
-@import "~bootstrap/scss/bootstrap";
-@import "~bootswatch/dist/darkly/bootswatch";
+//additional style informations which also can override the existing one
+//this stylesheet here is only loaded if the darkmode is enabled
