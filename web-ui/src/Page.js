@@ -23,6 +23,11 @@ export class Page {
         this.counter = 0; //private attribut
     }
 
+    //Dont override
+    setIdentifier(identifier) {
+        this.identifier = identifier;
+    }
+
     //to-ovveride
     onRegister() {}
 

@@ -12,11 +12,17 @@ import {ErrorPage} from "./ErrorPage";
 import {Logout} from "./logout/Logout";
 
 class NavElement {
-    constructor(scope, name, selectorName, contentLoader) {
+    constructor(scope, name, selectorName, contentLoaderLambda) {
         this.scope = scope;
         this.name = name;
         this.selectorName = selectorName
-        this.contentLoader = contentLoader;
+        this.contentLoaderLambda = contentLoaderLambda;
+        this.contentLoader = null;
+    }
+
+    init(templateRef) {
+        this.contentLoader = this.contentLoaderLambda(templateRef); //templateRef is needed directly in the constructor, cause of dependencies
+        this.contentLoader.setIdentifier(this.selectorName); //its ok initalize this a short time later
     }
 
 }
@@ -122,57 +128,57 @@ export class Template {
 
         let thisdata = this;
 
-        this.addNavGroup(0, null, "nav_error", function (n) {
-            n.addOneNavElement(new NavElement(0, "Error 404", "error-404", new ErrorPage(thisdata, "error-404")));
+        this.addNavGroup(0, null, "nav_error", n => {
+            n.addOneNavElement(new NavElement(0, "Error 404", "error-404", t => {return new ErrorPage(t);}));
 
         });
 
 
-        this.addNavGroup(1, "Query", "nav_query", function (n) {
-            n.addOneNavElement(new NavElement(1, "Form-Query", "form-query", new FormQueryEditor(thisdata, "form-query")));
-            n.addOneNavElement(new NavElement(1, "Hash Query", "hash-query", new HashQuery(thisdata, "hash-query")));
-            n.addOneNavElement(new NavElement(1, "GraphQL-Query", "graphql-query", new GraphqlQueryEditor(thisdata, "graphql-query")));
+        this.addNavGroup(1, "Query", "nav_query", n => {
+            n.addOneNavElement(new NavElement(1, "Form-Query", "form-query", t => {return new FormQueryEditor(t)}));
+            n.addOneNavElement(new NavElement(1, "Hash Query", "hash-query", t => {return new HashQuery(t)}));
+            n.addOneNavElement(new NavElement(1, "GraphQL-Query", "graphql-query", t => {return new GraphqlQueryEditor(t)}));
 
         });
 
-        this.addNavGroup(1, "GraphiQL", "nav_graphiql", function (n) {
-            n.addOneNavElement(new NavElement(1, "GraphiQL-Console", "graphiql-console", new GraphiqlConsole(thisdata, "graphiql-console")));
+        this.addNavGroup(1, "GraphiQL", "nav_graphiql", n => {
+            n.addOneNavElement(new NavElement(1, "GraphiQL-Console", "graphiql-console", t => {return new GraphiqlConsole(t)}));
         });
 
-        this.addNavGroup(2, "Crawler", "nav_crawler", function (n) {
-            n.addOneNavElement(new NavElement(2, "Controller", "crawler-controller", new CrawlerController(thisdata, "crawler-controller")));
-            n.addOneNavElement(new NavElement(2, "Info", "crawler-info", new CrawlerInfo(thisdata, "crawler-info")));
-            n.addOneNavElement(new NavElement(2, "Scheduler", "crawler-scheduler", new CrawlerScheduler(thisdata, "crawler-scheduler")));
-            n.addOneNavElement(new NavElement(2, "Crawler Config", "crawler-config", new CrawlerConfig(thisdata, "crawler-config")));
+        this.addNavGroup(2, "Crawler", "nav_crawler", n => {
+            n.addOneNavElement(new NavElement(2, "Controller", "crawler-controller", t => {return new CrawlerController(t)}));
+            n.addOneNavElement(new NavElement(2, "Info", "crawler-info", t => {return new CrawlerInfo(t)}));
+            n.addOneNavElement(new NavElement(2, "Scheduler", "crawler-scheduler", t => {return new CrawlerScheduler(t)}));
+            n.addOneNavElement(new NavElement(2, "Crawler Config", "crawler-config", t => {return new CrawlerConfig(t)}));
         });
 
 
-        this.addNavGroup(3, "status", "nav_status", function (n) {
-            n.addOneNavElement(new NavElement(3, "Testname", "testname", new Testname(thisdata, "testname")));
-            n.addOneNavElement(new NavElement(3, "Testname2", "testname2", new Page(thisdata, "testname2")));
+        this.addNavGroup(3, "status", "nav_status", n => {
+            n.addOneNavElement(new NavElement(3, "Testname", "testname", t => {return new Testname(t)}));
+            n.addOneNavElement(new NavElement(3, "Testname2", "testname2", t => {return new Page(t)}));
             n.addMoreNavElementsToOneGroup("MyDropdown", [
-                new NavElement(3, "Testname3", "testname3", new Page(thisdata, "testname3")),
-                new NavElement(3, "Testname4", "testname4", new Page(thisdata, "testname4")),
+                new NavElement(3, "Testname3", "testname3", t => {return new Page(t)}),
+                new NavElement(3, "Testname4", "testname4", t => {return new Page(t)}),
                 new NavElement(3, "divider"),
-                new NavElement(3, "Testname5", "testname5", new Page(thisdata, "testname5"))
+                new NavElement(3, "Testname5", "testname5", t => {return new Page(t)})
             ]);
-            n.addOneNavElement(3, new NavElement(3, "Testname6", "testname6", new Page(thisdata, "testname6")));
+            n.addOneNavElement(3, new NavElement(3, "Testname6", "testname6", t => {return new Page(t)}));
         });
 
-        this.addNavGroup(3, "Help", "nav_help", function (n) {
-            n.addOneNavElement(new NavElement(3, "help1", "help1", new Page(thisdata, "help1")));
-            n.addOneNavElement(new NavElement(3, "help1", "help2", new Page(thisdata, "help2")));
-        });
-
-
-        this.addNavGroup(3, "About", "nav_about", function (n) {
-            n.addOneNavElement(new NavElement(3, "about1", "about1", new Page(thisdata, "about1")));
-            n.addOneNavElement(new NavElement(3, "about1", "about2", new Page(thisdata, "about2")));
+        this.addNavGroup(3, "Help", "nav_help", n => {
+            n.addOneNavElement(new NavElement(3, "help1", "help1", t => {return new Page(t)}));
+            n.addOneNavElement(new NavElement(3, "help1", "help2", t => {return new Page(t)}));
         });
 
 
-        this.addNavGroup(0, "Logout", "nav_logout", function (n) {
-            n.addOneNavElement(new NavElement(0, "Logout", "logout", new Logout(thisdata, "logout")));
+        this.addNavGroup(3, "About", "nav_about", n => {
+            n.addOneNavElement(new NavElement(3, "about1", "about1", t => {return new Page(t)}));
+            n.addOneNavElement(new NavElement(3, "about1", "about2", t => {return new Page(t)}));
+        });
+
+
+        this.addNavGroup(0, "Logout", "nav_logout", n => {
+            n.addOneNavElement(new NavElement(0, "Logout", "logout", t => {return new Logout(t)}));
         });
 
         this.generateTemplate();
@@ -191,6 +197,10 @@ export class Template {
         //navGroup.parent_nav = parent_nav
         this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
         consumer(navGroup);
+
+        for (let value of navGroup.navElements) {value.init(this);}
+
+
         this.navbar += navGroup.data;
 
         if (name != null && navGroup.firstElement() != null) {
