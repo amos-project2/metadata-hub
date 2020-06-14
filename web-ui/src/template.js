@@ -116,6 +116,7 @@ export class Template {
         this.navsidebar = "";
         this.navbar = "";
         this.navGroups = [];
+        this.parentNavCounter = 0;
 
         //constraint -> both have to be null or not null
         this.currentSelectedElement = null;
@@ -126,26 +127,26 @@ export class Template {
         this.replaceState = false;
 
 
-        let thisdata = this;
+       // let thisdata = this;
 
-        this.addNavGroup(0, null, "nav_error", n => {
+        this.addNavGroup(0, null, n => {
             n.addOneNavElement(new NavElement(0, "Error 404", "error-404", t => {return new ErrorPage(t);}));
 
         });
 
 
-        this.addNavGroup(1, "Query", "nav_query", n => {
+        this.addNavGroup(1, "Query", n => {
             n.addOneNavElement(new NavElement(1, "Form-Query", "form-query", t => {return new FormQueryEditor(t)}));
             n.addOneNavElement(new NavElement(1, "Hash Query", "hash-query", t => {return new HashQuery(t)}));
             n.addOneNavElement(new NavElement(1, "GraphQL-Query", "graphql-query", t => {return new GraphqlQueryEditor(t)}));
 
         });
 
-        this.addNavGroup(1, "GraphiQL", "nav_graphiql", n => {
+        this.addNavGroup(1, "GraphiQL", n => {
             n.addOneNavElement(new NavElement(1, "GraphiQL-Console", "graphiql-console", t => {return new GraphiqlConsole(t)}));
         });
 
-        this.addNavGroup(2, "Crawler", "nav_crawler", n => {
+        this.addNavGroup(2, "Crawler", n => {
             n.addOneNavElement(new NavElement(2, "Controller", "crawler-controller", t => {return new CrawlerController(t)}));
             n.addOneNavElement(new NavElement(2, "Info", "crawler-info", t => {return new CrawlerInfo(t)}));
             n.addOneNavElement(new NavElement(2, "Scheduler", "crawler-scheduler", t => {return new CrawlerScheduler(t)}));
@@ -153,7 +154,7 @@ export class Template {
         });
 
 
-        this.addNavGroup(3, "status", "nav_status", n => {
+        this.addNavGroup(3, "status", n => {
             n.addOneNavElement(new NavElement(3, "Testname", "testname", t => {return new Testname(t)}));
             n.addOneNavElement(new NavElement(3, "Testname2", "testname2", t => {return new Page(t)}));
             n.addMoreNavElementsToOneGroup("MyDropdown", [
@@ -165,19 +166,19 @@ export class Template {
             n.addOneNavElement(3, new NavElement(3, "Testname6", "testname6", t => {return new Page(t)}));
         });
 
-        this.addNavGroup(3, "Help", "nav_help", n => {
+        this.addNavGroup(3, "Help", n => {
             n.addOneNavElement(new NavElement(3, "help1", "help1", t => {return new Page(t)}));
             n.addOneNavElement(new NavElement(3, "help1", "help2", t => {return new Page(t)}));
         });
 
 
-        this.addNavGroup(3, "About", "nav_about", n => {
+        this.addNavGroup(3, "About", n => {
             n.addOneNavElement(new NavElement(3, "about1", "about1", t => {return new Page(t)}));
             n.addOneNavElement(new NavElement(3, "about1", "about2", t => {return new Page(t)}));
         });
 
 
-        this.addNavGroup(0, "Logout", "nav_logout", n => {
+        this.addNavGroup(0, "Logout", n => {
             n.addOneNavElement(new NavElement(0, "Logout", "logout", t => {return new Logout(t)}));
         });
 
@@ -185,13 +186,15 @@ export class Template {
     }
 
 
-    addNavGroup(scope, name, parent_nav, consumer) {
+    addNavGroup(scope, name, consumer) {
 
         if (this.usedScope.indexOf(scope) === -1) {
             //the navGroup is not in the usedScope, so we dont add it
             return;
         }
 
+        this.parentNavCounter++;
+        let parent_nav = "pn_" + this.parentNavCounter;
 
         let navGroup = new NavGroup(this.usedScope, name, parent_nav);
         //navGroup.parent_nav = parent_nav
