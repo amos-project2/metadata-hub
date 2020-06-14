@@ -12,8 +12,12 @@ export class LoginPage {
     loadPage() {
 
         let logged_in = localStorage.getItem('logged_in');
-        if (logged_in === "true") {
-            this.enterMainPage();
+        if (logged_in === "enduser") {
+            this.enterMainPage("form-query");
+            return;
+        }
+        else if (logged_in === "enduser") {
+            this.enterMainPage("crawler-controller");
             return;
         }
 
@@ -33,16 +37,23 @@ export class LoginPage {
 
         let thisdata = this;
 
-        $(".login-action-button").click(function () {
-            localStorage.setItem("logged_in", "true");
+        $(".login-action-button-enduser").click(function () {
+            localStorage.setItem("logged_in", "enduser");
             thisdata.enterMainPage();
-        })
+        });
+
+        $(".login-action-button-admin").click(function () {
+            localStorage.setItem("logged_in", "admin");
+            thisdata.enterMainPage();
+        });
+
     }
 
-    enterMainPage() {
+    enterMainPage(defaultStartPage) {
         this.unLoadPage();
         this.template.injectinDomeAndRegisterListener(this.mountpoint);
-        this.template.goToPage(this.utilities.getUrlParam("p", "form-query"));
+        //this.template.goToPage(this.utilities.getUrlParam("p", "form-query"));
+        this.template.goToPage(this.utilities.getUrlParam("p", defaultStartPage));
     }
 
 
@@ -66,8 +77,8 @@ export class LoginPage {
                                         <input type="text" id="your-name" class="form-control" placeholder="Your-Name" required autofocus>
                                         <label for="your-name">Your-Name</label>
                                     </div>
-                                    <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button" type="button">Sign in as Enduser</button>
-                                    <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button" type="button">Sign in as Admin</button>
+                                    <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button-enduser" type="button">Sign in as Enduser</button>
+                                    <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button-admin" type="button">Sign in as Admin</button>
                                     <hr class="my-4">
                                     <span class="text-secondary">* The Your-Name is used for save it along possible queries you will do. It must be not System-known.</span>
                                 </form>
