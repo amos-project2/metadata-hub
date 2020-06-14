@@ -96,7 +96,7 @@ class DatabaseConnection:
 
     def insert_new_record_crawls(self, config:Config) -> int:
         """Insert a new record to the crawls table. Used at the start of a crawl task.
-
+           TODO: Add docstring
         Args:
             config (Config): Config for the crawl task.
 
@@ -116,7 +116,7 @@ class DatabaseConnection:
                 .insert(insert_values)
         # FIXME Better solution? pypika doesn't offer returning value.
         query = str(query) + 'RETURNING id'
-        
+
         # Make database request
         curs = self.con.cursor()
         try:
@@ -160,91 +160,44 @@ class DatabaseConnection:
         self.con.commit()
         return
 
-    def insert_crawl(self, config: Config) -> int:
-        """TODO: Add docstring
-
-        Args:
-            config (Config): [description]
-            analyzed_dirs (List[str], optional): [description]. Defaults to [].
-
-        Returns:
-            int: [description]
-
-        """
-        crawl_config = json.dumps(config.get_data())
-        dir_path = ', '.join(
-            [inputs['path'] for inputs in config.get_paths_inputs()]
-        )
-        analyzed_dirs = json.dumps({"analyzed directories": []})
-        starting_time = datetime.now()
-        cmd = (
-            f'INSERT INTO crawls '
-            f'(dir_path, name, status, crawl_config, analyzed_dirs, starting_time) '
-            f'VALUES(\'{dir_path}\', \'---\', \'running\', '
-            f'\'{crawl_config}\', \'{analyzed_dirs}\', \'{starting_time}\')'
-            f'RETURNING id'
-        )
-        curs = self.con.cursor()
-        try:
-            curs.execute(cmd)
-        except:
-            _logger.warning('"Error updating database"')
-            curs.close()
-            self.con.rollback()
-            raise
-        try:
-            dbID = curs.fetchone()[0]
-        except:
-            dbID = 0
-        curs.close()
-        self.con.commit()
-        return dbID
-
     def close(self) -> None:
         self.con.close()
 
-    def set_crawl_state(
-        self,
-        tree_walk_id: int,
-        status: str
-    ) -> None:
-        """Update the status of the crawl.
+    def set_crawl_state(self, tree_walk_id: int, status: str) -> None:
+        """Update the status of the crawler in it's corresponding database entry.
 
         Args:
             tree_walk_id (int): ID of the TreeWalk execution
             status (str): status to set
 
         """
-
-        curs = self.con.cursor()
-        get_current = ('SELECT * '
-                       'FROM crawls '
-                       f'WHERE id = {tree_walk_id}')
+        crawls = Table('crawls')
+        if status == communication.CRAWL_STATUS_FINISHED:
+            query = Query.update(crawls)\
+                    .set(crawls.finished_time, datetime.now())\
+                    .set(crawls.status, communication.CRAWL_STATUS_FINISHED)\
+                    .where(crawls.id == tree_walk_id)
+        elif status == communication.CRAWL_STATUS_PAUSED:
+            query = Query.update(crawls)\
+                    .set(crawls.finished_time, datetime.now())\
+                    .set(crawls.status, communication.CRAWL_STATUS_PAUSED)\
+                    .where(crawls.id == tree_walk_id)
+        elif status == communication.CRAWL_STATUS_RUNNING:
+            query = Query.update(crawls)\
+                    .set(crawls.finished_time, datetime.now())\
+                    .set(crawls.status, communication.CRAWL_STATUS_RUNNING)\
+                    .where(crawls.id == tree_walk_id)
+        elif status == communication.CRAWL_STATUS_ABORTED:
+            query = Query.update(crawls)\
+                    .set(crawls.finished_time, datetime.now())\
+                    .set(crawls.status, communication.CRAWL_STATUS_ABORTED)\
+                    .where(crawls.id == tree_walk_id)
+        else:
+            _logger.warning('"Error updating database state, state not recognized"')
+            return
         try:
-            curs.execute(get_current)
-            get = curs.fetchone()
-
-            if status == communication.CRAWL_STATUS_FINISHED:
-                update_status = ('UPDATE crawls '
-                                 f'SET finished_time = \'{datetime.now()}\', status = \'{communication.CRAWL_STATUS_FINISHED}\''
-                                 f'WHERE id = {tree_walk_id}')
-            elif status == communication.CRAWL_STATUS_PAUSED:
-                update_status = ('UPDATE crawls '
-                                 f'SET status = \'{communication.CRAWL_STATUS_PAUSED}\''
-                                 f'WHERE id = {tree_walk_id}')
-            elif status == communication.CRAWL_STATUS_RUNNING:
-                update_status = ('UPDATE crawls '
-                                 f'SET status = \'{communication.CRAWL_STATUS_RUNNING}\''
-                                 f'WHERE id = {tree_walk_id}')
-            elif status == communication.CRAWL_STATUS_ABORTED:
-                update_status = ('UPDATE crawls '
-                                 f'SET status = \'{communication.CRAWL_STATUS_ABORTED}\''
-                                 f'WHERE id = {tree_walk_id}')
-            else:
-                _logger.warning('"Error updating database state, state not recognized"')
-                return
-
-            curs.execute(update_status)
+            curs = self.con.cursor()
+            curs.execute(str(query))
             curs.close()
             self.con.commit()
         except:
