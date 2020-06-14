@@ -104,10 +104,11 @@ export class Template {
      */
 
 
-    constructor(dependencies, usedScope) {
+    constructor(dependencies, usedScope, styles) {
         // this.thisdata = this;
         this.dependencies = dependencies;
         this.usedScope = usedScope;
+        this.styles = styles;
         this.storage = {
             query_inject: null,
             openedFromEditor: null,
@@ -127,7 +128,7 @@ export class Template {
         this.replaceState = false;
 
 
-       // let thisdata = this;
+        // let thisdata = this;
 
         this.addNavGroup(0, null, n => {
             n.addOneNavElement(new NavElement(0, "Error 404", "error-404", t => {return new ErrorPage(t);}));
@@ -218,13 +219,27 @@ export class Template {
     injectinDomeAndRegisterListener(mountElement) {
         mountElement.html(this.data);
 
+        let thisdata = this;
+
         $("#menu-toggle").click(function (e) {
             e.preventDefault();
             $("#wrapper").toggleClass("toggled");
         });
 
+        $("#dark-white-toggler").change(function () {
+            if (this.checked) {
+                thisdata.styles.white.unuse();
+                thisdata.styles.dark.use();
+
+            } else {
+                thisdata.styles.dark.unuse();
+                thisdata.styles.white.use();
+            }
+        });
+
+
         //Register eventListener
-        let thisdata = this;
+       // let thisdata = this;
         for (let value of this.navGroups) {
 
             //it is similar to this:  $(".nav-query").click(function () { $("#nav-element-form-query").trigger("click"); });
@@ -323,6 +338,11 @@ export class Template {
 
                     <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
                         <button class="btn btn-primary" id="menu-toggle">Toggle Menu</button>
+
+                        <div class="custom-control custom-switch" style="margin-left:20px;">
+                            <input type="checkbox" class="custom-control-input" id="dark-white-toggler">
+                            <label class="custom-control-label" for="dark-white-toggler">Dark-Mode</label>
+                         </div>
 
                         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                             <span class="navbar-toggler-icon"></span>
