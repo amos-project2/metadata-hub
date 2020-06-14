@@ -94,26 +94,35 @@ class DatabaseConnection:
             self.con.rollback()
         return
 
-    def insert_new_record(self, insert_cmd: str) -> int:
-        """Insert a new record to a row in connected database.
+    def insert_new_record_crawls(self, config:Config) -> int:
+        """Insert a new record to the crawls table. Used at the start of a crawl task.
 
         Args:
-            insert_cmd (dict): a single INSERT query to Postgres database
+            config (Config): Config for the crawl task.
 
         """
-        return
-        files = Table('files')
-        '(crawl_id, dir_path, name, type, size, creation_time, access_time, modification_time, metadata'
-        test = ['abc', 'cde', "hallo's"]
-        query = Query.into(files)\
-                .columns('crawl_id', 'dir_path', 'name', 'type', 'size', 'creation_time', 'access_time',
-                         'modification_time', 'metadata')\
-                .insert(*test)
+        # Prepare necessary values
+        crawl_config = json.dumps(config.get_data())
+        dir_path = ', '.join(
+            [inputs['path'] for inputs in config.get_paths_inputs()]
+        )
+        analyzed_dirs = json.dumps({"analyzed directories": []})
+        starting_time = datetime.now()
+        insert_values = (dir_path, '---', 'running', crawl_config, analyzed_dirs, starting_time, )
+        # Construct the SQL query using pypika
+        crawls = Table('crawls')
+        query = Query.into(crawls)\
+                .columns('dir_path', 'name', 'status', 'crawl_config', 'analyzed_dirs', 'starting_time')\
+                .insert(insert_values)
+        # FIXME Better solution? pypika doesn't offer returning value.
+        query = str(query) + 'RETURNING id'
+        
+        # Make database request
         curs = self.con.cursor()
         try:
-            curs.execute(insert_cmd)
+            curs.execute(query)
         except:
-            _logger.warning('"Error inserting data into database"')
+            _logger.warning('"Error updating database"')
             curs.close()
             self.con.rollback()
             raise
@@ -125,7 +134,7 @@ class DatabaseConnection:
         self.con.commit()
         return dbID
 
-    def insert_new_record_files(self, insert_values: List[Tuple[str]]) -> int:
+    def insert_new_record_files(self, insert_values: List[Tuple[str]]):
         """Insert a new record to the 'files' table based on the ExifTool output.
 
         Args:
@@ -134,14 +143,10 @@ class DatabaseConnection:
         """
         # Construct the SQL query using pypika
         files = Table('files')
-        try:
-            query = Query.into(files)\
+        query = Query.into(files)\
                 .columns('crawl_id', 'dir_path', 'name', 'type', 'size', 'metadata', 'creation_time', 'access_time',
                          'modification_time', 'deleted', 'deleted_time', 'file_hash')\
                 .insert(*insert_values)
-            print(query)
-        except Exception as e:
-            print(e)
 
         curs = self.con.cursor()
         try:
@@ -151,13 +156,9 @@ class DatabaseConnection:
             curs.close()
             self.con.rollback()
             raise
-        try:
-            dbID = curs.fetchone()[0]
-        except:
-            dbID = 0
         curs.close()
         self.con.commit()
-        return dbID
+        return
 
     def insert_crawl(self, config: Config) -> int:
         """TODO: Add docstring
