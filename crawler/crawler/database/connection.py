@@ -7,10 +7,9 @@ import logging
 from datetime import datetime
 from typing import List, Tuple
 
-
 # 3rd party modules
 import psycopg2
-
+from pypika import Query, Table, Field
 
 # Local imports
 from crawler.services.config import Config
@@ -102,9 +101,51 @@ class DatabaseConnection:
             insert_cmd (dict): a single INSERT query to Postgres database
 
         """
+        return
+        files = Table('files')
+        '(crawl_id, dir_path, name, type, size, creation_time, access_time, modification_time, metadata'
+        test = ['abc', 'cde', "hallo's"]
+        query = Query.into(files)\
+                .columns('crawl_id', 'dir_path', 'name', 'type', 'size', 'creation_time', 'access_time',
+                         'modification_time', 'metadata')\
+                .insert(*test)
         curs = self.con.cursor()
         try:
             curs.execute(insert_cmd)
+        except:
+            _logger.warning('"Error inserting data into database"')
+            curs.close()
+            self.con.rollback()
+            raise
+        try:
+            dbID = curs.fetchone()[0]
+        except:
+            dbID = 0
+        curs.close()
+        self.con.commit()
+        return dbID
+
+    def insert_new_record_files(self, insert_values: List[Tuple[str]]) -> int:
+        """Insert a new record to the 'files' table based on the ExifTool output.
+
+        Args:
+            values (List[Tuple[str]): A list of lists. Contains the values for each row to be inserted.
+
+        """
+        # Construct the SQL query using pypika
+        files = Table('files')
+        try:
+            query = Query.into(files)\
+                .columns('crawl_id', 'dir_path', 'name', 'type', 'size', 'metadata', 'creation_time', 'access_time',
+                         'modification_time', 'deleted', 'deleted_time', 'file_hash')\
+                .insert(*insert_values)
+            print(query)
+        except Exception as e:
+            print(e)
+
+        curs = self.con.cursor()
+        try:
+            curs.execute(str(query))
         except:
             _logger.warning('"Error inserting data into database"')
             curs.close()
