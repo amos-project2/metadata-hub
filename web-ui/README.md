@@ -1,16 +1,20 @@
 # HOWTO BUILD
 
 1. Make sure, you have nodeJs and npm installed
-2. Then go into the web-ui folder and do the following
+2. Go into the java-application folder with the pom-file and execute `mvn package`
+3. Then go into the web-ui folder and do the following
 
 ```console
 $ npm install
-$ npm run build
+$ npm run runtime-build-vendor
+$ npm run runtime-build-app
 ```
 
-3. In the folder ./dist are then the output
+4. In the folder `./target/classes/static-files` are then the output `vendor.bundle.js` and `bundle.js`
 
-4. Open in then in ./ the index.html and enjoy^^
+5. Start the server and go to http://localhost:8080/, it will give you a html output, which has this two bundles included.
+
+6. Enjoy the WebUi
 
 
 #### Informations about my webpack and Bootstrap
@@ -24,23 +28,31 @@ https://stevenwestmoreland.com/2018/01/how-to-include-bootstrap-in-your-project-
 
 #### Howto build in combination with the server
 
-Each time you do a maven package/compile/..., maven would call the nodeJs webpack module
+Each time you do a `maven package/compile/...`, maven would call the nodeJs webpack module
 and let it bundle it into the resource-folder, which goes in the last step to the jar-file.
 
 You will see, each time you do a maven compile, it needs a lot of time. Time that you dont want to wait, if
 you change something in web-ui and want to test.
 
-There is third option, that you can webpack build into to the target-directory.
-You start the Server. Each time you change something in the web-ui, you only have to call the specific
-npm webpack command. The Server looks (if you start it in your IDEA) in that folder for the web stuff.
+There is second option, that you can webpack build into to the target-directory.
+You start the Server in your IDE. Each time you change something in the web-ui, you only have to call the specific
+two `npm webpack command`. The Server looks (if you start it in your IDEA) in the `target/classes/static-files` folder for the web stuff.
 It works, cause the Server dont cache it.
 
 Go into the webui-folder, there you have the following commands
 ```console
-npm run build  //this command bundles the output to ./dist
-npm run dev-build //this command is used by maven to bundle to ressource/file-static
-npm run runtime-build //this command you can use, if the server is in the IDEA started and you want to hot-reload
+npm run build  //this command bundles the output to ./dist (deleted, TODO update)
+
+//this command is used by maven to bundle to ressource/file-static
+npm run dev-build-vendor
+npm run dev-build-app
+
+////this command you can use, if the server is in the IDEA started and you want to hot-reload
+npm run runtime-build-vendor //this here creates the vendor bundle, call it one time, or after you changed some dependencies
+npm run runtime-build-app //this creates the bundle from the source files, after each update, you must call this
 ```
+
+
 
 #### How you can extend web-ui
 

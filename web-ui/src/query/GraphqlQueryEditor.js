@@ -6,30 +6,30 @@ export class GraphqlQueryEditor extends Page {
         super(parent, identifier, mountpoint, titleSelector);
         this.title = "GraphQl Query Editor";
         this.cacheLevel = 3;
-        this.graphQlFetcher=this.parent.dependencies.graphQlFetcher;
+        this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
         this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
     }
 
     content() {
+
+        // language=HTML
         return `
-<form class="q-send-query-editor">
-<div class="form-group" >
- <label for="q_textInput">GraphQL</label>
- <textarea class="form-control" id="q_textInput" rows="10" placeholder="query\n{\n  {\n\n  }\n}"></textarea>
-</div>
-  <button type="submit" class="btn btn-primary">Send</button>
-</form>
-<br>
-<div class="resultView3"></div>
-
-
+            <form class="q-send-query-editor">
+                <div class="form-group">
+                    <label for="q_textInput">GraphQL</label>
+                    <textarea class="form-control" id="q_textInput" rows="10" placeholder="query\n{\n  {\n\n  }\n}"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Send</button>
+            </form>
+            <br>
+            <div class="resultView3"></div>
         `;
     }
 
     onMount() {
         $(".resultView3").html(this.resultPresenter.getHtml());
 
-        let thisdata=this;
+        let thisdata = this;
         $(".q-send-query-editor").submit(function (event) {
             event.preventDefault();
             thisdata.resultPresenter.generateResultAndInjectIntoDom($("#q_textInput").val());

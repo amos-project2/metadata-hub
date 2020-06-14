@@ -1,0 +1,100 @@
+import loginStyles from '../scss/logincss/login.lazy.scss3';
+import {Template} from "../template";
+
+
+export class LoginPage {
+
+    constructor(dependencies, mountpoint, styles) {
+        this.dependencies = dependencies
+        this.utilities = dependencies.utilities;
+        this.mountpoint = mountpoint;
+        this.styles = styles;
+    }
+
+    loadPage() {
+
+        let logged_in = localStorage.getItem('logged_in');
+        if (logged_in === "enduser") {
+            this.enterMainPage("form-query", [0, 1]);
+            return;
+        } else if (logged_in === "admin") {
+            this.enterMainPage("crawler-controller", [0, 1, 2]);
+            return;
+        }
+
+        loginStyles.use();
+        this.renderIntoMountpoint();
+        $("title").html("Metadata-Hub");
+        this.registerListener();
+    }
+
+
+    unLoadPage() {
+        loginStyles.unuse();
+        this.mountpoint.html("");
+    }
+
+    registerListener() {
+
+        let thisdata = this;
+
+        $(".login-action-button-enduser").click(function () {
+            localStorage.setItem("logged_in", "enduser");
+            thisdata.enterMainPage("form-query", [0, 1]);
+        });
+
+        $(".login-action-button-admin").click(function () {
+            localStorage.setItem("logged_in", "admin");
+            thisdata.enterMainPage("crawler-controller", [0, 1, 2]);
+        });
+
+    }
+
+    enterMainPage(defaultStartPage, usedScope) {
+        let template = new Template(this.dependencies, usedScope, this.styles);
+        this.unLoadPage();
+        template.injectinDomeAndRegisterListener(this.mountpoint);
+        //this.template.goToPage(this.utilities.getUrlParam("p", "form-query"));
+        template.goToPage(this.utilities.getUrlParam("p", defaultStartPage));
+    }
+
+
+    //private
+    renderIntoMountpoint() {
+
+        // language=HTML
+        let data = `
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+                        <div class="card card-signin my-5">
+                            <div class="card-body">
+                                <div class="text-center" style="width:100%">
+                                    <img src="logo.png" alt="Metadata-Hub" style="width:180px;"> <!--style="width:240px">-->
+                                    <img src="logo.png" alt="Metadata-Hub" style="width:180px;"> <!--style="width:240px">-->
+                                </div>
+                                <h4 class="card-title text-center font-weight-bold">Sign In</h4>
+                                <form class="form-signin">
+                                    <div class="form-label-group">
+                                        <input type="text" id="your-name" class="form-control" placeholder="Your-Name" required autofocus>
+                                        <label for="your-name">Your-Name</label>
+                                    </div>
+                                    <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button-enduser" type="button">Sign in as Enduser</button>
+                                    <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button-admin" type="button">Sign in as Admin</button>
+                                    <hr class="my-4">
+                                    <span class="text-secondary">* The Your-Name is used for save it along possible queries you will do. It must be not System-known.</span>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        this.mountpoint.html(data)
+
+    }
+
+
+}
+

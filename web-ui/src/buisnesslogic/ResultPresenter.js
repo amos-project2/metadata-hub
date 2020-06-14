@@ -17,13 +17,15 @@ export class ResultPresenter{
 
 
     getHtml() {
+
+        // language=HTML
         return `
-<div id="${this.id}">
-    <h4>Result:</h4>
-    <div>
-        <pre class="q_result"></pre>
-    </div>
-</div>`;
+            <div id="${this.id}">
+                <h4>Result:</h4>
+                <div>
+                    <pre class="q_result"></pre>
+                </div>
+            </div>`;
 
     }
     generateResultAndInjectIntoDom(query) {

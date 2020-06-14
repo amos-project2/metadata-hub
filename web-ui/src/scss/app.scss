@@ -1,5 +1,6 @@
-@import "~bootstrap/scss/bootstrap";
+//import dark or not-dark(white) manually in app.js
 @import "template";
+@import "graphiQlAdjustments";
 
 
 .active_sidebar {

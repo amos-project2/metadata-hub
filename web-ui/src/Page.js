@@ -6,6 +6,7 @@ export class Page {
         this.atLeastOnceMounted = false;
         this.titleSelector = titleSelector;
         this.title = "one Page Title"; //to override
+        this.titleActive = true;//to override with false, if you dont want present the title
 
 
         /**
@@ -22,6 +23,11 @@ export class Page {
         this.counter = 0; //private attribut
     }
 
+    //Dont override
+    setIdentifier(identifier) {
+        this.identifier = identifier;
+    }
+
     //to-ovveride
     onRegister() {}
 
@@ -29,7 +35,9 @@ export class Page {
     mount() {
 
         let thisdata = this;
-        $(thisdata.titleSelector).html(thisdata.title);
+        $(this.titleSelector).html("");//delete old titel in all cases
+        if (this.titleActive) {$(this.titleSelector).html(this.title);}//only set the new one if active
+        $("title").html(this.title);
 
         function createRandomElem() {
             thisdata.counter++;
@@ -82,7 +90,6 @@ export class Page {
     }
 
 
-
     //to-ovveride
     onMount() {}
 
@@ -95,9 +102,9 @@ export class Page {
 
     init_popover() {
 
-        $('.pover').attr( "href", "#" );
-        $('.pover').attr( "tabindex", "0" );
-        $('.pover').click(function(event) {
+        $('.pover').attr("href", "#");
+        $('.pover').attr("tabindex", "0");
+        $('.pover').click(function (event) {
             event.preventDefault();
         });
         $('.pover').popover({
@@ -164,8 +171,6 @@ export class Page {
                 break;
         }
     }
-
-
 
 
     //to-ovveride
