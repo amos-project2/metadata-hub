@@ -22,9 +22,10 @@ class NavElement {
 }
 
 class NavGroup {
-    constructor(usedScope) {
+    constructor(usedScope, name, parent_nav) {
         this.usedScope = usedScope;
-        this.parent_nav = "";
+        this.name = name;
+        this.parent_nav = parent_nav;
         this.data = "";
         this.navElements = [];
     }
@@ -76,6 +77,11 @@ class NavGroup {
                 </div>
             </li>`
     }
+
+    firstElement() {
+        if (this.navElements.length === 0) return null;
+        return this.navElements[0];
+    }
 }
 
 
@@ -101,6 +107,7 @@ export class Template {
             openedFromEditor: null,
         };
         this.data = "";
+        this.navsidebar = "";
         this.navbar = "";
         this.navGroups = [];
 
@@ -115,24 +122,24 @@ export class Template {
 
         let thisdata = this;
 
-        this.addNavGroup(0, "nav_error", function (n) {
+        this.addNavGroup(0, null, "nav_error", function (n) {
             n.addOneNavElement(new NavElement(0, "Error 404", "error-404", new ErrorPage(thisdata, "error-404")));
 
         });
 
 
-        this.addNavGroup(1, "nav_query", function (n) {
+        this.addNavGroup(1, "Query", "nav_query", function (n) {
             n.addOneNavElement(new NavElement(1, "Form-Query", "form-query", new FormQueryEditor(thisdata, "form-query")));
             n.addOneNavElement(new NavElement(1, "Hash Query", "hash-query", new HashQuery(thisdata, "hash-query")));
             n.addOneNavElement(new NavElement(1, "GraphQL-Query", "graphql-query", new GraphqlQueryEditor(thisdata, "graphql-query")));
 
         });
 
-        this.addNavGroup(1, "nav_graphiql", function (n) {
+        this.addNavGroup(1, "GraphiQL", "nav_graphiql", function (n) {
             n.addOneNavElement(new NavElement(1, "GraphiQL-Console", "graphiql-console", new GraphiqlConsole(thisdata, "graphiql-console")));
         });
 
-        this.addNavGroup(2, "nav_crawler", function (n) {
+        this.addNavGroup(2, "Crawler", "nav_crawler", function (n) {
             n.addOneNavElement(new NavElement(2, "Controller", "crawler-controller", new CrawlerController(thisdata, "crawler-controller")));
             n.addOneNavElement(new NavElement(2, "Info", "crawler-info", new CrawlerInfo(thisdata, "crawler-info")));
             n.addOneNavElement(new NavElement(2, "Scheduler", "crawler-scheduler", new CrawlerScheduler(thisdata, "crawler-scheduler")));
@@ -140,9 +147,9 @@ export class Template {
         });
 
 
-        this.addNavGroup(3, "nav_status", function (n) {
+        this.addNavGroup(3, "status", "nav_status", function (n) {
             n.addOneNavElement(new NavElement(3, "Testname", "testname", new Testname(thisdata, "testname")));
-            n.addOneNavElement( new NavElement(3, "Testname2", "testname2", new Page(thisdata, "testname2")));
+            n.addOneNavElement(new NavElement(3, "Testname2", "testname2", new Page(thisdata, "testname2")));
             n.addMoreNavElementsToOneGroup("MyDropdown", [
                 new NavElement(3, "Testname3", "testname3", new Page(thisdata, "testname3")),
                 new NavElement(3, "Testname4", "testname4", new Page(thisdata, "testname4")),
@@ -152,19 +159,19 @@ export class Template {
             n.addOneNavElement(3, new NavElement(3, "Testname6", "testname6", new Page(thisdata, "testname6")));
         });
 
-        this.addNavGroup(3, "nav_help", function (n) {
+        this.addNavGroup(3, "Help", "nav_help", function (n) {
             n.addOneNavElement(new NavElement(3, "help1", "help1", new Page(thisdata, "help1")));
             n.addOneNavElement(new NavElement(3, "help1", "help2", new Page(thisdata, "help2")));
         });
 
 
-        this.addNavGroup(3, "nav_about", function (n) {
+        this.addNavGroup(3, "About", "nav_about", function (n) {
             n.addOneNavElement(new NavElement(3, "about1", "about1", new Page(thisdata, "about1")));
             n.addOneNavElement(new NavElement(3, "about1", "about2", new Page(thisdata, "about2")));
         });
 
 
-        this.addNavGroup(0, "nav_logout", function (n) {
+        this.addNavGroup(0, "Logout", "nav_logout", function (n) {
             n.addOneNavElement(new NavElement(0, "Logout", "logout", new Logout(thisdata, "logout")));
         });
 
@@ -172,18 +179,26 @@ export class Template {
     }
 
 
-    addNavGroup(scope, parent_nav, consumer) {
+    addNavGroup(scope, name, parent_nav, consumer) {
 
         if (this.usedScope.indexOf(scope) === -1) {
             //the navGroup is not in the usedScope, so we dont add it
             return;
         }
 
-        let navGroup = new NavGroup(this.usedScope);
-        navGroup.parent_nav = parent_nav
+
+        let navGroup = new NavGroup(this.usedScope, name, parent_nav);
+        //navGroup.parent_nav = parent_nav
         this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
         consumer(navGroup);
         this.navbar += navGroup.data;
+
+        if (name != null && navGroup.firstElement() != null) {
+
+            this.navsidebar += `<a href="/${navGroup.firstElement().selectorName}" class="list-group-item list-group-item-action bg-light my-nav-element y${parent_nav} x${parent_nav}">${name}</a>`;
+            //this.navsidebar + `<a href="/form-query" class="list-group-item list-group-item-action bg-light my-nav-element nav-query xnav_query">Query</a>`;
+        }
+
     }
 
 
@@ -198,6 +213,12 @@ export class Template {
         //Register eventListener
         let thisdata = this;
         for (let value of this.navGroups) {
+
+            //it is similar to this:  $(".nav-query").click(function () { $("#nav-element-form-query").trigger("click"); });
+            $(`.x${value.data.parent_nav}`).click(function () {
+                $(`#nav-element-${value.data.firstElement().selectorName}`).trigger("click");
+            });
+
             for (let value2 of value.data.navElements) {
                 value2.contentLoader.onRegister();
                 $("#nav-element-" + value2.selectorName).click(function (event) {
@@ -217,7 +238,7 @@ export class Template {
                     }
 
 
-                    $(this).closest(".nav-item").addClass("active");
+                    $(this).closest(".nav-item").addClass("active"); //for this "this" i need the redirect trigger
                     if (thisdata.replaceState) {
                         thisdata.replaceState = false;
                         history.replaceState('no-data', value2.contentLoader.title, '?p=' + value2.selectorName);
@@ -278,13 +299,7 @@ export class Template {
                     </div>
 
                     <div class="list-group list-group-flush">
-                        <a href="/form-query" class="list-group-item list-group-item-action bg-light my-nav-element nav-query xnav_query">Query</a>
-                        <a href="/graphiql-console" class="list-group-item list-group-item-action bg-light my-nav-element nav-graphiql xnav_graphiql">GraphiQl</a>
-                        <a href="/crawler-controller" class="list-group-item list-group-item-action bg-light my-nav-element nav-crawler xnav_crawler">Crawler</a>
-                        <a href="/nav-status" class="list-group-item list-group-item-action bg-light my-nav-element nav-status xnav_status" style="display:none">Status</a>
-                        <a href="/nav-help" class="list-group-item list-group-item-action bg-light my-nav-element nav-help xnav_help" style="display:none">Help</a>
-                        <a href="/nav-about" class="list-group-item list-group-item-action bg-light my-nav-element nav-about xnav_about" style="display:none">About</a>
-                        <a href="/nav-logout" class="list-group-item list-group-item-action bg-light my-nav-element nav-logout xnav_logout">Logout</a>
+                        ${this.navsidebar}
                     </div>
                 </div>
 
