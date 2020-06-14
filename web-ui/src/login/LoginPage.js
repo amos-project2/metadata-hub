@@ -1,11 +1,12 @@
 import loginStyles from '../scss/logincss/login.lazy.scss3';
+import {Template} from "../template";
 
 
 export class LoginPage {
 
-    constructor(template, utilities, mountpoint) {
-        this.template = template;
-        this.utilities = utilities;
+    constructor(dependencies, mountpoint) {
+        this.dependencies = dependencies
+        this.utilities = dependencies.utilities;
         this.mountpoint = mountpoint;
     }
 
@@ -13,11 +14,10 @@ export class LoginPage {
 
         let logged_in = localStorage.getItem('logged_in');
         if (logged_in === "enduser") {
-            this.enterMainPage("form-query");
+            this.enterMainPage("form-query", [0, 1]);
             return;
-        }
-        else if (logged_in === "enduser") {
-            this.enterMainPage("crawler-controller");
+        } else if (logged_in === "admin") {
+            this.enterMainPage("crawler-controller", [0, 1, 2]);
             return;
         }
 
@@ -39,21 +39,22 @@ export class LoginPage {
 
         $(".login-action-button-enduser").click(function () {
             localStorage.setItem("logged_in", "enduser");
-            thisdata.enterMainPage();
+            thisdata.enterMainPage("form-query", [0, 1]);
         });
 
         $(".login-action-button-admin").click(function () {
             localStorage.setItem("logged_in", "admin");
-            thisdata.enterMainPage();
+            thisdata.enterMainPage("crawler-controller", [0, 1, 2]);
         });
 
     }
 
-    enterMainPage(defaultStartPage) {
+    enterMainPage(defaultStartPage, usedScope) {
+        let template = new Template(this.dependencies, usedScope);
         this.unLoadPage();
-        this.template.injectinDomeAndRegisterListener(this.mountpoint);
+        template.injectinDomeAndRegisterListener(this.mountpoint);
         //this.template.goToPage(this.utilities.getUrlParam("p", "form-query"));
-        this.template.goToPage(this.utilities.getUrlParam("p", defaultStartPage));
+        template.goToPage(this.utilities.getUrlParam("p", defaultStartPage));
     }
 
 

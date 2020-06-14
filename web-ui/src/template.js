@@ -12,21 +12,29 @@ import {ErrorPage} from "./ErrorPage";
 import {Logout} from "./logout/Logout";
 
 class NavElement {
-    constructor(name, selectorName, contentLoader) {
+    constructor(scope, name, selectorName, contentLoader) {
+        this.scope = scope;
         this.name = name;
         this.selectorName = selectorName
         this.contentLoader = contentLoader;
     }
+
 }
 
 class NavGroup {
-    constructor() {
+    constructor(usedScope) {
+        this.usedScope = usedScope;
         this.parent_nav = "";
         this.data = "";
         this.navElements = [];
     }
 
     addOneNavElement(navElement) {
+
+        if (this.usedScope.indexOf(navElement.scope) === -1) {
+            //the element is not in the usedScope, so we dont add it
+            return;
+        }
 
         // language=HTML
         this.data += `
@@ -41,6 +49,12 @@ class NavGroup {
 
         let tmp = "";
         for (let value of navElementArr) {
+
+            if (this.usedScope.indexOf(value.scope) === -1) {
+                //the element is not in the usedScope, so we dont add it
+                continue;
+            }
+
             if (value.name === "divider") {
                 tmp += ` <div class="dropdown-divider"></div>`;
             } else {
@@ -67,9 +81,21 @@ class NavGroup {
 
 export class Template {
 
-    constructor(dependencies) {
-        this.thisdata = this;
+    /**
+     *
+     * JavaScript dont have static const in ES6, maybe in the next version, so i stick to just and not so nice integers
+     *
+     * scope = 0 -> not-crawler- ,not-query-constructor- related-stuff, like the about/help-section
+     * scope = 1 -> query-constructor-related
+     * scope = 2 -> crawler-related
+     * scope = 3 -> unready functionality
+     */
+
+
+    constructor(dependencies, usedScope) {
+        // this.thisdata = this;
         this.dependencies = dependencies;
+        this.usedScope = usedScope;
         this.storage = {
             query_inject: null,
             openedFromEditor: null,
@@ -89,64 +115,71 @@ export class Template {
 
         let thisdata = this;
 
-        this.addNavGroup("nav_error", function (n) {
-            n.addOneNavElement(new NavElement("Error 404", "error-404", new ErrorPage(thisdata, "error-404")));
+        this.addNavGroup(0, "nav_error", function (n) {
+            n.addOneNavElement(new NavElement(0, "Error 404", "error-404", new ErrorPage(thisdata, "error-404")));
 
         });
 
 
-        this.addNavGroup("nav_query", function (n) {
-            n.addOneNavElement(new NavElement("Form-Query", "form-query", new FormQueryEditor(thisdata, "form-query")));
-            n.addOneNavElement(new NavElement("Hash Query", "hash-query", new HashQuery(thisdata, "hash-query")));
-            n.addOneNavElement(new NavElement("GraphQL-Query", "graphql-query", new GraphqlQueryEditor(thisdata, "graphql-query")));
+        this.addNavGroup(1, "nav_query", function (n) {
+            n.addOneNavElement(new NavElement(1, "Form-Query", "form-query", new FormQueryEditor(thisdata, "form-query")));
+            n.addOneNavElement(new NavElement(1, "Hash Query", "hash-query", new HashQuery(thisdata, "hash-query")));
+            n.addOneNavElement(new NavElement(1, "GraphQL-Query", "graphql-query", new GraphqlQueryEditor(thisdata, "graphql-query")));
 
         });
 
-        this.addNavGroup("nav_graphiql", function (n) {
-            n.addOneNavElement(new NavElement("GraphiQL-Console", "graphiql-console", new GraphiqlConsole(thisdata, "graphiql-console")));
+        this.addNavGroup(1, "nav_graphiql", function (n) {
+            n.addOneNavElement(new NavElement(1, "GraphiQL-Console", "graphiql-console", new GraphiqlConsole(thisdata, "graphiql-console")));
         });
 
-        this.addNavGroup("nav_crawler", function (n) {
-            n.addOneNavElement(new NavElement("Controller", "crawler-controller", new CrawlerController(thisdata, "crawler-controller")));
-            n.addOneNavElement(new NavElement("Info", "crawler-info", new CrawlerInfo(thisdata, "crawler-info")));
-            n.addOneNavElement(new NavElement("Scheduler", "crawler-scheduler", new CrawlerScheduler(thisdata, "crawler-scheduler")));
-            n.addOneNavElement(new NavElement("Crawler Config", "crawler-config", new CrawlerConfig(thisdata, "crawler-config")));
+        this.addNavGroup(2, "nav_crawler", function (n) {
+            n.addOneNavElement(new NavElement(2, "Controller", "crawler-controller", new CrawlerController(thisdata, "crawler-controller")));
+            n.addOneNavElement(new NavElement(2, "Info", "crawler-info", new CrawlerInfo(thisdata, "crawler-info")));
+            n.addOneNavElement(new NavElement(2, "Scheduler", "crawler-scheduler", new CrawlerScheduler(thisdata, "crawler-scheduler")));
+            n.addOneNavElement(new NavElement(2, "Crawler Config", "crawler-config", new CrawlerConfig(thisdata, "crawler-config")));
         });
 
 
-        this.addNavGroup("nav_status", function (n) {
-            n.addOneNavElement(new NavElement("Testname", "testname", new Testname(thisdata, "testname")));
-            n.addOneNavElement(new NavElement("Testname2", "testname2", new Page(thisdata, "testname2")));
-            n.addMoreNavElementsToOneGroup("MyDropdown", [new NavElement("Testname3", "testname3", new Page(thisdata, "testname3")),
-                new NavElement("Testname4", "testname4", new Page(thisdata, "testname4")),
-                new NavElement("divider"),
-                new NavElement("Testname5", "testname5", new Page(thisdata, "testname5"))
+        this.addNavGroup(3, "nav_status", function (n) {
+            n.addOneNavElement(new NavElement(3, "Testname", "testname", new Testname(thisdata, "testname")));
+            n.addOneNavElement( new NavElement(3, "Testname2", "testname2", new Page(thisdata, "testname2")));
+            n.addMoreNavElementsToOneGroup("MyDropdown", [
+                new NavElement(3, "Testname3", "testname3", new Page(thisdata, "testname3")),
+                new NavElement(3, "Testname4", "testname4", new Page(thisdata, "testname4")),
+                new NavElement(3, "divider"),
+                new NavElement(3, "Testname5", "testname5", new Page(thisdata, "testname5"))
             ]);
-            n.addOneNavElement(new NavElement("Testname6", "testname6", new Page(thisdata, "testname6")));
+            n.addOneNavElement(3, new NavElement(3, "Testname6", "testname6", new Page(thisdata, "testname6")));
         });
 
-        this.addNavGroup("nav_help", function (n) {
-            n.addOneNavElement(new NavElement("help1", "help1", new Page(thisdata, "help1")));
-            n.addOneNavElement(new NavElement("help1", "help2", new Page(thisdata, "help2")));
-        });
-
-
-        this.addNavGroup("nav_about", function (n) {
-            n.addOneNavElement(new NavElement("about1", "about1", new Page(thisdata, "about1")));
-            n.addOneNavElement(new NavElement("about1", "about2", new Page(thisdata, "about2")));
+        this.addNavGroup(3, "nav_help", function (n) {
+            n.addOneNavElement(new NavElement(3, "help1", "help1", new Page(thisdata, "help1")));
+            n.addOneNavElement(new NavElement(3, "help1", "help2", new Page(thisdata, "help2")));
         });
 
 
-        this.addNavGroup("nav_logout", function (n) {
-            n.addOneNavElement(new NavElement("Logout", "logout", new Logout(thisdata, "logout")));
+        this.addNavGroup(3, "nav_about", function (n) {
+            n.addOneNavElement(new NavElement(3, "about1", "about1", new Page(thisdata, "about1")));
+            n.addOneNavElement(new NavElement(3, "about1", "about2", new Page(thisdata, "about2")));
         });
 
-        this.generateTemplate()
+
+        this.addNavGroup(0, "nav_logout", function (n) {
+            n.addOneNavElement(new NavElement(0, "Logout", "logout", new Logout(thisdata, "logout")));
+        });
+
+        this.generateTemplate();
     }
 
 
-    addNavGroup(parent_nav, consumer) {
-        let navGroup = new NavGroup();
+    addNavGroup(scope, parent_nav, consumer) {
+
+        if (this.usedScope.indexOf(scope) === -1) {
+            //the navGroup is not in the usedScope, so we dont add it
+            return;
+        }
+
+        let navGroup = new NavGroup(this.usedScope);
         navGroup.parent_nav = parent_nav
         this.navGroups.push({name: navGroup.parent_nav, data: navGroup});
         consumer(navGroup);
@@ -210,15 +243,15 @@ export class Template {
 
         //  $(".container-nav_query").show(4000);
 
-        window.onpopstate = function(event) {
-            let page=thisdata.dependencies.utilities.getUrlVars()["p"];
+        window.onpopstate = function (event) {
+            let page = thisdata.dependencies.utilities.getUrlVars()["p"];
             thisdata.goToPage(page);
-            };
+        };
     }
 
     goToPage(page) {
-       // alert(page);
-       this.replaceState=true;
+        // alert(page);
+        this.replaceState = true;
         for (let value of this.navGroups) {
             for (let value2 of value.data.navElements) {
                 if (value2.selectorName === page) {

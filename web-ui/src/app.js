@@ -19,11 +19,11 @@ let dependencies = {
     utilities: utilities,
 
 }
-let template = new Template(dependencies);
+
 let jqueryMountPoint=$(".app-root");
 
 
-let login = new LoginPage(template, utilities, jqueryMountPoint);
+let login = new LoginPage(dependencies, jqueryMountPoint);
 login.loadPage();
 
 
