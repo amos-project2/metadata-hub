@@ -104,6 +104,24 @@ export class CrawlerController extends Page {
                 </div>
                 <div class="row">
                     <div class="col" align="center">
+                        <button id="shutdown-button" type="button" class="btn btn-primary">
+                            SHUTDOWN
+                        </button>
+                    </div>
+                    <div class="col">
+                        <p>
+                            <b>Shutdown</b> the crawler entirely.
+                        </p>
+                    </div>
+                    <div class="col">
+                        <p>
+                            Stop a possible current execution and terminate
+                            all crawler threads.
+                        </p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col" align="center">
                         <button id="start-button" type="button" class="btn btn-primary">
                             START
                         </button>
@@ -115,7 +133,6 @@ export class CrawlerController extends Page {
                     </div>
                     <div class="col">
                         <p>
-                            <b>Start</b> a crawler execution.<br>
                             Shows the configuration panel for a manual insertion
                             of the configuration data.
                         </p>
@@ -154,7 +171,7 @@ export class CrawlerController extends Page {
                                     Directories
                                 </label>
                                 <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="directories-data">
+                                    <input type="text" class="form-control" id="directories">
                                 </div>
                             </div>
                             <div class="form-group row exiftool">
@@ -183,18 +200,33 @@ export class CrawlerController extends Page {
                                     <input type="text" class="form-control" id="package-size">
                                 </div>
                             </div>
+                            <div class="form-group row clear-trace">
+                                <label for="exiftool" class="col-sm-2 col-form-label">Clear Trace</label>
+                                <div class="col-sm-10">
+                                    <select id="clear-trace" class="form-control">
+                                        <option selected value="true">Yes</option>
+                                        <option value="false">No</option>
+                                    </select>
+                                </div>
+                            </div>
                             <div class="form-group row update">
                                 <label for="update" class="col-sm-2 col-form-label">Update</label>
                                 <div class="col-sm-10">
                                     <select id="update" class="form-control">
-                                        <option selected value="yes">Yes</option>
-                                        <option value="no">No</option>
+                                        <option selected value="true">Yes</option>
+                                        <option value="false">No</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <div class="col">
                                     <button type="submit" class="btn btn-primary">SUBMIT</button>
+                                </div>
+                                <div class="col">
+                                    <button type="reset" class="btn btn-primary">CLEAR</button>
+                                </div>
+                                <div class="col">
+                                    <button type="reset" id="cancel-config" class="btn btn-primary">CANCEL</button>
                                 </div>
                             </div>
                         </form>
@@ -213,13 +245,19 @@ export class CrawlerController extends Page {
     onLoad() {
         $("#config").hide();
         $("#config-hr").hide();
+        // Register callback functions for action buttons
         var self = this;
         $("#continue-button").click(function() {
-            console.log("clicked");
-            self.restAPIFetcherCrawler.fetchPost("continue", function (event) {
-                console.log(event);
-                self.renderMessage("success", "Hey was geht ab voll cool")
-            });
+            self.runActionWithMessage("continue");
+        });
+        $("#pause-button").click(function() {
+            self.runActionWithMessage("pause");
+        });
+        $("#stop-button").click(function() {
+            self.runActionWithMessage("stop");
+        });
+        $("#shutdown-button").click(function() {
+            self.runActionWithMessage("shutdown");
         });
 
         $("#start-button").click(function() {
@@ -227,34 +265,89 @@ export class CrawlerController extends Page {
             $("#config-hr").show();
         });
 
+        $("#cancel-config").click(function() {
+            $("#config").hide();
+            $("#config-hr").hide();
+        });
+
         $("#config-form").on("submit", function(e) {
             e.preventDefault();
-            self.submitConfig();
+            self.submitConfig(e);
         });
     }
 
-    submitConfig() {
-        alert("Submit form");
+    runActionWithMessage(route) {
+        let self = this;
+        self.restAPIFetcherCrawler.fetchGet(route, function (event) {
+            self.renderMessage(
+                event.data.success, event.data.message, event.data.command
+            );
+        });
     }
 
-    renderMessage(status, message) {
-        var alertType = "";
-        var title = "";
-        if (status == "success") {
+    submitConfig(event) {
+        let directories = $("#directories").val();
+        let exiftool = $("#exiftool").val();
+        let powerLevel = $("#powerlevel").val();
+        let packageSize = $("#package-size").val();
+        let clearTrace = $("#clear-trace").val();
+        let update = $("#update").val();
+        let config = {
+            "paths": {
+                "inputs": [],
+                "exiftool": ""
+            },
+            "options": {
+                "clearTrace": "",
+                "packageSize": "",
+                "powerLevel": "",
+            }
+        };
+        let splits = directories.split(";");
+        splits.forEach(function(item) {
+            let path = item.split(",")[0];
+            let recursive = item.split(",")[1];
+            config["paths"]["inputs"].push({
+                "path": path,
+                "recursive": recursive
+            });
+        });
+
+        console.log(directories);
+        console.log(exiftool);
+        console.log(powerlevel);
+        console.log(packageSize);
+        console.log(update);
+
+
+        config["paths"]["exiftool"] = exiftool;
+        config["options"]["powerLevel"] = powerLevel;
+        config["options"]["packageSize"] = packageSize;
+        config["options"]["clearTrace"] = clearTrace;
+
+        // TODO: Call crawler API here and display the result
+
+
+    }
+
+    renderMessage(success, message, command) {
+        let alertType = "";
+        let title = "";
+        let timestamp = new Date().toLocaleString();
+        if (success) {
             alertType = "alert-success";
             title = "Success";
-        } else if (status == "warning") {
+        } else {
             alertType = "alert-warning";
             title = "Warning";
-        } else {
-            alertType = "alert-danger";
-            title = "Error";
         }
         $("#messages").append(`
             <div class="alert ${alertType} alert-dismissible fade show" role="alert">
-                <h4 class="alert-heading">${title}!</h4>
+                <h4 class="alert-heading">${title} @ ${command}</h4>
                 <hr>
                 <p>${message}</p>
+                <hr>
+                <p>[${timestamp}]</p>
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
