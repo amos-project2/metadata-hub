@@ -369,7 +369,8 @@ class TreeWalkManager(threading.Thread):
                 lock=self._worker_lock,
                 counter=self._worker_counter,
                 finished=self._workers_finished,
-                num_workers=num_workers
+                num_workers=num_workers,
+                db_measure_time=environment.env.CRAWLER_DB_MEASURE_TIME
             )
             self._workers.append((worker, queue))
         for worker, _ in self._workers:
