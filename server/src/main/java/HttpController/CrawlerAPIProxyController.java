@@ -10,6 +10,8 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.*;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Map;
 
 /**
@@ -35,7 +37,7 @@ public class CrawlerAPIProxyController
     @GET
     @Produces("application/json")
     @Path("{part: .*}")
-    public Response crawlerGet(@PathParam("part") String path, @Context UriInfo uriInfo)
+    public Response crawlerGet(@PathParam("part") String path, @Context UriInfo uriInfo) throws UnsupportedEncodingException
     {
         return this.crawlerGetAndPost(path, uriInfo, null);
     }
@@ -44,21 +46,26 @@ public class CrawlerAPIProxyController
     @Produces("application/json")
     @Path("/{part: .*}")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response crawlerPost(@PathParam("part") String path, @Context UriInfo uriInfo, MultivaluedMap<String, String> form)
+    public Response crawlerPost(@PathParam("part") String path, @Context UriInfo uriInfo, MultivaluedMap<String, String> form) throws UnsupportedEncodingException
     {
         System.out.println(form.toString());
         return this.crawlerGetAndPost(path, uriInfo, form);
     }
 
 
-    public Response crawlerGetAndPost(String path, UriInfo uriInfo, MultivaluedMap<String, String> form)
+    public Response crawlerGetAndPost(String path, UriInfo uriInfo, MultivaluedMap<String, String> form) throws UnsupportedEncodingException
     {
 
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         WebTarget webTarget = target.path(path);
 
         for (String value : parameters.keySet()){
-            webTarget=webTarget.queryParam(value, parameters.get(value).toArray());
+            if(parameters.getFirst(value) !=null)
+            {
+                webTarget=webTarget.queryParam(value, URLEncoder.encode(parameters.getFirst(value), "UTF-8"));
+            }
+
+
         }
 
         //TODO fix it! webtarget is inmutaable
