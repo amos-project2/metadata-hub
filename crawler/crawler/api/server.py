@@ -51,18 +51,14 @@ def _get_response(
     Returns:
         flask.Response: [description]
     """
-    if status_ok:
-        data = {'message': message}
-        resp = flask.Response(
-            json.dumps(data),
-            status=defaults.STATUS_OK,
-            mimetype=defaults.MIMETYPE_JSON
-        )
-        return resp
-    data = {'error': message}
+    data = {
+        'message': message,
+        'success': status_ok,
+        'command': command
+    }
     resp = flask.Response(
         json.dumps(data),
-        status=error_code,
+        status=defaults.STATUS_OK,
         mimetype=defaults.MIMETYPE_JSON
     )
     return resp
@@ -169,22 +165,22 @@ def start() -> flask.Response:
     """
     config = flask.request.args.get('config')
     if config is None:
-        msg = {'info': 'Provide config or filepath via ?config=<your-config>'}
-        resp = flask.Response(
-            json.dumps(msg),
-            status=defaults.STATUS_BAD_REQUEST,
-            mimetype=defaults.MIMETYPE_JSON
+        resp = _get_response(
+            status_ok=False,
+            message='Provide config or filepath via ?config=<your-config>',
+            command='start',
+            error_code=defaults.STATUS_INTERNAL_SERVER_ERROR
         )
         return resp
     parser = config_service.ConfigParser(config)
     try:
         config = parser.parse()
     except config_service.ConfigParsingException as error:
-        msg = {'error': str(error)}
-        resp = flask.Response(
-            json.dumps(msg),
-            status=defaults.STATUS_BAD_REQUEST,
-            mimetype=defaults.MIMETYPE_JSON
+        resp = _get_response(
+            status_ok=False,
+            message=str(error),
+            command='start',
+            error_code=defaults.STATUS_INTERNAL_SERVER_ERROR
         )
         return resp
     update = flask.request.args.get('update', '').lower()
@@ -233,12 +229,12 @@ def shutdown():
         # TODO handle error
         return None
     func()
-    resp = flask.Response(
-        status=defaults.STATUS_OK,
-        mimetype=defaults.MIMETYPE_JSON
+    return _get_response(
+        status_ok=True,
+        message='Shutting down. Bye!',
+        command='shutdown',
+        error_code=defaults.STATUS_INTERNAL_SERVER_ERROR
     )
-    return resp
-
 
 @app.route('/', methods=['GET'])
 def home():
