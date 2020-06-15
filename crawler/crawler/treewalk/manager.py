@@ -328,7 +328,10 @@ class TreeWalkManager(threading.Thread):
 
             """
             # Prepare database
-            self._db_connection = database.DatabaseConnection(self._connection_data)
+            self._db_connection = database.DatabaseConnection(
+                db_info=self._connection_data,
+                measure_time=environment.env.CRAWLER_DB_MEASURE_TIME
+            )
             db_id = self._db_connection.insert_crawl(config)
             # Prepare number of workers
             number_of_workers = tree_walk.get_number_of_workers(

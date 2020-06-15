@@ -48,3 +48,6 @@ CRAWL_STATUS_RUNNING = 'running'
 
 # Status for database when crawl is finished
 CRAWL_STATUS_FINISHED = 'finished'
+
+# Shutdown the database updater
+DATABASE_UPDATER_SHUTDOWN = 'shutdown'
