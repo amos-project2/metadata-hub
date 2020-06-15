@@ -75,17 +75,20 @@ class DatabaseConnection:
             package (List[str]): Directories the treewalk has handled
         """
         curs = self.con.cursor()
-        get_current = ('SELECT * '
-                       'FROM crawls '
-                       f'WHERE id = {crawlID}')
+        crawls = Table('crawls')
+        query = Query.from_(crawls)\
+                .select('*')\
+                .where(crawls.id == crawlID)
+
         try:
-            curs.execute(get_current)
+            curs.execute(str(query))
             get = curs.fetchone()
             get[5]["analyzed directories"].extend(package)
-            update_dirs = ('UPDATE crawls '
-                           f'SET analyzed_dirs = \'{json.dumps(get[5])}\', update_time = \'{datetime.now()}\''
-                           f'WHERE id = {crawlID}')
-            curs.execute(update_dirs)
+            query = Query.update(crawls)\
+                    .set(crawls.analyzed_dirs, json.dumps(get[5]))\
+                    .set(crawls.update_time, datetime.now())\
+                    .where(crawls.id == crawlID)
+            curs.execute(str(query))
             curs.close()
             self.con.commit()
         except:
@@ -114,7 +117,6 @@ class DatabaseConnection:
         query = Query.into(crawls)\
                 .columns('dir_path', 'name', 'status', 'crawl_config', 'analyzed_dirs', 'starting_time')\
                 .insert(insert_values)
-        # FIXME Better solution? pypika doesn't offer returning value.
         query = str(query) + 'RETURNING id'
 
         # Make database request
@@ -215,13 +217,14 @@ class DatabaseConnection:
         Returns:
             int: file id that is supposed to be deleted
         """
+        files = Table('files')
+        query = Query.from_(files)\
+                .select('id', 'crawl_id', 'dir_path', 'name')\
+                .where(files.file_hash == fileHash)
+
         curs = self.con.cursor()
-        get_hash = ('(SELECT id, crawl_id, dir_path, name '
-                    'FROM files '
-                    f'WHERE file_hash = \'{fileHash}\')'
-                    )
         try:
-            curs.execute(get_hash)
+            curs.execute(query)
             get = curs.fetchall()
         except Exception as e:
             print(e)
@@ -243,6 +246,11 @@ class DatabaseConnection:
 
     def set_deleted(self, files: List[int]):
         condition = 'id = ' + ' OR id = '.join(str(x) for x in files)
+        # files = Table('files')
+        # query = Query.update(files)\
+        #         .set(files.deleted, 'True')\
+        #         .set(files.deleted_time, datetime.now())\
+        #         .where(files.file_hash == fileHash)
         set_delete = ('UPDATE files '
                       f'SET deleted = True, deleted_time = \'{datetime.now()}\' '
                       f'WHERE {condition}')
