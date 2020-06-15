@@ -207,7 +207,7 @@ class DatabaseConnection:
             curs.close()
             self.con.rollback()
 
-    def check_hash(self, fileHash: str, path: str, crawl_id: int, name: str) -> int:
+    def check_hash(self, path: str, crawl_id: int) -> List[int]:
         """checks the database for a given file hash. Then checks if the directory path is the same.
 
         Args:
@@ -220,43 +220,37 @@ class DatabaseConnection:
         files = Table('files')
         query = Query.from_(files)\
                 .select('id', 'crawl_id', 'dir_path', 'name')\
-                .where(files.file_hash == fileHash)
-
+                .where(files.dir_path == path)
         curs = self.con.cursor()
         try:
-            curs.execute(query)
+            curs.execute(str(query))
             get = curs.fetchall()
         except Exception as e:
             print(e)
         curs.close()
         self.con.commit()
 
-        # Find the most recent entry (All others should already be set to deleted) and return file id
+        # This crawl is the first
         if len(get) < 2:
-            return 0
+            return []
+        # Find the second highest crawl id (remove max first as it is the current crawl)
+        id_set = set([x[1] for x in get])
+        id_set.remove(max(id_set))
+        recent_crawl = max(id_set)
+        # Make list with every file_id in that directory/crawl
+        file_ids = [x[0] for x in get if x[1] == recent_crawl]
 
-        max_id = 0
-        tmp = (0, 0, '')
-        for item in get:
-            if item[2] == path and item[3] == name:
-                if max_id < item[1] and item[1] != crawl_id:
-                    max_id = item[1]
-                    tmp = item
-        return tmp[0]
+        return file_ids
 
-    def set_deleted(self, files: List[int]):
-        condition = 'id = ' + ' OR id = '.join(str(x) for x in files)
-        # files = Table('files')
-        # query = Query.update(files)\
-        #         .set(files.deleted, 'True')\
-        #         .set(files.deleted_time, datetime.now())\
-        #         .where(files.file_hash == fileHash)
-        set_delete = ('UPDATE files '
-                      f'SET deleted = True, deleted_time = \'{datetime.now()}\' '
-                      f'WHERE {condition}')
+    def set_deleted(self, file_ids: List[int]):
+        files = Table('files')
+        query = Query.update(files)\
+                .set(files.deleted, 'True')\
+                .set(files.deleted_time, datetime.now())\
+                .where(files.id.isin(file_ids))
         curs = self.con.cursor()
         try:
-            curs.execute(set_delete)
+            curs.execute(str(query))
             curs.close()
             self.con.commit()
         except Exception as e:
