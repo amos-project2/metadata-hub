@@ -305,8 +305,10 @@ export class CrawlerController extends Page {
         };
         let splits = directories.split(";");
         splits.forEach(function(item) {
-            let path = item.split(",")[0];
-            let recursive = item.split(",")[1];
+            let path = item.split(",")[0].trim();
+            let recursive = item.split(",")[1].trim().toLowerCase();
+            recursive = recursive === 'true';
+            console.log(recursive);
             config["paths"]["inputs"].push({
                 "path": path,
                 "recursive": recursive
@@ -321,11 +323,16 @@ export class CrawlerController extends Page {
 
 
         config["paths"]["exiftool"] = exiftool;
-        config["options"]["powerLevel"] = powerLevel;
-        config["options"]["packageSize"] = packageSize;
-        config["options"]["clearTrace"] = clearTrace;
+        config["options"]["powerLevel"] = parseInt(powerLevel);
+        config["options"]["packageSize"] = parseInt(packageSize);
+        config["options"]["clearTrace"] = clearTrace === 'true';
 
         // TODO: Call crawler API here and display the result
+        let url = `start?config=${JSON.stringify(config)}&update=${update}`;
+        let self = this;
+        self.restAPIFetcherCrawler.fetchGet(url, function (event) {
+            console.log(event);
+        });
 
 
     }
