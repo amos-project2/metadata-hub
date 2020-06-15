@@ -10,6 +10,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.*;
+import java.util.Map;
 
 /**
  *
@@ -55,12 +56,12 @@ public class CrawlerAPIProxyController
 
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         WebTarget webTarget = target.path(path);
-        parameters.forEach((key, values) ->
-        {
-            System.out.println(values+ "GET "+ key);//for debugging
-            webTarget.queryParam(key, values.toArray());
-        });
 
+        for (String value : parameters.keySet()){
+            webTarget=webTarget.queryParam(value, parameters.get(value).toArray());
+        }
+
+        //TODO fix it! webtarget is inmutaable
         //for debuggingwas
         if(form != null)
         {
