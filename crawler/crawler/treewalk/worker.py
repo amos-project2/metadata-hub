@@ -230,22 +230,20 @@ class Worker(multiprocessing.Process):
         try:
             # Insert the result in a batched query
             self._db_connection.insert_new_record_files(inserts)
-
             # Check if there was a previous entry in the database
             # if yes: Set the tag in the database to true
-            #TODO Disabled feature for performance purposes
-            '''
             toDelete = []
+            directories = set([x[1] for x in inserts])
             try:
-                for hash256 in [x[1] for x in inserts]:
-                    id = self._db_connection.check_hash(hash256[0], hash256[1], self._tree_walk_id, hash256[2])
-                    if id != 0:
-                        toDelete.append(id)
+                for dir in directories:
+                    file_ids = self._db_connection.check_hash(dir, self._tree_walk_id)
+                    if file_ids:
+                        toDelete.extend(file_ids)
                 if len(toDelete) > 0:
                     self._db_connection.set_deleted(toDelete)
             except Exception as e:
                 print(e)
-            '''
+
         except Exception as e:
             print(e)
             _logger.warning(

@@ -9,7 +9,7 @@ from typing import List, Tuple
 
 # 3rd party modules
 import psycopg2
-from pypika import Query, Table, Field
+from pypika import Query, Table, Field, Parameter
 
 # Local imports
 from crawler.services.config import Config
@@ -78,10 +78,11 @@ class DatabaseConnection:
         crawls = Table('crawls')
         query = Query.from_(crawls)\
                 .select('*')\
-                .where(crawls.id == crawlID)
-
+                .where(crawls.id == Parameter('%s'))
+        curs = self.con.cursor()
+        query1 = curs.mogrify(str(query), (crawlID,))
         try:
-            curs.execute(str(query))
+            curs.execute(query1)
             get = curs.fetchone()
             get[5]["analyzed directories"].extend(package)
             query = Query.update(crawls)\
@@ -116,13 +117,14 @@ class DatabaseConnection:
         crawls = Table('crawls')
         query = Query.into(crawls)\
                 .columns('dir_path', 'name', 'status', 'crawl_config', 'analyzed_dirs', 'starting_time')\
-                .insert(insert_values)
-        query = str(query) + 'RETURNING id'
-
-        # Make database request
+                .insert(('%s', '%s', '%s', '%s', '%s', '%s'))
         curs = self.con.cursor()
+        #query1 = curs.mogrify(str(query), (insert_values,))
+        query1 = str(query) % insert_values
+        query1 = str(query1) + ' RETURNING id'
+        # Make database request
         try:
-            curs.execute(query)
+            curs.execute(query1)
         except:
             _logger.warning('"Error updating database"')
             curs.close()
@@ -144,12 +146,13 @@ class DatabaseConnection:
 
         """
         # Construct the SQL query using pypika
+        #query = 'INSERT INTO files (crawl_id, dir_path, name, type, size, metadata, creation_time, access_time, modification_time, deleted, deleted_time, file_hash) VALUES'
         files = Table('files')
         query = Query.into(files)\
                 .columns('crawl_id', 'dir_path', 'name', 'type', 'size', 'metadata', 'creation_time', 'access_time',
-                         'modification_time', 'deleted', 'deleted_time', 'file_hash')\
+                            'modification_time', 'deleted', 'deleted_time', 'file_hash')\
                 .insert(*insert_values)
-
+        # print(query)
         curs = self.con.cursor()
         try:
             curs.execute(str(query))
@@ -220,22 +223,22 @@ class DatabaseConnection:
         files = Table('files')
         query = Query.from_(files)\
                 .select('id', 'crawl_id', 'dir_path', 'name')\
-                .where(files.dir_path == path)
+                .where(files.dir_path == Parameter('%s'))
         curs = self.con.cursor()
+        query1 = curs.mogrify(str(query), (path,))
         try:
-            curs.execute(str(query))
+            curs.execute(query1)
             get = curs.fetchall()
         except Exception as e:
             print(e)
         curs.close()
         self.con.commit()
 
-        # This crawl is the first
-        if len(get) < 2:
-            return []
         # Find the second highest crawl id (remove max first as it is the current crawl)
         id_set = set([x[1] for x in get])
         id_set.remove(max(id_set))
+        if len(id_set) == 0:
+            return []
         recent_crawl = max(id_set)
         # Make list with every file_id in that directory/crawl
         file_ids = [x[0] for x in get if x[1] == recent_crawl]
@@ -247,10 +250,11 @@ class DatabaseConnection:
         query = Query.update(files)\
                 .set(files.deleted, 'True')\
                 .set(files.deleted_time, datetime.now())\
-                .where(files.id.isin(file_ids))
+                .where(files.id.isin(Parameter('%s')))
         curs = self.con.cursor()
+        query1 = curs.mogrify(str(query), (tuple(file_ids),))
         try:
-            curs.execute(str(query))
+            curs.execute(query1)
             curs.close()
             self.con.commit()
         except Exception as e:
