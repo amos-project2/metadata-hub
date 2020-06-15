@@ -295,16 +295,6 @@ export class Template {
 
         $(".my-nav-element").click(function (event) {event.preventDefault();})
 
-        $(".nav-query").click(function () { $("#nav-element-form-query").trigger("click"); });
-        $(".nav-graphiql").click(function () { $("#nav-element-graphiql-console").trigger("click"); });
-        $(".nav-crawler").click(function () { $("#nav-element-crawler-controller").trigger("click"); });
-        $(".nav-status").click(function () { $("#nav-element-testname").trigger("click"); });
-        $(".nav-help").click(function () { $("#nav-element-help1").trigger("click"); });
-        $(".nav-about").click(function () { $("#nav-element-about1").trigger("click"); });
-        $(".nav-logout").click(function () { $("#nav-element-logout").trigger("click"); });
-
-        //  $(".container-nav_query").show(4000);
-
         window.onpopstate = function (event) {
             let page = thisdata.dependencies.utilities.getUrlVars()["p"];
             thisdata.goToPage(page);
