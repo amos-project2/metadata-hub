@@ -225,6 +225,8 @@ export class Template {
     injectinDomeAndRegisterListener(mountElement) {
         mountElement.html(this.data);
 
+
+
         let thisdata = this;
 
         $("#menu-toggle").click(function (e) {
@@ -234,25 +236,30 @@ export class Template {
 
         $("#dark-white-toggler").change(function () {
             if (this.checked) {
-                 thisdata.dependencies.styles.dark.use();
+                thisdata.dependencies.styles.dark.use();
 
                 enableDarkMode({
                     brightness: 100,
                     contrast: 90,
                     sepia: 10,
                 });
-
+                localStorage.setItem("darkmode", "true");
 
 
             } else {
-                 thisdata.dependencies.styles.dark.unuse();
+                thisdata.dependencies.styles.dark.unuse();
                 disableDarkMode();
+                localStorage.removeItem("darkmode");
             }
         });
 
+        if (localStorage.getItem("darkmode") === "true") {
+            $("#dark-white-toggler").trigger("click");
+        }
+
 
         //Register eventListener
-       // let thisdata = this;
+        // let thisdata = this;
         for (let value of this.navGroups) {
 
             //it is similar to this:  $(".nav-query").click(function () { $("#nav-element-form-query").trigger("click"); });

@@ -14,7 +14,7 @@ export class Logout extends Page {
         return `
             <button class="btn btn-lg btn-primary btn-block logout-action-button1" type="button">Logout</button>
             <button class="btn btn-lg btn-primary btn-block logout-action-button2" type="button">Logout with clearing the GraphiQl-History</button>
-            <button class="btn btn-lg btn-primary btn-block logout-action-button2" type="button">Logout with clearing the GraphiQl-History and Your-Name</button>
+            <button class="btn btn-lg btn-primary btn-block logout-action-button3" type="button">Logout with clearing the GraphiQl-History and Your-Name</button>
         `;
 
     }
@@ -27,10 +27,19 @@ export class Logout extends Page {
         });
 
         $(".logout-action-button2").click(function () {
+            let darkmode=localStorage.getItem("darkmode");
+
             localStorage.clear();
+
+            localStorage.setItem("darkmode", darkmode);
             window.location.href='/';
         });
 
+        $(".logout-action-button3").click(function () {
+            //delete all is here ok
+            localStorage.clear();
+            window.location.href='/';
+        });
     }
 
     onUnMount() {
