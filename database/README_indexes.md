@@ -53,6 +53,7 @@ Plan is to create several indexes:
 Notice:
 **text_pattern_ops** enables SQL "LIKE"-comparisons when the database does not use the standard "C" locale.
 But disables comparisons like <, <=, > and >=.
+
 [Reference index operator classes here](https://www.postgresql.org/docs/9.5/indexes-opclass.html)
 
 ### How to test the different indexes?
