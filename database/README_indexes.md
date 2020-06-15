@@ -31,29 +31,23 @@ As analyzing and optimizing queries is a difficult topic, we will for now just c
 Plan is to create several indexes:
 
 1. One default gin index on files.metadata:
-<br>
 ``CREATE INDEX gin_index_metadata ON public.files USING gin (metadata);``
 
 1. One gin(jsonb_path_ops) index on files.metadata:
-<br>
 ``CREATE INDEX gin_index_metadata_jsonb_path_ops ON public.files USING gin (metadata jsonb_path_ops);``
 
 1. One Btree index on a files.metadata attribute e.g. "FileName":
-<br>
 ``CREATE INDEX btree_index_metadata_FileName ON public.files USING BTREE((metadata ->> 'FileName')text_pattern_ops);``
-<br>
 
 1. One Btree index on files.name:
-<br>
 ``CREATE INDEX btree_index_name ON public.files((name)text_pattern_ops);``
 
 1. One Btree index on files.size:
-<br>
 ``CREATE INDEX btree_index_size ON public.files(size);``
 
 1. Combining multiple indexes dir_path + name:
-<br>
 ``CREATE INDEX btree_index_full_path ON public.files((dir_path ||'/' || name)text_pattern_ops);``
+
 <br>
 <br>
 Notice:
