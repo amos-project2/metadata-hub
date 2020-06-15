@@ -59,42 +59,30 @@ But disables comparisons like <, <=, > and >=.
 Use unique queries that benefit from the indexes and compare the query times with the database without indexes.
 Queries need to affect less rows so that index scans are preferred over seq. scans.
 1. Queries for the gin index on files.metadata:
-<br>
 ``
 SELECT * FROM files WHERE metadata @> '{"MIMEType":"image/jpeg"}';
-``
-<br>
-``
 SELECT * FROM files WHERE metadata ? 'FileInodeChangeDate';
-``
-<br>
-``
 SELECT * FROM files WHERE metadata ?& array['FileInodeChangeDate', 'Filter', 'Compression', 'XResolution'];
 ``
 1. Queries for the gin index with the jsonb_path_ops operator:
-<br>
 ``
 SELECT * FROM files WHERE metadata @> '{"MIMEType":"image/jpeg"}';
 ``
 1. Queries for the btree index on metadata->>FileName
-<br>
 ``
 SELECT * FROM files WHERE metadata ->> 'FileName' LIKE 'CNV-53%';
 ``
 1. Queries for the btree index on files.name
-<br>
 ``
 SELECT * FROM files WHERE name LIKE 'CNV-53%';
 ``
 
 1. Queries for the btree index on files.size:
-<br>
 ``
 SELECT * FROM files WHERE size >= 300000;
 ``
 
 1. Query for the btree index that combines dir_path + name into a full path:
-<br>
 ``SELECT * FROM files WHERE (dir_path||'/'||files.name) LIKE '/tmp/test_tree/dir2/dir4/dir7/dir8/%';``
 
 <br>
