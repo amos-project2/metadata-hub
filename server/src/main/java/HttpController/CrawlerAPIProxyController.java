@@ -57,8 +57,19 @@ public class CrawlerAPIProxyController
         WebTarget webTarget = target.path(path);
         parameters.forEach((key, values) ->
         {
-            target.queryParam(key, values.toArray());
+            System.out.println(values+ "GET "+ key);//for debugging
+            webTarget.queryParam(key, values.toArray());
         });
+
+        //for debuggingwas
+        if(form != null)
+        {
+            form.forEach((key, values) ->
+            {
+                System.out.println(values + "POST " + key);
+            });
+        }
+
 
         Response response;
         if (form == null)
