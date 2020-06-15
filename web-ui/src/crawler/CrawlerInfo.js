@@ -22,12 +22,33 @@ export class CrawlerInfo extends Page {
     content() {
 
         // language=HTML
+
+        let thisdata=this;
+
         return `
             Result in Json from Webcrawler:<br>
             <div class="ci-result">
             </div>
 
+            <div>
+<!--                <form onsubmit="()=>this.blub(event)">-->
+<!--                    <input type="text" />-->
+<!--                    <button type="submit"></button>-->
+
+<!--                </form>-->
+
+
+            </div>
+
+
+
         `;
+
+    }
+
+    blub(event) {
+        event.preventDefault();
+        alert("hi");
 
     }
 
@@ -49,7 +70,7 @@ export class CrawlerInfo extends Page {
 
     onLoad() {
 
-        this.restAPIFetcherCrawler.fetchGet("info", function (event) {
+        this.restAPIFetcherCrawler.fetchGet("info?test=bla&btest2=blub", function (event) {
             console.log(event)
             $(".ci-result").append(event.status);
             $(".ci-result").append(event.errorMessage);
