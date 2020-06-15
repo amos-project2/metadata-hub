@@ -1,29 +1,55 @@
 """Connection to database and perform query."""
 
+
 # Python imports
 import json
 import logging
 from datetime import datetime
-from typing import List
 from typing import List, Tuple
+
 
 # 3rd party modules
 import psycopg2
+
 
 # Local imports
 from crawler.services.config import Config
 import crawler.communication as communication
 
+
 _logger = logging.getLogger(__name__)
+
+
+def measure_time(func):
+    """Decorator for time measurement of DatabaseConnection objects.
+
+    This decorator is used for roughly estimate the time spent for database
+    operations. It can wrap arbitrary methods of DatabaseConnection objects.
+
+    Args:
+        func (function): function to wrap
+
+    """
+    def decorator(self, *args, **kwargs):
+        if self._measure_time:
+            start = datetime.now()
+            result = func(self, *args, **kwargs)
+            end = datetime.now()
+            self._time += (end - start).total_seconds()
+        else:
+            result = func(self, *args, **kwargs)
+        return result
+    return decorator
 
 
 class DatabaseConnection:
 
-    def __init__(self, db_info: dict) -> None:
+    def __init__(self, db_info: dict, measure_time: bool) -> None:
         """Initialize the connection to Postgre Database.
 
         Args:
             db_info (dict): connection data of the database
+            measure_time (bool): measure time for database operations
 
         Raises:
             VallueError: when creating the connection failed
@@ -39,6 +65,8 @@ class DatabaseConnection:
             )
         except Exception as err:
             raise ValueError(f'Database initialization error: {err}')
+        self._time = 0
+        self._measure_time = measure_time
 
     def update_status(self, crawlID: int, package: List[str]):
         """Updates a row in table crawls according to the tree walk progress.
@@ -233,3 +261,72 @@ class DatabaseConnection:
             _logger.warning('"Error updating file deletion"')
             curs.close()
             self.con.rollback()
+
+    @measure_time
+    def get_ids_to_delete(self) -> List[Tuple[int, datetime]]:
+        """Get the list of IDs which are marked as to be deleted.
+
+        The result consists of a set of tuples with the corresponding ID and
+        the timestamp when the file was marked as to delete.
+        The calling method is responsible for checking of the time limit
+        is already exceeded.
+
+        TODO: The performance may break if there is a massive amount of files.
+
+        Returns:
+            List[Tuple(int, str)]: list of items (ID, timestamp) or None on error
+
+        """
+        sql = 'SELECT id, deleted_time FROM files WHERE deleted;'
+        curs = self.con.cursor()
+        try:
+            curs.execute(sql)
+            entries = curs.fetchall()
+            curs.close()
+            self.con.commit()
+        except Exception as e:
+            _logger.warning(f'Failed deleting files: {str(e)}')
+            curs.close()
+            self.con.rollback()
+            return None
+        return entries
+
+    @measure_time
+    def delete_files(self, ids: List[int]) -> int:
+        """Remove the given IDs from the files table.
+
+        Args:
+            ids (List[int]): list of IDs
+
+        Returns:
+            int: number of deleted rows or None on error
+
+        """
+        if not ids:
+            return 0
+        curs = self.con.cursor()
+        sql = curs.mogrify('DELETE FROM files WHERE id IN %s;', (tuple(ids),))
+        try:
+            curs.execute(sql, ids)
+            num = curs.rowcount
+            curs.close()
+            self.con.commit()
+        except Exception as e:
+            _logger.warning(f'Failed deleting files: {str(e)}')
+            curs.close()
+            self.con.rollback()
+            return None
+        return num
+
+    def clear_time(self) -> None:
+        """Clears the time recording for database operations."""
+        self._time = 0
+
+    def get_time(self) -> int:
+        """Return the time spent for database operations in seconds.
+
+        Returns:
+            int: time in seconds
+
+        """
+        return self._time

@@ -43,7 +43,7 @@ def start(config: Config, update: bool) -> Tuple[bool, str, str]:
     return (
         message == communication.MANAGER_OK,
         message,
-        communication.MANAGER_PAUSE
+        communication.MANAGER_START
     )
 
 
@@ -75,7 +75,7 @@ def unpause() -> Tuple[bool, str, str]:
     return (
         message == communication.MANAGER_OK,
         message,
-        communication.MANAGER_PAUSE
+        communication.MANAGER_UNPAUSE
     )
 
 
@@ -91,7 +91,7 @@ def stop() -> Tuple[bool, str, str]:
     return (
         message == communication.MANAGER_OK,
         message,
-        communication.MANAGER_PAUSE
+        communication.MANAGER_STOP
     )
 
 
@@ -107,7 +107,7 @@ def info() -> Tuple[bool, dict, str]:
     return (
         message == communication.MANAGER_OK,
         data,
-        communication.MANAGER_PAUSE
+        communication.MANAGER_INFO
     )
 
 
@@ -123,5 +123,5 @@ def shutdown() -> Tuple[bool, str, str]:
     return (
         message == communication.MANAGER_OK,
         message,
-        communication.MANAGER_PAUSE
+        communication.MANAGER_SHUTDOWN
     )

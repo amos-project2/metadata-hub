@@ -46,7 +46,8 @@ class Worker(multiprocessing.Process):
             lock: multiprocessing.Lock,
             counter: multiprocessing.Value,
             finished: multiprocessing.Event,
-            num_workers: int
+            num_workers: int,
+            db_measure_time: bool
     ):
         super(Worker, self).__init__()
         self._queue = queue
@@ -54,7 +55,10 @@ class Worker(multiprocessing.Process):
         self._tree_walk_id = tree_walk_id
         self._lock = lock
         self._counter = counter
-        self._db_connection = database.DatabaseConnection(connection_data)
+        self._db_connection = database.DatabaseConnection(
+            db_info=connection_data,
+            measure_time=db_measure_time
+        )
         self._exiftool = self._config.get_exiftool_executable()
         self._finished = finished
         self._num_workers = num_workers
