@@ -130,6 +130,7 @@ public class ApplicationConfigImpl implements ApplicationConfig
     //may not be overwritten, cause its called from the constructor -> final
     private final void validateConfig()
     {
+        //TODO add validation-checks for the new config-attributes
         this.errorMessage = "";
 
         if (this.config.getProperty("database-user") == null) this.errorMessage = "Property database-user is missing";
