@@ -51,14 +51,14 @@ export class LoginPage {
         $(".login-action-button-enduser").click(function () {
             if ($("#your-name").val().length > 2 && $(this).val().length < 21) {
                 localStorage.setItem("logged_in", "enduser");
-                thisdata.saveNameAndenterMainPage("form-query", [0, 1]);
+                thisdata.saveNameAndEnterMainPage("form-query", [0, 1]);
             }
         });
 
         $(".login-action-button-admin").click(function () {
             if ($("#your-name").val().length > 2 && $(this).val().length < 21) {
                 localStorage.setItem("logged_in", "admin");
-                thisdata.saveNameAndenterMainPage("crawler-controller", [0, 1, 2]);
+                thisdata.saveNameAndEnterMainPage("crawler-controller", [0, 1, 2]);
             }
         });
 
@@ -95,7 +95,7 @@ export class LoginPage {
 
     }
 
-    saveNameAndenterMainPage(defaultStartPage, usedScope) {
+    saveNameAndEnterMainPage(defaultStartPage, usedScope) {
         localStorage.setItem("username", $("#your-name").val());
         this.enterMainPage(defaultStartPage, usedScope)
     }
