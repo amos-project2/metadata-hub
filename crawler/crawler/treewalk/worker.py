@@ -221,7 +221,6 @@ class Worker(multiprocessing.Process):
         # insert into the database
         try:
             # Insert the result in a batched query
-            print(x)
             self._db_connection.insert_new_record_files(inserts)
 
         except Exception as e:
