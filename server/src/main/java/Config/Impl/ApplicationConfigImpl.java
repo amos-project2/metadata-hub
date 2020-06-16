@@ -27,31 +27,6 @@ public class ApplicationConfigImpl implements ApplicationConfig
     @Getter private final String configFilePath;
 
 
-//    public static Config loadConfig(String configFilePath) throws IOException, JsonValideException
-//    {
-//        try
-//        {
-//            Map<String, String> env = System.getenv();
-//            ApplicationConfig applicationConfig = new ApplicationConfigImpl(configFilePath, env.get("METADATAHUB_ENV"));
-//
-//            if (!applicationConfig.isConfigValid())
-//            {
-//                System.out.println("Config (" + applicationConfig.getConfigFilePath() + ") is not valide: " + applicationConfig.getErrorMessage());
-//                return null;
-//            }
-//            System.out.println("Used config-file: " + applicationConfig.getConfigFilePath() + " [" + ((applicationConfig.isJson()) ? "JSON" : "PROPERTY-FILE") + "]");
-//            return applicationConfig.getConfig();
-//        }
-//        catch (Exception e)
-//        {
-//            e.printStackTrace();
-//            System.out.println("Error in loading the config: " + e.getMessage());
-//            return null;
-//        }
-//
-//    }
-
-
     public ApplicationConfigImpl(String filePath, String filePathFromEnvironmentVariable) throws Exception
     {
         try
