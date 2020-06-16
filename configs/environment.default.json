@@ -10,5 +10,12 @@
     "crawler-db-update-interval": 60,
     "crawler-db-measure-time": false,
     "server-host": "[::]",
-    "server-port": 8080
+    "server-port": 8080,
+    "webui-queryConstructorEnabled": true,
+    "webui-crawlerEnabled": true,
+    "webui-defaultUsername": "User",
+    "webui-adminLoginEnabeled": true,
+    "webui-enduserLoginEnabled": true,
+    "webui-autoLogin": "",
+    "webui-pageChangeAnimation": true
 }
