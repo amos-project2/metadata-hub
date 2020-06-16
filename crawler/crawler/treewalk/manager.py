@@ -332,7 +332,7 @@ class TreeWalkManager(threading.Thread):
                 db_info=self._connection_data,
                 measure_time=environment.env.CRAWLER_DB_MEASURE_TIME
             )
-            db_id = self._db_connection.insert_new_record_crawls(config)
+            db_id = self._db_connection.insert_crawl(config)
             # Prepare number of workers
             number_of_workers = tree_walk.get_number_of_workers(
                 config.get_options_power_level()
@@ -370,8 +370,7 @@ class TreeWalkManager(threading.Thread):
                 counter=self._worker_counter,
                 finished=self._workers_finished,
                 num_workers=num_workers,
-                #TODO ???
-                db_measure_time=None
+                db_measure_time=environment.env.CRAWLER_DB_MEASURE_TIME
             )
             self._workers.append((worker, queue))
         for worker, _ in self._workers:
