@@ -31,6 +31,7 @@ class TreeWalkManager(threading.Thread):
 
     def __init__(self):
         super(TreeWalkManager, self).__init__()
+        self._roots = []
         self._workers = []
         self._num_workers = 0
         self._work_packages = []
@@ -53,6 +54,7 @@ class TreeWalkManager(threading.Thread):
 
     def _reset(self) -> None:
         """Reset the TreeWalkManager."""
+        self._roots = []
         self._workers = []
         self._num_workers = 0
         self._work_packages = []
@@ -141,7 +143,7 @@ class TreeWalkManager(threading.Thread):
 
         def done() -> None:
             """Finish the TreeWalk execution.
-
+reset
             Send the finish signal to each worker and update the database.
             """
             for _, queue in self._workers:
@@ -150,7 +152,6 @@ class TreeWalkManager(threading.Thread):
                 tree_walk_id=self._tree_walk_id,
                 status=communication.CRAWL_STATUS_FINISHED
             )
-
         if self._work_packages:
             _logger.debug('Running single work package for each worker')
             work_single()
@@ -175,6 +176,7 @@ class TreeWalkManager(threading.Thread):
                 except queue.Empty:
                     done = self._work()
                     if done:
+                        self._db_connection.delete_lost(self._tree_walk_id, self._roots)
                         self._reset()
             else:
                 command, data = communication.manager_queue_input.get()
@@ -376,6 +378,7 @@ class TreeWalkManager(threading.Thread):
         for worker, _ in self._workers:
             worker.start()
         # Update the manager
+        self._roots = config.get_paths_inputs()
         self._state.set_running(config)
         self._num_workers = num_workers
         self._work_packages = work_packages

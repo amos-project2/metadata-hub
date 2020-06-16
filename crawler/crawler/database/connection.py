@@ -1,9 +1,9 @@
 """Connection to database and perform query."""
 
-
 # Python imports
 import json
 import logging
+import os
 from datetime import datetime
 from typing import List, Tuple
 
@@ -14,7 +14,6 @@ from pypika import Query, Table, Field, Parameter
 # Local imports
 from crawler.services.config import Config
 import crawler.communication as communication
-
 
 _logger = logging.getLogger(__name__)
 
@@ -29,6 +28,7 @@ def measure_time(func):
         func (function): function to wrap
 
     """
+
     def decorator(self, *args, **kwargs):
         if self._measure_time:
             start = datetime.now()
@@ -38,6 +38,7 @@ def measure_time(func):
         else:
             result = func(self, *args, **kwargs)
         return result
+
     return decorator
 
 
@@ -76,9 +77,9 @@ class DatabaseConnection:
         """
         # Build query to get the crawl data for id crawlID
         crawls = Table('crawls')
-        query = Query.from_(crawls)\
-                .select('*')\
-                .where(crawls.id == Parameter('%s'))
+        query = Query.from_(crawls) \
+            .select('*') \
+            .where(crawls.id == Parameter('%s'))
         curs = self.con.cursor()
         query1 = curs.mogrify(str(query), (crawlID,))
         try:
@@ -86,10 +87,10 @@ class DatabaseConnection:
             get = curs.fetchone()
             # Update the analyzed directories and make query for updating the database
             get[5]["analyzed directories"].extend(package)
-            query = Query.update(crawls)\
-                    .set(crawls.analyzed_dirs, Parameter('%s'))\
-                    .set(crawls.update_time, Parameter('%s'))\
-                    .where(crawls.id == Parameter('%s'))
+            query = Query.update(crawls) \
+                .set(crawls.analyzed_dirs, Parameter('%s')) \
+                .set(crawls.update_time, Parameter('%s')) \
+                .where(crawls.id == Parameter('%s'))
             query = curs.mogrify(str(query), (json.dumps(get[5]), datetime.now(), crawlID))
             curs.execute(query)
             curs.close()
@@ -100,7 +101,7 @@ class DatabaseConnection:
             self.con.rollback()
         return
 
-    def insert_new_record_crawls(self, config:Config) -> int:
+    def insert_new_record_crawls(self, config: Config) -> int:
         """Insert a new record to the 'crawls' table. Used at the start of a crawl task.
            TODO: Add docstring
         Args:
@@ -117,9 +118,10 @@ class DatabaseConnection:
         insert_values = (dir_path, '---', 'running', crawl_config, analyzed_dirs, starting_time)
         # Construct the SQL query
         crawls = Table('crawls')
-        query = Query.into(crawls)\
-                .columns('dir_path', 'name', 'status', 'crawl_config', 'analyzed_dirs', 'starting_time')\
-                .insert(Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'))
+        query = Query.into(crawls) \
+            .columns('dir_path', 'name', 'status', 'crawl_config', 'analyzed_dirs', 'starting_time') \
+            .insert(Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'),
+                    Parameter('%s'))
         curs = self.con.cursor()
         query = curs.mogrify(str(query), insert_values).decode('utf8')
         query = query + ' RETURNING id'
@@ -183,7 +185,7 @@ class DatabaseConnection:
             .where(crawls.id == Parameter('%s'))
         # Check if valid status was given
         if status in [communication.CRAWL_STATUS_FINISHED, communication.CRAWL_STATUS_PAUSED,
-                      communication.CRAWL_STATUS_RUNNING,  communication.CRAWL_STATUS_ABORTED]:
+                      communication.CRAWL_STATUS_RUNNING, communication.CRAWL_STATUS_ABORTED]:
             curs = self.con.cursor()
             query = curs.mogrify(str(query), (datetime.now(), status, tree_walk_id))
         else:
@@ -208,9 +210,9 @@ class DatabaseConnection:
             List(int): file ids that are supposed to be deleted
         """
         files = Table('files')
-        query = Query.from_(files)\
-                .select('id', 'crawl_id', 'dir_path', 'name')\
-                .where(files.dir_path == Parameter('%s'))
+        query = Query.from_(files) \
+            .select('id', 'crawl_id', 'dir_path', 'name') \
+            .where(files.dir_path == Parameter('%s'))
         curs = self.con.cursor()
         query = curs.mogrify(str(query), (path,))
         try:
@@ -239,11 +241,13 @@ class DatabaseConnection:
             file_ids (List[int): List of file ids to be deleted
         Returns:
         """
+        if len(file_ids) < 1:
+            return
         files = Table('files')
-        query = Query.update(files)\
-                .set(files.deleted, 'True')\
-                .set(files.deleted_time, datetime.now())\
-                .where(files.id.isin(Parameter('%s')))
+        query = Query.update(files) \
+            .set(files.deleted, 'True') \
+            .set(files.deleted_time, datetime.now()) \
+            .where(files.id.isin(Parameter('%s')))
         curs = self.con.cursor()
         query = curs.mogrify(str(query), (tuple(file_ids),))
         try:
@@ -324,3 +328,31 @@ class DatabaseConnection:
 
         """
         return self._time
+
+    def delete_lost(self, crawlId: int, roots: List):
+        """Scans the directories at the end of a scan, to find directories that were deleted since the last crawl"""
+        # Request a list of every directory skipped during the deletion process
+        files = Table('files')
+        query = Query.from_(files) \
+                .select(files.id) \
+                .where(files.crawl_id != crawlId) \
+                .where(files.deleted == False)
+        curs = self.con.cursor()
+        statements = []
+        for root in roots:
+            if root['recursive']:
+                statements.append(curs.mogrify('"dir_path" LIKE %s', (f'{root["path"]}%',)).decode('utf8'))
+            else:
+                statements.append(curs.mogrify('"dir_path" = %s', (f'{root["path"]}',)).decode('utf8'))
+        query = str(query) + ' AND (' + ' OR '.join(statements) + ')'
+        try:
+            curs.execute(query)
+            entries = curs.fetchall()
+            curs.close()
+            self.con.commit()
+        except Exception as e:
+            print(e)
+            _logger.warning('"Error updating file deletion"')
+            curs.close()
+            self.con.rollback()
+        self.set_deleted(entries)
