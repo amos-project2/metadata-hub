@@ -280,7 +280,12 @@ export class Template {
                     }
 
                     if (thisdata.currentSelectedElementGroup !== value.data) {
-                        $(".container-" + value.data.parent_nav).show(1000);
+                        if (window.myApplication.pageChangeAnimation) {
+                            $(".container-" + value.data.parent_nav).show(1000);
+                        } else {
+                            $(".container-" + value.data.parent_nav).show(1);
+                        }
+
                         $(".x" + value.data.parent_nav).addClass("active_sidebar");
                     }
 

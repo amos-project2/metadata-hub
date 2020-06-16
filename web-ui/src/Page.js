@@ -85,7 +85,12 @@ export class Page {
 
         this.onLoad();
 
-        $("." + elem).show(1000);
+        if (window.myApplication.pageChangeAnimation) {
+            $("." + elem).show(1000);
+        } else {
+            $("." + elem).show(1);
+        }
+
 
     }
 

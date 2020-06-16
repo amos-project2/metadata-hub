@@ -7,15 +7,17 @@ import {Utilities} from "./buisnesslogic/Utilities";
 import {LoginPage} from "./login/LoginPage";
 
 
+
+
 if (window.myApplication === undefined) {
     alert("The start-html-page must define window.myApplication{}. It is missing. The pageload is abborted");
 } else {
     let utilities = new Utilities();
 
     let dependencies = {
-        graphQlFetcher: new GraphQlFetcher("graphql/"),
-        restApiFetcherServer: new RestAPIFetcher("api/"),
-        restApiFetcherCrawler: new RestAPIFetcher("crawlerapi/"),
+        graphQlFetcher: new GraphQlFetcher(window.myApplication.graphQLApi),
+        restApiFetcherServer: new RestAPIFetcher(window.myApplication.serverApi),
+        restApiFetcherCrawler: new RestAPIFetcher(window.myApplication.crawlerApi),
         utilities: utilities,
         styles: {
             dark: darkstyle,

@@ -8,16 +8,61 @@ export class LoginPage {
         this.dependencies = dependencies
         this.utilities = dependencies.utilities;
         this.mountpoint = mountpoint;
+
+        if (localStorage.getItem("username") === null) {
+            localStorage.setItem("username", window.myApplication.defaultUsername);
+        }
+
+        if (localStorage.getItem("logged_in") === null) {
+            localStorage.setItem("logged_in", window.myApplication.autoLogin);
+        }
+
+
+        this.adminLoginVisible = "";
+        if (!window.myApplication.adminLoginEnabeled) {
+            this.adminLoginVisible = "hide_active";
+        }
+
+        this.endUserLoginVisible = "";
+        if (!window.myApplication.enduserLoginEnabled) {
+            this.endUserLoginVisible = "hide_active";
+        }
+
     }
+
+
+    getScope(userType) {
+        let scope = [0];
+        let startpage = "logout";
+        if (userType === "admin") {
+            if (window.myApplication.queryConstructorEnabled) {
+                scope.push(1);
+                startpage = "form-query";
+            }
+            if (window.myApplication.crawlerEnabled) {
+                scope.push(2);
+                startpage = "crawler-controller";
+            }
+        } else {
+            if (window.myApplication.queryConstructorEnabled) {
+                scope.push(1);
+                startpage = "form-query";
+            }
+        }
+        return {scope, startpage};
+    }
+
 
     loadPage() {
 
         let logged_in = localStorage.getItem('logged_in');
         if (logged_in === "enduser") {
-            this.enterMainPage("form-query", [0, 1]);
+            let scopeData = this.getScope("enduser");
+            this.enterMainPage(scopeData.startpage, scopeData.scope);
             return;
         } else if (logged_in === "admin") {
-            this.enterMainPage("crawler-controller", [0, 1, 2]);
+            let scopeData = this.getScope("admin");
+            this.enterMainPage(scopeData.startpage, scopeData.scope);
             return;
         }
 
@@ -51,14 +96,16 @@ export class LoginPage {
         $(".login-action-button-enduser").click(function () {
             if ($("#your-name").val().length > 2 && $(this).val().length < 21) {
                 localStorage.setItem("logged_in", "enduser");
-                thisdata.saveNameAndEnterMainPage("form-query", [0, 1]);
+                let scopeData = thisdata.getScope("enduser");
+                thisdata.saveNameAndEnterMainPage(scopeData.startpage, scopeData.scope);
             }
         });
 
         $(".login-action-button-admin").click(function () {
             if ($("#your-name").val().length > 2 && $(this).val().length < 21) {
                 localStorage.setItem("logged_in", "admin");
-                thisdata.saveNameAndEnterMainPage("crawler-controller", [0, 1, 2]);
+                let scopeData = thisdata.getScope("admin");
+                thisdata.saveNameAndEnterMainPage(scopeData.startpage, scopeData.scope);
             }
         });
 
@@ -132,8 +179,8 @@ export class LoginPage {
                                         <label for="your-name">Your-Name</label>
                                     </div>
                                     <div class="login-action-button" style="display:none">
-                                        <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button-enduser hide_active22" type="button">Sign in as Enduser</button>
-                                        <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button-admin hide_active22" type="button">Sign in as Admin</button>
+                                        <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button-enduser ${this.endUserLoginVisible}" type="button">Sign in as Enduser</button>
+                                        <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button-admin ${this.adminLoginVisible}" type="button">Sign in as Admin</button>
                                     </div>
                                     <hr class="my-4">
                                     <span class="text-secondary">* The Your-Name is used for save it along possible queries you will do. It must be not System-known.</span>
