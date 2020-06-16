@@ -25,6 +25,13 @@ export class LoginPage {
         this.renderIntoMountpoint();
         $("title").html("Metadata-Hub");
         this.registerListener();
+
+        if (localStorage.getItem("username") !== undefined) {
+            $("#your-name").val(localStorage.getItem("username"));
+            $("#your-name").trigger('propertychange');
+        }
+
+
     }
 
 
@@ -38,18 +45,54 @@ export class LoginPage {
         let thisdata = this;
 
         $(".login-action-button-enduser").click(function () {
-            localStorage.setItem("logged_in", "enduser");
-            thisdata.enterMainPage("form-query", [0, 1]);
+            if ($("#your-name").val().length > 2 && $(this).val().length < 21) {
+                localStorage.setItem("logged_in", "enduser");
+                thisdata.enterMainPage("form-query", [0, 1]);
+            }
         });
 
         $(".login-action-button-admin").click(function () {
-            localStorage.setItem("logged_in", "admin");
-            thisdata.enterMainPage("crawler-controller", [0, 1, 2]);
+            if ($("#your-name").val().length > 2 && $(this).val().length < 21) {
+                localStorage.setItem("logged_in", "admin");
+                thisdata.enterMainPage("crawler-controller", [0, 1, 2]);
+            }
         });
+
+
+        let isButtonHide = true;
+
+        $("#your-name").on('input propertychange', function () {
+            if ($(this).val().length > 2 && $(this).val().length < 21) {
+
+                $(this).addClass("is-valid");
+                $(this).removeClass("is-invalid");
+                if (isButtonHide) {
+                    isButtonHide = false;
+
+                    $(".login-action-button").slideDown(2000);
+                }
+                //$(".login-action-button").removeClass("hide_active");
+
+            } else {
+
+                $(this).addClass("is-invalid");
+                $(this).removeClass("is-valid");
+                if (!isButtonHide) {
+                    isButtonHide = true;
+                    $(".login-action-button").stop(true);
+                    $(".login-action-button").slideUp(1000);
+                }
+
+                //$(".login-action-button").addClass("hide_active");
+            }
+
+        });
+
 
     }
 
     enterMainPage(defaultStartPage, usedScope) {
+        localStorage.setItem("username", $("#your-name").val());
         let template = new Template(this.dependencies, usedScope);
         this.unLoadPage();
         template.injectinDomeAndRegisterListener(this.mountpoint);
@@ -75,11 +118,14 @@ export class LoginPage {
                                 <h4 class="card-title text-center font-weight-bold">Sign In</h4>
                                 <form class="form-signin">
                                     <div class="form-label-group">
-                                        <input type="text" id="your-name" class="form-control" placeholder="Your-Name" required autofocus>
+                                        <input type="text" id="your-name" class="form-control is-invalid" placeholder="Your-Name" autofocus>
+                                        <div class="invalid-feedback">Your name must have 3 - 20 characters</div>
                                         <label for="your-name">Your-Name</label>
                                     </div>
-                                    <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button-enduser" type="button">Sign in as Enduser</button>
-                                    <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button-admin" type="button">Sign in as Admin</button>
+                                    <div class="login-action-button" style="display:none">
+                                        <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button-enduser hide_active22" type="button" >Sign in as Enduser</button>
+                                        <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button-admin hide_active22" type="button" >Sign in as Admin</button>
+                                    </div>
                                     <hr class="my-4">
                                     <span class="text-secondary">* The Your-Name is used for save it along possible queries you will do. It must be not System-known.</span>
                                 </form>
