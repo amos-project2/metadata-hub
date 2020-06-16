@@ -28,9 +28,11 @@ export class Logout extends Page {
 
         $(".logout-action-button2").click(function () {
             let darkmode=localStorage.getItem("darkmode");
+            let username=localStorage.getItem("username");
 
             localStorage.clear();
 
+            localStorage.setItem("username",username);
             localStorage.setItem("darkmode", darkmode);
             window.location.href='/';
         });
