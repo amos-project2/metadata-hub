@@ -7,6 +7,18 @@ import {Utilities} from "./buisnesslogic/Utilities";
 import {LoginPage} from "./login/LoginPage";
 
 
+//window.haxi=5;
+//
+// let hach={
+// eins: "x",
+// zwei: "y",
+// };
+//
+//
+//
+// let hey=window.haxi;
+// alert(window.haxi.huxi);
+
 let utilities = new Utilities()
 
 let dependencies = {
