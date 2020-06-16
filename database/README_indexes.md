@@ -86,6 +86,9 @@ SELECT * FROM files WHERE size >= 300000;
 1. Query for the btree index that combines dir_path + name into a full path:
 ``SELECT * FROM files WHERE (dir_path||'/'||files.name) LIKE '/tmp/test_tree/dir2/dir4/dir7/dir8/%';``
 
+Notice: Index scans and bitmap scans can be turned off, for easier comparisons
+``SET enable_indexscan TO false;
+    SET enable_bitmapscan TO false;``
 <br>
 <br>
 
