@@ -31,6 +31,7 @@ public class BenchmarkTest
     }
 
     public void doBenchmark() throws InterruptedException, SQLException {
+
         System.out.println("START BENCHMARK TESTS:\n\n");
         var allComparer = new ArrayList<DirectJsonToEavComparer>();
 
