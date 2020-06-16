@@ -4,7 +4,7 @@ import './scss/app.scss';
 import {GraphQlFetcher} from "./buisnesslogic/GraphQlFetcher";
 import {RestAPIFetcher} from "./buisnesslogic/RestAPIFetcher";
 import {Utilities} from "./buisnesslogic/Utilities";
-import {LoginPage} from "./login/LoginPage";
+import {Login} from "./login/Login";
 
 
 
@@ -28,7 +28,7 @@ if (window.myApplication === undefined) {
     let jqueryMountPoint = $(".app-root");
 
 
-    let login = new LoginPage(dependencies, jqueryMountPoint);
+    let login = new Login(dependencies, jqueryMountPoint);
     login.loadPage();
 }
 

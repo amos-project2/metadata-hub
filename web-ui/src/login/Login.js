@@ -2,7 +2,7 @@ import loginStyles from '../scss/logincss/login.lazy.scss3';
 import {Template} from "../template";
 
 
-export class LoginPage {
+export class Login {
 
     constructor(dependencies, mountpoint) {
         this.dependencies = dependencies
