@@ -17,6 +17,9 @@ export class CrawlerController extends Page {
         //here you set the title-attribut
         //you can here also set the caching_behavour and much more
         //take a look in class Page
+
+        this.infoTimer=null;
+
     }
 
     content() {
@@ -294,15 +297,11 @@ export class CrawlerController extends Page {
         });
     }
 
-    onLoad() {
-        $("#config").hide();
-        $("#config-hr").hide();
+    //its called one time, after the page is the first time visited
+    //cause we dont remove the page to no time from the dome, the listener dont needs to be re-added
+    onMount() {
         // Register callback functions for action buttons
-        var self = this;
-        self.updateStatus();
-        setInterval(function() {
-            self.updateStatus()
-        }, 5000);
+
         $("#continue-button").click(function() {
             self.runActionWithMessage("continue");
         });
@@ -331,6 +330,26 @@ export class CrawlerController extends Page {
             self.submitConfig(e);
         });
     }
+
+    //this method is called each time the user open/go-back to the page here
+    onLoad() {
+        $("#config").hide();
+        $("#config-hr").hide();
+
+        var self = this;
+        self.updateStatus();
+        this.infoTimer = setInterval(function() {
+            self.updateStatus()
+        }, 5000);
+
+
+    }
+
+    //this method is called each time the user leave the page
+    onUnLoad() {
+        clearInterval(this.infoTimer);
+    }
+
 
     runActionWithMessage(route) {
         let self = this;
