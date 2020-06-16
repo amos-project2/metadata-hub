@@ -226,7 +226,6 @@ export class Template {
         mountElement.html(this.data);
 
 
-
         let thisdata = this;
 
         $("#menu-toggle").click(function (e) {
@@ -339,6 +338,12 @@ export class Template {
                     <div class="list-group list-group-flush">
                         ${this.navsidebar}
                     </div>
+
+                    <div style="margin:12px;" class="text-info text-center">
+                        Logged in as <b>${localStorage.getItem("username")}</b><br><span style="text-uppercase">[${localStorage.getItem("logged_in")}]</span>
+                    </div>
+
+
                 </div>
 
                 <!-- /#sidebar-wrapper -->
