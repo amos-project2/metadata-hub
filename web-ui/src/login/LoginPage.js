@@ -44,17 +44,21 @@ export class LoginPage {
 
         let thisdata = this;
 
+        $(".form-signin").submit(function (e) {
+            e.preventDefault();
+        });
+
         $(".login-action-button-enduser").click(function () {
             if ($("#your-name").val().length > 2 && $(this).val().length < 21) {
                 localStorage.setItem("logged_in", "enduser");
-                thisdata.enterMainPage("form-query", [0, 1]);
+                thisdata.saveNameAndenterMainPage("form-query", [0, 1]);
             }
         });
 
         $(".login-action-button-admin").click(function () {
             if ($("#your-name").val().length > 2 && $(this).val().length < 21) {
                 localStorage.setItem("logged_in", "admin");
-                thisdata.enterMainPage("crawler-controller", [0, 1, 2]);
+                thisdata.saveNameAndenterMainPage("crawler-controller", [0, 1, 2]);
             }
         });
 
@@ -91,8 +95,13 @@ export class LoginPage {
 
     }
 
-    enterMainPage(defaultStartPage, usedScope) {
+    saveNameAndenterMainPage(defaultStartPage, usedScope) {
         localStorage.setItem("username", $("#your-name").val());
+        this.enterMainPage(defaultStartPage, usedScope)
+    }
+
+    enterMainPage(defaultStartPage, usedScope) {
+
         let template = new Template(this.dependencies, usedScope);
         this.unLoadPage();
         template.injectinDomeAndRegisterListener(this.mountpoint);
@@ -123,8 +132,8 @@ export class LoginPage {
                                         <label for="your-name">Your-Name</label>
                                     </div>
                                     <div class="login-action-button" style="display:none">
-                                        <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button-enduser hide_active22" type="button" >Sign in as Enduser</button>
-                                        <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button-admin hide_active22" type="button" >Sign in as Admin</button>
+                                        <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button-enduser hide_active22" type="button">Sign in as Enduser</button>
+                                        <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button-admin hide_active22" type="button">Sign in as Admin</button>
                                     </div>
                                     <hr class="my-4">
                                     <span class="text-secondary">* The Your-Name is used for save it along possible queries you will do. It must be not System-known.</span>
