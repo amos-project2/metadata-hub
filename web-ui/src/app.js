@@ -7,37 +7,28 @@ import {Utilities} from "./buisnesslogic/Utilities";
 import {LoginPage} from "./login/LoginPage";
 
 
-//window.haxi=5;
-//
-// let hach={
-// eins: "x",
-// zwei: "y",
-// };
-//
-//
-//
-// let hey=window.haxi;
-// alert(window.haxi.huxi);
+if (window.myApplication === undefined) {
+    alert("The start-html-page must define window.myApplication{}. It is missing. The pageload is abborted");
+} else {
+    let utilities = new Utilities();
 
-let utilities = new Utilities()
+    let dependencies = {
+        graphQlFetcher: new GraphQlFetcher("graphql/"),
+        restApiFetcherServer: new RestAPIFetcher("api/"),
+        restApiFetcherCrawler: new RestAPIFetcher("crawlerapi/"),
+        utilities: utilities,
+        styles: {
+            dark: darkstyle,
+        }
 
-let dependencies = {
-    graphQlFetcher: new GraphQlFetcher("graphql/"),
-    restApiFetcherServer: new RestAPIFetcher("api/"),
-    restApiFetcherCrawler: new RestAPIFetcher("crawlerapi/"),
-    utilities: utilities,
-    styles : {
-        dark: darkstyle,
     }
 
+    let jqueryMountPoint = $(".app-root");
+
+
+    let login = new LoginPage(dependencies, jqueryMountPoint);
+    login.loadPage();
 }
-
-let jqueryMountPoint = $(".app-root");
-
-
-let login = new LoginPage(dependencies, jqueryMountPoint);
-login.loadPage();
-
 
 
 
