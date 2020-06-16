@@ -121,7 +121,7 @@ public class Start
 
     private  void executeIndex() throws SQLException, InterruptedException
     {
-        boolean enableIndexTest = true;
+        boolean enableIndexTest = false;
         if(enableIndexTest){
             new IndexTest(this.dependenciesContainer).test();
         }

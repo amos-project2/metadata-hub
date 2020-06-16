@@ -1,4 +1,4 @@
-package GraphQL;
+package GraphQL.Model;
 
 public class GraphQLSchemaDefinition {
     /**
@@ -26,6 +26,7 @@ public class GraphQLSchemaDefinition {
     public static final String QUERY_METADATA_OPTIONS = "metadata_options";
     public static final String QUERY_SELECTED_ATTRIBUTES = "selected_attributes";
     public static final String QUERY_LIMIT_FETCHING_SIZE = "limitFetchingSize";
+    public static final String QUERY_SHOW_DELETED = "showDeleted";
 
     /**
      * Object Type Definition of "File"

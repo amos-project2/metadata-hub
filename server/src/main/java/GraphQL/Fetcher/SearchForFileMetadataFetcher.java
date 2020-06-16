@@ -1,7 +1,10 @@
-package GraphQL;
+package GraphQL.Fetcher;
 
 import Database.Database;
+import Database.Database.*;
+import Database.DatabaseSchemaDefinition;
 import GraphQL.Model.File;
+import GraphQL.Model.GraphQLSchemaDefinition;
 import GraphQL.Model.Metadatum;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.schema.DataFetcher;
@@ -63,17 +66,18 @@ public class SearchForFileMetadataFetcher implements DataFetcher
                 while (rs.next())
                 {
 
-                    String jsonFileMetadata = rs.getString(GraphQLSchemaDefinition.FILE_METADATA);
+                    String jsonFileMetadata = rs.getString(DatabaseSchemaDefinition.FILES_METADATA);
                     ArrayList<Metadatum> file_metadata = new ArrayList<>();
                     Map<String, String> db_metadata = new ObjectMapper().readValue(jsonFileMetadata, Map.class);
                     addSelectedAttributes(file_metadata, selected_attributes, db_metadata);
 
+
                     files.add(
-                        new File(rs.getString(GraphQLSchemaDefinition.FILE_ID), rs.getString(GraphQLSchemaDefinition.FILE_CRAWL_ID),
-                            rs.getString(GraphQLSchemaDefinition.FILE_DIR_PATH), rs.getString(GraphQLSchemaDefinition.FILE_NAME), rs.getString(GraphQLSchemaDefinition.FILE_TYPE),
-                            rs.getString(GraphQLSchemaDefinition.FILE_SIZE), file_metadata, rs.getString(GraphQLSchemaDefinition.FILE_CREATION_TIME),
-                            rs.getString(GraphQLSchemaDefinition.FILE_MODIFICATION_TIME), rs.getString(GraphQLSchemaDefinition.FILE_ACCESS_TIME),
-                            rs.getString(GraphQLSchemaDefinition.FILE_FILE_HASH))
+                        new File(rs.getString(DatabaseSchemaDefinition.FILES_ID), rs.getString(DatabaseSchemaDefinition.FILES_CRAWL_ID),
+                            rs.getString(DatabaseSchemaDefinition.FILES_DIR_PATH), rs.getString(DatabaseSchemaDefinition.FILES_NAME), rs.getString(DatabaseSchemaDefinition.FILES_TYPE),
+                            rs.getString(DatabaseSchemaDefinition.FILES_SIZE), file_metadata, rs.getString(DatabaseSchemaDefinition.FILES_CREATION_TIME),
+                            rs.getString(DatabaseSchemaDefinition.FILES_MODIFICATION_TIME), rs.getString(DatabaseSchemaDefinition.FILES_ACCESS_TIME),
+                            rs.getString(DatabaseSchemaDefinition.FILES_FILE_HASH), rs.getBoolean(DatabaseSchemaDefinition.FILES_DELETED))
                     );
 
                 }
