@@ -18,4 +18,5 @@ public class File
     private final String modification_time;
     private final String access_time;
     private final String file_hash;
+    private final Boolean deleted;
 }

@@ -89,6 +89,7 @@ type File{
     access_time: String
     modification_time: String
     file_hash: String
+    deleted: Boolean
 }
 
 type Metadatum{

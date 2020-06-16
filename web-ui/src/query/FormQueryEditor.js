@@ -84,6 +84,14 @@ export class FormQueryEditor extends Page {
                     </div>
                 </div>
 
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="fq-showDeleted">
+                    <label class="form-check-label" for="fq-showDeleted">
+                        Show deleted files
+                        <a class="pover" title="Show deleted files" data-content="If checked deleted files that are still in the database are also shown.">[?]</a>
+                    </label>
+                </div>
+
                 <div class="form-row">
                     <div class="col-md-12">
                         <hr>
@@ -288,6 +296,8 @@ export class FormQueryEditor extends Page {
         // let filepattern = $("#fq-filePattern").val();
         //  let checkbox = $("#fq-includeVsExclude").prop('checked');
         let limit = $("#fq-limit").val();
+        let showDeleted = $("#fq-showDeleted").prop('checked');
+        let deleted = "";
         let startDate = $("#fq-createFileTimeRangeStart").val();
         let endDate = $("#fq-createFileTimeRangeEnd").val();
 
@@ -297,6 +307,7 @@ export class FormQueryEditor extends Page {
         // if (filepattern !== "") {filepattern = `pattern: "${filepattern}",`;} else {filepattern = "";}
         // if (!checkbox) {checkbox = "option: included,";} else {checkbox = "option: excluded,";}
         if (limit !== "") {limit = `limitFetchingSize: ${limit},\n  `;} else {limit = "";}
+        if (showDeleted) {deleted = `showDeleted: true`;};
         if (startDate !== "") {startDate = `start_creation_time: "${startDate}",\n  `;} else {startDate = "";}
         if (endDate !== "") {endDate = `end_creation_time: "${endDate}",\n  `;} else {endDate = "";}
         if (startDateUpdated !== "") {startDateUpdated = `start_modification_time: "${startDateUpdated}",\n  `;} else {startDateUpdated = "";}
@@ -341,6 +352,7 @@ export class FormQueryEditor extends Page {
 //dont change the formatting here, cause this has a direct change to the formatting in the graphql-inspection-window
         let query_header = `
    ${limit}
+   ${deleted}
    ${startDate} ${endDate} ${startDateUpdated} ${endDateUpdated}
    ${options_options} ${options_attributes} ${options_values}
    ${attributes}
@@ -369,6 +381,7 @@ query
     access_time,
     modification_time,
     file_hash,
+    deleted,
     metadata
     {
       name,
