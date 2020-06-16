@@ -74,7 +74,7 @@ class DatabaseConnection:
             crawlID (int): id of the row to be updated
             package (List[str]): Directories the treewalk has handled
         """
-        curs = self.con.cursor()
+        # Build query to get the crawl data for id crawlID
         crawls = Table('crawls')
         query = Query.from_(crawls)\
                 .select('*')\
@@ -84,12 +84,14 @@ class DatabaseConnection:
         try:
             curs.execute(query1)
             get = curs.fetchone()
+            # Update the analyzed directories and make query for updating the database
             get[5]["analyzed directories"].extend(package)
             query = Query.update(crawls)\
-                    .set(crawls.analyzed_dirs, json.dumps(get[5]))\
-                    .set(crawls.update_time, datetime.now())\
-                    .where(crawls.id == crawlID)
-            curs.execute(str(query))
+                    .set(crawls.analyzed_dirs, Parameter('%s'))\
+                    .set(crawls.update_time, Parameter('%s'))\
+                    .where(crawls.id == Parameter('%s'))
+            query = curs.mogrify(str(query), (json.dumps(get[5]), datetime.now(), crawlID))
+            curs.execute(query)
             curs.close()
             self.con.commit()
         except:
@@ -112,24 +114,24 @@ class DatabaseConnection:
         )
         analyzed_dirs = json.dumps({"analyzed directories": []})
         starting_time = datetime.now()
-        insert_values = (dir_path, '---', 'running', crawl_config, analyzed_dirs, starting_time, )
-        # Construct the SQL query using pypika
+        insert_values = (dir_path, '---', 'running', crawl_config, analyzed_dirs, starting_time)
+        # Construct the SQL query
         crawls = Table('crawls')
         query = Query.into(crawls)\
                 .columns('dir_path', 'name', 'status', 'crawl_config', 'analyzed_dirs', 'starting_time')\
-                .insert(('%s', '%s', '%s', '%s', '%s', '%s'))
+                .insert(Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'))
         curs = self.con.cursor()
-        #query1 = curs.mogrify(str(query), (insert_values,))
-        query1 = str(query) % insert_values
-        query1 = str(query1) + ' RETURNING id'
+        query = curs.mogrify(str(query), insert_values).decode('utf8')
+        query = query + ' RETURNING id'
         # Make database request
         try:
-            curs.execute(query1)
+            curs.execute(query)
         except:
             _logger.warning('"Error updating database"')
             curs.close()
             self.con.rollback()
             raise
+        # Return result or 0 in case nothing could be fetched
         try:
             dbID = curs.fetchone()[0]
         except:
@@ -145,17 +147,16 @@ class DatabaseConnection:
             values (List[Tuple[str]): A list of lists. Contains the values for each row to be inserted.
 
         """
-        # Construct the SQL query using pypika
-        #query = 'INSERT INTO files (crawl_id, dir_path, name, type, size, metadata, creation_time, access_time, modification_time, deleted, deleted_time, file_hash) VALUES'
-        files = Table('files')
-        query = Query.into(files)\
-                .columns('crawl_id', 'dir_path', 'name', 'type', 'size', 'metadata', 'creation_time', 'access_time',
-                            'modification_time', 'deleted', 'deleted_time', 'file_hash')\
-                .insert(*insert_values)
-        # print(query)
+        # Construct the SQL query
+        # FIXME pypika solution?
+        query = 'INSERT INTO "files" ("crawl_id","dir_path","name","type","size","metadata","creation_time", ' \
+                '"access_time","modification_time","deleted","deleted_time","file_hash") VALUES '
+        curs = self.con.cursor()
+        for insert in insert_values:
+            query += curs.mogrify("(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s),", insert).decode('utf8')
         curs = self.con.cursor()
         try:
-            curs.execute(str(query))
+            curs.execute(query[:-1])
         except:
             _logger.warning('"Error inserting data into database"')
             curs.close()
@@ -174,35 +175,24 @@ class DatabaseConnection:
         Args:
             tree_walk_id (int): ID of the TreeWalk execution
             status (str): status to set
-
         """
+        # Build query to update status
         crawls = Table('crawls')
-        if status == communication.CRAWL_STATUS_FINISHED:
-            query = Query.update(crawls)\
-                    .set(crawls.finished_time, datetime.now())\
-                    .set(crawls.status, communication.CRAWL_STATUS_FINISHED)\
-                    .where(crawls.id == tree_walk_id)
-        elif status == communication.CRAWL_STATUS_PAUSED:
-            query = Query.update(crawls)\
-                    .set(crawls.finished_time, datetime.now())\
-                    .set(crawls.status, communication.CRAWL_STATUS_PAUSED)\
-                    .where(crawls.id == tree_walk_id)
-        elif status == communication.CRAWL_STATUS_RUNNING:
-            query = Query.update(crawls)\
-                    .set(crawls.finished_time, datetime.now())\
-                    .set(crawls.status, communication.CRAWL_STATUS_RUNNING)\
-                    .where(crawls.id == tree_walk_id)
-        elif status == communication.CRAWL_STATUS_ABORTED:
-            query = Query.update(crawls)\
-                    .set(crawls.finished_time, datetime.now())\
-                    .set(crawls.status, communication.CRAWL_STATUS_ABORTED)\
-                    .where(crawls.id == tree_walk_id)
+        query = Query.update(crawls) \
+            .set(crawls.finished_time, Parameter('%s')) \
+            .set(crawls.status, Parameter('%s')) \
+            .where(crawls.id == Parameter('%s'))
+        # Check if valid status was given
+        if status in [communication.CRAWL_STATUS_FINISHED, communication.CRAWL_STATUS_PAUSED,
+                      communication.CRAWL_STATUS_RUNNING,  communication.CRAWL_STATUS_ABORTED]:
+            curs = self.con.cursor()
+            query = curs.mogrify(str(query), (datetime.now(), status, tree_walk_id))
         else:
             _logger.warning('"Error updating database state, state not recognized"')
             return
+        # Execute query
         try:
-            curs = self.con.cursor()
-            curs.execute(str(query))
+            curs.execute(query)
             curs.close()
             self.con.commit()
         except:
@@ -225,12 +215,12 @@ class DatabaseConnection:
                 .select('id', 'crawl_id', 'dir_path', 'name')\
                 .where(files.dir_path == Parameter('%s'))
         curs = self.con.cursor()
-        query1 = curs.mogrify(str(query), (path,))
+        query = curs.mogrify(str(query), (path,))
         try:
-            curs.execute(query1)
+            curs.execute(query)
             get = curs.fetchall()
-        except Exception as e:
-            print(e)
+        except:
+            return []
         curs.close()
         self.con.commit()
 
@@ -252,9 +242,9 @@ class DatabaseConnection:
                 .set(files.deleted_time, datetime.now())\
                 .where(files.id.isin(Parameter('%s')))
         curs = self.con.cursor()
-        query1 = curs.mogrify(str(query), (tuple(file_ids),))
+        query = curs.mogrify(str(query), (tuple(file_ids),))
         try:
-            curs.execute(query1)
+            curs.execute(query)
             curs.close()
             self.con.commit()
         except Exception as e:
