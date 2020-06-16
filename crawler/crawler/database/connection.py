@@ -329,8 +329,13 @@ class DatabaseConnection:
         """
         return self._time
 
-    def delete_lost(self, crawlId: int, roots: List):
-        """Scans the directories at the end of a scan, to find directories that were deleted since the last crawl"""
+    def delete_lost(self, crawlId: int, roots: List) -> None:
+        """Scans the directories at the end of a scan, to find directories that were deleted since the last crawl
+
+        Args:
+            crawlId (int): id of the current crawl
+            roots (List): list with every path/recursive pair
+        """
         # Request a list of every directory skipped during the deletion process
         files = Table('files')
         query = Query.from_(files) \
