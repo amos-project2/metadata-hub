@@ -1,6 +1,7 @@
-package GraphQL;
+package GraphQL.Fetcher;
 
 import Database.DatabaseSchemaDefinition;
+import GraphQL.Model.GraphQLSchemaDefinition;
 
 import java.util.List;
 import java.util.Map;
@@ -158,11 +159,20 @@ public class PreparedStatementCreator {
             }
         }
 
+        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_SHOW_DELETED)){
+            if(!((Boolean) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_SHOW_DELETED))) {
+                stringBuilder.append(DatabaseSchemaDefinition.FILES_DELETED + " = FALSE AND ");
+            }
+        }else {
+            stringBuilder.append(DatabaseSchemaDefinition.FILES_DELETED + " = FALSE AND ");
+        }
+
         stringBuilder.append(" TRUE");
 
-        if(graphQLArguments.containsKey("limitFetchingSize")) {
-            stringBuilder.append(" FETCH FIRST ").append(graphQLArguments.get(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE)).append(" ROWS ONLY");
+        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE)) {
+            stringBuilder.append(" FETCH FIRST " + graphQLArguments.get(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE) + " ROWS ONLY");
         }
+
         return stringBuilder.toString();
     }
 

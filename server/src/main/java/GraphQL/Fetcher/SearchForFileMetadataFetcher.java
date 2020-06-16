@@ -1,7 +1,8 @@
-package GraphQL;
+package GraphQL.Fetcher;
 
 import Database.Database;
 import GraphQL.Model.File;
+import GraphQL.Model.GraphQLSchemaDefinition;
 import GraphQL.Model.Metadatum;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.schema.DataFetcher;
