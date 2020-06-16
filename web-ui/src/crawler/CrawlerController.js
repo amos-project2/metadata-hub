@@ -46,6 +46,20 @@ export class CrawlerController extends Page {
                 </div>
                 <hr>
                 <div class="row mt-3 mb-3">
+                    <div class="col">
+                        <h2 class="text-dark text-center">Status</h2>
+                        <p class="text-center">
+                            The crawler is currently
+                            <span id="crawler-status"></span>
+                            <span id="crawler-progress">.</span>
+                        <p>
+                        <p class="text-left">
+                            <pre><code id="config-value"></code></pre>
+                        </p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row mt-3 mb-3">
                     <div class="col" align="center">
                         <h2 class="text-dark">Actions</h2>
                     </div>
@@ -253,11 +267,42 @@ export class CrawlerController extends Page {
         `;
     }
 
+    updateStatus() {
+        this.restAPIFetcherCrawler.fetchGet("info", function (event) {
+            let status = event.data.message.status.toUpperCase();
+            let crawlerStatus = $("#crawler-status");
+            let crawlerProgress = $("#crawler-progress");
+            let crawlerConfig = $("#config-value");
+            crawlerStatus.removeClass();
+            crawlerStatus.addClass("font-weight-bold");
+            crawlerStatus.html(`${status}`);
+            if (status === "READY") {
+                crawlerStatus.addClass("text-success");
+                crawlerProgress.html("");
+                crawlerConfig.html("");
+                return;
+            }
+            let progress = event.data.message.progress;
+            crawlerProgress.html(`. Progress is ${progress} %.`);
+            console.log(event.data.message.config);
+            crawlerConfig.html(JSON.stringify(event.data.message.config, undefined, 4));
+            if (status === "PAUSED") {
+                crawlerStatus.addClass("text-info");
+            } else {
+                crawlerStatus.addClass("text-warning");
+            }
+        });
+    }
+
     onLoad() {
         $("#config").hide();
         $("#config-hr").hide();
         // Register callback functions for action buttons
         var self = this;
+        self.updateStatus();
+        setInterval(function() {
+            self.updateStatus()
+        }, 5000);
         $("#continue-button").click(function() {
             self.runActionWithMessage("continue");
         });
