@@ -3,10 +3,8 @@ import {Testname} from "./status/Testname";
 import {GraphiqlConsole} from "./graphiql/Graphiql-console";
 import {FormQueryEditor} from "./query/FormQueryEditor";
 import {GraphqlQueryEditor} from "./query/GraphqlQueryEditor";
-import {CrawlerConfig} from "./crawler/CrawlerConfig";
 import {HashQuery} from "./query/HashQuery";
 import {CrawlerController} from "./crawler/CrawlerController";
-import {CrawlerInfo} from "./crawler/CrawlerInfo";
 import {CrawlerScheduler} from "./crawler/CrawlerScheduler";
 import {ErrorPage} from "./ErrorPage";
 import {Logout} from "./logout/Logout";
@@ -155,9 +153,7 @@ export class Template {
 
         this.addNavGroup(2, "Crawler", n => {
             n.addOneNavElement(new NavElement(2, "Controller", "crawler-controller", t => {return new CrawlerController(t)}));
-            n.addOneNavElement(new NavElement(2, "Info", "crawler-info", t => {return new CrawlerInfo(t)}));
             n.addOneNavElement(new NavElement(2, "Scheduler", "crawler-scheduler", t => {return new CrawlerScheduler(t)}));
-            n.addOneNavElement(new NavElement(2, "Crawler Config", "crawler-config", t => {return new CrawlerConfig(t)}));
         });
 
 
