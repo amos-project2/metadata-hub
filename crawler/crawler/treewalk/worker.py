@@ -203,15 +203,7 @@ class Worker(multiprocessing.Process):
             _logger.error(f'Process {self.pid}: Error executing the exiftool in process.')
             return
 
-        # create the default insert for the database
-        insertin = ('INSERT INTO files '
-                    '(crawl_id, dir_path, name, type, size, creation_time, access_time, modification_time, metadata'
-                    ', file_hash, deleted) '
-                    'VALUES ')
-        # create the value string with the tree walk id already inserted
-        value = (f'\'{self._tree_walk_id}\', ')
         inserts = []
-
         for result in metadata:
             # get the exif output for file x
             insert_values = self.createInsert(self._tree_walk_id, result)
@@ -229,33 +221,37 @@ class Worker(multiprocessing.Process):
         # insert into the database
         try:
             # Insert the result in a batched query
+            print(x)
             self._db_connection.insert_new_record_files(inserts)
-            # Check if there was a previous entry in the database
-            # if yes: Set the tag in the database to true
-            toDelete = []
-            directories = set([x[1] for x in inserts])
-            try:
-                for dir in directories:
-                    file_ids = self._db_connection.check_hash(dir, self._tree_walk_id)
-                    if file_ids:
-                        toDelete.extend(file_ids)
-                if len(toDelete) > 0:
-                    self._db_connection.set_deleted(toDelete)
-            except Exception as e:
-                print(e)
 
         except Exception as e:
             print(e)
             _logger.warning(
                 'There was an error inserting the batched results, inserting individually.'
             )
-            # Try to insert each command indiviually and print out the problematic result
+            # Try to insert each command individually and print out the problematic result
             for insert in inserts:
                 try:
-                    self._db_connection.insert_new_record(insertin + insert[0])
-                    #TODO add deleted tags
-                except Exception as e:
+                    self._db_connection.insert_new_record_files([insert])
+                except:
                     _logger.warning('Failed inserting single file again.')
+
+        # Check if there was a previous entry in the database
+        # if yes: Set the tag in the database to true
+        toDelete = []
+        directories = set([x[1] for x in inserts])
+        try:
+            for dir in directories:
+                file_ids = self._db_connection.check_directory(dir)
+                if file_ids:
+                    toDelete.extend(file_ids)
+            if len(toDelete) > 0:
+                self._db_connection.set_deleted(toDelete)
+        except Exception as e:
+            print(e)
+            _logger.warning(
+                'There was an error setting the deleted tags. Manual check necessary!'
+            )
         clean_up()
 
 

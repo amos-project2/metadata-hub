@@ -3,3 +3,4 @@ flask>=1.1.2
 psutil>=5.7.0
 requests>=2.23.0
 psycopg2>=2.8.5
+PyPika>=0.37.7

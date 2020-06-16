@@ -101,7 +101,7 @@ class DatabaseConnection:
         return
 
     def insert_new_record_crawls(self, config:Config) -> int:
-        """Insert a new record to the crawls table. Used at the start of a crawl task.
+        """Insert a new record to the 'crawls' table. Used at the start of a crawl task.
            TODO: Add docstring
         Args:
             config (Config): Config for the crawl task.
@@ -154,7 +154,6 @@ class DatabaseConnection:
         curs = self.con.cursor()
         for insert in insert_values:
             query += curs.mogrify("(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s),", insert).decode('utf8')
-        curs = self.con.cursor()
         try:
             curs.execute(query[:-1])
         except:
@@ -200,15 +199,13 @@ class DatabaseConnection:
             curs.close()
             self.con.rollback()
 
-    def check_hash(self, path: str, crawl_id: int) -> List[int]:
-        """checks the database for a given file hash. Then checks if the directory path is the same.
+    def check_directory(self, path: str) -> List[int]:
+        """checks the database for a given directory. Returns all the most recent ids.
 
         Args:
-            fileHash (str): hash of the file to be checked
-            path (str): directory path the file should be in
-            crawl_id (int): current crawl_id
+            path (str): directory path to be checked
         Returns:
-            int: file id that is supposed to be deleted
+            List(int): file ids that are supposed to be deleted
         """
         files = Table('files')
         query = Query.from_(files)\
@@ -235,7 +232,13 @@ class DatabaseConnection:
 
         return file_ids
 
-    def set_deleted(self, file_ids: List[int]):
+    def set_deleted(self, file_ids: List[int]) -> None:
+        """Set every file in file_ids deleted and deleted_time value.
+
+        Args:
+            file_ids (List[int): List of file ids to be deleted
+        Returns:
+        """
         files = Table('files')
         query = Query.update(files)\
                 .set(files.deleted, 'True')\
