@@ -23,10 +23,11 @@ export class CrawlerController extends Page {
         var thisData = this;
         return `
             <div class="container">
-                <div class="row">
+                <div class="row mt-3 mb-3">
                     <div class="col" align="center">
-                        <h3>Information</h3>
-                        <p>
+                        <h2 class="text-dark">Information</h2>
+                        <p></p>
+                        <p style="text-align: left;">
                             This is the panel for controlling the crawler.
                             The crawler has three states:
                             <b>ready</b>, <b>running</b> and <b>paused</b>.
@@ -35,136 +36,146 @@ export class CrawlerController extends Page {
                             For example, stopping the crawler when it was running
                             will stop the current execution, but stopping when
                             the crawler was ready will have no consequences.
+                            Make sure to wait for the response if you invoked an
+                            action. You'll see an alert message at the bottom
+                            once the action has finished.
+                            Especially starting the crawler might take some time
+                            due to the generation of the work packages.
                         </p>
                     </div>
                 </div>
                 <hr>
-                <div class="row">
+                <div class="row mt-3 mb-3">
                     <div class="col" align="center">
-                        <h3>Actions</h3>
+                        <h2 class="text-dark">Actions</h2>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col" align="center">
-                        <button id="stop-button" type="button" class="btn btn-primary">
-                            STOP
-                        </button>
-                    </div>
-                    <div class="col">
+                <div class="row mt-1 mb-1">
+                    <div class="col-md-12 col-lg-8">
                         <p>
                             <b>Stop</b> the current execution.
-                        </p>
-                    </div>
-                    <div class="col">
-                        <p>
                             If the crawler is ready, the action will be ignored.
                             Otherwise, the running/paused execution will be aborted.
                         </p>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col" align="center">
-                        <button id="pause-button" type="button" class="btn btn-primary">
-                            PAUSE
+                    <div class="col-md-12 col-lg-2">
+                        <p></p>
+                    </div>
+                    <div class="col-md-12 col-lg-2 mb-5" align="center">
+                        <button id="stop-button" type="button" class="btn btn-primary btn-block font-weight-bold">
+                            STOP
                         </button>
                     </div>
-                    <div class="col">
+                </div>
+                <div class="row mt-1 mb-1">
+                    <div class="col-md-12 col-lg-8">
                         <p>
                             <b>Pause</b> the current execution.
-                        </p>
-                    </div>
-                    <div class="col">
-                        <p>
                             If the crawler is ready or already paused,
                             the action will be ignored.
                             Otherwise, it will pause the current exeution
                             so that it can be continued later on.
                         </p>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col" align="center">
-                        <button id="continue-button" type="button" class="btn btn-primary">
-                            CONTINUE
+                    <div class="col-md-12 col-lg-2">
+                        <p></p>
+                    </div>
+                    <div class="col-md-12 col-lg-2 mb-5" align="center">
+                        <button id="pause-button" type="button" class="btn btn-primary btn-block font-weight-bold">
+                            PAUSE
                         </button>
                     </div>
-                    <div class="col">
+                </div>
+                <div class="row mt-1 mb-1">
+                    <div class="col-md-12 col-lg-8">
                         <p>
                             <b>Continue</b> a paused execution of the crawler.
-                        </p>
-                    </div>
-                    <div class="col">
-                        <p>
                             If the crawler is ready or already running,
                             the action will be ignored.
                             Otherwise, it will continue the currently
                             paused execution.
                         </p>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col" align="center">
-                        <button id="shutdown-button" type="button" class="btn btn-primary">
-                            SHUTDOWN
+                    <div class="col-md-12 col-lg-2">
+                        <p></p>
+                    </div>
+                    <div class="col-md-12 col-lg-2 mb-5" align="center">
+                        <button id="continue-button" type="button" class="btn btn-primary btn-block font-weight-bold">
+                            CONTINUE
                         </button>
                     </div>
-                    <div class="col">
+                </div>
+                <div class="row mt-1 mb-1">
+                    <div class="col-md-12 col-lg-8">
                         <p>
                             <b>Shutdown</b> the crawler entirely.
-                        </p>
-                    </div>
-                    <div class="col">
-                        <p>
                             Stop a possible current execution and terminate
                             all crawler threads.
                         </p>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col" align="center">
-                        <button id="start-button" type="button" class="btn btn-primary">
-                            START
+                    <div class="col-md-12 col-lg-2">
+                        <p></p>
+                    </div>
+                    <div class="col-md-12 col-lg-2 mb-5" align="center">
+                        <button id="shutdown-button" type="button" class="btn btn-primary btn-block font-weight-bold">
+                            SHUTDOWN
                         </button>
                     </div>
-                    <div class="col">
+                </div>
+                <div class="row mt-1 mb-1">
+                    <div class="col-md-12 col-lg-8">
                         <p>
                             <b>Start</b> a crawler execution.
-                        </p>
-                    </div>
-                    <div class="col">
-                        <p>
                             Shows the configuration panel for a manual insertion
                             of the configuration data.
                         </p>
                     </div>
+                    <div class="col-md-12 col-lg-2">
+                        <p></p>
+                    </div>
+                    <div class="col-md-12 col-lg-2 mb-5" align="center">
+                        <button id="start-button" type="button" class="btn btn-primary btn-block font-weight-bold">
+                            START
+                        </button>
+                    </div>
                 </div>
                 <hr id="config-hr">
-                <div id="config" class="row">
+                <div id="config" class="row mt-3 mb-3">
                     <div class="col" align="center">
-                        <h3>Configuration</h3>
-                        <p>
+                        <h2 class="text-dark">Configuration</h2>
+                        <p></p>
+                        <p style="text-align: left">
                             <b>Please read before usage!</b>
-                        </p>
-                        <p>
                             This is the manual configuration panel.
                             Please input the list of directories separated by
-                            <b>;</b> in the following way:
-                            <br>
-                            <i>directoryA, True ; directoryB, False</i>
-                            <br>
-                            This input will crawl <i>directoryA</i> recursively
-                            and only files that are directly located in
-                            <i>directoryB</i>.
-                            The power level is an indicator for how many CPU
-                            cores will be used. A higher number will use more
-                            resources.
-                            The work package size defines how many files
-                            are combined in one work package for analysis.
-                            Please provide a number between 10 and 1000 here.
-                            If you want to stop a possible currently running
-                            execution and run the new one, set the update value
-                            to <i>Yes</i>, otherwise <i>No</i>.
+                            <code>;</code> in the following way:
                         </p>
+                        <p style="text-align: left">
+                            <code>
+                                directoryA, True ; directoryB, False
+                            </code>
+                        </p>
+                        <p style="text-align: left">
+                            This input will crawl <code>directoryA</code> recursively
+                            and only files that are directly located in
+                            <code>directoryB</code>.
+                            The <b>power level</b>
+                            is an indicator for how many CPU
+                            cores will be used.
+                            Setting this value to <code>4</code> will use all
+                            available physical cores, the value <code>1</code>
+                            will result in using about one quarter of the
+                            available cores.
+                            The <b>package size</b> defines how many files
+                            are combined in one work package for analysis.
+                            Please provide a number between <code>10</code>
+                            and <code>1000</code> here.
+                            A reliable default value is <code>250</code>.
+                            If you want to stop a possible currently running
+                            execution and run the new one, set the <b>update</b> value
+                            to <code>Yes</code>, otherwise <code>No</code>.
+                        </p>
+                        <p></p>
                         <form id="config-form">
                             <div class="form-group row directories">
                                 <label for="directories" class="col-sm-2 col-form-label">
@@ -219,23 +230,23 @@ export class CrawlerController extends Page {
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <div class="col">
-                                    <button type="submit" class="btn btn-primary">SUBMIT</button>
+                                <div class="col-12 col-md-4 pr-2 pl-2 pt-3">
+                                    <button type="submit" class="btn btn-primary btn-block font-weight-bold">SUBMIT</button>
                                 </div>
-                                <div class="col">
-                                    <button type="reset" class="btn btn-primary">CLEAR</button>
+                                <div class="col-12 col-md-4 pr-2 pl-2 pt-3">
+                                    <button type="reset" class="btn btn-primary btn-block font-weight-bold">CLEAR</button>
                                 </div>
-                                <div class="col">
-                                    <button type="reset" id="cancel-config" class="btn btn-primary">CANCEL</button>
+                                <div class="col-12 col-md-4 pr-2 pl-2 pt-3">
+                                    <button type="reset" id="cancel-config" class="btn btn-primary btn-block font-weight-bold">CANCEL</button>
                                 </div>
                             </div>
                         </form>
                     </div>
                 </div>
                 <hr>
-                <div class="row">
+                <div class="row mt-3 mb-3">
                     <div id="messages" class="col" align="center">
-                        <h3>Messages</h3>
+                        <p></p>
                     </div>
                 </div>
             </div>
@@ -282,6 +293,9 @@ export class CrawlerController extends Page {
             self.renderMessage(
                 event.data.success, event.data.message, event.data.command
             );
+            $('html, body').animate({
+                scrollTop: $("#messages").offset().top
+            }, "fast");
         });
     }
 
@@ -303,38 +317,38 @@ export class CrawlerController extends Page {
                 "powerLevel": "",
             }
         };
-        let splits = directories.split(";");
-        splits.forEach(function(item) {
-            let path = item.split(",")[0].trim();
-            let recursive = item.split(",")[1].trim().toLowerCase();
-            recursive = recursive === 'true';
-            console.log(recursive);
-            config["paths"]["inputs"].push({
-                "path": path,
-                "recursive": recursive
+        try {
+            let splits = directories.split(";");
+            splits.forEach(function(item) {
+                let path = item.split(",")[0].trim();
+                let recursive = item.split(",")[1].trim().toLowerCase();
+                let recursive_flag = false;
+                if (recursive === "true") {
+                    recursive_flag = true;
+                } else if (recursive === "false" ) {
+                    recursive_flag = false;
+                } else {
+                    throw "Invalid recursive option";
+                }
+                config["paths"]["inputs"].push({
+                    "path": path,
+                    "recursive": recursive_flag
+                });
             });
-        });
-
-        console.log(directories);
-        console.log(exiftool);
-        console.log(powerlevel);
-        console.log(packageSize);
-        console.log(update);
-
-
+        } catch (err) {
+            this.renderMessage(
+                false,
+                "Ooops, it seems like your input data was invalid :(",
+                "config"
+            );
+            return;
+        }
         config["paths"]["exiftool"] = exiftool;
         config["options"]["powerLevel"] = parseInt(powerLevel);
         config["options"]["packageSize"] = parseInt(packageSize);
         config["options"]["clearTrace"] = clearTrace === 'true';
-
-        // TODO: Call crawler API here and display the result
         let url = `start?config=${JSON.stringify(config)}&update=${update}`;
-        let self = this;
-        self.restAPIFetcherCrawler.fetchGet(url, function (event) {
-            console.log(event);
-        });
-
-
+        this.runActionWithMessage(url);
     }
 
     renderMessage(success, message, command) {
@@ -344,6 +358,7 @@ export class CrawlerController extends Page {
         if (success) {
             alertType = "alert-success";
             title = "Success";
+            message = "";
         } else {
             alertType = "alert-warning";
             title = "Warning";
@@ -352,14 +367,12 @@ export class CrawlerController extends Page {
             <div class="alert ${alertType} alert-dismissible fade show" role="alert">
                 <h4 class="alert-heading">${title} @ ${command}</h4>
                 <hr>
-                <p>${message}</p>
-                <hr>
-                <p>[${timestamp}]</p>
+                <p>${message} Time was: ${timestamp} </p>
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-        `)
+        `);
     }
 
 
