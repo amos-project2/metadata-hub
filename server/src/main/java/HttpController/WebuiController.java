@@ -46,7 +46,42 @@ public class WebuiController
     {
         String out = this.classPathFileLoader.loadFile("web-ui/index.html");
 
-        String content = out.toString().replaceAll("%PORT%", config.getProperty("server-port"));
+
+
+        /**
+         *         ***** EXAMPLE *****
+         *
+         *         graphQLApi: "graphql/",
+         *         serverApi: "api/",
+         *         crawlerApi: "crawlerapi/",
+         *         queryConstructorEnabled: true,
+         *         crawlerEnabled:true,
+         *         defaultUsername:"User",
+         *         adminLoginEnabeled:true,
+         *         enduserLoginEnabled:true,
+         *         autoLogin:"",
+         *         pageChangeAnimation:true,
+         *         version: "1.0.0"
+         */
+        String content = out.toString();
+
+        content = content.replaceAll("%graphQLApi%", "graphql/");
+        content = content.replaceAll("%serverApi%", "api/");
+        content = content.replaceAll("%crawlerApi%", "crawlerapi/");
+
+        System.out.println(config.getProperty("webui-queryConstructorEnabled"));
+
+
+        content = content.replaceAll("%queryConstructorEnabled%", config.getProperty("webui-queryConstructorEnabled"));
+        content = content.replaceAll("%crawlerEnabled%", config.getProperty("webui-crawlerEnabled"));
+        content = content.replaceAll("%defaultUsername%", config.getProperty("webui-defaultUsername"));
+        content = content.replaceAll("%adminLoginEnabeled%", config.getProperty("webui-adminLoginEnabeled"));
+        content = content.replaceAll("%enduserLoginEnabled%", config.getProperty("webui-enduserLoginEnabled"));
+        content = content.replaceAll("%autoLogin%", config.getProperty("webui-autoLogin"));
+        content = content.replaceAll("%pageChangeAnimation%", config.getProperty("webui-pageChangeAnimation"));
+
+        content = content.replaceAll("%version%", "1.0.0");
+
         return content;
     }
 

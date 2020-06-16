@@ -10,18 +10,18 @@
 
 <!--"admin" or "enduser" or "" at autoLogin-->
 <script>
-    window.myApplication={
-        graphQLApi: "graphql/",
-        serverApi: "api/",
-        crawlerApi: "crawlerapi/",
-        queryConstructorEnabled: true,
-        crawlerEnabled:true,
-        defaultUsername:"User",
-        adminLoginEnabeled:true,
-        enduserLoginEnabled:true,
-        autoLogin:"",
-        pageChangeAnimation:true,
-        version: "1.0.0"
+    window.myApplication = {
+        graphQLApi: "%graphQLApi%",
+        serverApi: "%serverApi%",
+        crawlerApi: "%crawlerApi%",
+        queryConstructorEnabled: %queryConstructorEnabled%,
+        crawlerEnabled: %crawlerEnabled%,
+        defaultUsername: "%defaultUsername%",
+        adminLoginEnabeled: %adminLoginEnabeled%,
+        enduserLoginEnabled: %enduserLoginEnabled%,
+        autoLogin: "%autoLogin%",
+        pageChangeAnimation: %pageChangeAnimation%,
+        version: "%version%"
     };
 </script>
 
