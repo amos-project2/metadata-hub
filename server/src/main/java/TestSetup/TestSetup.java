@@ -1,38 +1,36 @@
 package TestSetup;
 
-import Config.ApplicationConfig;
 import Config.Config;
-import Database.DatabaseProvider;
-import GraphQL.GraphQLDataFetchers;
-import GraphQL.GraphQLProvider;
-import JerseyServer.JerseyServer;
+import Config.Impl.ApplicationConfigImpl;
+import Database.Database;
+import GraphQL.Fetcher.MainGraphQLDataFetchers;
+import GraphQL.Provider.MainGraphQLProvider;
+import JerseyServer.HttpServer;
+import Start.DependenciesContainer;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import java.io.IOException;
-import java.util.Properties;
 
 public class TestSetup {
 
-    public static JerseyServer testServer;
+    public static HttpServer testServer;
     public static Client testClient;
 
-    public static void setupServer(){
+    public static void setupServer(DependenciesContainer dependenciesContainer){
         Config config = null;
         try {
-            config = new ApplicationConfig(null, System.getenv("METADATAHUB_SERVER_CONFIG")).getConfig();
+            config = new ApplicationConfigImpl(null, System.getenv("METADATAHUB_SERVER_CONFIG")).getConfig();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        DatabaseProvider databaseProvider = new DatabaseProvider(config);
-        GraphQLDataFetchers graphQLDataFetchers = new GraphQLDataFetchers(databaseProvider);
-        GraphQLProvider graphQLProvider = new GraphQLProvider(graphQLDataFetchers, databaseProvider);
-        try {
-            testServer = new JerseyServer(graphQLProvider.init().getGraphQL(), config);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Database database = dependenciesContainer.getInjector().getInstance(Database.class);
+        MainGraphQLDataFetchers mainGraphQLDataFetchers = dependenciesContainer.getInjector().getInstance(MainGraphQLDataFetchers.class); //new MainGraphQLDataFetchers(database);
+        MainGraphQLProvider mainGraphQLProvider = dependenciesContainer.getInjector().getInstance(MainGraphQLProvider.class); //new MainGraphQLProvider(mainGraphQLDataFetchers, database);
+//        try {
+            testServer = dependenciesContainer.getInjector().getInstance(HttpServer.class);//new HttpServer(mainGraphQLProvider.init().getGraphQL(), config);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         testServer.start();
     }
 

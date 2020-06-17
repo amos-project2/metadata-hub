@@ -14,144 +14,158 @@ export class FormQueryEditor extends Page {
         super(parent, identifier, mountpoint, titleSelector);
         this.title = "Form Query Editor";
         this.cacheLevel = 3;
-        this.graphQlFetcher=this.parent.dependencies.graphQlFetcher;
+        this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
         this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
         this.filterFirstElement = this.getFilterElement();
     }
 
     content() {
+
+        // language=HTML
         return `
-<form class="q-send-query-form-editor">
-  <div class="form-row">
+            <form class="q-send-query-form-editor">
+                <div class="form-row">
 
-    <div class="form-group col-md-6">
-      <label for="fq-query-Name">Query-Name <a class="pover" title="Query-Name" data-content="The Name, which is saved with the query here into the database to find it later again.">[?]</a></label>
-      <input type="text" class="form-control" id="fq-query-Name">
-    </div>
-    <div class="form-group col-md-6">
-      <label for="fq-owner">Owner <a class="pover" title="Owner" data-content="The Owner, which is saved with the query here into the database.">[?]</a></label>
-      <input type="text" class="form-control" id="fq-owner">
-    </div>
-  </div>
-
-
-<!--  <div class="form-row">-->
-<!--    <div class="form-group col-md-6">-->
-<!--      <label for="fq-filePattern">Pattern*</label>-->
-<!--      <input type="text" class="form-control" id="fq-filePattern">-->
-<!--    </div>-->
-<!--<div class="form-group col-md-6">-->
-<!--    <div class="custom-control custom-switch">-->
-<!--&lt;!&ndash;        <label for="fq-includeVsExclude">Include/Exclude</label><br>&ndash;&gt;-->
-<!--<br>-->
-<!--        <input type="checkbox" class="custom-control-input" id="fq-includeVsExclude">-->
-<!--        <label class="custom-control-label" for="fq-includeVsExclude">Include VS Exclude</label>-->
-<!--    </div>-->
-<!--</div>-->
-<!--</div>-->
+                    <div class="form-group col-md-6">
+                        <label for="fq-query-Name">Query-Name <a class="pover" title="Query-Name" data-content="The Name, which is saved with the query here into the database to find it later again.">[?]</a></label>
+                        <input type="text" class="form-control" id="fq-query-Name">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="fq-owner">Owner <a class="pover" title="Owner" data-content="The Owner, which is saved with the query here into the database.">[?]</a></label>
+                        <input type="text" class="form-control" id="fq-owner">
+                    </div>
+                </div>
 
 
-
-  <div class="form-row">
-    <div class="form-group col-md-6">
-      <label for="fq-createFileTimeRangeStart">Start-DateTime (File created)<a class="pover" title="Start-DateTime" data-content="It collects all files, which are older (created-time) than Start-DateTime">[?]</a></label>
-      <input type="text" class="form-control" id="fq-createFileTimeRangeStart" placeholder="2020-05-22 07:19:29">
-    </div>
-     <div class="form-group col-md-6">
-      <label for="fq-createFileTimeRangeEnd">End-DateTime (File created)<a class="pover" title="End-DateTime" data-content="It collects all files, which are younger (created-time) than End-DateTime">[?]</a></label>
-      <input type="text" class="form-control" id="fq-createFileTimeRangeEnd" placeholder="2020-07-28 20:35:22">
-    </div>
-    </div>
-
-
-   <div class="form-row">
-    <div class="form-group col-md-6">
-      <label for="fq-createFileTimeRangeStartUpdated">Start-DateTime (File modified)<a class="pover" title="Start-DateTime" data-content="It collects all files, which are older (modified-time) than Start-DateTime">[?]</a></label>
-      <input type="text" class="form-control" id="fq-createFileTimeRangeStartUpdated" placeholder="2020-05-22 07:19:29">
-    </div>
-     <div class="form-group col-md-6">
-      <label for="fq-createFileTimeRangeEndUpdated">End-DateTime (File modified)<a class="pover" title="End-DateTime" data-content="It collects all files, which are younger (modified-time) than End-DateTime">[?]</a></label>
-      <input type="text" class="form-control" id="fq-createFileTimeRangeEndUpdated" placeholder="2020-07-28 20:35:22">
-    </div>
-    </div>
+                <!--  <div class="form-row">-->
+                <!--    <div class="form-group col-md-6">-->
+                <!--      <label for="fq-filePattern">Pattern*</label>-->
+                <!--      <input type="text" class="form-control" id="fq-filePattern">-->
+                <!--    </div>-->
+                <!--<div class="form-group col-md-6">-->
+                <!--    <div class="custom-control custom-switch">-->
+                <!--&lt;!&ndash;        <label for="fq-includeVsExclude">Include/Exclude</label><br>&ndash;&gt;-->
+                <!--<br>-->
+                <!--        <input type="checkbox" class="custom-control-input" id="fq-includeVsExclude">-->
+                <!--        <label class="custom-control-label" for="fq-includeVsExclude">Include VS Exclude</label>-->
+                <!--    </div>-->
+                <!--</div>-->
+                <!--</div>-->
 
 
-  <div class="form-row">
-   <div class="form-group col-md-12">
-      <label for="fq-limit">Limit <a class="pover" title="Limit" data-content="The max output limit.<br>Empty means no limit.">[?]</a></label>
-      <input type="text" class="form-control" id="fq-limit">
-    </div>
-    </div>
-
-  <div class="form-row">
-     <div class="col-md-12"><hr></div>
-  </div>
-
-
-  <div class="form-row">
-<div class="col-md-12">Filter: <a class="pover" title="Filter" data-content="Select a filter option.<br>Specify on which metadataattribut you want to use the filter. In the last Input must insert the value<br>For example: Pattern include FileName dog">[?]</a></div>
-</div>
-
-<div class="fg-filter-container">
-${this.filterFirstElement}
-</div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="fq-createFileTimeRangeStart">Start-DateTime (File created)<a class="pover" title="Start-DateTime" data-content="It collects all files, which are older (created-time) than Start-DateTime">[?]</a></label>
+                        <input type="text" class="form-control" id="fq-createFileTimeRangeStart" placeholder="2020-05-22 07:19:29">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="fq-createFileTimeRangeEnd">End-DateTime (File created)<a class="pover" title="End-DateTime" data-content="It collects all files, which are younger (created-time) than End-DateTime">[?]</a></label>
+                        <input type="text" class="form-control" id="fq-createFileTimeRangeEnd" placeholder="2020-07-28 20:35:22">
+                    </div>
+                </div>
 
 
-  <div class="form-row">
-     <div class="col-md-12"><hr></div>
-  </div>
-
-  <div class="form-row">
-<div class="col-md-12">Which Attributes: <a class="pover" title="Which Attributes" data-content="Here you can limit the result to the specific metadata attributes.<br>If you dont add least one, then you get a result of all">[?]</a></div>
-</div>
-
-
-<div class="fg-attribut-container form-row">
-
-     <div class="form-group col-md-4 fg-attribut-element">
-          <input type="text" class="form-control attribut-element-input">
-     </div>
-</div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="fq-createFileTimeRangeStartUpdated">Start-DateTime (File modified)<a class="pover" title="Start-DateTime" data-content="It collects all files, which are older (modified-time) than Start-DateTime">[?]</a></label>
+                        <input type="text" class="form-control" id="fq-createFileTimeRangeStartUpdated" placeholder="2020-05-22 07:19:29">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="fq-createFileTimeRangeEndUpdated">End-DateTime (File modified)<a class="pover" title="End-DateTime" data-content="It collects all files, which are younger (modified-time) than End-DateTime">[?]</a></label>
+                        <input type="text" class="form-control" id="fq-createFileTimeRangeEndUpdated" placeholder="2020-07-28 20:35:22">
+                    </div>
+                </div>
 
 
-<button type="submit" class="btn btn-primary">Send</button>
-<button type="button" class="btn btn-primary open-query">Open Query</button>
-<button type="button" class="btn btn-primary send-to-graphiql">Send to GraphiQL</button>
-<button type="button" class="btn btn-primary clear-all">Clear All</button>
-</form>
-<br>
-<div class="resultView1"></div>
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        <label for="fq-limit">Limit <a class="pover" title="Limit" data-content="The max output limit.<br>Empty means no limit.">[?]</a></label>
+                        <input type="text" class="form-control" id="fq-limit">
+                    </div>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="fq-showDeleted">
+                    <label class="form-check-label" for="fq-showDeleted">
+                        Show deleted files
+                        <a class="pover" title="Show deleted files" data-content="If checked deleted files that are still in the database are also shown.">[?]</a>
+                    </label>
+                </div>
+
+                <div class="form-row">
+                    <div class="col-md-12">
+                        <hr>
+                    </div>
+                </div>
 
 
-${this.getModalCode()}
+                <div class="form-row">
+                    <div class="col-md-12">Filter: <a class="pover" title="Filter" data-content="Select a filter option.<br>Specify on which metadataattribut you want to use the filter. In the last Input must insert the value<br>For example: Pattern include FileName dog">[?]</a></div>
+                </div>
 
-`;
+                <div class="fg-filter-container">
+                    ${this.filterFirstElement}
+                </div>
+
+
+                <div class="form-row">
+                    <div class="col-md-12">
+                        <hr>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="col-md-12">Which Attributes: <a class="pover" title="Which Attributes" data-content="Here you can limit the result to the specific metadata attributes.<br>If you dont add least one, then you get a result of all">[?]</a></div>
+                </div>
+
+
+                <div class="fg-attribut-container form-row">
+
+                    <div class="form-group col-md-4 fg-attribut-element">
+                        <input type="text" class="form-control attribut-element-input">
+                    </div>
+                </div>
+
+
+                <button type="submit" class="btn btn-primary">Send</button>
+                <button type="button" class="btn btn-primary open-query">Open Query</button>
+                <button type="button" class="btn btn-primary send-to-graphiql">Send to GraphiQL</button>
+                <button type="button" class="btn btn-primary clear-all">Clear All</button>
+            </form>
+            <br>
+            <div class="resultView1"></div>
+
+
+            ${this.getModalCode()}
+
+            `;
 
 
     }
 
     getModalCode() {
 
+        // language=HTML
         return `
-<div class="modal fade" id="graphql-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">GraphQl Code Inspection</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body" >
-        <pre id="graphql-code-content"></pre>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary send-to-graphiql" data-dismiss="modal">Send to GraphiQL</button>
-        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>`;
+            <div class="modal fade" id="graphql-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">GraphQl Code Inspection</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <pre id="graphql-code-content"></pre>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary send-to-graphiql" data-dismiss="modal">Send to GraphiQL</button>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
 
     }
 
@@ -161,10 +175,12 @@ ${this.getModalCode()}
 
         this.helperMethod();
         this.helperMethod2();
+        this.inputValidation();
+        this.inputSuggestion();
         let thisdata = this;
 
         $(".q-send-query-form-editor").submit(function (event) {
-              event.preventDefault();
+            event.preventDefault();
             thisdata.resultPresenter.generateResultAndInjectIntoDom(thisdata.buildAndGetGraphQlQuery());
 
             // thisdata.graphQlFetcher.fetchAdvanced(thisdata.buildAndGetGraphQlQuery(), function (sucess, json, jsonString) {
@@ -276,30 +292,43 @@ ${this.getModalCode()}
         });
     }
 
+    inputValidation(){
 
+    }
 
-
+    inputSuggestion(){
+        // $( function() {
+        //     var availableTags = [
+        //         "searchForFileMetadata"
+        //     ];
+        //     $( "#fq-query-Name" ).autocomplete({
+        //         source: availableTags
+        //     });
+        // } );
+    }
 
 
     buildAndGetGraphQlQuery() {
 
-       // let filepattern = $("#fq-filePattern").val();
-      //  let checkbox = $("#fq-includeVsExclude").prop('checked');
+        // let filepattern = $("#fq-filePattern").val();
+        //  let checkbox = $("#fq-includeVsExclude").prop('checked');
         let limit = $("#fq-limit").val();
+        let showDeleted = $("#fq-showDeleted").prop('checked');
+        let deleted = "";
         let startDate = $("#fq-createFileTimeRangeStart").val();
         let endDate = $("#fq-createFileTimeRangeEnd").val();
 
         let startDateUpdated = $("#fq-createFileTimeRangeStartUpdated").val();
         let endDateUpdated = $("#fq-createFileTimeRangeEndUpdated").val();
 
-       // if (filepattern !== "") {filepattern = `pattern: "${filepattern}",`;} else {filepattern = "";}
-       // if (!checkbox) {checkbox = "option: included,";} else {checkbox = "option: excluded,";}
+        // if (filepattern !== "") {filepattern = `pattern: "${filepattern}",`;} else {filepattern = "";}
+        // if (!checkbox) {checkbox = "option: included,";} else {checkbox = "option: excluded,";}
         if (limit !== "") {limit = `limitFetchingSize: ${limit},\n  `;} else {limit = "";}
+        if (showDeleted) {deleted = `showDeleted: true`;};
         if (startDate !== "") {startDate = `start_creation_time: "${startDate}",\n  `;} else {startDate = "";}
         if (endDate !== "") {endDate = `end_creation_time: "${endDate}",\n  `;} else {endDate = "";}
         if (startDateUpdated !== "") {startDateUpdated = `start_modification_time: "${startDateUpdated}",\n  `;} else {startDateUpdated = "";}
         if (endDateUpdated !== "") {endDateUpdated = `end_modification_time: "${endDateUpdated}",\n  `;} else {endDateUpdated = "";}
-
 
 
         let attributes = "";
@@ -316,9 +345,9 @@ ${this.getModalCode()}
             }
         }
 
-        let options_options="";
-        let options_attributes="";
-        let options_values="";
+        let options_options = "";
+        let options_attributes = "";
+        let options_values = "";
         {
             $(".fg-metadata-attribute").each(function () {
                 if ($(this).val() !== "") {
@@ -337,9 +366,10 @@ ${this.getModalCode()}
             }
         }
 
-
-        let query_header=`
+//dont change the formatting here, cause this has a direct change to the formatting in the graphql-inspection-window
+        let query_header = `
    ${limit}
+   ${deleted}
    ${startDate} ${endDate} ${startDateUpdated} ${endDateUpdated}
    ${options_options} ${options_attributes} ${options_values}
    ${attributes}
@@ -348,7 +378,7 @@ ${this.getModalCode()}
         if (query_header.trim() === "") {
             query_header = "";
         } else {
-            query_header=`(
+            query_header = `(
             ${query_header}
   )`
         }
@@ -368,6 +398,7 @@ query
     access_time,
     modification_time,
     file_hash,
+    deleted,
     metadata
     {
       name,
@@ -375,8 +406,9 @@ query
     }
   }
 }`;
+//END dont do a change
 
-        return query
+        return query;
 
 
 // searchForFileMetadata(file_ids: [Int!], crawl_ids: [Int!], dir_path: String, dir_path_option: MetadataOption,
@@ -389,32 +421,31 @@ query
     }
 
 
-
     getFilterElement() {
 
         //included, excluded, equal, bigger smaller, exists
+
+        // language=HTML
         return `
-  <div class="form-row">
-     <div class="input-group mb-3">
-          <div class="input-group-prepend">
-                  <select class="custom-select fg-filter-function">
-                    <option selected value="included">Pattern included</option>
-                    <option value="excluded">Pattern excluded</option>
-                    <option value="equal">Equal</option>
-                    <option value="exists">Exists (Attribute)</option>
-                    <option value="bigger">Greather Than</option>
-                    <option value="smaller">Lower Than</option>
-                  </select>
-                  <div class="input-group-text" style="display:none;">
-                        <input type="checkbox" checked class="fg-include-exclude">
-                  </div>
-          </div>
-          <input type="text" class="form-control fg-metadata-attribute" placeholder="Metadata-Attribute">
-          <input type="text" class="form-control fg-metadata-value" placeholder="Value">
-       </div>
-    </div>`;
-
-
+            <div class="form-row">
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <select class="custom-select fg-filter-function">
+                            <option selected value="included">Pattern included</option>
+                            <option value="excluded">Pattern excluded</option>
+                            <option value="equal">Equal</option>
+                            <option value="exists">Exists (Attribute)</option>
+                            <option value="bigger">Greather Than</option>
+                            <option value="smaller">Lower Than</option>
+                        </select>
+                        <div class="input-group-text" style="display:none;">
+                            <input type="checkbox" checked class="fg-include-exclude">
+                        </div>
+                    </div>
+                    <input type="text" class="form-control fg-metadata-attribute" placeholder="Metadata-Attribute">
+                    <input type="text" class="form-control fg-metadata-value" placeholder="Value">
+                </div>
+            </div>`;
     }
 
 

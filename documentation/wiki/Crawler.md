@@ -6,8 +6,10 @@ This section will shortly explain how to access the tree walk interface
 The interface can be accessed in a web browser, by using the address and port specified while
 starting the docker container. The following gif shows an example of the interface:
 
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/263445eee036d61e2c3ab2df83f7db4062034234/documentation/images/crawler/config_top_prev.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/263445eee036d61e2c3ab2df83f7db4062034234/documentation/images/crawler/config_top.png)
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/263445eee036d61e2c3ab2df83f7db4062034234/documentation/images/crawler/config_bot_prev.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/263445eee036d61e2c3ab2df83f7db4062034234/documentation/images/crawler/config_bot.png)
 
-* [Interface access example](https://raw.githubusercontent.com/amos-project2/metadata-hub/eda6d067e7121ea233456067e1e84e53a50aa9c1/documentation/gifs/crawler-config.gif)
+* [Example access (gif)](https://raw.githubusercontent.com/amos-project2/metadata-hub/eda6d067e7121ea233456067e1e84e53a50aa9c1/documentation/gifs/crawler-config.gif)
 
 
 The different options have the following meaning:

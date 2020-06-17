@@ -32,14 +32,6 @@
                         "$ref": "#/definitions/root"
                     }
                 },
-                "output": {
-                    "description": "Output directory (temporary)",
-                    "type": "string"
-                },
-                "trace": {
-                    "description": "Trace file (temporary)",
-                    "type": "string"
-                },
                 "exiftool": {
                     "description": "Executable of exiftool",
                     "type": "string",
@@ -51,8 +43,6 @@
             },
             "required": [
                 "inputs",
-                "output",
-                "trace",
                 "exiftool"
             ]
         },

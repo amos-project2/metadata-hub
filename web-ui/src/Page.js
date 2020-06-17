@@ -1,11 +1,13 @@
 export class Page {
     constructor(parent, identifier, mountpoint = ".our-content", titleSelector = ".our-title") {
         this.parent = parent;
+        this.config=parent.dependencies.config;
         this.identifier = identifier;
         this.moutpoint = mountpoint;
         this.atLeastOnceMounted = false;
         this.titleSelector = titleSelector;
         this.title = "one Page Title"; //to override
+        this.titleActive = true;//to override with false, if you dont want present the title
 
 
         /**
@@ -22,6 +24,11 @@ export class Page {
         this.counter = 0; //private attribut
     }
 
+    //Dont override
+    setIdentifier(identifier) {
+        this.identifier = identifier;
+    }
+
     //to-ovveride
     onRegister() {}
 
@@ -29,11 +36,13 @@ export class Page {
     mount() {
 
         let thisdata = this;
+        $(this.titleSelector).html("");//delete old titel in all cases
+        if (this.titleActive) {$(this.titleSelector).html(this.title);}//only set the new one if active
+        $("title").html(this.title);
 
         function createRandomElem() {
             thisdata.counter++;
             let elem = "page-" + thisdata.identifier + thisdata.counter;
-            $(thisdata.titleSelector).html(thisdata.title);
             $(thisdata.moutpoint).append(`<div class="page-content ${elem}" style="display:none;"></div>`);
             return elem;
         }
@@ -77,10 +86,14 @@ export class Page {
 
         this.onLoad();
 
-        $("." + elem).show(1000);
+        if (this.config.pageChangeAnimation) {
+            $("." + elem).show(1000);
+        } else {
+            $("." + elem).show(1);
+        }
+
 
     }
-
 
 
     //to-ovveride
@@ -95,9 +108,9 @@ export class Page {
 
     init_popover() {
 
-        $('.pover').attr( "href", "#" );
-        $('.pover').attr( "tabindex", "0" );
-        $('.pover').click(function(event) {
+        $('.pover').attr("href", "#");
+        $('.pover').attr("tabindex", "0");
+        $('.pover').click(function (event) {
             event.preventDefault();
         });
         $('.pover').popover({
@@ -164,8 +177,6 @@ export class Page {
                 break;
         }
     }
-
-
 
 
     //to-ovveride

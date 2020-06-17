@@ -21,6 +21,7 @@ from . import parsing
 import crawler.treewalk as treewalk
 import crawler.services.config as config_service
 import crawler.services.environment as environment
+import crawler.communication as communication
 
 
 app = flask.Flask(
@@ -50,18 +51,14 @@ def _get_response(
     Returns:
         flask.Response: [description]
     """
-    if status_ok:
-        data = {'message': message}
-        resp = flask.Response(
-            json.dumps(data),
-            status=defaults.STATUS_OK,
-            mimetype=defaults.MIMETYPE_JSON
-        )
-        return resp
-    data = {'error': message}
+    data = {
+        'message': message,
+        'success': status_ok,
+        'command': command
+    }
     resp = flask.Response(
         json.dumps(data),
-        status=error_code,
+        status=defaults.STATUS_OK,
         mimetype=defaults.MIMETYPE_JSON
     )
     return resp
@@ -81,8 +78,7 @@ def pause() -> flask.Response:
         flask.Response: HTTP response
 
     """
-    treewalk.pause()
-    status_ok, message, command = treewalk.get_response()
+    status_ok, message, command = treewalk.pause()
     return _get_response(
         status_ok=status_ok,
         message=message,
@@ -104,8 +100,7 @@ def unpause() -> flask.Response:
         flask.Response: HTTP response
 
     """
-    treewalk.unpause()
-    status_ok, message, command = treewalk.get_response()
+    status_ok, message, command = treewalk.unpause()
     return _get_response(
         status_ok=status_ok,
         message=message,
@@ -127,8 +122,7 @@ def stop() -> flask.Response:
         flask.Response: HTTP response
 
     """
-    treewalk.stop()
-    status_ok, message, command = treewalk.get_response()
+    status_ok, message, command = treewalk.stop()
     return _get_response(
         status_ok=status_ok,
         message=message,
@@ -148,11 +142,10 @@ def info() -> flask.Response:
         flask.Response: HTTP response
 
     """
-    treewalk.info()
-    status_ok, message, command = treewalk.get_response()
+    status_ok, data, command = treewalk.info()
     return _get_response(
         status_ok=status_ok,
-        message=message,
+        message=data,
         command=command,
         error_code=defaults.STATUS_INTERNAL_SERVER_ERROR
     )
@@ -172,22 +165,22 @@ def start() -> flask.Response:
     """
     config = flask.request.args.get('config')
     if config is None:
-        msg = {'info': 'Provide config or filepath via ?config=<your-config>'}
-        resp = flask.Response(
-            json.dumps(msg),
-            status=defaults.STATUS_BAD_REQUEST,
-            mimetype=defaults.MIMETYPE_JSON
+        resp = _get_response(
+            status_ok=False,
+            message='Provide config or filepath via ?config=<your-config>',
+            command='start',
+            error_code=defaults.STATUS_INTERNAL_SERVER_ERROR
         )
         return resp
     parser = config_service.ConfigParser(config)
     try:
         config = parser.parse()
     except config_service.ConfigParsingException as error:
-        msg = {'error': str(error)}
-        resp = flask.Response(
-            json.dumps(msg),
-            status=defaults.STATUS_BAD_REQUEST,
-            mimetype=defaults.MIMETYPE_JSON
+        resp = _get_response(
+            status_ok=False,
+            message=str(error),
+            command='start',
+            error_code=defaults.STATUS_INTERNAL_SERVER_ERROR
         )
         return resp
     update = flask.request.args.get('update', '').lower()
@@ -195,8 +188,7 @@ def start() -> flask.Response:
         update = True
     else:
         update = False
-    treewalk.start(config, update)
-    status_ok, message, command = treewalk.get_response()
+    status_ok, message, command = treewalk.start(config, update)
     return _get_response(
         status_ok=status_ok,
         message=message,
@@ -219,8 +211,7 @@ def config():
         config = parser.parse()
     except config_service.ConfigParsingException as error:
         return flask.render_template('config.html', message=str(error))
-    treewalk.start(config, update)
-    status_ok, message, command = treewalk.get_response()
+    status_ok, message, command = treewalk.start(config, update)
     if status_ok:
         return flask.render_template('config.html', message='Success')
     return flask.render_template('config.html', message=message)
@@ -228,19 +219,22 @@ def config():
 
 @app.route('/shutdown', methods=['GET', 'POST'])
 def shutdown():
+    # FIXME: Get response from interface and evaluate
     treewalk.shutdown()
+    communication.database_updater_input.put(
+        (communication.DATABASE_UPDATER_SHUTDOWN, None)
+    )
     func = flask.request.environ.get('werkzeug.server.shutdown')
     if func is None:
         # TODO handle error
         return None
     func()
-    resp = flask.Response(
-        status=defaults.STATUS_OK,
-        mimetype=defaults.MIMETYPE_JSON
+    return _get_response(
+        status_ok=True,
+        message='Shutting down. Bye!',
+        command='shutdown',
+        error_code=defaults.STATUS_INTERNAL_SERVER_ERROR
     )
-    return resp
-
-
 
 @app.route('/', methods=['GET'])
 def home():

@@ -16,6 +16,7 @@ services:
             - ${CRAWLER_FILESYSTEM}:/filesystem
         ports:
             - ${CRAWLER_PORT}:9000
+        restart: on-failure:5
 
     database:
         image: "postgres:latest"
