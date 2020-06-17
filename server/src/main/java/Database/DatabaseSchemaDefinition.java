@@ -20,5 +20,7 @@ public class DatabaseSchemaDefinition {
     public static final String FILES_ACCESS_TIME = "access_time";
     public static final String FILES_MODIFICATION_TIME = "modification_time";
     public static final String FILES_FILE_HASH = "file_hash";
+    public static final String FILES_DELETED = "deleted";
+    public static final String FILES_DELETED_TIME = "deleted_time";
 
 }

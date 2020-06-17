@@ -1,7 +1,7 @@
 package GraphQL.Provider.Impl;
 
 import GraphQL.Fetcher.MainGraphQLDataFetchers;
-import GraphQL.GraphQLSchemaDefinition;
+import GraphQL.Model.GraphQLSchemaDefinition;
 import GraphQL.Provider.MainGraphQLProvider;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;

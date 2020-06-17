@@ -1,5 +1,7 @@
 package Start;
 
+import Benchmark.BenchmarkTest;
+import Benchmark.IndexTest;
 import Config.ApplicationConfig;
 import Config.Config;
 import Config.JsonValideException;
@@ -42,6 +44,7 @@ public class Start
         this.startApplication();
         this.executeRuntimeTests();
         this.executeBenchmark();
+        this.executeIndex();
 
         System.out.println("all services are started");
         Thread.currentThread().join();
@@ -110,9 +113,19 @@ public class Start
 
     private  void executeBenchmark() throws SQLException, InterruptedException
     {
-       // new BenchmarkTest(this.dependenciesContainer).doBenchmark();
+        boolean enableBenchmark = false;
+        if(enableBenchmark){
+             new BenchmarkTest(this.dependenciesContainer).doBenchmark();
+        }
     }
 
+    private  void executeIndex() throws SQLException, InterruptedException
+    {
+        boolean enableIndexTest = false;
+        if(enableIndexTest){
+            new IndexTest(this.dependenciesContainer).test();
+        }
+    }
 
 
 

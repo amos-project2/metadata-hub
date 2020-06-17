@@ -9,6 +9,7 @@ export class GraphiqlConsole extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         super(parent, identifier, mountpoint, titleSelector);
         this.title = "GraphiQl-Console";
+        this.titleActive = false; //It is not necessary to show there information, its redundant and space-wasting
         this.init = false;
         this.cacheLevel = 3;
         this.graphQlFetcher=this.parent.dependencies.graphQlFetcher;

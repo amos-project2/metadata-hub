@@ -1,6 +1,6 @@
 package GraphQL;
 
-import GraphQL.Fetcher.Impl.MainGraphQLDataFetchersImpl;
+import GraphQL.Fetcher.MainGraphQLDataFetchersImpl;
 import GraphQL.Fetcher.MainGraphQLDataFetchers;
 import GraphQL.Provider.Impl.MainGraphQLProviderImpl;
 import com.google.inject.AbstractModule;

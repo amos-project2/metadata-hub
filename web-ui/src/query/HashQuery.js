@@ -11,29 +11,27 @@ export class HashQuery extends Page {
     }
 
     content() {
+        // language=HTML
         return `
+            <form class="q-send-hash-editor">
 
-<form class="q-send-hash-editor">
-
-<div class="form-group" >
- <label for="q_textInput">File-Hash</label>
-   <input type="text" class="form-control" id="h-input" placeholder="File-Hash">
-</div>
-
-
-<div class="form-group">
-<label for="fileSelection">Select a file to calculate the sha256 hash</label>
-<input type="file" class="form-control-file" id="hash_file">
-</div>
-
-<br>
-  <button type="submit" class="btn btn-primary">Send</button>
-
-</form>
-<br>
-<div class="resultView2"></div>
+                <div class="form-group">
+                    <label for="q_textInput">File-Hash</label>
+                    <input type="text" class="form-control" id="h-input" placeholder="File-Hash">
+                </div>
 
 
+                <div class="form-group">
+                    <label for="fileSelection">Select a file to calculate the sha256 hash</label>
+                    <input type="file" class="form-control-file" id="hash_file">
+                </div>
+
+                <br>
+                <button type="submit" class="btn btn-primary">Send</button>
+
+            </form>
+            <br>
+            <div class="resultView2"></div>
         `;
     }
 
@@ -41,7 +39,6 @@ export class HashQuery extends Page {
         $(".resultView2").html(this.resultPresenter.getHtml());
 
         let thisdata = this;
-
 
 
         $(".q-send-hash-editor").submit(function (event) {
@@ -53,12 +50,12 @@ export class HashQuery extends Page {
         var sha256 = require('js-sha256');
 
         var input = $("#hash_file");
-        input.bind('change', function(event) {
+        input.bind('change', function (event) {
 
             var file = event.target.files[0];
             var reader = new FileReader();
 
-            reader.onload = function(event){
+            reader.onload = function (event) {
                 var binary = event.target.result;
                 var sha_hash = sha256.update(binary);
                 $("#h-input").val(sha_hash);
@@ -71,26 +68,26 @@ export class HashQuery extends Page {
 
     getQuery() {
         return `
-        query
-{
-  searchForFileMetadata(file_hashes: ["${$("#h-input").val()}"])
-  {
-    id,
-    crawl_id,
-    dir_path,
-    name,
-    type,
-    creation_time,
-    access_time,
-    modification_time,
-    file_hash,
-    metadata
-    {
-      name,
-      value,
-    }
-  }
-}
+            query
+            {
+              searchForFileMetadata(file_hashes: ["${$("#h-input").val()}"])
+              {
+                id,
+                crawl_id,
+                dir_path,
+                name,
+                type,
+                creation_time,
+                access_time,
+                modification_time,
+                file_hash,
+                metadata
+                {
+                  name,
+                  value,
+                }
+              }
+            }
         `;
     }
 

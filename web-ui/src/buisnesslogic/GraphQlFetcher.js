@@ -1,3 +1,5 @@
+
+
 export class GraphQlFetcher {
 
     constructor(endpoint) {
@@ -36,15 +38,16 @@ export class GraphQlFetcher {
         this.fetchB(query).then(function (response) {
             if (response.ok)
                 return response.json();
-            else
-                func(false, null, 'Error in the HTTP-Answer');
-            // throw new Error('Error in the HTTP-Answer');
+            else {
+                //func(false, null, 'Error in the HTTP-Answer');
+                throw new Error('HTTP-ERROR: ' + response.statusText);
+            }
         })
             .then(function (json) {
                 func(true, json, JSON.stringify(json, undefined, 2));
             })
             .catch(function (err) {
-                func(false, null, JSON.stringify(json, undefined, 2));
+                func(false, null, err.message);
             });
 
     }

@@ -64,7 +64,47 @@
         },
         "server-port": {
             "$ref": "#/definitions/port"
+        },
+
+        "webui-queryConstructorEnabled": {
+           "description": "activate/deactivate the Query-Constructor in the webui",
+           "type": "boolean"
+        },
+
+        "webui-crawlerEnabled": {
+           "description": "activate/deactivate the Crawler-Controlling in the webui",
+           "type": "boolean"
+        },
+
+        "webui-defaultUsername": {
+           "description": "Insert in the loginfield a default Username",
+           "type": "string"
+        },
+
+        "webui-adminLoginEnabeled": {
+           "description": "activate/deactivate the loginpossibility for the admin-role",
+           "type": "boolean"
+        },
+
+        "webui-enduserLoginEnabled": {
+           "description": "activate/deactivate the loginpossibility for the enduser-role",
+           "type": "boolean"
+        },
+
+        "webui-autoLogin": {
+           "description": "autologin as a enduser or admin or deactivate autologin with an empty string",
+           "type": "string",
+           "enum": [
+               "admin",
+               "enduser",
+               ""
+           ]
+        },
+        "webui-pageChangeAnimation": {
+           "description": "activate/deactivate the main animations in the webui",
+           "type": "boolean"
         }
+
     },
     "required": [
         "database-name",
@@ -77,7 +117,14 @@
         "crawler-db-update-interval",
         "crawler-logging-level",
         "server-host",
-        "server-port"
+        "server-port",
+        "webui-queryConstructorEnabled",
+        "webui-crawlerEnabled",
+        "webui-defaultUsername",
+        "webui-adminLoginEnabeled",
+        "webui-enduserLoginEnabled",
+        "webui-autoLogin",
+        "webui-pageChangeAnimation"
     ]
 }
 

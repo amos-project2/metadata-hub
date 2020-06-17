@@ -1,9 +1,10 @@
-import {Page} from "./Page";
+import {Page} from "../Page";
 
-export class ExamplePage extends Page {
+export class CrawlerScheduler extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         super(parent, identifier, mountpoint, titleSelector);
-        this.title = "Example Page";
+        this.title = "Crawler Scheduler";
+        this.restAPIFetcherCrawler=this.parent.dependencies.restApiFetcherCrawler;
         this.cacheLevel = 3;
         //use 0 for no caching (the dom for this page will be deleted and onMound/onUnMount is called each enter and leaving the page here)
         //use 3 for complete caching(the dome for this page stay after leaving
