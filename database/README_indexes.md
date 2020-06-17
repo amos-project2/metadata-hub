@@ -202,6 +202,12 @@ End index test!
 **************
 ```
 
+### Index Insertion Times
+
+The insertion times of the crawler with and without the indexes can be found [here](https://drive.google.com/drive/folders/1_ZKsWZbUbNF59RixjDvktCSrTypWAz7w)
+
+But these also need to be tested again with a bigger test set.
+
 <br>
 <br>
 
