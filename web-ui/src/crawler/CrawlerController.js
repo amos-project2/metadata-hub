@@ -20,6 +20,9 @@ export class CrawlerController extends Page {
 
         this.infoTimer = null;
         this.crawlerLastInfoState = "null";
+        this.lastUserAction = "null";
+        this.progressedWithoutCriticalUserInteraction=false;
+        this.isSubmitted=false;
 
     }
 
@@ -56,6 +59,12 @@ export class CrawlerController extends Page {
                             The crawler is currently
                             <span id="crawler-status"></span>
                             <span id="crawler-progress">.</span>
+
+                            <div class="progress" style="height:25px">
+                                <div class="progress-bar my-progress-bar " role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                            </div>
+
+
                         <p>
                         <p class="text-left">
                             <pre><code id="config-value"></code></pre>
@@ -279,9 +288,11 @@ export class CrawlerController extends Page {
         this.restAPIFetcherCrawler.fetchGet("info", function (event) {
             console.log(event);
             thisdata.updateControllerElements(event.data.message.status);
+            thisdata.update100PercentProgressBar(event.data.message.status);
             let status = event.data.message.status.toUpperCase();
             let crawlerStatus = $("#crawler-status");
             let crawlerProgress = $("#crawler-progress");
+            let crawlerProgressBar= $(".my-progress-bar");
             let crawlerConfig = $("#config-value");
             crawlerStatus.removeClass();
             crawlerStatus.addClass("font-weight-bold");
@@ -293,7 +304,10 @@ export class CrawlerController extends Page {
                 return;
             }
             let progress = event.data.message.progress;
+            thisdata.progressedWithoutCriticalUserInteraction=true;
             crawlerProgress.html(`. Progress is ${progress} %.`);
+            crawlerProgressBar.css('width', `${progress}%`);
+            crawlerProgressBar.html(`${progress}%`);
             console.log(event.data.message.config);
             crawlerConfig.html(JSON.stringify(event.data.message.config, undefined, 4));
             if (status === "PAUSED") {
@@ -302,6 +316,30 @@ export class CrawlerController extends Page {
                 crawlerStatus.addClass("text-warning");
             }
         });
+    }
+
+    update100PercentProgressBar(crawlerState) {
+        if(this.isSubmitted && crawlerState==="ready"){
+            let crawlerProgressBar= $(".my-progress-bar");
+            crawlerProgressBar.css('width', `100%`);
+            crawlerProgressBar.html(`100%`);
+        }
+
+        //TODO fix it
+
+        // if (crawlerState === "ready" && (this.progressedWithoutCriticalUserInteraction)) {
+        //
+        //     let crawlerProgressBar= $(".my-progress-bar");
+        //     crawlerProgressBar.css('width', `100%`);
+        //     crawlerProgressBar.html(`100%`);
+        // }
+
+
+
+        this.isSubmitted=false;
+
+
+
     }
 
     updateControllerElements(crawlerState) {
@@ -372,21 +410,30 @@ export class CrawlerController extends Page {
 
 
         $("#continue-button").click(function () {
+            self.lastUserAction = "continue";
             self.runActionWithMessage("continue");
+            self.progressedWithoutCriticalUserInteraction=true;
         });
         $("#pause-button").click(function () {
+            self.lastUserAction = "pause";
             self.runActionWithMessage("pause");
+            self.progressedWithoutCriticalUserInteraction=false;
         });
         $("#stop-button").click(function () {
+            self.lastUserAction = "stop";
             self.runActionWithMessage("stop");
+            self.progressedWithoutCriticalUserInteraction=false;
         });
         $("#shutdown-button").click(function () {
+            self.lastUserAction = "shutdown";
             self.runActionWithMessage("shutdown");
+            self.progressedWithoutCriticalUserInteraction=false;
         });
 
         $("#start-button").click(function () {
             $("#config").show(200);
             $("#config-hr").show(200);
+            self.progressedWithoutCriticalUserInteraction=false;
         });
 
         $("#cancel-config").click(function () {
@@ -408,7 +455,7 @@ export class CrawlerController extends Page {
         self.updateStatus();
         this.infoTimer = setInterval(function () {
             self.updateStatus()
-        }, 5000);
+        }, 2000);
 
 
     }
@@ -487,12 +534,21 @@ export class CrawlerController extends Page {
         //we hide directly
         $("#config").hide(500);
         $("#config-hr").hide(500);
+
+        let crawlerProgressBar= $(".my-progress-bar");
+        crawlerProgressBar.css('width', `0%`);
+        crawlerProgressBar.html(`0%`);
+
+
+        let thisdata=this;
         this.runActionWithMessage(url, function (event) {
             if (!event.data.success) {
                 //if there is an error in the api-request, then we show it again
 
                 $("#config").stop(true).show(200);
                 $("#config-hr").stop(true).show(200);
+            } else {
+                thisdata.isSubmitted=true;
             }
 
         });
