@@ -4,7 +4,7 @@ export class CrawlerController extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         super(parent, identifier, mountpoint, titleSelector);
         this.title = "";
-        this.restAPIFetcherCrawler=this.parent.dependencies.restApiFetcherCrawler;
+        this.restAPIFetcherCrawler = this.parent.dependencies.restApiFetcherCrawler;
         this.cacheLevel = 3;
         //use 0 for no caching (the dom for this page will be deleted and onMound/onUnMount is called each enter and leaving the page here)
         //use 3 for complete caching(the dome for this page stay after leaving
@@ -18,12 +18,13 @@ export class CrawlerController extends Page {
         //you can here also set the caching_behavour and much more
         //take a look in class Page
 
-        this.infoTimer=null;
+        this.infoTimer = null;
+        this.crawlerLastInfoState = "null";
 
     }
 
     content() {
-        var thisData = this;
+        // let thisData = this; //its unused TODO remove?
         return `
             <div class="container">
                 <div class="row mt-3 mb-3">
@@ -67,7 +68,7 @@ export class CrawlerController extends Page {
                         <h2 class="text-dark">Actions</h2>
                     </div>
                 </div>
-                <div class="row mt-1 mb-1">
+                <div class="row mt-1 mb-1 cc-action-stop">
                     <div class="col-md-12 col-lg-8">
                         <p>
                             <b>Stop</b> the current execution.
@@ -84,7 +85,7 @@ export class CrawlerController extends Page {
                         </button>
                     </div>
                 </div>
-                <div class="row mt-1 mb-1">
+                <div class="row mt-1 mb-1 cc-action-pause">
                     <div class="col-md-12 col-lg-8">
                         <p>
                             <b>Pause</b> the current execution.
@@ -103,7 +104,7 @@ export class CrawlerController extends Page {
                         </button>
                     </div>
                 </div>
-                <div class="row mt-1 mb-1">
+                <div class="row mt-1 mb-1 cc-action-continue">
                     <div class="col-md-12 col-lg-8">
                         <p>
                             <b>Continue</b> a paused execution of the crawler.
@@ -122,7 +123,7 @@ export class CrawlerController extends Page {
                         </button>
                     </div>
                 </div>
-                <div class="row mt-1 mb-1">
+                <div class="row mt-1 mb-1 cc-action-shutdown">
                     <div class="col-md-12 col-lg-8">
                         <p>
                             <b>Shutdown</b> the crawler entirely.
@@ -139,7 +140,7 @@ export class CrawlerController extends Page {
                         </button>
                     </div>
                 </div>
-                <div class="row mt-1 mb-1">
+                <div class="row mt-1 mb-1 cc-action-start">
                     <div class="col-md-12 col-lg-8">
                         <p>
                             <b>Start</b> a crawler execution.
@@ -157,7 +158,8 @@ export class CrawlerController extends Page {
                     </div>
                 </div>
                 <hr id="config-hr">
-                <div id="config" class="row mt-3 mb-3">
+                <div class="cc-action-start">
+                    <div id="config" class="row mt-3 mb-3">
                     <div class="col" align="center">
                         <h2 class="text-dark">Configuration</h2>
                         <p></p>
@@ -260,6 +262,7 @@ export class CrawlerController extends Page {
                         </form>
                     </div>
                 </div>
+                </div>
                 <hr>
                 <div class="row mt-3 mb-3">
                     <div id="messages" class="col" align="center">
@@ -270,8 +273,12 @@ export class CrawlerController extends Page {
         `;
     }
 
+
     updateStatus() {
+        let thisdata = this;
         this.restAPIFetcherCrawler.fetchGet("info", function (event) {
+            console.log(event);
+            thisdata.updateControllerElements(event.data.message.status);
             let status = event.data.message.status.toUpperCase();
             let crawlerStatus = $("#crawler-status");
             let crawlerProgress = $("#crawler-progress");
@@ -297,35 +304,97 @@ export class CrawlerController extends Page {
         });
     }
 
+    updateControllerElements(crawlerState) {
+        if (crawlerState === this.crawlerLastInfoState) {return;}//no ui-change
+
+        let stop = $(".cc-action-stop");
+        let pause = $(".cc-action-pause");
+        let continuex = $(".cc-action-continue");
+        //let shutdown =$(".cc-action-shutdown"); //its always visible
+        let start = $(".cc-action-start");
+
+        //the stop-method is an amition-stop
+
+        switch (crawlerState) {
+            case "ready":
+                stop.stop(true).hide(1000);
+                pause.stop(true).hide(1000);
+                continuex.stop(true).hide(1000);
+                start.stop(true).show(1000);
+                break;
+            case "paused":
+                stop.stop(true).show(1000);
+                pause.stop(true).hide(1000);
+                continuex.stop(true).show(1000);
+                start.stop(true).hide(1000);
+                break;
+            case "running":
+                stop.stop(true).show(1000);
+                pause.stop(true).show(1000);
+                continuex.stop(true).hide(1000);
+                start.stop(true).hide(1000);
+                break;
+            default:
+                //i hope dont getting in there here
+                stop.stop(true).show(1000);
+                pause.stop(true).show(1000);
+                continuex.stop(true).show(1000);
+                start.stop(true).show(1000);
+
+
+                break;
+        }
+
+        this.crawlerLastInfoState = crawlerState;
+    }
+
+
     //its called one time, after the page is the first time visited
     //cause we dont remove the page to no time from the dome, the listener dont needs to be re-added
     onMount() {
         // Register callback functions for action buttons
+        let self = this;
 
-        $("#continue-button").click(function() {
+        let stop = $(".cc-action-stop");
+        let pause = $(".cc-action-pause");
+        let continuex = $(".cc-action-continue");
+        //let shutdown =$(".cc-action-shutdown"); //its always visible
+        let start = $(".cc-action-start");
+
+        stop.hide();
+        pause.hide();
+        continuex.hide();
+        //shutdown.hide();
+        start.hide();
+
+        $("#config").hide();
+        $("#config-hr").hide();
+
+
+        $("#continue-button").click(function () {
             self.runActionWithMessage("continue");
         });
-        $("#pause-button").click(function() {
+        $("#pause-button").click(function () {
             self.runActionWithMessage("pause");
         });
-        $("#stop-button").click(function() {
+        $("#stop-button").click(function () {
             self.runActionWithMessage("stop");
         });
-        $("#shutdown-button").click(function() {
+        $("#shutdown-button").click(function () {
             self.runActionWithMessage("shutdown");
         });
 
-        $("#start-button").click(function() {
-            $("#config").show();
-            $("#config-hr").show();
+        $("#start-button").click(function () {
+            $("#config").show(200);
+            $("#config-hr").show(200);
         });
 
-        $("#cancel-config").click(function() {
-            $("#config").hide();
-            $("#config-hr").hide();
+        $("#cancel-config").click(function () {
+            $("#config").hide(500);
+            $("#config-hr").hide(500);
         });
 
-        $("#config-form").on("submit", function(e) {
+        $("#config-form").on("submit", function (e) {
             e.preventDefault();
             self.submitConfig(e);
         });
@@ -333,12 +402,11 @@ export class CrawlerController extends Page {
 
     //this method is called each time the user open/go-back to the page here
     onLoad() {
-        $("#config").hide();
-        $("#config-hr").hide();
 
-        var self = this;
+
+        let self = this;
         self.updateStatus();
-        this.infoTimer = setInterval(function() {
+        this.infoTimer = setInterval(function () {
             self.updateStatus()
         }, 5000);
 
@@ -351,15 +419,19 @@ export class CrawlerController extends Page {
     }
 
 
-    runActionWithMessage(route) {
+    runActionWithMessage(route, callback) {
         let self = this;
         self.restAPIFetcherCrawler.fetchGet(route, function (event) {
+            self.updateStatus();
             self.renderMessage(
                 event.data.success, event.data.message, event.data.command
             );
             $('html, body').animate({
                 scrollTop: $("#messages").offset().top
-            }, "fast");
+            }, 1000);
+
+            callback(event);
+
         });
     }
 
@@ -383,13 +455,13 @@ export class CrawlerController extends Page {
         };
         try {
             let splits = directories.split(";");
-            splits.forEach(function(item) {
+            splits.forEach(function (item) {
                 let path = item.split(",")[0].trim();
                 let recursive = item.split(",")[1].trim().toLowerCase();
                 let recursive_flag = false;
                 if (recursive === "true") {
                     recursive_flag = true;
-                } else if (recursive === "false" ) {
+                } else if (recursive === "false") {
                     recursive_flag = false;
                 } else {
                     throw "Invalid recursive option";
@@ -412,7 +484,20 @@ export class CrawlerController extends Page {
         config["options"]["packageSize"] = parseInt(packageSize);
         config["options"]["clearTrace"] = clearTrace === 'true';
         let url = `start?config=${JSON.stringify(config)}&update=${update}`;
-        this.runActionWithMessage(url);
+        //we hide directly
+        $("#config").hide(500);
+        $("#config-hr").hide(500);
+        this.runActionWithMessage(url, function (event) {
+            if (!event.data.success) {
+                //if there is an error in the api-request, then we show it again
+
+                $("#config").stop(true).show(200);
+                $("#config-hr").stop(true).show(200);
+            }
+
+        });
+
+
     }
 
     renderMessage(success, message, command) {
