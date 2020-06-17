@@ -299,6 +299,7 @@ export class CrawlerController extends Page {
                 crawlerProgressBar.css('width', `${0}%`);
                 crawlerProgressBar.html(`${0}%`);
                 crawlerStatus.html("NOT AVAILABLE");
+                thisdata.updateControllerElements("unavailable");
                 return;
             }
             let status = event.data.message.status.toUpperCase();
@@ -311,8 +312,9 @@ export class CrawlerController extends Page {
                 crawlerStatus.addClass("text-success");
                 crawlerProgress.html("");
                 crawlerConfig.html("");
-                crawlerProgressBar.css('width', `${0}%`);
-                crawlerProgressBar.html(`${0}%`);
+                //this would override the 100% i want to show at the end of an successfull progress
+                // crawlerProgressBar.css('width', `${0}%`);
+                // crawlerProgressBar.html(`${0}%`);
                 return;
             }
             let progress = event.data.message.progress;
@@ -360,7 +362,7 @@ export class CrawlerController extends Page {
         let stop = $(".cc-action-stop");
         let pause = $(".cc-action-pause");
         let continuex = $(".cc-action-continue");
-        //let shutdown =$(".cc-action-shutdown"); //its always visible
+        let shutdown =$(".cc-action-shutdown"); //its always visible
         let start = $(".cc-action-start");
 
         //the stop-method is an amition-stop
@@ -371,18 +373,28 @@ export class CrawlerController extends Page {
                 pause.stop(true).hide(1000);
                 continuex.stop(true).hide(1000);
                 start.stop(true).show(1000);
+                shutdown.stop(true).show(1000);
                 break;
             case "paused":
                 stop.stop(true).show(1000);
                 pause.stop(true).hide(1000);
                 continuex.stop(true).show(1000);
                 start.stop(true).hide(1000);
+                shutdown.stop(true).show(1000);
                 break;
             case "running":
                 stop.stop(true).show(1000);
                 pause.stop(true).show(1000);
                 continuex.stop(true).hide(1000);
                 start.stop(true).hide(1000);
+                shutdown.stop(true).show(1000);
+                break;
+            case "unavailable":
+                stop.stop(true).hide(1000);
+                pause.stop(true).hide(1000);
+                continuex.stop(true).hide(1000);
+                start.stop(true).hide(1000);
+                shutdown.stop(true).hide(1000);
                 break;
             default:
                 //i hope dont getting in there here
@@ -390,6 +402,7 @@ export class CrawlerController extends Page {
                 pause.stop(true).show(1000);
                 continuex.stop(true).show(1000);
                 start.stop(true).show(1000);
+                shutdown.stop(true).show(1000);
 
 
                 break;
