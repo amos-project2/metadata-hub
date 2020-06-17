@@ -6,25 +6,26 @@ export class Login {
 
     constructor(dependencies, mountpoint) {
         this.dependencies = dependencies
+        this.config=dependencies.config;
         this.utilities = dependencies.utilities;
         this.mountpoint = mountpoint;
 
         if (localStorage.getItem("username") === null) {
-            localStorage.setItem("username", window.myApplication.defaultUsername);
+            localStorage.setItem("username", this.config.defaultUsername);
         }
 
         if (localStorage.getItem("logged_in") === null) {
-            localStorage.setItem("logged_in", window.myApplication.autoLogin);
+            localStorage.setItem("logged_in", this.config.autoLogin);
         }
 
 
         this.adminLoginVisible = "";
-        if (!window.myApplication.adminLoginEnabeled) {
+        if (!this.config.adminLoginEnabeled) {
             this.adminLoginVisible = "hide_active";
         }
 
         this.endUserLoginVisible = "";
-        if (!window.myApplication.enduserLoginEnabled) {
+        if (!this.config.enduserLoginEnabled) {
             this.endUserLoginVisible = "hide_active";
         }
 
@@ -35,16 +36,16 @@ export class Login {
         let scope = [0];
         let startpage = "logout";
         if (userType === "admin") {
-            if (window.myApplication.queryConstructorEnabled) {
+            if (this.config.queryConstructorEnabled) {
                 scope.push(1);
                 startpage = "form-query";
             }
-            if (window.myApplication.crawlerEnabled) {
+            if (this.config.crawlerEnabled) {
                 scope.push(2);
                 startpage = "crawler-controller";
             }
         } else {
-            if (window.myApplication.queryConstructorEnabled) {
+            if (this.config.queryConstructorEnabled) {
                 scope.push(1);
                 startpage = "form-query";
             }

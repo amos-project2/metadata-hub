@@ -19,6 +19,7 @@ if (window.myApplication === undefined) {
         restApiFetcherServer: new RestAPIFetcher(window.myApplication.serverApi),
         restApiFetcherCrawler: new RestAPIFetcher(window.myApplication.crawlerApi),
         utilities: utilities,
+        config: window.myApplication,
         styles: {
             dark: darkstyle,
         }

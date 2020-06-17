@@ -1,6 +1,7 @@
 export class Page {
     constructor(parent, identifier, mountpoint = ".our-content", titleSelector = ".our-title") {
         this.parent = parent;
+        this.config=parent.dependencies.config;
         this.identifier = identifier;
         this.moutpoint = mountpoint;
         this.atLeastOnceMounted = false;
@@ -85,7 +86,7 @@ export class Page {
 
         this.onLoad();
 
-        if (window.myApplication.pageChangeAnimation) {
+        if (this.config.pageChangeAnimation) {
             $("." + elem).show(1000);
         } else {
             $("." + elem).show(1);

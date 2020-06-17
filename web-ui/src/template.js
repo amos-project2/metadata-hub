@@ -112,6 +112,7 @@ export class Template {
     constructor(dependencies, usedScope) {
         // this.thisdata = this;
         this.dependencies = dependencies;
+        this.config=dependencies.config;
         this.usedScope = usedScope;
         this.storage = {
             query_inject: null,
@@ -276,7 +277,7 @@ export class Template {
                     }
 
                     if (thisdata.currentSelectedElementGroup !== value.data) {
-                        if (window.myApplication.pageChangeAnimation) {
+                        if (thisdata.config.pageChangeAnimation) {
                             $(".container-" + value.data.parent_nav).show(1000);
                         } else {
                             $(".container-" + value.data.parent_nav).show(1);

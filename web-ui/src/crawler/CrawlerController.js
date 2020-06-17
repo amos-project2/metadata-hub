@@ -312,9 +312,10 @@ export class CrawlerController extends Page {
                 crawlerStatus.addClass("text-success");
                 crawlerProgress.html("");
                 crawlerConfig.html("");
-                //this would override the 100% i want to show at the end of an successfull progress
-                // crawlerProgressBar.css('width', `${0}%`);
-                // crawlerProgressBar.html(`${0}%`);
+
+                //this override the 100% i want to show at the end of an successfull progress
+                crawlerProgressBar.css('width', `${0}%`);
+                crawlerProgressBar.html(`${0}%`);
                 return;
             }
             let progress = event.data.message.progress;
