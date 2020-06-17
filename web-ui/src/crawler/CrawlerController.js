@@ -286,14 +286,24 @@ export class CrawlerController extends Page {
     updateStatus() {
         let thisdata = this;
         this.restAPIFetcherCrawler.fetchGet("info", function (event) {
-            console.log(event);
-            thisdata.updateControllerElements(event.data.message.status);
-            thisdata.update100PercentProgressBar(event.data.message.status);
-            let status = event.data.message.status.toUpperCase();
             let crawlerStatus = $("#crawler-status");
             let crawlerProgress = $("#crawler-progress");
             let crawlerProgressBar= $(".my-progress-bar");
             let crawlerConfig = $("#config-value");
+            if (event.status !== 1) {
+                crawlerStatus.removeClass();
+                crawlerStatus.addClass("font-weight-bold");
+                crawlerStatus.addClass("text-secondary");
+                crawlerProgress.html("");
+                crawlerConfig.html("");
+                crawlerProgressBar.css('width', `${0}%`);
+                crawlerProgressBar.html(`${0}%`);
+                crawlerStatus.html("NOT AVAILABLE");
+                return;
+            }
+            let status = event.data.message.status.toUpperCase();
+            thisdata.updateControllerElements(event.data.message.status);
+            thisdata.update100PercentProgressBar(event.data.message.status);
             crawlerStatus.removeClass();
             crawlerStatus.addClass("font-weight-bold");
             crawlerStatus.html(`${status}`);
@@ -301,6 +311,8 @@ export class CrawlerController extends Page {
                 crawlerStatus.addClass("text-success");
                 crawlerProgress.html("");
                 crawlerConfig.html("");
+                crawlerProgressBar.css('width', `${0}%`);
+                crawlerProgressBar.html(`${0}%`);
                 return;
             }
             let progress = event.data.message.progress;
