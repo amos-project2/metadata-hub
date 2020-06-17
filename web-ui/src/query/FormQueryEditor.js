@@ -175,6 +175,8 @@ export class FormQueryEditor extends Page {
 
         this.helperMethod();
         this.helperMethod2();
+        this.inputValidation();
+        this.inputSuggestion();
         let thisdata = this;
 
         $(".q-send-query-form-editor").submit(function (event) {
@@ -288,6 +290,21 @@ export class FormQueryEditor extends Page {
             }
 
         });
+    }
+
+    inputValidation(){
+
+    }
+
+    inputSuggestion(){
+        // $( function() {
+        //     var availableTags = [
+        //         "searchForFileMetadata"
+        //     ];
+        //     $( "#fq-query-Name" ).autocomplete({
+        //         source: availableTags
+        //     });
+        // } );
     }
 
 

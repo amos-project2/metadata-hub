@@ -46,7 +46,7 @@ Plan is to create several indexes:
 ``CREATE INDEX btree_index_size ON public.files(size);``
 
 1. Combining multiple indexes dir_path + name:
-``CREATE INDEX btree_index_full_path ON public.files((dir_path ||'/' || name)text_pattern_ops);``
+``SELECT * FROM files WHERE (dir_path||'/'||files.name) LIKE '/tmp/test_tree/dir2/dir4/dir7/dir8/dir10/D%';``
 
 <br>
 <br>
@@ -89,6 +89,119 @@ SELECT * FROM files WHERE size >= 300000;
 Notice: Index scans and bitmap scans can be turned off, for easier comparisons
 ``SET enable_indexscan TO false;
     SET enable_bitmapscan TO false;``
+
+#### Index Sizes
+Index Sizes for the tree structured file dump (1104 files ~1240 kB)
+
+1. Gin: 584kB
+1. Gin jsonb_path_ops: 304kB
+1. Btree metadata->>'FileName': 64kB
+1. Btree files.name: 64kB
+1. Btree files.size: 48kB
+1. Btree on fullpath: 120kB
+
+#### Index query times
+Testing index queries on this size of a test set (1104 files) is unnecessary.
+On most queries there was no significant difference between index or sequential scans.
+Most were around 0.02 ms faster others were slower.
+```console
+
+**************
+Start index test!
+------ Gin Default
+---------------------
+SELECT * FROM files WHERE metadata ? 'FileInodeChangeDate';
+-------------------------------------------------------------
+Average Time Normal :  15307917 nano_sec | 15 m_sec
+Average Time Index :  15391877 nano_sec | 15 m_sec
+Index Speed Up:  -83960 nano_sec | 0 m_sec
+-------------------------------------------------------------
+SELECT * FROM files WHERE metadata ?& array['FileInodeChangeDate', 'Filter', 'Compression', 'XResolution'];
+-------------------------------------------------------------
+Average Time Normal :  1230333 nano_sec | 1 m_sec
+Average Time Index :  273223 nano_sec | 0 m_sec
+Index Speed Up:  957110 nano_sec | 0 m_sec
+-------------------------------------------------------------
+------ Gin Jsonb Path Ops
+-------------------------
+SELECT * FROM files WHERE metadata @> '{"MIMEType":"image/jpeg"}';
+-------------------------------------------------------------
+Average Time Normal :  11855922 nano_sec | 11 m_sec
+Average Time Index :  11701590 nano_sec | 11 m_sec
+Index Speed Up:  154332 nano_sec | 0 m_sec
+-------------------------------------------------------------
+------ Btree metadata ->>'FileName'
+------------------------------------
+SELECT * FROM files WHERE metadata ->> 'FileName' LIKE 'CNV-53%';
+-------------------------------------------------------------
+Average Time Normal :  1176617 nano_sec | 1 m_sec
+Average Time Index :  277113 nano_sec | 0 m_sec
+Index Speed Up:  899504 nano_sec | 0 m_sec
+-------------------------------------------------------------
+SELECT * FROM files WHERE metadata ->> 'FileName' LIKE 'CNV-5311%';
+-------------------------------------------------------------
+Average Time Normal :  1067380 nano_sec | 1 m_sec
+Average Time Index :  196358 nano_sec | 0 m_sec
+Index Speed Up:  871022 nano_sec | 0 m_sec
+-------------------------------------------------------------
+----- Btree files.name
+-----------------------
+SELECT * FROM files WHERE name LIKE 'CNV-53%';
+-------------------------------------------------------------
+Average Time Normal :  458652 nano_sec | 0 m_sec
+Average Time Index :  286416 nano_sec | 0 m_sec
+Index Speed Up:  172236 nano_sec | 0 m_sec
+-------------------------------------------------------------
+SELECT * FROM files WHERE name LIKE 'CNV-5311%';
+-------------------------------------------------------------
+Average Time Normal :  436904 nano_sec | 0 m_sec
+Average Time Index :  235143 nano_sec | 0 m_sec
+Index Speed Up:  201761 nano_sec | 0 m_sec
+-------------------------------------------------------------
+----- Btree files.size
+-----------------------
+SELECT * FROM files WHERE size <= 300000;
+-------------------------------------------------------------
+Average Time Normal :  11542924 nano_sec | 11 m_sec
+Average Time Index :  11547159 nano_sec | 11 m_sec
+Index Speed Up:  -4235 nano_sec | 0 m_sec
+-------------------------------------------------------------
+SELECT * FROM files WHERE size >= 300000;
+-------------------------------------------------------------
+Average Time Normal :  1401272 nano_sec | 1 m_sec
+Average Time Index :  1254935 nano_sec | 1 m_sec
+Index Speed Up:  146337 nano_sec | 0 m_sec
+-------------------------------------------------------------
+SELECT * FROM files WHERE size >= 500000;
+-------------------------------------------------------------
+Average Time Normal :  1263388 nano_sec | 1 m_sec
+Average Time Index :  1096945 nano_sec | 1 m_sec
+Index Speed Up:  166443 nano_sec | 0 m_sec
+-------------------------------------------------------------
+SELECT * FROM files WHERE size >= 800000;
+-------------------------------------------------------------
+Average Time Normal :  1122788 nano_sec | 1 m_sec
+Average Time Index :  1013846 nano_sec | 1 m_sec
+Index Speed Up:  108942 nano_sec | 0 m_sec
+-------------------------------------------------------------
+----- Btree fullpath
+-----------------------
+SELECT * FROM files WHERE (dir_path||'/'||files.name) LIKE '/tmp/test_tree/dir2/dir4/dir7/dir8/%';
+-------------------------------------------------------------
+Average Time Normal :  2009146 nano_sec | 2 m_sec
+Average Time Index :  2137611 nano_sec | 2 m_sec
+Index Speed Up:  -128465 nano_sec | 0 m_sec
+-------------------------------------------------------------
+SELECT * FROM files WHERE (dir_path||'/'||files.name) LIKE '/tmp/test_tree/dir2/dir4/dir7/dir8/dir10/%';
+-------------------------------------------------------------
+Average Time Normal :  1269261 nano_sec | 1 m_sec
+Average Time Index :  1415780 nano_sec | 1 m_sec
+Index Speed Up:  -146519 nano_sec | 0 m_sec
+-------------------------------------------------------------
+End index test!
+**************
+```
+
 <br>
 <br>
 
