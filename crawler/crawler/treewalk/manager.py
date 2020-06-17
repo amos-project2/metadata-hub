@@ -12,7 +12,7 @@ import logging
 import threading
 import multiprocessing
 from typing import Tuple, Any
-
+from datetime import datetime
 
 # Local imports
 from . import tree_walk as tree_walk
@@ -31,6 +31,7 @@ class TreeWalkManager(threading.Thread):
 
     def __init__(self):
         super(TreeWalkManager, self).__init__()
+        self._roots = []
         self._workers = []
         self._num_workers = 0
         self._work_packages = []
@@ -53,6 +54,7 @@ class TreeWalkManager(threading.Thread):
 
     def _reset(self) -> None:
         """Reset the TreeWalkManager."""
+        self._roots = []
         self._workers = []
         self._num_workers = 0
         self._work_packages = []
@@ -141,7 +143,7 @@ class TreeWalkManager(threading.Thread):
 
         def done() -> None:
             """Finish the TreeWalk execution.
-
+reset
             Send the finish signal to each worker and update the database.
             """
             for _, queue in self._workers:
@@ -150,7 +152,6 @@ class TreeWalkManager(threading.Thread):
                 tree_walk_id=self._tree_walk_id,
                 status=communication.CRAWL_STATUS_FINISHED
             )
-
         if self._work_packages:
             _logger.debug('Running single work package for each worker')
             work_single()
@@ -175,7 +176,12 @@ class TreeWalkManager(threading.Thread):
                 except queue.Empty:
                     done = self._work()
                     if done:
+                        self._db_connection.delete_lost(self._tree_walk_id, self._roots)
                         self._reset()
+                        end = datetime.now();
+                        total = (end - start).total_seconds();
+                        _logger.info('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+                        _logger.info('Table - The total crawling time: {}'.format(total))
             else:
                 command, data = communication.manager_queue_input.get()
                 check = True
@@ -188,6 +194,7 @@ class TreeWalkManager(threading.Thread):
                     message, data = self._stop()
                     shutdown = True
                 elif command == communication.MANAGER_START:
+                    start = datetime.now();
                     message, data = self._start(data)
                 elif command == communication.MANAGER_STOP:
                     message, data = self._stop()
@@ -332,7 +339,7 @@ class TreeWalkManager(threading.Thread):
                 db_info=self._connection_data,
                 measure_time=environment.env.CRAWLER_DB_MEASURE_TIME
             )
-            db_id = self._db_connection.insert_crawl(config)
+            db_id = self._db_connection.insert_new_record_crawls(config)
             # Prepare number of workers
             number_of_workers = tree_walk.get_number_of_workers(
                 config.get_options_power_level()
@@ -376,6 +383,7 @@ class TreeWalkManager(threading.Thread):
         for worker, _ in self._workers:
             worker.start()
         # Update the manager
+        self._roots = config.get_paths_inputs()
         self._state.set_running(config)
         self._num_workers = num_workers
         self._work_packages = work_packages

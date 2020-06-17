@@ -1,21 +1,19 @@
 """Connection to database and perform query."""
 
-
 # Python imports
 import json
 import logging
+import os
 from datetime import datetime
 from typing import List, Tuple
 
-
 # 3rd party modules
 import psycopg2
-
+from pypika import Query, Table, Field, Parameter
 
 # Local imports
 from crawler.services.config import Config
 import crawler.communication as communication
-
 
 _logger = logging.getLogger(__name__)
 
@@ -30,6 +28,7 @@ def measure_time(func):
         func (function): function to wrap
 
     """
+
     def decorator(self, *args, **kwargs):
         if self._measure_time:
             start = datetime.now()
@@ -39,6 +38,7 @@ def measure_time(func):
         else:
             result = func(self, *args, **kwargs)
         return result
+
     return decorator
 
 
@@ -75,18 +75,24 @@ class DatabaseConnection:
             crawlID (int): id of the row to be updated
             package (List[str]): Directories the treewalk has handled
         """
+        # Build query to get the crawl data for id crawlID
+        crawls = Table('crawls')
+        query = Query.from_(crawls) \
+            .select('*') \
+            .where(crawls.id == Parameter('%s'))
         curs = self.con.cursor()
-        get_current = ('SELECT * '
-                       'FROM crawls '
-                       f'WHERE id = {crawlID}')
+        query1 = curs.mogrify(str(query), (crawlID,))
         try:
-            curs.execute(get_current)
+            curs.execute(query1)
             get = curs.fetchone()
+            # Update the analyzed directories and make query for updating the database
             get[5]["analyzed directories"].extend(package)
-            update_dirs = ('UPDATE crawls '
-                           f'SET analyzed_dirs = \'{json.dumps(get[5])}\', update_time = \'{datetime.now()}\''
-                           f'WHERE id = {crawlID}')
-            curs.execute(update_dirs)
+            query = Query.update(crawls) \
+                .set(crawls.analyzed_dirs, Parameter('%s')) \
+                .set(crawls.update_time, Parameter('%s')) \
+                .where(crawls.id == Parameter('%s'))
+            query = curs.mogrify(str(query), (json.dumps(get[5]), datetime.now(), crawlID))
+            curs.execute(query)
             curs.close()
             self.con.commit()
         except:
@@ -95,61 +101,39 @@ class DatabaseConnection:
             self.con.rollback()
         return
 
-    def insert_new_record(self, insert_cmd: str) -> int:
-        """Insert a new record to a row in connected database.
-
+    def insert_new_record_crawls(self, config: Config) -> int:
+        """Insert a new record to the 'crawls' table. Used at the start of a crawl task.
+           TODO: Add docstring
         Args:
-            insert_cmd (dict): a single INSERT query to Postgres database
+            config (Config): Config for the crawl task.
 
         """
-        curs = self.con.cursor()
-        try:
-            curs.execute(insert_cmd)
-        except:
-            _logger.warning('"Error inserting data into database"')
-            curs.close()
-            self.con.rollback()
-            raise
-        try:
-            dbID = curs.fetchone()[0]
-        except:
-            dbID = 0
-        curs.close()
-        self.con.commit()
-        return dbID
-
-    def insert_crawl(self, config: Config) -> int:
-        """TODO: Add docstring
-
-        Args:
-            config (Config): [description]
-            analyzed_dirs (List[str], optional): [description]. Defaults to [].
-
-        Returns:
-            int: [description]
-
-        """
+        # Prepare necessary values
         crawl_config = json.dumps(config.get_data())
         dir_path = ', '.join(
             [inputs['path'] for inputs in config.get_paths_inputs()]
         )
         analyzed_dirs = json.dumps({"analyzed directories": []})
         starting_time = datetime.now()
-        cmd = (
-            f'INSERT INTO crawls '
-            f'(dir_path, name, status, crawl_config, analyzed_dirs, starting_time) '
-            f'VALUES(\'{dir_path}\', \'---\', \'running\', '
-            f'\'{crawl_config}\', \'{analyzed_dirs}\', \'{starting_time}\')'
-            f'RETURNING id'
-        )
+        insert_values = (dir_path, '---', 'running', crawl_config, analyzed_dirs, starting_time)
+        # Construct the SQL query
+        crawls = Table('crawls')
+        query = Query.into(crawls) \
+            .columns('dir_path', 'name', 'status', 'crawl_config', 'analyzed_dirs', 'starting_time') \
+            .insert(Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'),
+                    Parameter('%s'))
         curs = self.con.cursor()
+        query = curs.mogrify(str(query), insert_values).decode('utf8')
+        query = query + ' RETURNING id'
+        # Make database request
         try:
-            curs.execute(cmd)
+            curs.execute(query)
         except:
             _logger.warning('"Error updating database"')
             curs.close()
             self.con.rollback()
             raise
+        # Return result or 0 in case nothing could be fetched
         try:
             dbID = curs.fetchone()[0]
         except:
@@ -158,51 +142,58 @@ class DatabaseConnection:
         self.con.commit()
         return dbID
 
+    def insert_new_record_files(self, insert_values: List[Tuple[str]]):
+        """Insert a new record to the 'files' table based on the ExifTool output.
+
+        Args:
+            values (List[Tuple[str]): A list of lists. Contains the values for each row to be inserted.
+
+        """
+        # Construct the SQL query
+        # FIXME pypika solution?
+        query = 'INSERT INTO "files" ("crawl_id","dir_path","name","type","size","metadata","creation_time", ' \
+                '"access_time","modification_time","deleted","deleted_time","file_hash") VALUES '
+        curs = self.con.cursor()
+        for insert in insert_values:
+            query += curs.mogrify("(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s),", insert).decode('utf8')
+        try:
+            curs.execute(query[:-1])
+        except:
+            _logger.warning('"Error inserting data into database"')
+            curs.close()
+            self.con.rollback()
+            raise
+        curs.close()
+        self.con.commit()
+        return
+
     def close(self) -> None:
         self.con.close()
 
-    def set_crawl_state(
-        self,
-        tree_walk_id: int,
-        status: str
-    ) -> None:
-        """Update the status of the crawl.
+    def set_crawl_state(self, tree_walk_id: int, status: str) -> None:
+        """Update the status of the crawler in it's corresponding database entry.
 
         Args:
             tree_walk_id (int): ID of the TreeWalk execution
             status (str): status to set
-
         """
-
-        curs = self.con.cursor()
-        get_current = ('SELECT * '
-                       'FROM crawls '
-                       f'WHERE id = {tree_walk_id}')
+        # Build query to update status
+        crawls = Table('crawls')
+        query = Query.update(crawls) \
+            .set(crawls.finished_time, Parameter('%s')) \
+            .set(crawls.status, Parameter('%s')) \
+            .where(crawls.id == Parameter('%s'))
+        # Check if valid status was given
+        if status in [communication.CRAWL_STATUS_FINISHED, communication.CRAWL_STATUS_PAUSED,
+                      communication.CRAWL_STATUS_RUNNING, communication.CRAWL_STATUS_ABORTED]:
+            curs = self.con.cursor()
+            query = curs.mogrify(str(query), (datetime.now(), status, tree_walk_id))
+        else:
+            _logger.warning('"Error updating database state, state not recognized"')
+            return
+        # Execute query
         try:
-            curs.execute(get_current)
-            get = curs.fetchone()
-
-            if status == communication.CRAWL_STATUS_FINISHED:
-                update_status = ('UPDATE crawls '
-                                 f'SET finished_time = \'{datetime.now()}\', status = \'{communication.CRAWL_STATUS_FINISHED}\''
-                                 f'WHERE id = {tree_walk_id}')
-            elif status == communication.CRAWL_STATUS_PAUSED:
-                update_status = ('UPDATE crawls '
-                                 f'SET status = \'{communication.CRAWL_STATUS_PAUSED}\''
-                                 f'WHERE id = {tree_walk_id}')
-            elif status == communication.CRAWL_STATUS_RUNNING:
-                update_status = ('UPDATE crawls '
-                                 f'SET status = \'{communication.CRAWL_STATUS_RUNNING}\''
-                                 f'WHERE id = {tree_walk_id}')
-            elif status == communication.CRAWL_STATUS_ABORTED:
-                update_status = ('UPDATE crawls '
-                                 f'SET status = \'{communication.CRAWL_STATUS_ABORTED}\''
-                                 f'WHERE id = {tree_walk_id}')
-            else:
-                _logger.warning('"Error updating database state, state not recognized"')
-                return
-
-            curs.execute(update_status)
+            curs.execute(query)
             curs.close()
             self.con.commit()
         except:
@@ -210,50 +201,57 @@ class DatabaseConnection:
             curs.close()
             self.con.rollback()
 
-    def check_hash(self, fileHash: str, path: str, crawl_id: int, name: str) -> int:
-        """checks the database for a given file hash. Then checks if the directory path is the same.
+    def check_directory(self, path: str) -> List[int]:
+        """checks the database for a given directory. Returns all the most recent ids.
 
         Args:
-            fileHash (str): hash of the file to be checked
-            path (str): directory path the file should be in
-            crawl_id (int): current crawl_id
+            path (str): directory path to be checked
         Returns:
-            int: file id that is supposed to be deleted
+            List(int): file ids that are supposed to be deleted
         """
+        files = Table('files')
+        query = Query.from_(files) \
+            .select('id', 'crawl_id', 'dir_path', 'name') \
+            .where(files.dir_path == Parameter('%s'))
         curs = self.con.cursor()
-        get_hash = ('(SELECT id, crawl_id, dir_path, name '
-                    'FROM files '
-                    f'WHERE file_hash = \'{fileHash}\')'
-                    )
+        query = curs.mogrify(str(query), (path,))
         try:
-            curs.execute(get_hash)
+            curs.execute(query)
             get = curs.fetchall()
-        except Exception as e:
-            print(e)
+        except:
+            return []
         curs.close()
         self.con.commit()
 
-        # Find the most recent entry (All others should already be set to deleted) and return file id
-        if len(get) < 2:
-            return 0
+        # Find the second highest crawl id (remove max first as it is the current crawl)
+        id_set = set([x[1] for x in get])
+        id_set.remove(max(id_set))
+        if len(id_set) == 0:
+            return []
+        recent_crawl = max(id_set)
+        # Make list with every file_id in that directory/crawl
+        file_ids = [x[0] for x in get if x[1] == recent_crawl]
 
-        max_id = 0
-        tmp = (0, 0, '')
-        for item in get:
-            if item[2] == path and item[3] == name:
-                if max_id < item[1] and item[1] != crawl_id:
-                    max_id = item[1]
-                    tmp = item
-        return tmp[0]
+        return file_ids
 
-    def set_deleted(self, files: List[int]):
-        condition = 'id = ' + ' OR id = '.join(str(x) for x in files)
-        set_delete = ('UPDATE files '
-                      f'SET deleted = True, deleted_time = \'{datetime.now()}\' '
-                      f'WHERE {condition}')
+    def set_deleted(self, file_ids: List[int]) -> None:
+        """Set every file in file_ids deleted and deleted_time value.
+
+        Args:
+            file_ids (List[int): List of file ids to be deleted
+        Returns:
+        """
+        if len(file_ids) < 1:
+            return
+        files = Table('files')
+        query = Query.update(files) \
+            .set(files.deleted, 'True') \
+            .set(files.deleted_time, datetime.now()) \
+            .where(files.id.isin(Parameter('%s')))
         curs = self.con.cursor()
+        query = curs.mogrify(str(query), (tuple(file_ids),))
         try:
-            curs.execute(set_delete)
+            curs.execute(query)
             curs.close()
             self.con.commit()
         except Exception as e:
@@ -330,3 +328,36 @@ class DatabaseConnection:
 
         """
         return self._time
+
+    def delete_lost(self, crawlId: int, roots: List) -> None:
+        """Scans the directories at the end of a scan, to find directories that were deleted since the last crawl
+
+        Args:
+            crawlId (int): id of the current crawl
+            roots (List): list with every path/recursive pair
+        """
+        # Request a list of every directory skipped during the deletion process
+        files = Table('files')
+        query = Query.from_(files) \
+                .select(files.id) \
+                .where(files.crawl_id != crawlId) \
+                .where(files.deleted == False)
+        curs = self.con.cursor()
+        statements = []
+        for root in roots:
+            if root['recursive']:
+                statements.append(curs.mogrify('"dir_path" LIKE %s', (f'{root["path"]}%',)).decode('utf8'))
+            else:
+                statements.append(curs.mogrify('"dir_path" = %s', (f'{root["path"]}',)).decode('utf8'))
+        query = str(query) + ' AND (' + ' OR '.join(statements) + ')'
+        try:
+            curs.execute(query)
+            entries = curs.fetchall()
+            curs.close()
+            self.con.commit()
+        except Exception as e:
+            print(e)
+            _logger.warning('"Error updating file deletion"')
+            curs.close()
+            self.con.rollback()
+        self.set_deleted(entries)
