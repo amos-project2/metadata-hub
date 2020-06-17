@@ -18,6 +18,7 @@ import time # FIXME
 import random # FIXME
 import multiprocessing
 from typing import List, Tuple
+from datetime import datetime
 
 
 # 3rd party imports
@@ -192,8 +193,13 @@ class Worker(multiprocessing.Process):
             return
 
         try:
+            start = datetime.now();
             process = subprocess.Popen([f'{self._exiftool}', '-json', *package], stdout=subprocess.PIPE)
             output = str(process.stdout.read(), 'utf-8') # FIXME better solution?
+            end = datetime.now();
+            total = (end - start).total_seconds();
+            _logger.info('>>>>>>>>>>>>>>>>>>>>>>>')
+            _logger.info('Exiftool - The extracting time: {} '.format(total))
             if output:
                 metadata = json.loads(output)
             else:
