@@ -3,7 +3,6 @@ package Benchmark;
 import Database.Database;
 import Start.DependenciesContainer;
 import com.google.inject.Injector;
-import org.jooq.meta.derby.sys.Sys;
 
 import java.sql.*;
 
@@ -41,116 +40,103 @@ public class IndexTest {
 
 //        turnOffIndexScans();
 
-        System.out.println("NORMAL SCANS ********************************************************");
-        gin_index_query01(true);
-        gin_index_query02();
-        gin_index_query03();
+        System.out.println("------ Gin Default ");
+        System.out.println("--------------------- ");
+        testQuery("SELECT * FROM files WHERE metadata ? 'FileInodeChangeDate';");
+        testQuery("SELECT * FROM files WHERE metadata ?& array['FileInodeChangeDate', 'Filter', 'Compression', 'XResolution'];");
 
-//        turnOnIndexScans();
+        System.out.println("------ Gin Jsonb Path Ops");
+        System.out.println("------------------------- ");
+        testQuery( "SELECT * FROM files WHERE metadata @> '{\"MIMEType\":\"image/jpeg\"}';");
 
-        System.out.println("INDEX SCANS ********************************************************");
-        gin_index_query01(true);
-        gin_index_query02();
-        gin_index_query03();
+        System.out.println("------ Btree metadata ->>'FileName'");
+        System.out.println("------------------------------------ ");
+        testQuery("SELECT * FROM files WHERE metadata ->> 'FileName' LIKE 'CNV-53%';");
+        testQuery("SELECT * FROM files WHERE metadata ->> 'FileName' LIKE 'CNV-5311%';");
+
+        System.out.println("----- Btree files.name");
+        System.out.println("----------------------- ");
+        testQuery("SELECT * FROM files WHERE name LIKE 'CNV-53%';");
+        testQuery("SELECT * FROM files WHERE name LIKE 'CNV-5311%';");
+
+        System.out.println("----- Btree files.size");
+        System.out.println("----------------------- ");
+        testQuery("SELECT * FROM files WHERE size <= 300000;");
+        testQuery("SELECT * FROM files WHERE size >= 300000;");
+        testQuery("SELECT * FROM files WHERE size >= 500000;");
+        testQuery("SELECT * FROM files WHERE size >= 800000;");
+
+        System.out.println("----- Btree fullpath");
+        System.out.println("----------------------- ");
+        testQuery("SELECT * FROM files WHERE (dir_path||'/'||files.name) LIKE '/tmp/test_tree/dir2/dir4/dir7/dir8/%';");
+        testQuery("SELECT * FROM files WHERE (dir_path||'/'||files.name) LIKE '/tmp/test_tree/dir2/dir4/dir7/dir8/dir10/%';");
 
     }
 
-    private void gin_index_query01(boolean turnOffIndexing) throws SQLException {
-        System.out.println("SELECT * FROM files WHERE metadata @> '{\"MIMEType\":\"image/jpeg\"}';");
+    private void testQuery(String sqlStatement) throws SQLException {
+        System.out.println(sqlStatement);
         System.out.println("-------------------------------------------------------------");
-        long averageTime = 0;
+        long averageTimeNormal = 0;
+        long averageTimeIndex = 0;
 
         for(int i = 0; i < ITERATIONS; i++) {
 
-            try (Connection connection = db.gC(); PreparedStatement statement = connection.prepareStatement("SELECT * FROM files WHERE metadata @> '{\"MIMEType\":\"image/jpeg\"}';")) {
+            try (Connection connection = db.gC(); Statement statement = connection.createStatement()) {
 
-                if(turnOffIndexing){
-                    turnOffIndexScans(connection);
-                }
+                turnOffIndexScans(connection);
 
                 long normalStartTime = System.nanoTime();
 
-                statement.executeQuery();
+                statement.executeQuery(sqlStatement);
 
                 long normalEndTime = System.nanoTime();
 
                 long diffTime = normalEndTime - normalStartTime;
-                averageTime += diffTime;
+                averageTimeNormal += diffTime;
                 String executionResult = getResultAsString(diffTime);
-                System.out.println(executionResult);
+//                System.out.println(executionResult);
             }
         }
 
-        averageTime = averageTime / ITERATIONS;
-        System.out.println("Average Time: " + getResultAsString(averageTime));
-        System.out.println("-------------------------------------------------------------");
-    }
+        for(int i = 0; i < ITERATIONS; i++) {
 
-    private void gin_index_query02() {
-        System.out.println("SELECT * FROM files WHERE metadata ? 'FileInodeChangeDate'; ");
-        System.out.println("-------------------------------------------------------------");
-        long averageTime = 0;
+            try (Connection connection = db.gC(); Statement statement = connection.createStatement()) {
 
-        for(int i = 0; i < 20; i++) {
-            long normalStartTime = System.nanoTime();
+                turnOnIndexScans(connection);
 
-            try (Connection connection = db.gC(); Statement statement = cn.createStatement()) {
-                statement.executeQuery("SELECT * FROM files WHERE metadata ? 'FileInodeChangeDate'");
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                long normalStartTime = System.nanoTime();
+
+                statement.executeQuery(sqlStatement);
+
+                long normalEndTime = System.nanoTime();
+
+                long diffTime = normalEndTime - normalStartTime;
+                averageTimeIndex += diffTime;
+                String executionResult = getResultAsString(diffTime);
+//                System.out.println(executionResult);
             }
-
-            long normalEndTime = System.nanoTime();
-
-            long diffTime = normalEndTime - normalStartTime;
-            averageTime += diffTime;
-            String executionResult = getResultAsString(diffTime);
-            //System.out.println(executionResult);
-        }
-        averageTime = averageTime / ITERATIONS;
-        System.out.println("Average Time: " + getResultAsString(averageTime));
-        System.out.println("---------------------------------------------------------------");
-    }
-
-    private void gin_index_query03() {
-        System.out.println("SELECT * FROM files WHERE metadata ?& array['FileInodeChangeDate', 'Filter', 'Compression', 'XResolution'];");
-        System.out.println("-------------------------------------------------------------");
-        long averageTime = 0;
-
-        int iterations = 20;
-        for(int i = 0; i < iterations; i++) {
-            long normalStartTime = System.nanoTime();
-
-            try (Connection connection = db.gC(); Statement statement = cn.createStatement()) {
-                statement.executeQuery("SELECT * FROM files WHERE metadata ?& array['FileInodeChangeDate', 'Filter', 'Compression', 'XResolution']");
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
-
-            long normalEndTime = System.nanoTime();
-
-            long diffTime = normalEndTime - normalStartTime;
-            averageTime += diffTime;
-            String executionResult = getResultAsString(diffTime);
-            //System.out.println(executionResult);
         }
 
-        averageTime = averageTime / ITERATIONS;
-        System.out.println("Average Time: " + getResultAsString(averageTime));
-        System.out.println("---------------------------------------------------------------");
+        averageTimeNormal = averageTimeNormal / ITERATIONS;
+        averageTimeIndex = averageTimeIndex / ITERATIONS;
+        System.out.println("Average Time Normal : " + getResultAsString(averageTimeNormal));
+        System.out.println("Average Time Index : " + getResultAsString(averageTimeIndex));
+        System.out.println("Index Speed Up: " + getResultAsString(averageTimeNormal - averageTimeIndex));
+        System.out.println("-------------------------------------------------------------");
     }
+
 
     private void turnOnIndexScans(Connection connection) throws SQLException {
-        Statement enableBitMapScan = cn.createStatement();
+        Statement enableBitMapScan = connection.createStatement();
         enableBitMapScan.executeUpdate("SET enable_bitmapscan TO true;");
-        Statement enableIndexScan = cn.createStatement();
+        Statement enableIndexScan = connection.createStatement();
         enableIndexScan.executeUpdate("SET enable_indexscan TO true;");
     }
 
     private void turnOffIndexScans(Connection connection) throws SQLException {
-        Statement disableBitMapScan = cn.createStatement();
+        Statement disableBitMapScan = connection.createStatement();
         disableBitMapScan.executeUpdate("SET enable_bitmapscan TO false;");
-        Statement disableIndexScan = cn.createStatement();
+        Statement disableIndexScan = connection.createStatement();
         disableIndexScan.executeUpdate("SET enable_indexscan TO false;");
     }
 
