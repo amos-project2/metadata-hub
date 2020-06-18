@@ -17,7 +17,6 @@ import flask
 
 # Local imports
 from . import defaults
-from . import parsing
 import crawler.treewalk as treewalk
 import crawler.services.config as config_service
 import crawler.services.environment as environment
@@ -197,26 +196,6 @@ def start() -> flask.Response:
     )
 
 
-@app.route('/config', methods=['GET', 'POST'])
-def config():
-    if flask.request.method == 'GET':
-        return flask.render_template('config.html')
-    try:
-        result, update = parsing.parse(flask.request.form)
-    except parsing.APIParsingException as err:
-        message = f'Failed. {str(err)}'
-        return flask.render_template('config.html', message=message)
-    parser = config_service.ConfigParser(json.dumps(result))
-    try:
-        config = parser.parse()
-    except config_service.ConfigParsingException as error:
-        return flask.render_template('config.html', message=str(error))
-    status_ok, message, command = treewalk.start(config, update)
-    if status_ok:
-        return flask.render_template('config.html', message='Success')
-    return flask.render_template('config.html', message=message)
-
-
 @app.route('/shutdown', methods=['GET', 'POST'])
 def shutdown():
     # FIXME: Get response from interface and evaluate
@@ -235,6 +214,7 @@ def shutdown():
         command='shutdown',
         error_code=defaults.STATUS_INTERNAL_SERVER_ERROR
     )
+
 
 @app.route('/', methods=['GET'])
 def home():
