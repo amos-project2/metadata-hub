@@ -20,21 +20,17 @@ import crawler.communication as communication
 _logger = logging.getLogger(__name__)
 
 
-def start(config: Config, update: bool) -> Tuple[bool, str, str]:
+def start(config: Config) -> Tuple[bool, str, str]:
     """Start the TreeWalk.
-
-    If update is set to True, a possible running execution will be stopped
-    and a new one will be started.
 
     Args:
         config (Config): new configuration
-        update (bool): force update of current execution
 
     Returns:
         Tuple[bool, str, str]: (status, message, command)
 
     """
-    if update:
+    if config.get_force_update():
         communication.manager_queue_input.put((communication.MANAGER_STOP, None))
         # Ignore response of command stop
         communication.manager_queue_output.get()

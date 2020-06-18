@@ -182,12 +182,7 @@ def start() -> flask.Response:
             error_code=defaults.STATUS_INTERNAL_SERVER_ERROR
         )
         return resp
-    update = flask.request.args.get('update', '').lower()
-    if update == 'true':
-        update = True
-    else:
-        update = False
-    status_ok, message, command = treewalk.start(config, update)
+    status_ok, message, command = treewalk.start(config)
     return _get_response(
         status_ok=status_ok,
         message=message,
