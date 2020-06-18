@@ -28,7 +28,6 @@ from psycopg2.extensions import connection
 # Local imports
 from crawler.services.config import Config
 import crawler.database as database
-from crawler.services.tracing import Tracer
 import crawler.communication as communication
 
 
