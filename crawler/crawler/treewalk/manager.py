@@ -342,15 +342,15 @@ reset
             db_id = self._db_connection.insert_new_record_crawls(config)
             # Prepare number of workers
             number_of_workers = tree_walk.get_number_of_workers(
-                config.get_options_power_level()
+                config.get_cpu_level()
             )
             # Prepare analyzed dirs
             # FIXME: GET ALREADY PROCESSED NODES HERE
             analyzedDirectories = json.dumps({"analyzed directories": []})
             # Prepare work packages
             work_packages, split = tree_walk.create_work_packages(
-                inputs=config.get_paths_inputs(),
-                work_package_size=config.get_options_package_size(),
+                inputs=config.get_directories(),
+                work_package_size=config.get_package_size(),
                 number_of_workers=number_of_workers,
                 already_processed=[]
             )
@@ -383,7 +383,7 @@ reset
         for worker, _ in self._workers:
             worker.start()
         # Update the manager
-        self._roots = config.get_paths_inputs()
+        self._roots = config.get_directories()
         self._state.set_running(config)
         self._num_workers = num_workers
         self._work_packages = work_packages

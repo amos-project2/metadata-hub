@@ -109,9 +109,9 @@ class DatabaseConnection:
 
         """
         # Prepare necessary values
-        crawl_config = json.dumps(config.get_data())
+        crawl_config = config.get_data(as_json=True)
         dir_path = ', '.join(
-            [inputs['path'] for inputs in config.get_paths_inputs()]
+            [inputs['path'] for inputs in config.get_directories()]
         )
         analyzed_dirs = json.dumps({"analyzed directories": []})
         starting_time = datetime.now()
