@@ -192,13 +192,13 @@ class Worker(multiprocessing.Process):
             return
 
         try:
-            start = datetime.now();
+            # start = datetime.now();
             process = subprocess.Popen([f'{self._exiftool}', '-json', *package], stdout=subprocess.PIPE)
             output = str(process.stdout.read(), 'utf-8') # FIXME better solution?
-            end = datetime.now();
-            total = (end - start).total_seconds();
-            _logger.info('>>>>>>>>>>>>>>>>>>>>>>>')
-            _logger.info('Exiftool - The extracting time: {} '.format(total))
+            # end = datetime.now();
+            # total = (end - start).total_seconds();
+            # _logger.info('>>>>>>>>>>>>>>>>>>>>>>>')
+            # _logger.info('Exiftool - The extracting time: {} '.format(total))
             if output:
                 metadata = json.loads(output)
             else:
@@ -220,7 +220,7 @@ class Worker(multiprocessing.Process):
             with open(f"{result['Directory']}/{result['FileName']}".replace("\'\'", "\'"), "rb") as file:
                 bytes = file.read()
                 hash256 = hashlib.sha256(bytes).hexdigest()
-                insert_values += (hash256,)
+                insert_values += (hash256, False)
             # add the value string to the rest for insert batching
             inserts.append(insert_values)
         # insert into the database
