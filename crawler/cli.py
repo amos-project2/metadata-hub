@@ -117,7 +117,7 @@ def start(
     """
     name = 'start'
     if subparser is None:
-        make_request(f'{_API}/{name}?config={args.config}&update={args.update}', True)
+        make_request(f'{_API}/{name}?config={args.config}', True)
         return
     parser = subparser.add_parser(
         name,
@@ -131,18 +131,6 @@ def start(
             'Configuration of the crawler execution. '
             'Either a valid JSON configuration itself or a '
             'filepath to a valid configuration file'
-        )
-    )
-    parser.add_argument(
-        'update',
-        default='false',
-        type=str,
-        metavar='update',
-        help=(
-            'Update a possibly running execution. '
-            'Passing \'true\' will stop the current execution and start the new one. '
-            'Ignoring that value will ignore the new config if the TreeWalk '
-            'is currently running.'
         )
     )
 
