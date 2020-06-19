@@ -86,12 +86,12 @@ class DatabaseConnection:
             curs.execute(query1)
             get = curs.fetchone()
             # Update the analyzed directories and make query for updating the database
-            get[5]["analyzed directories"].extend(package)
+            get[6]["analyzed directories"].extend(package)
             query = Query.update(crawls) \
                 .set(crawls.analyzed_dirs, Parameter('%s')) \
                 .set(crawls.update_time, Parameter('%s')) \
                 .where(crawls.id == Parameter('%s'))
-            query = curs.mogrify(str(query), (json.dumps(get[5]), datetime.now(), crawlID))
+            query = curs.mogrify(str(query), (json.dumps(get[6]), datetime.now(), crawlID))
             curs.execute(query)
             curs.close()
             self.con.commit()
@@ -113,14 +113,16 @@ class DatabaseConnection:
         dir_path = ', '.join(
             [inputs['path'] for inputs in config.get_directories()]
         )
+        author = config.get_author()
+        name = config.get_name()
         analyzed_dirs = json.dumps({"analyzed directories": []})
         starting_time = datetime.now()
-        insert_values = (dir_path, '---', 'running', crawl_config, analyzed_dirs, starting_time)
+        insert_values = (dir_path, author, name, 'running', crawl_config, analyzed_dirs, starting_time)
         # Construct the SQL query
         crawls = Table('crawls')
         query = Query.into(crawls) \
-            .columns('dir_path', 'name', 'status', 'crawl_config', 'analyzed_dirs', 'starting_time') \
-            .insert(Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'),
+            .columns('dir_path', 'author', 'name', 'status', 'crawl_config', 'analyzed_dirs', 'starting_time') \
+            .insert(Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'),
                     Parameter('%s'))
         curs = self.con.cursor()
         query = curs.mogrify(str(query), insert_values).decode('utf8')
@@ -152,10 +154,10 @@ class DatabaseConnection:
         # Construct the SQL query
         # FIXME pypika solution?
         query = 'INSERT INTO "files" ("crawl_id","dir_path","name","type","size","metadata","creation_time", ' \
-                '"access_time","modification_time","deleted","deleted_time","file_hash") VALUES '
+                '"access_time","modification_time","deleted","deleted_time","file_hash", "in_metadata") VALUES '
         curs = self.con.cursor()
         for insert in insert_values:
-            query += curs.mogrify("(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s),", insert).decode('utf8')
+            query += curs.mogrify("(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s),", insert).decode('utf8')
         try:
             curs.execute(query[:-1])
         except:
