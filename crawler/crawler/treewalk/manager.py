@@ -178,10 +178,10 @@ reset
                     if done:
                         self._db_connection.delete_lost(self._tree_walk_id, self._roots)
                         self._reset()
-                        end = datetime.now();
-                        total = (end - start).total_seconds();
-                        _logger.info('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-                        _logger.info('Table - The total crawling time: {}'.format(total))
+                        # end = datetime.now();
+                        # total = (end - start).total_seconds();
+                        # _logger.info('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+                        # _logger.info('Table - The total crawling time: {}'.format(total))
             else:
                 command, data = communication.manager_queue_input.get()
                 check = True
@@ -194,7 +194,7 @@ reset
                     message, data = self._stop()
                     shutdown = True
                 elif command == communication.MANAGER_START:
-                    start = datetime.now();
+                    #start = datetime.now();
                     message, data = self._start(data)
                 elif command == communication.MANAGER_STOP:
                     message, data = self._stop()
