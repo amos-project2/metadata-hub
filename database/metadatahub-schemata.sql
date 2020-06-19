@@ -65,6 +65,7 @@ SET default_table_access_method = heap;
 CREATE TABLE public.crawls (
     id bigint NOT NULL,
     dir_path text NOT NULL,
+    author text NOT NULL,
     name text NOT NULL,
     status text,
     crawl_config text,
@@ -161,7 +162,9 @@ CREATE TABLE public.files (
     modification_time timestamp with time zone NOT NULL,
     file_hash text NOT NULL,
     deleted boolean NOT NULL,
-    deleted_time timestamp
+    deleted_time timestamp,
+    in_metadata boolean NOT NULL
+
 );
 
 
@@ -171,6 +174,34 @@ ALTER TABLE public.files OWNER TO metadatahub;
 -- TOC entry 205 (class 1259 OID 16805)
 -- Name: files_id_seq; Type: SEQUENCE; Schema: public; Owner: metadatahub
 --
+
+--
+-- Name: metadata; Type: TABLE; Schema: public; Owner: metadatahub
+--
+
+CREATE TABLE public.metadata (
+    file_type text NOT NULL,
+    tags json NOT NULL
+);
+
+
+ALTER TABLE public.metadata OWNER TO metadatahub;
+
+--
+-- Name: schedule; Type: TABLE; Schema: public; Owner: metadatahub
+--
+
+CREATE TABLE public.schedule (
+    id text NOT NULL,
+    config json NOT NULL,
+    "timestamp" timestamp without time zone NOT NULL,
+    force boolean NOT NULL,
+    pending boolean NOT NULL,
+    "interval" bigint NOT NULL
+);
+
+
+ALTER TABLE public.schedule OWNER TO metadatahub;
 
 CREATE SEQUENCE public.files_id_seq
     START WITH 1
@@ -284,6 +315,20 @@ ALTER TABLE ONLY public.file_generic_data_eav
 ALTER TABLE ONLY public.file_generic_data_eav
     ADD CONSTRAINT file_id FOREIGN KEY (file_generic_id) REFERENCES public.files(id);
 
+--
+-- Name: metadata metadata_pkey; Type: CONSTRAINT; Schema: public; Owner: metadatahub
+--
+
+ALTER TABLE ONLY public.metadata
+    ADD CONSTRAINT metadata_pkey PRIMARY KEY (file_type);
+
+
+--
+-- Name: schedule schedule_pkey; Type: CONSTRAINT; Schema: public; Owner: metadatahub
+--
+
+ALTER TABLE ONLY public.schedule
+    ADD CONSTRAINT schedule_pkey PRIMARY KEY (id);
 
 -- Completed on 2020-05-31 00:55:10
 
