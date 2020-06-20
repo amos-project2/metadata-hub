@@ -1,2 +1,3 @@
 from .connection import DatabaseConnection
-from .updater import DatabaseUpdater
+from .base import measure_time
+from .base import DatabaseConnectionBase
