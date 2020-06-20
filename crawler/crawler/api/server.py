@@ -1,8 +1,8 @@
 """Basic server implementation for REST API interface.
 
 This module contains the REST interface for communication with the crawler.
-
-FIXME: Check the error codes and update them.
+Each response will have the HTTP status code set to 200, the actual status
+is set in the REST response.
 """
 
 
@@ -17,43 +17,33 @@ import flask
 
 # Local imports
 from . import defaults
-import crawler.treewalk as treewalk
+import crawler.treewalk.manager as manager
+import crawler.treewalk.scheduler as scheduler
+import crawler.treewalk.db_updater as db_updater
 import crawler.services.config as config_service
 import crawler.services.environment as environment
 import crawler.communication as communication
 
 
-app = flask.Flask(
-    __name__,
-    template_folder='../../templates',
-    static_folder='../../static'
-)
+app = flask.Flask(__name__)
 
 _logger_werkzeug = logging.getLogger('werkzeug')
 _logger_werkzeug.setLevel(logging.ERROR)
 
 
-def _get_response(
-        status_ok: bool,
-        message: str,
-        command: str,
-        error_code: int
-) -> flask.Response:
-    """[summary]
+def _get_response(response: communication.Response) -> flask.Response:
+    """Helper method to send a response.
 
     Args:
-        status_ok (bool): [description]
-        message (str): [description]
-        command (str): [description]
-        error_code (int): [description]
+        response (communication.Response): response object
 
     Returns:
-        flask.Response: [description]
+        flask.Response: REST response
     """
     data = {
-        'message': message,
-        'success': status_ok,
-        'command': command
+        'success': response.success,
+        'message': response.message,
+        'command': response.command
     }
     resp = flask.Response(
         json.dumps(data),
@@ -69,21 +59,13 @@ def pause() -> flask.Response:
 
     Pausing the current crawler execution.
     The execution can be continued later on.
-    On success, the response status 200 is set.
-    On Failure (server), the internal server error 500 is set.
-    If the crawler isn't running, the response status 409 is set.
 
     Returns:
-        flask.Response: HTTP response
+        flask.Response: REST response
 
     """
-    status_ok, message, command = treewalk.pause()
-    return _get_response(
-        status_ok=status_ok,
-        message=message,
-        command=command,
-        error_code=defaults.STATUS_CONFLICT
-    )
+    response = manager.pause()
+    return _get_response(response)
 
 
 @app.route('/continue', methods=['GET', 'POST'])
@@ -91,22 +73,13 @@ def unpause() -> flask.Response:
     """API endpoint to continue a paused execution of the crawler.
 
     Continuing a paused execution of the crawler.
-    On success, the response status 200 is set.
-    On Failure, the internal server error 500 is set.
-    If the crawler isn't paused, the response status 409 is set.
 
     Returns:
-        flask.Response: HTTP response
+        flask.Response: REST response
 
     """
-    status_ok, message, command = treewalk.unpause()
-    return _get_response(
-        status_ok=status_ok,
-        message=message,
-        command=command,
-        error_code=defaults.STATUS_CONFLICT
-    )
-
+    response = manager.unpause()
+    return _get_response(response)
 
 
 @app.route('/stop', methods=['GET', 'POST'])
@@ -114,20 +87,13 @@ def stop() -> flask.Response:
     """API endpoint to stop the current execution of the crawler.
 
     Stopping the current execution of the crawler.
-    On success, the response status 200 is set.
-    On Failure, the internal server error 500 is set.
 
     Returns:
-        flask.Response: HTTP response
+        flask.Response: REST response
 
     """
-    status_ok, message, command = treewalk.stop()
-    return _get_response(
-        status_ok=status_ok,
-        message=message,
-        command=command,
-        error_code=defaults.STATUS_INTERNAL_SERVER_ERROR
-    )
+    response = manager.stop()
+    return _get_response(response)
 
 
 @app.route('/info', methods=['GET'])
@@ -138,16 +104,11 @@ def info() -> flask.Response:
     is, which config is used, etc.
 
     Returns:
-        flask.Response: HTTP response
+        flask.Response: REST response
 
     """
-    status_ok, data, command = treewalk.info()
-    return _get_response(
-        status_ok=status_ok,
-        message=data,
-        command=command,
-        error_code=defaults.STATUS_INTERNAL_SERVER_ERROR
-    )
+    response = manager.info()
+    return _get_response(response)
 
 
 @app.route('/start', methods=['GET', 'POST'])
@@ -155,60 +116,74 @@ def start() -> flask.Response:
     """API endpoint to retrive start the crawler with a certain configuration.
 
     Starting the crawler with a arbitrary configuration.
-    If the config/request is invalid, status code 400 is set.
-    On success, the status code 200 is set.
 
     Returns:
-        flask.Response: HTTP response
+        flask.Response: REST response
 
     """
     config = flask.request.args.get('config')
     if config is None:
-        resp = _get_response(
-            status_ok=False,
+        response = communication.Response(
+            success=False,
             message='Provide config or filepath via ?config=<your-config>',
-            command='start',
-            error_code=defaults.STATUS_INTERNAL_SERVER_ERROR
+            command=communication.MANAGER_START,
         )
-        return resp
+        return _get_response(response)
     parser = config_service.ConfigParser(config)
     try:
         config = parser.parse()
     except config_service.ConfigParsingException as error:
-        resp = _get_response(
-            status_ok=False,
+        response = communication.Response(
+            success=False,
             message=str(error),
-            command='start',
-            error_code=defaults.STATUS_INTERNAL_SERVER_ERROR
+            command=communication.MANAGER_START
         )
-        return resp
-    status_ok, message, command = treewalk.start(config)
-    return _get_response(
-        status_ok=status_ok,
-        message=message,
-        command=command,
-        error_code=defaults.STATUS_INTERNAL_SERVER_ERROR
-    )
+        return _get_response(response)
+    response = scheduler.add_config(config)
+    return _get_response(response)
+
+
+@app.route('/schedule/list', methods=['GET'])
+def schedule() -> flask.Response:
+    """Return the TreeWalk schedule.
+
+    Returns:
+        flask.Response: REST response
+
+    """
+    response = scheduler.get_schedule()
+    return _get_response(response)
+
+
+@app.route('/schedule/remove', methods=['GET'])
+def schedule_remove() -> flask.Response:
+    """Return the TreeWalk schedule.
+
+    Returns:
+        flask.Response: REST response
+
+    """
+    identifier = flask.request.args.get('id', '')
+    response = scheduler.remove_config(identifier)
+    return _get_response(response)
 
 
 @app.route('/shutdown', methods=['GET', 'POST'])
 def shutdown():
-    # FIXME: Get response from interface and evaluate
-    treewalk.shutdown()
-    communication.database_updater_input.put(
-        (communication.DATABASE_UPDATER_SHUTDOWN, None)
-    )
+    manager.shutdown()
+    db_updater.shutdown()
+    scheduler.shutdown()
     func = flask.request.environ.get('werkzeug.server.shutdown')
     if func is None:
         # TODO handle error
         return None
     func()
-    return _get_response(
-        status_ok=True,
+    response = communication.Response(
+        success=True,
         message='Shutting down. Bye!',
-        command='shutdown',
-        error_code=defaults.STATUS_INTERNAL_SERVER_ERROR
+        command=communication.MANAGER_SHUTDOWN
     )
+    return _get_response(response)
 
 
 @app.route('/', methods=['GET'])
