@@ -55,4 +55,15 @@ class DatabaseConnectionBase:
         self._time = 0
         self._measure_time = measure_time
 
+    def clear_time(self) -> None:
+        """Clears the time recording for database operations."""
+        self._time = 0
 
+    def get_time(self) -> int:
+        """Return the time spent for database operations in seconds.
+
+        Returns:
+            int: time in seconds
+
+        """
+        return self._time

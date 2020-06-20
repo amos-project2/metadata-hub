@@ -91,12 +91,12 @@ class TreeWalkManager(threading.Thread):
                     pass
             self._work_packages = [items for items in self._work_packages if items]
             for index, package in enumerate(packages):
-                _, queue = self._workers[index]
+                _, queue_input, _ = self._workers[index]
                 command = communication.Command(
                     command=communication.WORKER_PACKAGE,
                     data=package
                 )
-                queue.put(command)
+                queue_input.put(command)
             self._workers_finished.wait()
             # The single packages contain file names, so retrive the directories here
             analyzed_dirs = list(set([
@@ -118,12 +118,12 @@ class TreeWalkManager(threading.Thread):
             for index, fpath in enumerate(files):
                 tmp_lists[index % len(tmp_lists)].append(fpath)
             for index, package in enumerate(tmp_lists):
-                _, queue = self._workers[index]
+                _, queue_input, _ = self._workers[index]
                 command = communication.Command(
                     command=communication.WORKER_PACKAGE,
                     data=package
                 )
-                queue.put(command)
+                queue_input.put(command)
             self._workers_finished.wait()
             self._db_connection.update_status(self._tree_walk_id, [directory])
             self._workers_finished.clear()
@@ -148,8 +148,8 @@ class TreeWalkManager(threading.Thread):
                 command=communication.WORKER_FINISH,
                 data=None
             )
-            for _, queue in self._workers:
-                queue.put(command)
+            for _, queue_input, _ in self._workers:
+                queue_input.put(command)
             self._db_connection.set_crawl_state(
                 tree_walk_id=self._tree_walk_id,
                 status=communication.CRAWL_STATUS_FINISHED
@@ -179,11 +179,21 @@ class TreeWalkManager(threading.Thread):
                     done = self._work()
                     if done:
                         self._db_connection.delete_lost(self._tree_walk_id, self._roots)
+                        if self._measure_time:
+                            exiftool_time, db_time = ([], [])
+                            for _, _, output_queue in self._workers:
+                                response = output_queue.get()
+                                this_exiftool_time, this_db_time = response.message
+                                exiftool_time.append(this_exiftool_time)
+                                db_time.append(this_db_time)
+                            logging.critical(
+                                f'TIME:: '
+                                f'Max Worker: '
+                                f'ExifTool={max(exiftool_time):.2f}s , '
+                                f'Database={max(db_time):.2f}s '
+                                f'Manager: Database={self._db_connection.get_time():.2f}s'
+                            )
                         self._reset()
-                        # end = datetime.now();
-                        # total = (end - start).total_seconds();
-                        # _logger.info('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-                        # _logger.info('Table - The total crawling time: {}'.format(total))
             else:
                 command = communication.manager_queue_input.get()
                 check = True
@@ -229,8 +239,8 @@ class TreeWalkManager(threading.Thread):
                 command=communication.WORKER_STOP,
                 data=None
             )
-            for worker, worker_queue in self._workers:
-                worker_queue.put(command)
+            for worker, queue_input, queue_output in self._workers:
+                queue_input.put(command)
                 worker.join()
             self._db_connection.set_crawl_state(
                 tree_walk_id=self._tree_walk_id,
@@ -258,8 +268,8 @@ class TreeWalkManager(threading.Thread):
                 command=communication.WORKER_UNPAUSE,
                 data=None
             )
-            for _, worker_queue in self._workers:
-                worker_queue.put(command)
+            for _, queue_input, _ in self._workers:
+                queue_input.put(command)
             self._db_connection.set_crawl_state(
                 tree_walk_id=self._tree_walk_id,
                 status=communication.CRAWL_STATUS_RUNNING
@@ -316,8 +326,8 @@ class TreeWalkManager(threading.Thread):
                 command=communication.WORKER_PAUSE,
                 data=None
             )
-            for _, worker_queue in self._workers:
-                worker_queue.put(command)
+            for _, queue_input, _ in self._workers:
+                queue_input.put(command)
             self._db_connection.set_crawl_state(
                 tree_walk_id=self._tree_walk_id,
                 status=communication.CRAWL_STATUS_PAUSED
@@ -400,8 +410,10 @@ class TreeWalkManager(threading.Thread):
         # Create the worker processes and start them
         for id_worker in range(num_workers):
             queue_input = multiprocessing.Queue()
+            queue_output = multiprocessing.Queue()
             worker = treewalk.Worker(
                 queue_input=queue_input,
+                queue_output=queue_output,
                 config=config,
                 connection_data=self._connection_data,
                 tree_walk_id=tree_walk_id,
@@ -409,10 +421,10 @@ class TreeWalkManager(threading.Thread):
                 counter=self._worker_counter,
                 finished=self._workers_finished,
                 num_workers=num_workers,
-                db_measure_time=self._measure_time
+                measure_time=self._measure_time
             )
-            self._workers.append((worker, queue_input))
-        for worker, _ in self._workers:
+            self._workers.append((worker, queue_input, queue_output))
+        for worker, _, _ in self._workers:
             worker.start()
         # Update the manager
         self._roots = config.get_directories()

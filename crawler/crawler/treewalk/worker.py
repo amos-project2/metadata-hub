@@ -14,8 +14,6 @@ import queue
 import hashlib
 import logging
 import subprocess
-import time # FIXME
-import random # FIXME
 import multiprocessing
 from typing import List, Tuple
 from datetime import datetime
@@ -34,12 +32,37 @@ import crawler.communication as communication
 _logger = logging.getLogger(__name__)
 
 
+
+
+def measure_exiftool(func):
+    """Decorator for time measurement of the exiftool execution.
+
+    This decorator is used for roughly estimate the time spent for running
+    the ExifTool on the work packages.
+
+    Args:
+        func (function): function to wrap
+
+    """
+    def decorator(self, *args, **kwargs):
+        if self._measure_time:
+            start = datetime.now()
+            result = func(self, *args, **kwargs)
+            end = datetime.now()
+            self._exiftool_time += (end - start).total_seconds()
+        else:
+            result = func(self, *args, **kwargs)
+        return result
+    return decorator
+
+
 class Worker(multiprocessing.Process):
 
 
     def __init__(
             self,
             queue_input: multiprocessing.Queue,
+            queue_output: multiprocessing.Queue,
             config: Config,
             connection_data: dict,
             tree_walk_id: int,
@@ -47,29 +70,28 @@ class Worker(multiprocessing.Process):
             counter: multiprocessing.Value,
             finished: multiprocessing.Event,
             num_workers: int,
-            db_measure_time: bool
+            measure_time: bool
     ):
         super(Worker, self).__init__()
         self._queue_input = queue_input
+        self._queue_output = queue_output
         self._config = config
         self._tree_walk_id = tree_walk_id
         self._lock = lock
         self._counter = counter
+        self._measure_time = measure_time
         self._db_connection = database.DatabaseConnection(
             db_info=connection_data,
-            measure_time=db_measure_time
+            measure_time=self._measure_time
         )
         self._exiftool = self._config.get_exiftool_executable()
         self._finished = finished
         self._num_workers = num_workers
+        self._exiftool_time = 0
 
 
     def run(self) -> None:
-        """Run the worker process.
-
-        TODO: Add description
-
-        """
+        """Run the worker process."""
         paused = False
         _logger.info(f'Process {self.pid}: starting.')
         while True:
@@ -166,6 +188,35 @@ class Worker(multiprocessing.Process):
         return int(size.split(' ')[0]) * multipl
 
 
+    @measure_exiftool
+    def run_exiftool(self, package: List[str]) -> dict:
+        """Run the ExifTool on the package.
+
+        Args:
+            package (List[str]): work package
+
+        Returns:
+            dict: metadata output or None on error
+
+        """
+        try:
+            process = subprocess.Popen(
+                [f'{self._exiftool}', '-json', *package],
+                stdout=subprocess.PIPE
+            )
+            # FIXME better solution?
+            output = str(process.stdout.read(), 'utf-8')
+            if output:
+                metadata = json.loads(output)
+            else:
+                return None
+        except:
+            _logger.error(
+                f'Process {self.pid}: Error executing the exiftool in process.'
+            )
+            return None
+        return metadata
+
     def _do_work(self, package: List[str]) -> None:
         """Process the work package.
 
@@ -177,7 +228,6 @@ class Worker(multiprocessing.Process):
             package (List[str]): work package to process
 
         """
-
         def clean_up():
             # Check if all workers are done
             # The last one sets the finished event
@@ -188,28 +238,16 @@ class Worker(multiprocessing.Process):
                     self._finished.set()
                     _logger.debug(f'Process {self.pid}: finished as last.')
 
+
         # If the package is already empty
         if not package:
             clean_up()
             return
-
-        try:
-            # start = datetime.now();
-            process = subprocess.Popen([f'{self._exiftool}', '-json', *package], stdout=subprocess.PIPE)
-            output = str(process.stdout.read(), 'utf-8') # FIXME better solution?
-            # end = datetime.now();
-            # total = (end - start).total_seconds();
-            # _logger.info('>>>>>>>>>>>>>>>>>>>>>>>')
-            # _logger.info('Exiftool - The extracting time: {} '.format(total))
-            if output:
-                metadata = json.loads(output)
-            else:
-                clean_up()
-                return
-        except:
-            _logger.error(f'Process {self.pid}: Error executing the exiftool in process.')
+        # Run the exiftool
+        metadata = self.run_exiftool(package)
+        if metadata is None:
+            clean_up()
             return
-
         inserts = []
         for result in metadata:
             # get the exif output for file x
@@ -265,8 +303,13 @@ class Worker(multiprocessing.Process):
         """Clean up method for cleaning up all used resources."""
         _logger.debug(f'Process {self.pid}: cleaning up.')
         self._db_connection.close()
-        # Empty the work package list. Otherwise BrokenPipe errors will appear
-        # because the queue still contains items.
-        # FIXME: the queue should already actually be empty.
-        while not self._queue_input.empty():
-            self._queue_input.get(False)
+        response = communication.Response(
+            success=True,
+            message=(self._exiftool_time, self._db_connection.get_time()),
+            command=communication.WORKER_FINISH
+        )
+        self._queue_output.put(response)
+        # Wait for the manager to read the result, otherwise BrokenPipe will
+        # be raised
+        while not self._queue_output.empty():
+            pass

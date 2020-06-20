@@ -68,6 +68,7 @@ class DatabaseConnection:
         self._time = 0
         self._measure_time = measure_time
 
+    @measure_time
     def update_status(self, crawlID: int, package: List[str]):
         """Updates a row in table crawls according to the tree walk progress.
 
@@ -101,6 +102,7 @@ class DatabaseConnection:
             self.con.rollback()
         return
 
+    @measure_time
     def insert_new_record_crawls(self, config: Config) -> int:
         """Insert a new record to the 'crawls' table. Used at the start of a crawl task.
            TODO: Add docstring
@@ -144,6 +146,7 @@ class DatabaseConnection:
         self.con.commit()
         return dbID
 
+    @measure_time
     def insert_new_record_files(self, insert_values: List[Tuple[str]]):
         """Insert a new record to the 'files' table based on the ExifTool output.
 
@@ -172,6 +175,7 @@ class DatabaseConnection:
     def close(self) -> None:
         self.con.close()
 
+    @measure_time
     def set_crawl_state(self, tree_walk_id: int, status: str) -> None:
         """Update the status of the crawler in it's corresponding database entry.
 
@@ -203,6 +207,7 @@ class DatabaseConnection:
             curs.close()
             self.con.rollback()
 
+    @measure_time
     def check_directory(self, path: str) -> List[int]:
         """checks the database for a given directory. Returns all the most recent ids.
 
@@ -236,6 +241,7 @@ class DatabaseConnection:
 
         return file_ids
 
+    @measure_time
     def set_deleted(self, file_ids: List[int]) -> None:
         """Set every file in file_ids deleted and deleted_time value.
 
@@ -331,6 +337,7 @@ class DatabaseConnection:
         """
         return self._time
 
+    @measure_time
     def delete_lost(self, crawlId: int, roots: List) -> None:
         """Scans the directories at the end of a scan, to find directories that were deleted since the last crawl
 
