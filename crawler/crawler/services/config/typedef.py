@@ -18,9 +18,13 @@ import hashlib
 from typing import Union, List
 
 
+# Local imports
+import crawler.services.environment as environment
+
+
 class Config:
 
-    def __init__(self, data: dict, exiftool_exec: str):
+    def __init__(self, data: dict):
         self._data = data
         self._name = self._data.get('name')
         self._author = self._data.get('author')
@@ -28,14 +32,20 @@ class Config:
         self._start = self._data.get('time').get('start')
         self._interval = self._data.get('time').get('interval')
         self._directories = self._data.get('directories')
-        self._cpu_level = self._data.get('options').get('cpu-level')
+        self._cpu_level = self._data    .get('options').get('cpu-level')
         self._package_size = self._data.get('options').get('package-size')
         self._platform = self._data.get('options').get('platform')
         self._force_update = self._data.get('options').get('force-update')
-        self._exiftool_exec = exiftool_exec
-        identifier = self._compute_identifier()
-        self._data['identifier'] = identifier
-        self._identifier = identifier
+        self._exiftool_exec = {
+            'Linux': environment.env.EXIFTOOL_LINUX,
+            'Windows': environment.env.EXIFTOOL_WINDOWS
+        }.get(self._platform)
+        if 'identifier' not in self._data.keys():
+            identifier = self._compute_identifier()
+            self._data['identifier'] = identifier
+            self._identifier = identifier
+        else:
+            self._identifier = self._data.get('identifier')
 
     def _compute_identifier(self) -> str:
         """Compute a unique identifier for the configuration.

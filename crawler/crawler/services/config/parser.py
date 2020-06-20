@@ -52,15 +52,7 @@ class ConfigParser:
             jsonschema.validate(schema=self._schema, instance=self._data)
         except jsonschema.ValidationError as err:
             raise ConfigParsingException('JSON data does not apply the schema')
-        platform = self._data.get('options').get('platform')
-        exiftool_exec = environment.env.EXIFTOOL_LINUX
-        if platform == 'Windows':
-            exiftool_exec = environment.env.EXIFTOOL_WINDOWS
-        result = Config(
-            data=self._data,
-            exiftool_exec=exiftool_exec
-        )
-        return result
+        return Config(self._data)
 
 
     def _parse_from_filepath(self) -> Config:
