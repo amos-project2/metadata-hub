@@ -39,7 +39,7 @@ class Worker(multiprocessing.Process):
 
     def __init__(
             self,
-            queue: multiprocessing.Queue,
+            queue_input: multiprocessing.Queue,
             config: Config,
             connection_data: dict,
             tree_walk_id: int,
@@ -50,7 +50,7 @@ class Worker(multiprocessing.Process):
             db_measure_time: bool
     ):
         super(Worker, self).__init__()
-        self._queue = queue
+        self._queue_input = queue_input
         self._config = config
         self._tree_walk_id = tree_walk_id
         self._lock = lock
@@ -73,19 +73,21 @@ class Worker(multiprocessing.Process):
         paused = False
         _logger.info(f'Process {self.pid}: starting.')
         while True:
-            command, data = self._queue.get()
-            _logger.info(f'Process {self.pid}: received command {command}.')
-            if (command == communication.WORKER_PACKAGE) and not paused:
-                self._do_work(data)
-            elif command == communication.WORKER_FINISH:
+            command = self._queue_input.get()
+            _logger.debug(
+                f'Process {self.pid}: received command {command.command}.'
+            )
+            if (command.command == communication.WORKER_PACKAGE) and not paused:
+                self._do_work(command.data)
+            elif command.command == communication.WORKER_FINISH:
                 self._clean_up()
                 break
-            elif command == communication.WORKER_STOP:
+            elif command.command == communication.WORKER_STOP:
                 self._clean_up()
                 break
-            elif (command == communication.WORKER_PAUSE) and not paused:
+            elif (command.command == communication.WORKER_PAUSE) and not paused:
                 paused = True
-            elif (command == communication.WORKER_UNPAUSE) and paused:
+            elif (command.command == communication.WORKER_UNPAUSE) and paused:
                 paused = False
             else:
                 _logger.error(
@@ -266,5 +268,5 @@ class Worker(multiprocessing.Process):
         # Empty the work package list. Otherwise BrokenPipe errors will appear
         # because the queue still contains items.
         # FIXME: the queue should already actually be empty.
-        while not self._queue.empty():
-            self._queue.get(False)
+        while not self._queue_input.empty():
+            self._queue_input.get(False)

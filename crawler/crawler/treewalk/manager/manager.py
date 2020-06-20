@@ -15,9 +15,7 @@ from typing import Tuple, Any
 from datetime import datetime
 
 # Local imports
-from . import tree_walk as tree_walk
-from . import state as state
-from . import worker as worker_mod
+import crawler.treewalk as treewalk
 import crawler.database as database
 import crawler.communication as communication
 import crawler.services.environment as environment
@@ -29,7 +27,7 @@ _logger = logging.getLogger(__name__)
 
 class TreeWalkManager(threading.Thread):
 
-    def __init__(self):
+    def __init__(self, db_info: dict, measure_time: bool, state: treewalk.State):
         super(TreeWalkManager, self).__init__()
         self._roots = []
         self._workers = []
@@ -41,14 +39,9 @@ class TreeWalkManager(threading.Thread):
         self._tree_walk_id = -1
         self._total = 0
         self._workers_finished = multiprocessing.Event()
-        self._state = state.State()
-        self._connection_data = dict(
-            user=environment.env.DATABASE_USER,
-            password=environment.env.DATABASE_PASSWORD,
-            host=environment.env.DATABASE_HOST,
-            port=environment.env.DATABASE_PORT,
-            dbname=environment.env.DATABASE_NAME
-        )
+        self._state = state
+        self._connection_data = db_info
+        self._measure_time = measure_time
         self._db_connection = None # type: database.DatabaseConnection
 
 
@@ -99,7 +92,11 @@ class TreeWalkManager(threading.Thread):
             self._work_packages = [items for items in self._work_packages if items]
             for index, package in enumerate(packages):
                 _, queue = self._workers[index]
-                queue.put((communication.WORKER_PACKAGE, package))
+                command = communication.Command(
+                    command=communication.WORKER_PACKAGE,
+                    data=package
+                )
+                queue.put(command)
             self._workers_finished.wait()
             # The single packages contain file names, so retrive the directories here
             analyzed_dirs = list(set([
@@ -122,7 +119,11 @@ class TreeWalkManager(threading.Thread):
                 tmp_lists[index % len(tmp_lists)].append(fpath)
             for index, package in enumerate(tmp_lists):
                 _, queue = self._workers[index]
-                queue.put((communication.WORKER_PACKAGE, package))
+                command = communication.Command(
+                    command=communication.WORKER_PACKAGE,
+                    data=package
+                )
+                queue.put(command)
             self._workers_finished.wait()
             self._db_connection.update_status(self._tree_walk_id, [directory])
             self._workers_finished.clear()
@@ -142,12 +143,13 @@ class TreeWalkManager(threading.Thread):
             return False
 
         def done() -> None:
-            """Finish the TreeWalk execution.
-reset
-            Send the finish signal to each worker and update the database.
-            """
+            """Send the finish signal to each worker and update the database."""
+            command = communication.Command(
+                command=communication.WORKER_FINISH,
+                data=None
+            )
             for _, queue in self._workers:
-                queue.put((communication.WORKER_FINISH, None))
+                queue.put(command)
             self._db_connection.set_crawl_state(
                 tree_walk_id=self._tree_walk_id,
                 status=communication.CRAWL_STATUS_FINISHED
@@ -171,7 +173,7 @@ reset
             check = False
             if self._state.is_running():
                 try:
-                    command, data = communication.manager_queue_input.get(False)
+                    command = communication.manager_queue_input.get(False)
                     check = True
                 except queue.Empty:
                     done = self._work()
@@ -183,51 +185,52 @@ reset
                         # _logger.info('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
                         # _logger.info('Table - The total crawling time: {}'.format(total))
             else:
-                command, data = communication.manager_queue_input.get()
+                command = communication.manager_queue_input.get()
                 check = True
             if check:
-                if command == communication.MANAGER_INFO:
-                    message, data = self._info()
-                elif command == communication.MANAGER_PAUSE:
-                    message, data = self._pause()
-                elif command == communication.MANAGER_SHUTDOWN:
-                    message, data = self._stop()
+                if command.command == communication.MANAGER_INFO:
+                    response = self._info()
+                elif command.command == communication.MANAGER_PAUSE:
+                    response = self._pause()
+                elif command.command == communication.MANAGER_SHUTDOWN:
+                    response = self._stop()
                     shutdown = True
-                elif command == communication.MANAGER_START:
+                elif command.command == communication.MANAGER_START:
                     #start = datetime.now();
-                    message, data = self._start(data)
-                elif command == communication.MANAGER_STOP:
-                    message, data = self._stop()
-                elif command == communication.MANAGER_UNPAUSE:
-                    message, data = self._unpause()
+                    response = self._start(command.data)
+                elif command.command == communication.MANAGER_STOP:
+                    response = self._stop()
+                elif command.command == communication.MANAGER_UNPAUSE:
+                    response = self._unpause()
                 else:
                     _logger.error(f'Received unknown command {command}')
                 # Log the message and put the result to the output queue
-                if message == communication.MANAGER_OK:
-                    _logger.info(f'{command}: {message}')
+                if response.success:
+                    _logger.info(f'{response.command}: {response.message}')
                 else:
-                    _logger.warning(f'{command}: {message}')
-                communication.manager_queue_output.put((message, data))
+                    _logger.warning(f'{response.command}: {response.message}')
+                communication.manager_queue_output.put(response)
                 if shutdown:
                     break
         _logger.info('Shutting TreeWalk down. Bye.')
 
 
-    def _stop(self) -> Tuple[str, None]:
+    def _stop(self) -> communication.Response:
         """Stop the current execution of the TreeWalk.
 
-        TODO: Update state in DB
-
         Returns:
-            Tuple[str, None]: message and None (no data required)
+            communication.Response: response object
 
         """
-        message, data = ('', None)
         if self._state.is_ready():
             message = 'Attempted to stop when TreeWalk was ready.'
         else:
+            command = communication.Command(
+                command=communication.WORKER_STOP,
+                data=None
+            )
             for worker, worker_queue in self._workers:
-                worker_queue.put((communication.WORKER_STOP, None))
+                worker_queue.put(command)
                 worker.join()
             self._db_connection.set_crawl_state(
                 tree_walk_id=self._tree_walk_id,
@@ -235,41 +238,51 @@ reset
             )
             self._reset()
             message = communication.MANAGER_OK
-        return (message, data)
+        return communication.Response(
+            success=True,
+            message=message,
+            command=communication.MANAGER_STOP
+        )
 
 
-    def _unpause(self) -> Tuple[str, None]:
+    def _unpause(self) -> communication.Response:
         """Continue the paused execution.
 
-        TODO: Update state in DB
-
         Returns:
-            Tuple[str, None]: message and None (no data required)
+            communication.Response: response object
 
         """
-        message, data = ('', None)
         try:
             self._state.set_unpaused()
+            command = communication.Command(
+                command=communication.WORKER_UNPAUSE,
+                data=None
+            )
             for _, worker_queue in self._workers:
-                worker_queue.put((communication.WORKER_UNPAUSE, None))
+                worker_queue.put(command)
             self._db_connection.set_crawl_state(
                 tree_walk_id=self._tree_walk_id,
                 status=communication.CRAWL_STATUS_RUNNING
             )
+            success = True
             message = communication.MANAGER_OK
-        except state.StateException as err:
+        except treewalk.StateException as err:
+            success = False
             message = f'Attempted to continue. {str(err)}'
-        return (message, data)
+        return communication.Response(
+            success=success,
+            message=message,
+            command=communication.MANAGER_UNPAUSE
+        )
 
 
-    def _info(self) -> Tuple[str, dict]:
+    def _info(self) -> communication.Response:
         """Get information about the current state of the TreeWalk.
 
         Returns:
-            Tuple[str, dict]: message (OK) and info data
+            communication.Response: response object
 
         """
-        message, data = (communication.MANAGER_OK, None)
         if self._state.is_ready():
             data = {
                 'status': self._state.get_status(),
@@ -283,41 +296,52 @@ reset
                 'config': self._state.get_config(),
                 'progress': f'{progress:.2f}'
             }
-        return (message, data)
+        return communication.Response(
+            success=True,
+            message=data,
+            command=communication.MANAGER_INFO
+        )
 
 
-    def _pause(self) -> Tuple[str, None]:
+    def _pause(self) -> communication.Response:
         """Pause the current execution of the TreeWalk.
 
-        TODO: Update state in DB
-
         Returns:
-            Tuple[str, None]: message and None (no data required)
+            communication.Response: response object
 
         """
-        message, data = ('', None)
         try:
             self._state.set_paused()
+            command = communication.Command(
+                command=communication.WORKER_PAUSE,
+                data=None
+            )
             for _, worker_queue in self._workers:
-                worker_queue.put((communication.WORKER_PAUSE, None))
+                worker_queue.put(command)
             self._db_connection.set_crawl_state(
                 tree_walk_id=self._tree_walk_id,
                 status=communication.CRAWL_STATUS_PAUSED
             )
+            success = True
             message = communication.MANAGER_OK
-        except state.StateException as err:
+        except treewalk.StateException as err:
+            success = False
             message = f'Attempted to pause. {str(err)}'
-        return (message, data)
+        return communication.Response(
+            success=success,
+            message=message,
+            command=communication.MANAGER_PAUSE
+        )
 
 
-    def _start(self, config: Config) -> Tuple[str, None]:
+    def _start(self, config: Config) -> communication.Response:
         """Start the TreeWalk with given configuration.
 
         Args:
             config (Config): configuration of new TreeWalk
 
         Returns:
-            Tuple[str, None]: message and None (no data required)
+            communication.Response: response object
 
         """
 
@@ -337,18 +361,18 @@ reset
             # Prepare database
             self._db_connection = database.DatabaseConnection(
                 db_info=self._connection_data,
-                measure_time=environment.env.CRAWLER_DB_MEASURE_TIME
+                measure_time=self._measure_time
             )
             db_id = self._db_connection.insert_new_record_crawls(config)
             # Prepare number of workers
-            number_of_workers = tree_walk.get_number_of_workers(
+            number_of_workers = treewalk.get_number_of_workers(
                 config.get_cpu_level()
             )
             # Prepare analyzed dirs
             # FIXME: GET ALREADY PROCESSED NODES HERE
             analyzedDirectories = json.dumps({"analyzed directories": []})
             # Prepare work packages
-            work_packages, split = tree_walk.create_work_packages(
+            work_packages, split = treewalk.create_work_packages(
                 inputs=config.get_directories(),
                 work_package_size=config.get_package_size(),
                 number_of_workers=number_of_workers,
@@ -359,17 +383,25 @@ reset
 
         # Check if it is ok to run
         if self._state.is_paused():
-            return ('Attempted to start when TreeWalk was paused.', None)
+            return communication.Response(
+                success=False,
+                message='Attempted to start when TreeWalk was paused.',
+                command=communication.MANAGER_START
+            )
         if self._state.is_running():
-            return ('Attempted to start when TreeWalk was running.', None)
+            return communication.Response(
+                success=False,
+                message='Attempted to start when TreeWalk is running.',
+                command=communication.MANAGER_START
+            )
         # Prepare the data
         data = prepare(config)
         tree_walk_id, num_workers, work_packages, work_packages_split = data
         # Create the worker processes and start them
         for id_worker in range(num_workers):
-            queue = multiprocessing.Queue()
-            worker = worker_mod.Worker(
-                queue=queue,
+            queue_input = multiprocessing.Queue()
+            worker = treewalk.Worker(
+                queue_input=queue_input,
                 config=config,
                 connection_data=self._connection_data,
                 tree_walk_id=tree_walk_id,
@@ -377,9 +409,9 @@ reset
                 counter=self._worker_counter,
                 finished=self._workers_finished,
                 num_workers=num_workers,
-                db_measure_time=environment.env.CRAWLER_DB_MEASURE_TIME
+                db_measure_time=self._measure_time
             )
-            self._workers.append((worker, queue))
+            self._workers.append((worker, queue_input))
         for worker, _ in self._workers:
             worker.start()
         # Update the manager
@@ -390,4 +422,8 @@ reset
         self._work_packages_split = work_packages_split
         self._total = self._get_number_of_work_packages()
         self._tree_walk_id = tree_walk_id
-        return (communication.MANAGER_OK, None)
+        return communication.Response(
+            success=True,
+            message=communication.MANAGER_OK,
+            command=communication.MANAGER_START
+        )
