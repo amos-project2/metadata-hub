@@ -51,3 +51,15 @@ CRAWL_STATUS_FINISHED = 'finished'
 
 # Shutdown the database updater
 DATABASE_UPDATER_SHUTDOWN = 'shutdown'
+
+# Add execution to scheduler
+SCHEDULER_ADD_CONFIG = 'add-config'
+
+# Remove configuration from scheduler
+SCHEDULER_REMOVE_CONFIG = 'remove-config'
+
+# Get scheduled executions from scheduler
+SCHEDULER_GET_SCHEDULE = 'get-schedule'
+
+# Shutdown the scheduler
+SCHEDULER_SHUTDOWN = 'shutdown'
