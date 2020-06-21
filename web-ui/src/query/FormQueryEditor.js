@@ -106,6 +106,27 @@ export class FormQueryEditor extends Page {
                 <div class="fg-filter-container">
                     ${this.filterFirstElement}
                 </div>
+                <div>
+                <div class="form-row justify-content-md-center">
+                    <div class="form-group col-md-2">
+                    <label for="fg-filter-connector-options">Filter Connector<a class="pover" title="Filter Connector" data-content="TODO">[?]</a></label>
+                        <select class="custom-select fg-filter-connector-options" id="fg-filter-connector-options">
+                                <option value="all-and" selected>ALL-AND</option>
+                                <option value="all-or">ALL-OR</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                    </div>
+                </div>
+
+                 <div class="form-row fq-custom-filter-connector-row" style="display:none">
+                    <div class="form-group col-md-12">
+                        <label for="fq-custom-filter-connector">Custom Filter<a class="pover" title="Custom Filter" data-content="TODO">[?]</a></label>
+                        <input type="text" class="form-control" id="fq-custom-filter-connector" value="testa">
+                    </div>
+                </div>
+
+                </div>
+
 
 
                 <div class="form-row">
@@ -211,6 +232,15 @@ export class FormQueryEditor extends Page {
         });
 
 
+        $(".fg-filter-connector-options").change(function () {
+            if ($(this).val() === "custom") {
+                $(".fq-custom-filter-connector-row").stop(true).show(1000);
+            } else {
+                $(".fq-custom-filter-connector-row").stop(true).hide(1000);
+            }
+        });
+
+
         //alert(datetimepicker());
         //  datetimepicker(jQuery);
         // alert($('#fq-createFileTimeRange').datetimepicker);
@@ -292,11 +322,11 @@ export class FormQueryEditor extends Page {
         });
     }
 
-    inputValidation(){
+    inputValidation() {
 
     }
 
-    inputSuggestion(){
+    inputSuggestion() {
         // $( function() {
         //     var availableTags = [
         //         "searchForFileMetadata"
@@ -324,7 +354,8 @@ export class FormQueryEditor extends Page {
         // if (filepattern !== "") {filepattern = `pattern: "${filepattern}",`;} else {filepattern = "";}
         // if (!checkbox) {checkbox = "option: included,";} else {checkbox = "option: excluded,";}
         if (limit !== "") {limit = `limitFetchingSize: ${limit},\n  `;} else {limit = "";}
-        if (showDeleted) {deleted = `showDeleted: true`;};
+        if (showDeleted) {deleted = `showDeleted: true`;}
+        ;
         if (startDate !== "") {startDate = `start_creation_time: "${startDate}",\n  `;} else {startDate = "";}
         if (endDate !== "") {endDate = `end_creation_time: "${endDate}",\n  `;} else {endDate = "";}
         if (startDateUpdated !== "") {startDateUpdated = `start_modification_time: "${startDateUpdated}",\n  `;} else {startDateUpdated = "";}
