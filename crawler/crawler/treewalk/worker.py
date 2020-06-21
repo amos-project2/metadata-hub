@@ -286,11 +286,12 @@ class Worker(multiprocessing.Process):
         directories = set([x[1] for x in inserts])
         try:
             for dir in directories:
-                file_ids = self._db_connection.check_directory(dir)
+                file_ids = self._db_connection.check_directory(dir, [x[-2] for x in inserts])
                 if file_ids:
                     toDelete.extend(file_ids)
             if len(toDelete) > 0:
-                self._db_connection.set_deleted(toDelete)
+                # FIXME actually delete the files
+                self._db_connection.delete_files(toDelete)
         except Exception as e:
             print(e)
             _logger.warning(
