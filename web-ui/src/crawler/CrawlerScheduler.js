@@ -7,6 +7,7 @@ export class CrawlerScheduler extends Page {
         this.restAPIFetcherCrawler = this.parent.dependencies.restApiFetcherCrawler;
         this.cacheLevel = 3;
         this.updateTimer = null;
+        this.tasks = null;
     }
 
     content() {
@@ -20,8 +21,24 @@ export class CrawlerScheduler extends Page {
                                 <div class="col-12 col-md-3 pt-3">
                                     <button type="submit" class="btn btn-primary btn-block font-weight-bold">REMOVE</button>
                                 </div>
-                                <div class="col-12 col-md-9 pt-3">
+                                <div class="col-12 col-md-9 pt-3" align="left">
                                     <input type="text" class="form-control" id="remove-id">
+                                    <small id="remove-id-help" class="form-text text-muted">
+                                        Input the identifier of the execution you want to remove here.
+                                    </small>
+                                </div>
+                            </div>
+                        </form>
+                        <form id="show-config-form">
+                            <div class="form-group row">
+                                <div class="col-12 col-md-3 pt-3">
+                                    <button type="submit" class="btn btn-primary btn-block font-weight-bold">CONFIG</button>
+                                </div>
+                                <div class="col-12 col-md-9 pt-3" align="left">
+                                    <input type="text" class="form-control" id="show-config-id">
+                                    <small id="remove-id-help" class="form-text text-muted">
+                                        Input the identifier of the execution for which you want to inspect the configuration.
+                                    </small>
                                 </div>
                             </div>
                         </form>
@@ -57,10 +74,13 @@ export class CrawlerScheduler extends Page {
         let self = this;
         $("#remove-id-form").on("submit", function (e) {
             e.preventDefault();
-            self.removeID(e);
+            self.removeID();
+        });
+        $("#show-config-form").on("submit", function (e) {
+            e.preventDefault();
+            self.showConfig();
         });
     }
-
 
     update() {
         let self = this;
@@ -69,6 +89,8 @@ export class CrawlerScheduler extends Page {
             schedule.hide(1000, "swing", function() {
                 schedule.html("");
                 let tasks = event.data.message;
+                tasks = tasks.sort((t1, t2) => t1.timestamp.localeCompare(t2.timestamp));
+                self.tasks = tasks;
                 let pending = tasks.filter(task => task.pending);
                 let notPending = tasks.filter(task => !task.pending);
                 self.appendSchedule(pending);
@@ -96,7 +118,7 @@ export class CrawlerScheduler extends Page {
         `;
     }
 
-    removeID(e) {
+    removeID() {
         let self = this;
         let id = $("#remove-id").val();
         let url = `schedule/remove?id=${id}`;
@@ -111,6 +133,38 @@ export class CrawlerScheduler extends Page {
         });
     }
 
+    renderConfig(config) {
+        if (config === undefined) {
+            return `
+                <div class="alert alert-secondary alert-dismissible fade show" role="alert">
+                    No config for given identifier found.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            `;
+        }
+        return `
+            <div class="alert alert-secondary alert-dismissible fade show" role="alert">
+                <pre>${JSON.stringify(config, null, 4)}</pre>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        `;
+    }
+
+    showConfig() {
+        let self = this;
+        let id = $("#show-config-id").val();
+        let messages = $("#messages");
+        let task = this.tasks.find(task => {
+            return task.identifier === id
+        })
+        messages.append(self.renderConfig(task.config));
+        $("#show-config-id").val("");
+    }
+
     appendSchedule(tasks) {
         let self = this;
         let schedule = $("#schedule");
@@ -122,9 +176,9 @@ export class CrawlerScheduler extends Page {
     }
 
     renderTask(task) {
-        console.log(task);
         let statusBadge = null;
-        let forceBadge = null;
+        let forceBadge = "";
+        let periodicBadge = "";
         if (task.pending) {
             statusBadge = `<span class="badge badge-warning mr-2">PENDING</span>`;
         } else {
@@ -132,8 +186,9 @@ export class CrawlerScheduler extends Page {
         }
         if (task.force) {
             forceBadge = `<span class="badge badge-danger">FORCE</span>`;
-        } else {
-            forceBadge = ``;
+        }
+        if (task.interval) {
+            periodicBadge = `<span class="badge badge-dark">PERIODIC</span>`;
         }
         return `
             <div class="card mt-3">
@@ -145,6 +200,7 @@ export class CrawlerScheduler extends Page {
                         <div class="col-lg-12 col-xl-2">
                             ${statusBadge}
                             ${forceBadge}
+                            ${periodicBadge}
                         </div>
                     </div>
                 </div>

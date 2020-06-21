@@ -199,8 +199,8 @@ export class CrawlerController extends Page {
                             <span class="font-weight-bold">Start </span>
                             Start timestamp of the configuration. It <b>must</b>
                             be according to the format
-                            <code>'YEAR-MONTH-DAYS HOURS:MINUTES:SECONDS.MILLISECONDS'</code>,
-                            e.g. <code>'2020-07-22 10:15:00.000000'</code>.
+                            <code>'YEAR-MONTH-DAYS HOURS:MINUTES:SECONDS'</code>,
+                            e.g. <code>'2020-07-22 10:15:00'</code>.
                             This is due the internal implementation of the TreeWalk.
                         </p>
                         <p class="text-left">
@@ -234,7 +234,7 @@ export class CrawlerController extends Page {
                             are combined in one work package for analysis.
                             Please provide a number between <code>10</code>
                             and <code>1000</code> here.
-                            A reliable default value is <code>250</code>.
+                            A reliable default value is <code>100</code>.
                         </p>
                         <p class="text-left">
                             <span class="font-weight-bold">Force-Update </span>
@@ -369,6 +369,12 @@ export class CrawlerController extends Page {
         `;
     }
 
+    getCurrentTimestampLocalTime() {
+        let currentTime = new Date();
+        let offset = currentTime.getTimezoneOffset() * 60000;
+        let local = new Date(currentTime - offset);
+        return local.toISOString().slice(0, 19).replace('T', ' ');
+    }
 
     updateStatus() {
         let thisdata = this;
@@ -491,8 +497,6 @@ export class CrawlerController extends Page {
                 continuex.stop(true).show(1000);
                 start.stop(true).show(1000);
                 shutdown.stop(true).show(1000);
-
-
                 break;
         }
 
@@ -546,6 +550,9 @@ export class CrawlerController extends Page {
         $("#start-button").click(function () {
             $("#config").show(200);
             $("#config-hr").show(200);
+            $("#author").val(localStorage.getItem("username"));
+            $("#package-size").val(100);
+            $("#time-start").val(self.getCurrentTimestampLocalTime());
             self.progressedWithoutCriticalUserInteraction=false;
         });
 
@@ -577,15 +584,11 @@ export class CrawlerController extends Page {
 
     //this method is called each time the user open/go-back to the page here
     onLoad() {
-
-
         let self = this;
         self.updateStatus();
         this.infoTimer = setInterval(function () {
             self.updateStatus()
         }, 2000);
-
-
     }
 
     //this method is called each time the user leave the page
