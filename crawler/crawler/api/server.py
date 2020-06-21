@@ -143,7 +143,7 @@ def start() -> flask.Response:
     return _get_response(response)
 
 
-@app.route('/schedule/list', methods=['GET'])
+@app.route('/schedule/list', methods=['GET', 'POST'])
 def schedule() -> flask.Response:
     """Return the TreeWalk schedule.
 
@@ -155,7 +155,7 @@ def schedule() -> flask.Response:
     return _get_response(response)
 
 
-@app.route('/schedule/remove', methods=['GET'])
+@app.route('/schedule/remove', methods=['GET', 'POST'])
 def schedule_remove() -> flask.Response:
     """Return the TreeWalk schedule.
 
