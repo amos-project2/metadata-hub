@@ -62,7 +62,8 @@ public class CrawlerAPIProxyController
         for (String value : parameters.keySet()){
             if(parameters.getFirst(value) !=null)
             {
-                webTarget=webTarget.queryParam(value, URLEncoder.encode(parameters.getFirst(value), "UTF-8"));
+                webTarget=webTarget.queryParam(value, URLEncoder.encode(parameters.getFirst(value), "UTF-8").replaceAll("\\+", "%20"));
+                System.out.println("value -> " + value + " | key -> " + parameters.getFirst(value));
             }
 
 
