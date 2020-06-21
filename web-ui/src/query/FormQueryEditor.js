@@ -354,8 +354,8 @@ export class FormQueryEditor extends Page {
         // if (filepattern !== "") {filepattern = `pattern: "${filepattern}",`;} else {filepattern = "";}
         // if (!checkbox) {checkbox = "option: included,";} else {checkbox = "option: excluded,";}
         if (limit !== "") {limit = `limitFetchingSize: ${limit},\n  `;} else {limit = "";}
-        if (showDeleted) {deleted = `showDeleted: true`;}
-        ;
+        if (showDeleted) {deleted = `showDeleted: true,\n  `;}
+
         if (startDate !== "") {startDate = `start_creation_time: "${startDate}",\n  `;} else {startDate = "";}
         if (endDate !== "") {endDate = `end_creation_time: "${endDate}",\n  `;} else {endDate = "";}
         if (startDateUpdated !== "") {startDateUpdated = `start_modification_time: "${startDateUpdated}",\n  `;} else {startDateUpdated = "";}
