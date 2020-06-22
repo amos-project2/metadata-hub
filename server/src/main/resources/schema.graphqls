@@ -16,7 +16,7 @@ type Query{
     file_name: Only returns file metadata where their file_name matches the specified pattern.
         Default PatternOption is "included"
     file_name_option: Different PatternOptions can be used, which change how "file_name" gets compared to other Strings.
-    file_type: Only returns file metadate where the file type is exactly "file_type"
+    file_types: Only returns file metadata where the file type is exactly one of the types specified in the list
     size: Only returns file metadata of a certain size depending on the used IntOption. Default IntOption is "equal".
     size_option: Here the IntOption for "size" can be specified.
     !Notice to timestamps!: timestamps follow the ISO 8601 standard, e.g. "2004-10-19 10:23:54+02", if no timezone is specified
@@ -44,7 +44,7 @@ type Query{
     showDeleted: if true, the query also returns metadata info about deleted files
     """
     searchForFileMetadata(file_ids: [Int!], crawl_ids: [Int!], dir_path: String, dir_path_option: MetadataOption,
-        file_name: String, file_name_option: MetadataOption, file_type: String, size: Int, size_option: IntOption,
+        file_name: String, file_name_option: MetadataOption, file_types: [String!], size: Int, size_option: IntOption,
         start_creation_time: String, end_creation_time: String, start_access_time: String, end_access_time: String,
         start_modification_time: String, end_modification_time: String, file_hashes: [String!],
         metadata_attributes: [String!], metadata_values:[String!], metadata_options: [MetadataOption!],

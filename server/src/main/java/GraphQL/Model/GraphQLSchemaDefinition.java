@@ -11,7 +11,7 @@ public class GraphQLSchemaDefinition {
     public static final String QUERY_DIR_PATH_OPTION = "dir_path_option";
     public static final String QUERY_FILE_NAME = "file_name";
     public static final String QUERY_FILE_NAME_OPTION = "file_name_option";
-    public static final String QUERY_FILE_TYPE = "file_type";
+    public static final String QUERY_FILE_TYPES = "file_types";
     public static final String QUERY_SIZE = "size";
     public static final String QUERY_SIZE_OPTION = "size_option";
     public static final String QUERY_START_CREATION_TIME = "start_creation_time";

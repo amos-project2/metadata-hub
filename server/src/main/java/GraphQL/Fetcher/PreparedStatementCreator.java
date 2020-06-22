@@ -1,7 +1,9 @@
 package GraphQL.Fetcher;
 
+import Database.Database;
 import Database.DatabaseSchemaDefinition;
 import GraphQL.Model.GraphQLSchemaDefinition;
+import com.google.common.graph.Graph;
 import graphql.GraphQLException;
 
 import java.util.HashMap;
@@ -47,9 +49,14 @@ public class PreparedStatementCreator {
             createWithOptions(graphQLArguments, GraphQLSchemaDefinition.QUERY_FILE_NAME, GraphQLSchemaDefinition.QUERY_FILE_NAME_OPTION, DatabaseSchemaDefinition.FILES_NAME, stringBuilder);
         }
 
-        //type
-        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_FILE_TYPE)){
-            stringBuilder.append(DatabaseSchemaDefinition.FILES_TYPE + " = '" + graphQLArguments.get(GraphQLSchemaDefinition.QUERY_FILE_TYPE) + "' AND ");
+        //file types
+        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_FILE_TYPES)){
+            List<String> file_types = (List<String>) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_FILE_TYPES);
+            stringBuilder.append(" (");
+            for(String file_type : file_types){
+                stringBuilder.append(DatabaseSchemaDefinition.FILES_TYPE + " = '" + file_type + "' OR ");
+            }
+            stringBuilder.append("FALSE ) AND ");
         }
 
         //size
