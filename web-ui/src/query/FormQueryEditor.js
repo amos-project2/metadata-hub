@@ -111,9 +111,11 @@ export class FormQueryEditor extends Page {
                     <div class="form-group col-md-2">
                     <label for="fg-filter-connector-options">Filter Connector<a class="pover" title="Filter Connector" data-content="TODO">[?]</a></label>
                         <select class="custom-select fg-filter-connector-options" id="fg-filter-connector-options">
-                                <option value="all-and" selected>ALL-AND</option>
-                                <option value="all-or">ALL-OR</option>
-                                <option value="custom">Custom</option>
+                                <option value="all-and" selected>ALL AND</option>
+                                <option value="all-or">ALL OR</option>
+                                <option value="custom-only">Custom Only</option>
+                                <option value="custom-and">Custom And</option>
+                                <option value="custom-or">Custom OR</option>
                             </select>
                     </div>
                 </div>
@@ -233,7 +235,7 @@ export class FormQueryEditor extends Page {
 
 
         $(".fg-filter-connector-options").change(function () {
-            if ($(this).val() === "custom") {
+            if ($(this).val().includes("custom")) {
                 thisdata.reorderFunctionIdsInFilter();
                 $(".fq-custom-filter-connector-row").stop(true).show(1000);
                 // $(".function-name-appender").stop(true).show(1000);
@@ -321,7 +323,7 @@ export class FormQueryEditor extends Page {
 
 
             $(this).parent().find(".function-name-appender-value").html("f" + counter2);
-            if ($(".fg-filter-connector-options").val() === "custom") {
+            if ($(".fg-filter-connector-options").val().includes("custom")) {
                 $(this).parent().find(".function-name-appender").stop(true).show(1000);
             }
 
