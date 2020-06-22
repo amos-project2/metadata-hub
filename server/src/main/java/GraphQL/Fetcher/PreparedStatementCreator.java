@@ -2,7 +2,6 @@ package GraphQL.Fetcher;
 
 import Database.DatabaseSchemaDefinition;
 import GraphQL.Model.GraphQLSchemaDefinition;
-import com.google.common.graph.Graph;
 import graphql.GraphQLException;
 
 import java.util.HashMap;
@@ -110,60 +109,8 @@ public class PreparedStatementCreator {
         }
 
         //METADATA
-        //TODO Maybe there is a more beautiful solution using GraphQL, than using 2 separate lists
-
-        Map<Integer, String> metadata_filter = new HashMap<Integer, String>();
-        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_METADATA_ATTRIBUTES) && graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_METADATA_VALUES)){
-            List<String> metadata_attributes = (List<String>) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_METADATA_ATTRIBUTES);
-            List<String> metadata_values = (List<String>) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_METADATA_VALUES);
-            if(metadata_attributes.size() == metadata_values.size()){
-                if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_METADATA_OPTIONS)){
-                    List<String> metadata_options = (List<String>) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_METADATA_OPTIONS);
-                    if(metadata_options.size() == metadata_values.size()){
-                        for(int i = 0; i < metadata_attributes.size(); i++){
-                            String metadata_option = metadata_options.get(i);
-                            switch (metadata_option){
-                                case "equal":
-                                    metadata_filter.put(i, "(CASE WHEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
-                                        "' IS NOT NULL THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) + "'::text = '"
-                                        + metadata_values.get(i) + "' ELSE TRUE END) ");
-                                    break;
-                                case "included":
-                                    metadata_filter.put(i, "(CASE WHEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
-                                        "' IS NOT NULL THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
-                                        "'::text LIKE '%" + metadata_values.get(i) + "%' ELSE TRUE END) ");
-                                    break;
-                                case "excluded":
-                                    metadata_filter.put(i, "(CASE WHEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
-                                        "' IS NOT NULL THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
-                                        "'::text NOT LIKE '%" + metadata_values.get(i) + "%' ELSE TRUE END) ");
-                                    break;
-                                case "bigger":
-                                    metadata_filter.put(i, "(CASE WHEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
-                                        "' IS NOT NULL THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
-                                        "'::text > '" + metadata_values.get(i) + "' ELSE TRUE END) ");
-                                    break;
-                                case "smaller":
-                                    metadata_filter.put(i, "(CASE WHEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
-                                        "' IS NOT NULL THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
-                                        "'::text < '" + metadata_values.get(i) + "' ELSE TRUE END) ");
-                                    break;
-                                case "exists":
-                                    metadata_filter.put(i, DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) + "' IS NOT NULL ");
-                                    break;
-                            }
-                        }
-                    }
-                }else{
-                    for(int i = 0; i < metadata_attributes.size(); i++){
-                        metadata_filter.put(i, "(CASE WHEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
-                            "' IS NOT NULL THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
-                            "'::text LIKE '%" + metadata_values.get(i) + "%' ELSE TRUE END) ");
-                    }
-                }
-            }
-        }
-        stringBuilder.append(buildMetadataFilter(graphQLArguments, metadata_filter));
+        //TODO Maybe there is a more beautiful solution using GraphQL, than using separate lists
+        buildMetadataFilter(graphQLArguments, stringBuilder);
 
         //Show deleted files
         if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_SHOW_DELETED)){
@@ -213,7 +160,63 @@ public class PreparedStatementCreator {
         }
     }
 
-    private static String buildMetadataFilter(Map<String, Object> graphQLArguments, Map<Integer, String> metadata_filter){
+    //Notice: The operator alias jsonb_exists() is used cause the operator "?" breaks the PreparedStatement
+    private static void buildMetadataFilter(Map<String, Object> graphQLArguments, StringBuilder stringBuilder) {
+        Map<Integer, String> metadata_filter = new HashMap<>();
+        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_METADATA_ATTRIBUTES) && graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_METADATA_VALUES)){
+            List<String> metadata_attributes = (List<String>) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_METADATA_ATTRIBUTES);
+            List<String> metadata_values = (List<String>) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_METADATA_VALUES);
+            if(metadata_attributes.size() == metadata_values.size()){
+                if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_METADATA_OPTIONS)){
+                    List<String> metadata_options = (List<String>) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_METADATA_OPTIONS);
+                    if(metadata_options.size() == metadata_values.size()){
+                        for(int i = 0; i < metadata_attributes.size(); i++){
+                            String metadata_option = metadata_options.get(i);
+                            switch (metadata_option){
+                                case "equal":
+                                    metadata_filter.put(i, "(CASE WHEN jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) +
+                                        "')  THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) + "'::text = '"
+                                        + metadata_values.get(i) + "' END) ");
+                                    break;
+                                case "included":
+                                    metadata_filter.put(i, "(CASE WHEN jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) +
+                                        "')  THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
+                                        "'::text LIKE '%" + metadata_values.get(i) + "%' END) ");
+                                    break;
+                                case "excluded":
+                                    metadata_filter.put(i, "(CASE WHEN jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) +
+                                        "')  THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
+                                        "'::text NOT LIKE '%" + metadata_values.get(i) + "%' END) ");
+                                    break;
+                                case "bigger":
+                                    metadata_filter.put(i, "(CASE WHEN jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) +
+                                        "')  THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
+                                        "'::text > '" + metadata_values.get(i) + "' END) ");
+                                    break;
+                                case "smaller":
+                                    metadata_filter.put(i, "(CASE WHEN jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) +
+                                        "')  THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
+                                        "'::text < '" + metadata_values.get(i) + "' END) ");
+                                    break;
+                                case "exists":
+                                    metadata_filter.put(i, " jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) + "')  ");
+                                    break;
+                            }
+                        }
+                    }
+                }else{
+                    for(int i = 0; i < metadata_attributes.size(); i++){
+                        metadata_filter.put(i, "(CASE WHEN jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) +
+                            "')  THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
+                            "'::text LIKE '%" + metadata_values.get(i) + "%' END) ");
+                    }
+                }
+            }
+        }
+        stringBuilder.append(buildMetadataFilterLogic(graphQLArguments, metadata_filter));
+    }
+
+    private static String buildMetadataFilterLogic(Map<String, Object> graphQLArguments, Map<Integer, String> metadata_filter){
        StringBuilder metadatafilterBuilder = new StringBuilder(" ");
 
        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC)){
