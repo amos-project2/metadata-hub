@@ -301,7 +301,7 @@ export class FormQueryEditor extends Page {
         let counter = 0;
         let counter2 = -1;
 
-        let customValue = ""+$("#fq-custom-filter-connector").val();
+        let customValue = "" + $("#fq-custom-filter-connector").val();
 
         $(".fg-metadata-attribute").each(function () {
             counter++;
@@ -318,7 +318,7 @@ export class FormQueryEditor extends Page {
             if (oldValue !== "f" + counter2) {
                 // customValue = customValue.replaceAll(oldValue, "XXXX" + counter2);
                 customValue = customValue.split(oldValue).join("XXXX" + counter2);
-                customValue = customValue.split("f"+counter2).join("MISSING" + counter2);
+                customValue = customValue.split("f" + counter2).join("MISSING" + counter2);
             }
 
 
@@ -406,6 +406,10 @@ export class FormQueryEditor extends Page {
         let startDateUpdated = $("#fq-createFileTimeRangeStartUpdated").val();
         let endDateUpdated = $("#fq-createFileTimeRangeEndUpdated").val();
 
+        let filterOption = $(".fg-filter-connector-options").val();
+        let filterCustomString = $("#fq-custom-filter-connector").val();
+
+
         // if (filepattern !== "") {filepattern = `pattern: "${filepattern}",`;} else {filepattern = "";}
         // if (!checkbox) {checkbox = "option: included,";} else {checkbox = "option: excluded,";}
         if (limit !== "") {limit = `limitFetchingSize: ${limit},\n  `;} else {limit = "";}
@@ -417,7 +421,18 @@ export class FormQueryEditor extends Page {
         if (endDateUpdated !== "") {endDateUpdated = `end_modification_time: "${endDateUpdated}",\n  `;} else {endDateUpdated = "";}
 
 
-        let attributes = "";
+        if (filterCustomString !== "" && filterOption.includes("custom")) {filterCustomString = `metadata_filter_logic: "${filterCustomString}",\n  `} else {filterCustomString = "";}
+
+        if (filterOption === "all-and" || filterOption==="custom-and") {
+            filterOption = `metadata_filter_logic_options: and,\n  `;
+        } else if (filterOption === "all-or" || filterOption === "custom-or") {
+            filterOption = `metadata_filter_logic_options: or,\n  `;
+        } else {
+            filterOption = `metadata_filter_logic_options: only_logic_string,\n  `;
+        }
+
+
+            let attributes = "";
         {
             $(".attribut-element-input").each(function () {
                 if ($(this).val() !== "") {
@@ -458,6 +473,7 @@ export class FormQueryEditor extends Page {
    ${deleted}
    ${startDate} ${endDate} ${startDateUpdated} ${endDateUpdated}
    ${options_options} ${options_attributes} ${options_values}
+   ${filterOption} ${filterCustomString}
    ${attributes}
         `;
 
