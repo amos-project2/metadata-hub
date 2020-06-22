@@ -43,6 +43,7 @@ class TreeWalkManager(threading.Thread):
         self._connection_data = db_info
         self._measure_time = measure_time
         self._db_connection = None # type: database.DatabaseConnection
+        self._time_start = 0
 
 
     def _reset(self) -> None:
@@ -57,6 +58,7 @@ class TreeWalkManager(threading.Thread):
         self._state.set_ready()
         self._db_connection.close()
         self._db_connection = None
+        self._time_start = 0
 
 
     def _get_number_of_work_packages(self) -> int:
@@ -165,6 +167,31 @@ class TreeWalkManager(threading.Thread):
         done()
         return True
 
+    def _log_execution_time(self) -> None:
+        """Log the execution time of the crawl.
+
+        Logs the execution times if the measure time flag was specified in the
+        settings.
+        """
+        if not self._measure_time:
+            return
+        time_end = datetime.now()
+        exiftool_time, db_time = ([], [])
+        for _, _, output_queue in self._workers:
+            response = output_queue.get()
+            this_exiftool_time, this_db_time = response.message
+            exiftool_time.append(this_exiftool_time)
+            db_time.append(this_db_time)
+        str_worker = (
+            f'MAX-Worker: E={max(exiftool_time):.2f}s, '
+            f'D={max(db_time):.2f}s'
+        )
+        str_manager = f'Manager: D={self._db_connection.get_time():.2f}s'
+        str_diff = str(datetime.now() - self._time_start)
+        logging.critical(
+            f'TIME:: {str_worker} | {str_manager} | '
+            f'Total: T={str_diff}'
+        )
 
     def run(self) -> None:
         """Run method of TreeWalk manager."""
@@ -179,20 +206,7 @@ class TreeWalkManager(threading.Thread):
                     done = self._work()
                     if done:
                         self._db_connection.delete_lost(self._tree_walk_id, self._roots)
-                        if self._measure_time:
-                            exiftool_time, db_time = ([], [])
-                            for _, _, output_queue in self._workers:
-                                response = output_queue.get()
-                                this_exiftool_time, this_db_time = response.message
-                                exiftool_time.append(this_exiftool_time)
-                                db_time.append(this_db_time)
-                            logging.critical(
-                                f'TIME:: '
-                                f'Max Worker: '
-                                f'ExifTool={max(exiftool_time):.2f}s , '
-                                f'Database={max(db_time):.2f}s '
-                                f'Manager: Database={self._db_connection.get_time():.2f}s'
-                            )
+                        self._log_execution_time()
                         self._reset()
             else:
                 command = communication.manager_queue_input.get()
@@ -206,7 +220,7 @@ class TreeWalkManager(threading.Thread):
                     response = self._stop()
                     shutdown = True
                 elif command.command == communication.MANAGER_START:
-                    #start = datetime.now();
+                    self._time_start = datetime.now()
                     response = self._start(command.data)
                 elif command.command == communication.MANAGER_STOP:
                     response = self._stop()
