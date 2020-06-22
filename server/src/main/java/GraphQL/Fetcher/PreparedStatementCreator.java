@@ -231,7 +231,11 @@ public class PreparedStatementCreator {
 
            metadatafilterBuilder.append(filterLogic + " AND ");
            for(int filterIndexStart = metadatafilterBuilder.indexOf("f"); filterIndexStart != -1; filterIndexStart = metadatafilterBuilder.indexOf("f")){
+
                int filterIndexEnd = metadatafilterBuilder.indexOf(" ", filterIndexStart);
+               while(metadatafilterBuilder.charAt(filterIndexEnd-1) == ')'){
+                   filterIndexEnd--;
+               }
                int filterIndex =  Integer.parseInt(metadatafilterBuilder.substring(filterIndexStart + 1, filterIndexEnd));
 
                if( !metadata_filter.containsKey(filterIndex)){
