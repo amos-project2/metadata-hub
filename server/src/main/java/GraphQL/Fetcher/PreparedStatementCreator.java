@@ -1,9 +1,7 @@
 package GraphQL.Fetcher;
 
-import Database.Database;
 import Database.DatabaseSchemaDefinition;
 import GraphQL.Model.GraphQLSchemaDefinition;
-import com.google.common.graph.Graph;
 import graphql.GraphQLException;
 
 import java.util.HashMap;
@@ -138,6 +136,7 @@ public class PreparedStatementCreator {
         return stringBuilder.toString();
     }
 
+    @SuppressWarnings("StringConcatenationInsideStringBufferAppend")
     private static void createWithOptions(Map<String, Object> graphQLArguments, String queryParam, String queryOption, String databaseField, StringBuilder stringBuilder) {
         String value = (String) graphQLArguments.get(queryParam);
         if(graphQLArguments.containsKey(queryOption)){
@@ -167,9 +166,13 @@ public class PreparedStatementCreator {
         }
     }
 
-    //Notice: The operator alias jsonb_exists() is used cause the operator "?" breaks the PreparedStatement
+    /**
+     * The metadata filters specified in the graphQLArguments get built into a String that can be used in SQL statements
+     * and appended to stringBuilder
+     * Notice: The operator alias jsonb_exists() is used cause the operator "?" breaks the PreparedStatement
+     */
     private static void buildMetadataFilter(Map<String, Object> graphQLArguments, StringBuilder stringBuilder) {
-        Map<Integer, String> metadata_filter = new HashMap<>();
+        Map<Integer, String> metadata_filters = new HashMap<>();
         if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_METADATA_ATTRIBUTES) && graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_METADATA_VALUES)){
             List<String> metadata_attributes = (List<String>) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_METADATA_ATTRIBUTES);
             List<String> metadata_values = (List<String>) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_METADATA_VALUES);
@@ -181,51 +184,55 @@ public class PreparedStatementCreator {
                             String metadata_option = metadata_options.get(i);
                             switch (metadata_option){
                                 case "equal":
-                                    metadata_filter.put(i, "(CASE WHEN jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) +
+                                    metadata_filters.put(i, "(CASE WHEN jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) +
                                         "')  THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) + "'::text = '"
                                         + metadata_values.get(i) + "' END) ");
                                     break;
                                 case "included":
-                                    metadata_filter.put(i, "(CASE WHEN jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) +
+                                    metadata_filters.put(i, "(CASE WHEN jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) +
                                         "')  THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
                                         "'::text LIKE '%" + metadata_values.get(i) + "%' END) ");
                                     break;
                                 case "excluded":
-                                    metadata_filter.put(i, "(CASE WHEN jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) +
+                                    metadata_filters.put(i, "(CASE WHEN jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) +
                                         "')  THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
                                         "'::text NOT LIKE '%" + metadata_values.get(i) + "%' END) ");
                                     break;
                                 case "bigger":
-                                    metadata_filter.put(i, "(CASE WHEN jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) +
+                                    metadata_filters.put(i, "(CASE WHEN jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) +
                                         "')  THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
                                         "'::text > '" + metadata_values.get(i) + "' END) ");
                                     break;
                                 case "smaller":
-                                    metadata_filter.put(i, "(CASE WHEN jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) +
+                                    metadata_filters.put(i, "(CASE WHEN jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) +
                                         "')  THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
                                         "'::text < '" + metadata_values.get(i) + "' END) ");
                                     break;
                                 case "exists":
-                                    metadata_filter.put(i, " jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) + "')  ");
+                                    metadata_filters.put(i, " jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) + "')  ");
                                     break;
                             }
                         }
                     }
                 }else{
                     for(int i = 0; i < metadata_attributes.size(); i++){
-                        metadata_filter.put(i, "(CASE WHEN jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) +
+                        metadata_filters.put(i, "(CASE WHEN jsonb_exists(" + DatabaseSchemaDefinition.FILES_METADATA + ", '" + metadata_attributes.get(i) +
                             "')  THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
                             "'::text LIKE '%" + metadata_values.get(i) + "%' END) ");
                     }
                 }
             }
         }
-        stringBuilder.append(buildMetadataFilterLogic(graphQLArguments, metadata_filter));
+        stringBuilder.append(buildMetadataFilterLogic(graphQLArguments, metadata_filters));
     }
 
-    private static String buildMetadataFilterLogic(Map<String, Object> graphQLArguments, Map<Integer, String> metadata_filter){
+    /**
+     * Builds a String that can be used in a SQL statement out of the specified metadata_filters
+     */
+    private static String buildMetadataFilterLogic(Map<String, Object> graphQLArguments, Map<Integer, String> metadata_filters){
        StringBuilder metadatafilterBuilder = new StringBuilder(" ");
 
+       //Insert the filter options into the filter logic string to create a sql statement
        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC)){
            String filterLogic = (String) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC);
 
@@ -236,22 +243,37 @@ public class PreparedStatementCreator {
                while(metadatafilterBuilder.charAt(filterIndexEnd-1) == ')'){
                    filterIndexEnd--;
                }
+
                int filterIndex =  Integer.parseInt(metadatafilterBuilder.substring(filterIndexStart + 1, filterIndexEnd));
 
-               if( !metadata_filter.containsKey(filterIndex)){
-                   throw new GraphQLException(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC + ": Specified filter index couldn't be found in metadata filters");
+               if( !metadata_filters.containsKey(filterIndex)){
+                   throw new GraphQLException(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC + ": Specified filter index couldn't be found in metadata filters. Maybe out of range.");
                }
 
-               String filter = metadata_filter.remove(filterIndex);
+               String filter = metadata_filters.remove(filterIndex);
                metadatafilterBuilder.replace(filterIndexStart, filterIndexEnd, filter);
            }
 
        }
 
-       for(Map.Entry<Integer, String> filter : metadata_filter.entrySet()){
-           metadatafilterBuilder.append(filter.getValue() + " AND ");
-       }
+       String logicOptions = GraphQLSchemaDefinition.FILTER_LOGIC_OPTION_AND;
+       String logicalOperator = " AND ";
+        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC_OPTIONS)){
+            logicOptions = (String) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC_OPTIONS);
+            if(logicOptions.equals(GraphQLSchemaDefinition.FILTER_LOGIC_OPTION_OR)){
+                logicalOperator = " OR ";
+            }
+        }
 
-       return metadatafilterBuilder.toString();
+        //Add the rest of the filter options that were'nt used in the logic string
+        if(!logicOptions.equals(GraphQLSchemaDefinition.FILTER_LOGIC_OPTION_ONLY_LOGIC)) {
+            for (Map.Entry<Integer, String> filter : metadata_filters.entrySet()) {
+                metadatafilterBuilder.append(filter.getValue() + logicalOperator);
+            }
+        }
+
+
+
+        return metadatafilterBuilder.toString();
     }
 }
