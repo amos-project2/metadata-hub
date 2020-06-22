@@ -109,7 +109,7 @@ export class FormQueryEditor extends Page {
                 <div>
                 <div class="form-row justify-content-md-center">
                     <div class="form-group col-md-2">
-                    <label for="fg-filter-connector-options">Filter Connector<a class="pover" title="Filter Connector" data-content="TODO">[?]</a></label>
+                    <label for="fg-filter-connector-options">Filter Connector<a class="pover" title="Filter Connector" data-content="ALL AND: all filters are connected with AND<br>ALL AND: all filters are connected with OR<br>Custom Only: you can type in your own bool-expression<br> Custom with AND/OR means all filters you dont reference are append with AND/OR">[?]</a></label>
                         <select class="custom-select fg-filter-connector-options" id="fg-filter-connector-options">
                                 <option value="all-and" selected>ALL AND</option>
                                 <option value="all-or">ALL OR</option>
@@ -122,7 +122,7 @@ export class FormQueryEditor extends Page {
 
                  <div class="form-row fq-custom-filter-connector-row" style="display:none">
                     <div class="form-group col-md-12">
-                        <label for="fq-custom-filter-connector">Custom Filter<a class="pover" title="Custom Filter" data-content="TODO">[?]</a></label>
+                        <label for="fq-custom-filter-connector">Custom Filter<a class="pover" title="Custom Filter" data-content="Here you can type in your own bool-expression: Example ((f1 AND f2) OR (f3 AND NOT f0)) AND f5">[?]</a></label>
                         <input type="text" class="form-control" id="fq-custom-filter-connector" value="">
                     </div>
                 </div>
