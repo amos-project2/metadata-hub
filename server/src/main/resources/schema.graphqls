@@ -35,6 +35,9 @@ type Query{
         Default PatternOption is "included".
     metadata_options: Different PatternOptions can be used for metadata_values. The index in metadata_option relates to the index
         in meta_data_values e.g. metadata_option[1] will be used for metadata_value[1]. If used both lists need to have the same length.
+    metadata_filter_logic: A String that can specify how the used metadata filters should logically be used.
+        All filters are applied [AND], one of the filters is applied [OR]. e.g. "( f5 AND f2 ) OR f1"
+        numbers correspond to the metadata list indexes (metadata_attributes, metadata_values)
     selected_attributes: For all file metadata only the specified metadata attributes are returned.
     limitFetchingSize: Limits how many files will get fetched by the search.
     showDeleted: if true, the query also returns metadata info about deleted files
@@ -44,6 +47,7 @@ type Query{
         start_creation_time: String, end_creation_time: String, start_access_time: String, end_access_time: String,
         start_modification_time: String, end_modification_time: String, file_hashes: [String!],
         metadata_attributes: [String!], metadata_values:[String!], metadata_options: [MetadataOption!],
+        metadata_filter_logic: String,
         selected_attributes: [String!], limitFetchingSize: Int, showDeleted: Boolean) : [File]
 }
 

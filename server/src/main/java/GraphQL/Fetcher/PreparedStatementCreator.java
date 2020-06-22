@@ -2,7 +2,10 @@ package GraphQL.Fetcher;
 
 import Database.DatabaseSchemaDefinition;
 import GraphQL.Model.GraphQLSchemaDefinition;
+import com.google.common.graph.Graph;
+import graphql.GraphQLException;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -108,6 +111,8 @@ public class PreparedStatementCreator {
 
         //METADATA
         //TODO Maybe there is a more beautiful solution using GraphQL, than using 2 separate lists
+
+        Map<Integer, String> metadata_filter = new HashMap<Integer, String>();
         if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_METADATA_ATTRIBUTES) && graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_METADATA_VALUES)){
             List<String> metadata_attributes = (List<String>) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_METADATA_ATTRIBUTES);
             List<String> metadata_values = (List<String>) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_METADATA_VALUES);
@@ -119,46 +124,48 @@ public class PreparedStatementCreator {
                             String metadata_option = metadata_options.get(i);
                             switch (metadata_option){
                                 case "equal":
-                                    stringBuilder.append("(CASE WHEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
+                                    metadata_filter.put(i, "(CASE WHEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
                                         "' IS NOT NULL THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) + "'::text = '"
-                                        + metadata_values.get(i) + "' ELSE TRUE END) AND ");
+                                        + metadata_values.get(i) + "' ELSE TRUE END) ");
                                     break;
                                 case "included":
-                                    stringBuilder.append("(CASE WHEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
+                                    metadata_filter.put(i, "(CASE WHEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
                                         "' IS NOT NULL THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
-                                        "'::text LIKE '%" + metadata_values.get(i) + "%' ELSE TRUE END) AND ");
+                                        "'::text LIKE '%" + metadata_values.get(i) + "%' ELSE TRUE END) ");
                                     break;
                                 case "excluded":
-                                    stringBuilder.append("(CASE WHEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
+                                    metadata_filter.put(i, "(CASE WHEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
                                         "' IS NOT NULL THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
-                                        "'::text NOT LIKE '%" + metadata_values.get(i) + "%' ELSE TRUE END) AND ");
+                                        "'::text NOT LIKE '%" + metadata_values.get(i) + "%' ELSE TRUE END) ");
                                     break;
                                 case "bigger":
-                                    stringBuilder.append("(CASE WHEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
+                                    metadata_filter.put(i, "(CASE WHEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
                                         "' IS NOT NULL THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
-                                        "'::text > '" + metadata_values.get(i) + "' ELSE TRUE END) AND ");
+                                        "'::text > '" + metadata_values.get(i) + "' ELSE TRUE END) ");
                                     break;
                                 case "smaller":
-                                    stringBuilder.append("(CASE WHEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
+                                    metadata_filter.put(i, "(CASE WHEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
                                         "' IS NOT NULL THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
-                                        "'::text < '" + metadata_values.get(i) + "' ELSE TRUE END) AND ");
+                                        "'::text < '" + metadata_values.get(i) + "' ELSE TRUE END) ");
                                     break;
                                 case "exists":
-                                    stringBuilder.append(DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) + "' IS NOT NULL AND ");
+                                    metadata_filter.put(i, DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) + "' IS NOT NULL ");
                                     break;
                             }
                         }
                     }
                 }else{
                     for(int i = 0; i < metadata_attributes.size(); i++){
-                        stringBuilder.append("(CASE WHEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
+                        metadata_filter.put(i, "(CASE WHEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
                             "' IS NOT NULL THEN " + DatabaseSchemaDefinition.FILES_METADATA + " ->> '" + metadata_attributes.get(i) +
-                            "'::text LIKE '%" + metadata_values.get(i) + "%' ELSE TRUE END) AND ");
+                            "'::text LIKE '%" + metadata_values.get(i) + "%' ELSE TRUE END) ");
                     }
                 }
             }
         }
+        stringBuilder.append(buildMetadataFilter(graphQLArguments, metadata_filter));
 
+        //Show deleted files
         if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_SHOW_DELETED)){
             if(!((Boolean) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_SHOW_DELETED))) {
                 stringBuilder.append(DatabaseSchemaDefinition.FILES_DELETED + " = FALSE AND ");
@@ -169,6 +176,7 @@ public class PreparedStatementCreator {
 
         stringBuilder.append(" TRUE");
 
+        //Only fetch a certain amount of rows
         if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE)) {
             stringBuilder.append(" FETCH FIRST " + graphQLArguments.get(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE) + " ROWS ONLY");
         }
@@ -203,5 +211,33 @@ public class PreparedStatementCreator {
         }else{
             stringBuilder.append(databaseField + " LIKE '%" + value + "%' AND ");
         }
+    }
+
+    private static String buildMetadataFilter(Map<String, Object> graphQLArguments, Map<Integer, String> metadata_filter){
+       StringBuilder metadatafilterBuilder = new StringBuilder(" ");
+
+       if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC)){
+           String filterLogic = (String) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC);
+
+           metadatafilterBuilder.append(filterLogic + " AND ");
+           for(int filterIndexStart = metadatafilterBuilder.indexOf("f"); filterIndexStart != -1; filterIndexStart = metadatafilterBuilder.indexOf("f")){
+               int filterIndexEnd = metadatafilterBuilder.indexOf(" ", filterIndexStart);
+               int filterIndex =  Integer.parseInt(metadatafilterBuilder.substring(filterIndexStart + 1, filterIndexEnd));
+
+               if( !metadata_filter.containsKey(filterIndex)){
+                   throw new GraphQLException(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC + ": Specified filter index couldn't be found in metadata filters");
+               }
+
+               String filter = metadata_filter.remove(filterIndex);
+               metadatafilterBuilder.replace(filterIndexStart, filterIndexEnd, filter);
+           }
+
+       }
+
+       for(Map.Entry<Integer, String> filter : metadata_filter.entrySet()){
+           metadatafilterBuilder.append(filter.getValue() + " AND ");
+       }
+
+       return metadatafilterBuilder.toString();
     }
 }
