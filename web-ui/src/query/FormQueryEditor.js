@@ -234,11 +234,15 @@ export class FormQueryEditor extends Page {
 
         $(".fg-filter-connector-options").change(function () {
             if ($(this).val() === "custom") {
-                $(".fq-custom-filter-connector-row").stop(true).show(1000);
+                thisdata.reorderFunctionIdsInFilter();
+                 $(".fq-custom-filter-connector-row").stop(true).show(1000);
+                // $(".function-name-appender").stop(true).show(1000);
             } else {
                 $(".fq-custom-filter-connector-row").stop(true).hide(1000);
+                $(".function-name-appender").stop(true).hide(1000);
             }
         });
+
 
 
         //alert(datetimepicker());
@@ -291,6 +295,31 @@ export class FormQueryEditor extends Page {
     }
 
 
+    reorderFunctionIdsInFilter() {
+        let countElements = $(".fg-metadata-attribute").length;
+        let counter = 0;
+        let counter2 = -1;
+        $(".fg-metadata-attribute").each(function () {
+            counter++;
+            counter2++;
+
+            if (counter == countElements) {
+                $(this).parent().find(".function-name-appender-value").html("not used right now");
+                $(this).parent().find(".function-name-appender").stop(true).hide(1000);
+                return;
+            }
+
+            //reorder function-Ids:
+            $(this).parent().find(".function-name-appender-value").html("f" + counter2);
+            if ($(".fg-filter-connector-options").val() === "custom") {
+                $(this).parent().find(".function-name-appender").stop(true).show(1000);
+                // $(".function-name-appender").stop(true).show(1000);
+            }
+
+        });
+    }
+
+
     helperMethod2() {
 
         let dhis_state = this;
@@ -301,7 +330,11 @@ export class FormQueryEditor extends Page {
             if ($(this).val() === "") {
                 $(this).parent().remove();
             }
+
+            dhis_state.reorderFunctionIdsInFilter();
+
         });
+
 
         $(".fg-metadata-attribute").focusin(function () {
             let dhis = this;
@@ -315,6 +348,8 @@ export class FormQueryEditor extends Page {
 
             if (!emptyTextField) {
                 $(".fg-filter-container").append(dhis_state.getFilterElement());
+
+                dhis_state.reorderFunctionIdsInFilter();
 
                 dhis_state.helperMethod2();//IMPORTANT: re-add the listener to the new created element(s)
             }
@@ -475,6 +510,9 @@ query
                     </div>
                     <input type="text" class="form-control fg-metadata-attribute" placeholder="Metadata-Attribute">
                     <input type="text" class="form-control fg-metadata-value" placeholder="Value">
+                    <div class="input-group-append function-name-appender" style="display:none;">
+                        <span class="input-group-text font-weight-bold function-name-appender-value" style="color:red;">f1</span>
+                    </div>
                 </div>
             </div>`;
     }
