@@ -121,7 +121,7 @@ export class FormQueryEditor extends Page {
                  <div class="form-row fq-custom-filter-connector-row" style="display:none">
                     <div class="form-group col-md-12">
                         <label for="fq-custom-filter-connector">Custom Filter<a class="pover" title="Custom Filter" data-content="TODO">[?]</a></label>
-                        <input type="text" class="form-control" id="fq-custom-filter-connector" value="testa">
+                        <input type="text" class="form-control" id="fq-custom-filter-connector" value="">
                     </div>
                 </div>
 
@@ -235,14 +235,13 @@ export class FormQueryEditor extends Page {
         $(".fg-filter-connector-options").change(function () {
             if ($(this).val() === "custom") {
                 thisdata.reorderFunctionIdsInFilter();
-                 $(".fq-custom-filter-connector-row").stop(true).show(1000);
+                $(".fq-custom-filter-connector-row").stop(true).show(1000);
                 // $(".function-name-appender").stop(true).show(1000);
             } else {
                 $(".fq-custom-filter-connector-row").stop(true).hide(1000);
                 $(".function-name-appender").stop(true).hide(1000);
             }
         });
-
 
 
         //alert(datetimepicker());
@@ -299,6 +298,9 @@ export class FormQueryEditor extends Page {
         let countElements = $(".fg-metadata-attribute").length;
         let counter = 0;
         let counter2 = -1;
+
+        let customValue = ""+$("#fq-custom-filter-connector").val();
+
         $(".fg-metadata-attribute").each(function () {
             counter++;
             counter2++;
@@ -310,13 +312,29 @@ export class FormQueryEditor extends Page {
             }
 
             //reorder function-Ids:
+            let oldValue = $(this).parent().find(".function-name-appender-value").html();
+            if (oldValue !== "f" + counter2) {
+                // customValue = customValue.replaceAll(oldValue, "XXXX" + counter2);
+                customValue = customValue.split(oldValue).join("XXXX" + counter2);
+                customValue = customValue.split("f"+counter2).join("MISSING" + counter2);
+            }
+
+
             $(this).parent().find(".function-name-appender-value").html("f" + counter2);
             if ($(".fg-filter-connector-options").val() === "custom") {
                 $(this).parent().find(".function-name-appender").stop(true).show(1000);
-                // $(".function-name-appender").stop(true).show(1000);
             }
 
         });
+
+        counter2 = -1;
+        $(".fg-metadata-attribute").each(function () {
+            counter2++;
+            // customValue = customValue.replaceAll("XXXX" + counter2, "f"+counter2);
+            customValue = customValue.split("XXXX" + counter2).join("f" + counter2);
+        });
+        $("#fq-custom-filter-connector").val(customValue);
+
     }
 
 
