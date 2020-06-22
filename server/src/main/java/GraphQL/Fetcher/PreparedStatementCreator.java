@@ -3,6 +3,7 @@ package GraphQL.Fetcher;
 import Database.DatabaseSchemaDefinition;
 import GraphQL.Model.GraphQLSchemaDefinition;
 import graphql.GraphQLException;
+import org.jooq.meta.derby.sys.Sys;
 
 import java.util.HashMap;
 import java.util.List;
@@ -244,14 +245,25 @@ public class PreparedStatementCreator {
                    filterIndexEnd--;
                }
 
-               int filterIndex =  Integer.parseInt(metadatafilterBuilder.substring(filterIndexStart + 1, filterIndexEnd));
+               String filterIndexString = metadatafilterBuilder.substring(filterIndexStart + 1, filterIndexEnd);
+               int filterIndex =  Integer.parseInt(filterIndexString);
 
                if( !metadata_filters.containsKey(filterIndex)){
-                   throw new GraphQLException(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC + ": Specified filter index couldn't be found in metadata filters. Maybe out of range.");
+                   throw new GraphQLException(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC + ": Specified filter index [" + filterIndex + "] couldn't be found in metadata filters. Maybe out of range.");
                }
 
                String filter = metadata_filters.remove(filterIndex);
-               metadatafilterBuilder.replace(filterIndexStart, filterIndexEnd, filter);
+
+               //replaceAll occurences of the filter index
+               int tmpIndex = filterIndexStart;
+               while(tmpIndex != -1){
+                   // filterIndex isn't multi-digit
+                   if(metadatafilterBuilder.charAt(tmpIndex + filterIndexString.length() + 1 ) < 48) {
+                       metadatafilterBuilder.replace(tmpIndex, tmpIndex + filterIndexString.length() + 1, filter);
+                   }
+                   tmpIndex += filterIndexString.length() + 1;
+                   tmpIndex = metadatafilterBuilder.indexOf("f"+filterIndex, tmpIndex);
+               }
            }
 
        }
