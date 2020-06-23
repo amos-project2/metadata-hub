@@ -445,6 +445,8 @@ export class FormQueryEditor extends Page {
         let filterCustomString = $("#fq-custom-filter-connector").val();
 
 
+
+
         // if (filepattern !== "") {filepattern = `pattern: "${filepattern}",`;} else {filepattern = "";}
         // if (!checkbox) {checkbox = "option: included,";} else {checkbox = "option: excluded,";}
         if (limit !== "") {limit = `limitFetchingSize: ${limit},\n  `;} else {limit = "";}
@@ -481,6 +483,23 @@ export class FormQueryEditor extends Page {
             }
         }
 
+
+        let filetypes = "";
+        {
+            $(".filetype-element-input").each(function () {
+                if ($(this).val() !== "") {
+                    filetypes += `"${$(this).val()}", `;
+                }
+
+            });
+
+            if (filetypes !== "") {
+                filetypes = `file_types:[${filetypes}],\n  `;
+            }
+        }
+
+
+
         let options_options = "";
         let options_attributes = "";
         let options_values = "";
@@ -507,6 +526,7 @@ export class FormQueryEditor extends Page {
    ${limit}
    ${deleted}
    ${startDate} ${endDate} ${startDateUpdated} ${endDateUpdated}
+   ${filetypes}
    ${options_options} ${options_attributes} ${options_values}
    ${filterOption} ${filterCustomString}
    ${attributes}
@@ -548,12 +568,13 @@ query
         return query;
 
 
-// searchForFileMetadata(file_ids: [Int!], crawl_ids: [Int!], dir_path: String, dir_path_option: MetadataOption,
-//     file_name: String, file_name_option: MetadataOption, file_type: String, size: Int, size_option: IntOption,
-//     start_creation_time: String, end_creation_time: String, start_access_time: String, end_access_time: String,
-//     start_modification_time: String, end_modification_time: String, file_hashes: [String!],
-//     metadata_attributes: [String!], metadata_values:[String!], metadata_options: [MetadataOption!],
-//     selected_attributes: [String!], limitFetchingSize: Int) : [File]
+        // searchForFileMetadata(file_ids: [Int!], crawl_ids: [Int!], dir_path: String, dir_path_option: MetadataOption,
+        //     file_name: String, file_name_option: MetadataOption, file_types: [String!], size: Int, size_option: IntOption,
+        //     start_creation_time: String, end_creation_time: String, start_access_time: String, end_access_time: String,
+        //     start_modification_time: String, end_modification_time: String, file_hashes: [String!],
+        //     metadata_attributes: [String!], metadata_values:[String!], metadata_options: [MetadataOption!],
+        //     metadata_filter_logic_options: FilterLogicOption, metadata_filter_logic: String,
+        //     selected_attributes: [String!], limitFetchingSize: Int, showDeleted: Boolean) : [File]
 
     }
 
