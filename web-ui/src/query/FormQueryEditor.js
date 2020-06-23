@@ -24,6 +24,10 @@ export class FormQueryEditor extends Page {
         // language=HTML
         return `
             <form class="q-send-query-form-editor">
+
+
+            <!--     for tracking          -->
+
                 <div class="form-row">
 
                     <div class="form-group col-md-6">
@@ -35,6 +39,8 @@ export class FormQueryEditor extends Page {
                         <input type="text" class="form-control" id="fq-owner">
                     </div>
                 </div>
+
+
 
 
                 <!--  <div class="form-row">-->
@@ -53,6 +59,13 @@ export class FormQueryEditor extends Page {
                 <!--</div>-->
 
 <!--     date-range-filter           -->
+
+
+               <div class="form-row">
+                    <div class="col-md-12">
+                        <hr>
+                    </div>
+                </div>
 
                 <div class="form-row">
                     <div class="form-group col-md-6">
@@ -98,39 +111,16 @@ export class FormQueryEditor extends Page {
                     </div>
                 </div>
 
+
+                <!--     Advanced-Filter           -->
+
+
                <div class="form-row">
                     <div class="col-md-12">
                         <hr>
                     </div>
                 </div>
 
-
-
-
-             <!--     limit           -->
-
-
-
-                <div class="form-row">
-                    <div class="form-group col-md-12">
-                        <label for="fq-limit">Limit <a class="pover" title="Limit" data-content="The max output limit.<br>Empty means no limit.">[?]</a></label>
-                        <input type="text" class="form-control" id="fq-limit">
-                    </div>
-                </div>
-
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="fq-showDeleted">
-                    <label class="form-check-label" for="fq-showDeleted">
-                        Show deleted files
-                        <a class="pover" title="Show deleted files" data-content="If checked deleted files that are still in the database are also shown.">[?]</a>
-                    </label>
-                </div>
-
-                <div class="form-row">
-                    <div class="col-md-12">
-                        <hr>
-                    </div>
-                </div>
 
 
                 <div class="form-row">
@@ -163,6 +153,7 @@ export class FormQueryEditor extends Page {
 
                 </div>
 
+                 <!--     Attribut-Selector           -->
 
 
                 <div class="form-row">
@@ -183,6 +174,38 @@ export class FormQueryEditor extends Page {
                     </div>
                 </div>
 
+
+
+                <!--     limit           -->
+
+                 <div class="form-row">
+                    <div class="col-md-12">
+                        <hr>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        <label for="fq-limit">Limit <a class="pover" title="Limit" data-content="The max output limit.<br>Empty means no limit.">[?]</a></label>
+                        <input type="text" class="form-control" id="fq-limit">
+                    </div>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="fq-showDeleted">
+                    <label class="form-check-label" for="fq-showDeleted">
+                        Show deleted files
+                        <a class="pover" title="Show deleted files" data-content="If checked deleted files that are still in the database are also shown.">[?]</a>
+                    </label>
+                </div>
+
+                 <div class="form-row">
+                    <div class="col-md-12">
+                        <hr>
+                    </div>
+                </div>
+
+                <!--     Controll-Buttons           -->
 
                 <button type="submit" class="btn btn-primary">Send</button>
                 <button type="button" class="btn btn-primary open-query">Open Query</button>
