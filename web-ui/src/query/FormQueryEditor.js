@@ -43,24 +43,6 @@ export class FormQueryEditor extends Page {
                     </div>
                 </div>
 
-
-
-
-                <!--  <div class="form-row">-->
-                <!--    <div class="form-group col-md-6">-->
-                <!--      <label for="fq-filePattern">Pattern*</label>-->
-                <!--      <input type="text" class="form-control" id="fq-filePattern">-->
-                <!--    </div>-->
-                <!--<div class="form-group col-md-6">-->
-                <!--    <div class="custom-control custom-switch">-->
-                <!--&lt;!&ndash;        <label for="fq-includeVsExclude">Include/Exclude</label><br>&ndash;&gt;-->
-                <!--<br>-->
-                <!--        <input type="checkbox" class="custom-control-input" id="fq-includeVsExclude">-->
-                <!--        <label class="custom-control-label" for="fq-includeVsExclude">Include VS Exclude</label>-->
-                <!--    </div>-->
-                <!--</div>-->
-                <!--</div>-->
-
 <!--     date-range-filter           -->
 
 
