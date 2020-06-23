@@ -19,7 +19,7 @@ export class FormQueryEditor extends Page {
         this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
         this.filterFirstElement = this.getFilterElement();
 
-        this.metadatAutocompletion = new MetadataAutocompletion(this.graphQlFetcher, ".filetype-element-input", ".fg-metadata-attribute", ".attribut-element-input");
+        this.metadatAutocompletion = new MetadataAutocompletion(this.graphQlFetcher, ".filetype-element-input", ".fg-metadata-attribute", ".attribut-element-input", ".modalOpenerSelector");
     }
 
     content() {
@@ -112,6 +112,9 @@ export class FormQueryEditor extends Page {
                     <div class="form-group col-md-4 fg-filetype-element">
                         <input type="text" class="form-control filetype-element-input">
                     </div>
+                </div>
+                <div class="form-row justify-content-md-center">
+                    <button type="submit" class="btn btn-primary modalOpenerSelector">Open Metadata-Attribut-Selector</button>
                 </div>
 
 
@@ -221,6 +224,8 @@ export class FormQueryEditor extends Page {
 
             ${this.getModalCode()}
 
+            ${this.metadatAutocompletion.getStaticModalHtml()}
+
             `;
 
 
@@ -261,6 +266,8 @@ export class FormQueryEditor extends Page {
         this.helperMethodFiletypeFilter();
         this.inputValidation();
         this.inputSuggestion();
+        this.metadatAutocompletion.addListener();
+
         let thisdata = this;
 
         $(".q-send-query-form-editor").submit(function (event) {
@@ -277,7 +284,7 @@ export class FormQueryEditor extends Page {
 
             $("#graphql-code-content").text(thisdata.buildAndGetGraphQlQuery());
             $('#graphql-modal').modal();
-            thisdata.metadatAutocompletion.showLists();
+            //thisdata.metadatAutocompletion.showLists();
 
         });
 
