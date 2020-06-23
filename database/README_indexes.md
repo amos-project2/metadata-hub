@@ -46,7 +46,7 @@ Plan is to create several indexes:
 ``CREATE INDEX btree_index_size ON public.files(size);``
 
 1. Combining multiple indexes dir_path + name:
-``SELECT * FROM files WHERE (dir_path||'/'||files.name) LIKE '/tmp/test_tree/dir2/dir4/dir7/dir8/dir10/D%';``
+``CREATE INDEX btree_index_full_path ON public.files((dir_path ||'/' || name)text_pattern_ops);``
 
 <br>
 <br>
