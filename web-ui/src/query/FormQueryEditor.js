@@ -52,6 +52,7 @@ export class FormQueryEditor extends Page {
                 <!--</div>-->
                 <!--</div>-->
 
+<!--     date-range-filter           -->
 
                 <div class="form-row">
                     <div class="form-group col-md-6">
@@ -65,6 +66,7 @@ export class FormQueryEditor extends Page {
                 </div>
 
 
+
                 <div class="form-row">
                     <div class="form-group col-md-6">
                         <label for="fq-createFileTimeRangeStartUpdated">Start-DateTime (File modified)<a class="pover" title="Start-DateTime" data-content="It collects all files, which are older (modified-time) than Start-DateTime">[?]</a></label>
@@ -75,6 +77,38 @@ export class FormQueryEditor extends Page {
                         <input type="text" class="form-control" id="fq-createFileTimeRangeEndUpdated" placeholder="2020-07-28 20:35:22">
                     </div>
                 </div>
+
+<!--     filetypes filter           -->
+
+               <div class="form-row">
+                    <div class="col-md-12">
+                        <hr>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="col-md-12">Which Filetypes: <a class="pover" title="Which Filetypes" data-content="Here you can specify a prefilter of filetypes. If it is empty means, no filetype-filter here">[?]</a></div>
+                </div>
+
+
+                <div class="fg-filetype-container form-row">
+
+                    <div class="form-group col-md-4 fg-filetype-element">
+                        <input type="text" class="form-control filetype-element-input">
+                    </div>
+                </div>
+
+               <div class="form-row">
+                    <div class="col-md-12">
+                        <hr>
+                    </div>
+                </div>
+
+
+
+
+             <!--     limit           -->
+
 
 
                 <div class="form-row">
@@ -198,6 +232,7 @@ export class FormQueryEditor extends Page {
 
         this.helperMethod();
         this.helperMethod2();
+        this.helperMethodFiletypeFilter();
         this.inputValidation();
         this.inputSuggestion();
         let thisdata = this;
@@ -552,6 +587,46 @@ query
                 </div>
             </div>`;
     }
+
+
+    helperMethodFiletypeFilter() {
+
+        let dhis_state = this;
+
+        $(".filetype-element-input").focusout(function () {
+            if ($(".filetype-element-input").length < 2) {return;}
+
+            if ($(this).val() === "") {
+                $(this).parent().remove();
+            }
+        });
+
+        $(".filetype-element-input").focusin(function () {
+            let dhis = this;
+            let emptyTextField = false;
+            $(".filetype-element-input").each(function () {
+                if (dhis !== this) {
+                    // alert($(this).val());
+                    if ($(this).val() == "") { emptyTextField = true; }
+                }
+            });
+
+            if (!emptyTextField) {
+                $(".fg-filetype-container").append(`
+    <div class="form-group col-md-4 fg-filetype-element">
+          <input type="text" class="form-control filetype-element-input">
+    </div>`);
+
+
+                dhis_state.helperMethodFiletypeFilter();//IMPORTANT: re-add the listener to the new created element(s)
+            }
+
+        });
+    }
+
+
+
+
 
 
     onUnMount() {
