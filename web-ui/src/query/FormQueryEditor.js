@@ -1,5 +1,6 @@
 import {Page} from "../Page";
 import {ResultPresenter} from "../buisnesslogic/ResultPresenter";
+import {MetadataAutocompletion} from "./autocompletion/MetadataAutocompletion";
 // // import {datenrangepicker} from "daterangepicker";
 // import moment from 'moment';
 //
@@ -17,6 +18,8 @@ export class FormQueryEditor extends Page {
         this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
         this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
         this.filterFirstElement = this.getFilterElement();
+
+        this.metadatAutocompletion = new MetadataAutocompletion(this.graphQlFetcher, "filetype-element-input", "fg-metadata-attribute", "attribut-element-input");
     }
 
     content() {
