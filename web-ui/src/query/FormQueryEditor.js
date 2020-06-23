@@ -19,7 +19,7 @@ export class FormQueryEditor extends Page {
         this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
         this.filterFirstElement = this.getFilterElement();
 
-        this.metadatAutocompletion = new MetadataAutocompletion(this.graphQlFetcher, "filetype-element-input", "fg-metadata-attribute", "attribut-element-input");
+        this.metadatAutocompletion = new MetadataAutocompletion(this.graphQlFetcher, ".filetype-element-input", ".fg-metadata-attribute", ".attribut-element-input");
     }
 
     content() {
@@ -276,7 +276,8 @@ export class FormQueryEditor extends Page {
         $(".open-query").click(function () {
 
             $("#graphql-code-content").text(thisdata.buildAndGetGraphQlQuery());
-            $('#graphql-modal').modal()
+            $('#graphql-modal').modal();
+            thisdata.metadatAutocompletion.showLists();
 
         });
 
