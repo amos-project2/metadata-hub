@@ -187,7 +187,7 @@ export class FormQueryEditor extends Page {
                 <div class="form-row">
                     <div class="form-group col-md-12">
                         <label for="fq-limit">Limit <a class="pover" title="Limit" data-content="The max output limit.<br>Empty means no limit.">[?]</a></label>
-                        <input type="text" class="form-control" id="fq-limit">
+                        <input type="text" class="form-control" id="fq-limit" value="3">
                     </div>
                 </div>
 
