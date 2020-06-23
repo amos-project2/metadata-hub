@@ -253,8 +253,8 @@ export class FormQueryEditor extends Page {
 
         $(".resultView1").html(this.resultPresenter.getHtml());
 
-        this.helperMethod();
-        this.helperMethod2();
+        this.helperMethodAttributSelector();
+        this.helperMethodAdvancedFilterRows();
         this.helperMethodFiletypeFilter();
         this.inputValidation();
         this.inputSuggestion();
@@ -318,7 +318,7 @@ export class FormQueryEditor extends Page {
         // });
     }
 
-    helperMethod() {
+    helperMethodAttributSelector() {
 
         let dhis_state = this;
 
@@ -347,7 +347,7 @@ export class FormQueryEditor extends Page {
     </div>`);
 
 
-                dhis_state.helperMethod();//IMPORTANT: re-add the listener to the new created element(s)
+                dhis_state.helperMethodAttributSelector();//IMPORTANT: re-add the listener to the new created element(s)
             }
 
         });
@@ -398,7 +398,7 @@ export class FormQueryEditor extends Page {
     }
 
 
-    helperMethod2() {
+    helperMethodAdvancedFilterRows() {
 
         let dhis_state = this;
 
@@ -429,7 +429,7 @@ export class FormQueryEditor extends Page {
 
                 dhis_state.reorderFunctionIdsInFilter();
 
-                dhis_state.helperMethod2();//IMPORTANT: re-add the listener to the new created element(s)
+                dhis_state.helperMethodAdvancedFilterRows();//IMPORTANT: re-add the listener to the new created element(s)
             }
 
         });
