@@ -19,7 +19,14 @@ export class FormQueryEditor extends Page {
         this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
         this.filterFirstElement = this.getFilterElement();
 
-        this.metadatAutocompletion = new MetadataAutocompletion(this.graphQlFetcher, ".filetype-element-input", ".fg-metadata-attribute", ".attribut-element-input", ".modalOpenerSelector");
+        this.metadatAutocompletion = new MetadataAutocompletion(
+            this.parent.dependencies.restApiFetcherServer,
+            this.graphQlFetcher,
+            ".filetype-element-input",
+            ".fg-metadata-attribute",
+            ".attribut-element-input",
+            ".modalOpenerSelector"
+        );
     }
 
     content() {
@@ -92,7 +99,7 @@ export class FormQueryEditor extends Page {
                 <div class="fg-filetype-container form-row">
 
                     <div class="form-group col-md-4 fg-filetype-element">
-                        <input type="text" class="form-control filetype-element-input">
+                        <input type="text" class="form-control filetype-element-input" autocomplete="off">
                     </div>
                 </div>
                 <div class="form-row justify-content-md-center">
@@ -315,12 +322,19 @@ export class FormQueryEditor extends Page {
 
         let dhis_state = this;
 
+
+
         $(".attribut-element-input").focusout(function () {
             if ($(".attribut-element-input").length < 2) {return;}
 
             if ($(this).val() === "") {
                 $(this).parent().remove();
             }
+
+            dhis_state.metadatAutocompletion.updateListsFilterMetadata();
+            dhis_state.metadatAutocompletion.reAddListener();
+
+
         });
 
         $(".attribut-element-input").focusin(function () {
@@ -394,6 +408,8 @@ export class FormQueryEditor extends Page {
     helperMethodAdvancedFilterRows() {
 
         let dhis_state = this;
+        // this.metadatAutocompletion.updateListsFilterMetadata();
+        // this.metadatAutocompletion.reAddListener();
 
         $(".fg-metadata-attribute").focusout(function () {
             if ($(".fg-metadata-attribute").length < 2) {return;}
@@ -403,6 +419,9 @@ export class FormQueryEditor extends Page {
             }
 
             dhis_state.reorderFunctionIdsInFilter();
+
+            dhis_state.metadatAutocompletion.updateListsFilterMetadata();
+            dhis_state.metadatAutocompletion.reAddListener();
 
         });
 
@@ -461,8 +480,6 @@ export class FormQueryEditor extends Page {
         let filterCustomString = $("#fq-custom-filter-connector").val();
 
 
-
-
         // if (filepattern !== "") {filepattern = `pattern: "${filepattern}",`;} else {filepattern = "";}
         // if (!checkbox) {checkbox = "option: included,";} else {checkbox = "option: excluded,";}
         if (limit !== "") {limit = `limitFetchingSize: ${limit},\n  `;} else {limit = "";}
@@ -476,7 +493,7 @@ export class FormQueryEditor extends Page {
 
         if (filterCustomString !== "" && filterOption.includes("custom")) {filterCustomString = `metadata_filter_logic: "${filterCustomString}",\n  `} else {filterCustomString = "";}
 
-        if (filterOption === "all-and" || filterOption==="custom-and") {
+        if (filterOption === "all-and" || filterOption === "custom-and") {
             filterOption = `metadata_filter_logic_options: and,\n  `;
         } else if (filterOption === "all-or" || filterOption === "custom-or") {
             filterOption = `metadata_filter_logic_options: or,\n  `;
@@ -485,7 +502,7 @@ export class FormQueryEditor extends Page {
         }
 
 
-            let attributes = "";
+        let attributes = "";
         {
             $(".attribut-element-input").each(function () {
                 if ($(this).val() !== "") {
@@ -513,7 +530,6 @@ export class FormQueryEditor extends Page {
                 filetypes = `file_types:[${filetypes}],\n  `;
             }
         }
-
 
 
         let options_options = "";
@@ -636,6 +652,10 @@ query
             if ($(this).val() === "") {
                 $(this).parent().remove();
             }
+
+            dhis_state.metadatAutocompletion.updateListsFilterMetadata();
+            dhis_state.metadatAutocompletion.reAddListener();
+
         });
 
         $(".filetype-element-input").focusin(function () {
@@ -660,10 +680,6 @@ query
 
         });
     }
-
-
-
-
 
 
     onUnMount() {

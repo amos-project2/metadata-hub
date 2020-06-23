@@ -1,3 +1,7 @@
+// import {autocomplete} from "bootstrap-autocomplete";
+
+var autocompleter = require('bootstrap-autocomplete');
+
 /**
  * Its a high cohesive class to FormQueryEditor.
  * It depends on the dom, which is generated there.
@@ -5,7 +9,8 @@
  */
 export class MetadataAutocompletion {
 
-    constructor(graphQlFetcher, fileTypesSelector, currentFilterListSelector, currentMetadataListSelector, modalOpenerSelector) {
+    constructor(restApiFetcherServer, graphQlFetcher, fileTypesSelector, currentFilterListSelector, currentMetadataListSelector, modalOpenerSelector) {
+        this.restApiFetcherServer = restApiFetcherServer;
         this.graphQlFetcher = graphQlFetcher;
         this.fileTypesSelector = fileTypesSelector;
         this.currentFilterListSelector = currentFilterListSelector;
@@ -18,15 +23,17 @@ export class MetadataAutocompletion {
 
 
         this.bestMatchingFromServer = [];
-        this.lastFileTypesConcatenated = "";
+        this.lastFileTypesConcatenated = "UNDEFINED xxx";
 
     }
 
     //private
+    //TODO rename and append also FileType
     updateListsFilterMetadata() {
 
         this.filter = [];
         this.metadata = [];
+        this.fileTypes = [];
 
         let thisdata = this;
 
@@ -38,6 +45,11 @@ export class MetadataAutocompletion {
         $(this.currentMetadataListSelector).each(function () {
             if ($(this).val() === "") return;
             thisdata.metadata.push($(this).val());
+        });
+
+        $(this.fileTypesSelector).each(function () {
+            if ($(this).val() === "") return;
+            thisdata.fileTypes.push($(this).val());
         });
 
     }
@@ -71,9 +83,26 @@ export class MetadataAutocompletion {
     //private
     updateServerList(callback) {
 
-        //stub
-        this.bestMatchingFromServer = ["foo", "bar", "xyz", "usw"];
-        callback();
+        let thisdata = this;
+
+        function getFileString() {
+
+            let resultString = "";
+            thisdata.fileTypes.forEach(element => {
+                resultString += element + "$X$";
+            });
+            return resultString;
+        }
+
+
+        this.restApiFetcherServer.fetchGet("metadata-autocomplete/modal-suggestions/?fileTypes=" + encodeURIComponent(getFileString()), function (event) {
+            console.log(event.data);
+            //this.bestMatchingFromServer = ["foo", "bar", "xyz", "usw"];
+            thisdata.bestMatchingFromServer = event.data;
+            callback();
+        });
+
+
     }
 
     //public
@@ -88,7 +117,9 @@ export class MetadataAutocompletion {
 
     //public
     addListener() {
+
         let thisdata = this;
+
         $(this.modalOpenerSelector).click(function () {
             thisdata.openAndConfigureModal();
         });
@@ -96,7 +127,87 @@ export class MetadataAutocompletion {
             thisdata.saveModal();
         });
 
+        this.reAddListener();
+
     }
+
+    reAddListener() {
+
+        let thisdata = this;
+
+        function getUsedAsString(type) {
+
+            let existing = thisdata.metadata
+            if (type === 0) {
+                existing = thisdata.filter;
+            }
+
+            let resultString = "";
+            existing.forEach(element => {
+                resultString += element + "$X$";
+            });
+            return resultString;
+        }
+
+        function getFileString() {
+
+            let resultString = "";
+            thisdata.fileTypes.forEach(element => {
+                resultString += element + "$X$";
+            });
+            return resultString;
+        }
+
+        // $(this.currentFilterListSelector).off("autoComplete");
+        // $(this.currentFilterListSelector).off();
+        // $(this.currentMetadataListSelector).off("autoComplete");
+        // $(this.currentMetadataListSelector).off();
+
+
+        // $('.basicAutoComplete').autoComplete();
+        $(this.currentFilterListSelector).autoComplete({
+            preventEnter: true,
+            minLength: 0,
+            resolverSettings: {
+                //url: 'http://localhost:8080/api/metadata-autocomplete/suggestions/?type=0&used=' + encodeURIComponent(getUsedAsString(0)) + '&files=' + encodeURIComponent(getFileString()) //TODO its hardcoded use config server-url
+                url: 'http://localhost:8080/api/metadata-autocomplete/suggestions/'
+            },
+            events: {
+                searchPre: function (value) {
+                    return value + "$XXX$" + getUsedAsString(0) + "$XXX$" + getFileString();
+                }
+            }
+        });
+
+        $(this.currentMetadataListSelector).autoComplete({
+            preventEnter: true,
+            minLength: 0,
+            resolverSettings: {
+                //url: 'http://localhost:8080/api/metadata-autocomplete/suggestions/?type=1&used=' + encodeURIComponent(getUsedAsString(1)) + '&files=' + encodeURIComponent(getFileString()) //TODO its hardcoded use config server-url
+                url: 'http://localhost:8080/api/metadata-autocomplete/suggestions/'
+            },
+            events: {
+                searchPre: function (value) {
+                    return value + "$XXX$" + getUsedAsString(1) + "$XXX$" + getFileString();
+                }
+            }
+        });
+
+
+        //small fix to prevent href to #/ which directs the page to 404
+        // $(this.fileTypesSelector).on('autocomplete.select', function(event) {
+        //     console.log(event);
+        //     event.preventDefault();
+        //     alert("shown");
+        //     $("a").click(function(event2){
+        //          event2.preventDefault();
+        //      });
+        // });
+
+        // $(this.fileTypesSelector).val("bla");
+
+    }
+
 
     //private
     openAndConfigureModal() {

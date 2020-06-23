@@ -112,7 +112,7 @@ export class Template {
     constructor(dependencies, usedScope) {
         // this.thisdata = this;
         this.dependencies = dependencies;
-        this.config=dependencies.config;
+        this.config = dependencies.config;
         this.usedScope = usedScope;
         this.storage = {
             query_inject: null,
@@ -131,6 +131,7 @@ export class Template {
         //this.errorPage = new ErrorPage(this, "error-404")
 
         this.replaceState = false;
+        this.lastPage="UNDEFINED xxx";
 
 
         // let thisdata = this;
@@ -305,11 +306,14 @@ export class Template {
 
         window.onpopstate = function (event) {
             let page = thisdata.dependencies.utilities.getUrlVars()["p"];
+            page = page.split("#!").join("");
+            if(page==thisdata.lastPage) return;
             thisdata.goToPage(page);
         };
     }
 
     goToPage(page) {
+        this.lastPage = page;
         // alert(page);
         this.replaceState = true;
         for (let value of this.navGroups) {
