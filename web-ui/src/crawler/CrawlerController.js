@@ -173,59 +173,151 @@ export class CrawlerController extends Page {
                         <h2 class="text-dark">Configuration</h2>
                         <p></p>
                         <p style="text-align: left">
-                            <b>Please read before usage!</b>
-                            This is the manual configuration panel.
+                            <b>Please read carefully before usage!</b>
+                            This is the manual configuration panel that is used
+                            to create new TreeWalk executions.
+                            In the following, each input will be briefly
+                            explained.
+                        </p>
+                        <p class="text-left">
+                            <span class="font-weight-bold">Name </span>
+                            The name of the conifguration. It should be a short
+                            name that describes the purpose of the configuration,
+                            e.g. <code>My vacation pictures</code>.
+                        </p>
+                        <p class="text-left">
+                            <span class="font-weight-bold">Author </span>
+                            The author of the conifguration, simply input your
+                            name here, e.g. <code>John Doe</code>.
+                        </p>
+                        <p class="text-left">
+                            <span class="font-weight-bold">Description </span>
+                            A more detailed description of the configuration that
+                            explains its purpose.
+                        </p>
+                        <p class="text-left">
+                            <span class="font-weight-bold">Start </span>
+                            Start timestamp of the configuration. It <b>must</b>
+                            be according to the format
+                            <code>'YEAR-MONTH-DAYS HOURS:MINUTES:SECONDS'</code>,
+                            e.g. <code>'2020-07-22 10:15:00'</code>.
+                            This is due the internal implementation of the TreeWalk.
+                        </p>
+                        <p class="text-left">
+                            <span class="font-weight-bold">Interval </span>
+                            This defines the interval in which the configuration
+                            is executed periodically. Input the number of hours
+                            and days the in which the execution should be repeated.
+                            If the configuration should only be executed once,
+                            leave both values as <code>0</code>.
+                        </p>
+                        <p class="text-left">
+                            <span class="font-weight-bold">Directories </span>
                             Please input the list of directories separated by
                             <code>;</code> in the following way:
-                        </p>
-                        <p style="text-align: left">
-                            <code>
-                                directoryA, True ; directoryB, False
-                            </code>
-                        </p>
-                        <p style="text-align: left">
+                            <code>directoryA, True ; directoryB, False ; ...</code>.
                             This input will crawl <code>directoryA</code> recursively
                             and only files that are directly located in
                             <code>directoryB</code>.
-                            The <b>power level</b>
-                            is an indicator for how many CPU
-                            cores will be used.
+                        </p>
+                        <p class="text-left">
+                            <span class="font-weight-bold">CPU-Level </span>
+                            This an indicator for how many CPU cores will be used.
                             Setting this value to <code>4</code> will use all
                             available physical cores, the value <code>1</code>
                             will result in using about one quarter of the
                             available cores.
-                            The <b>package size</b> defines how many files
+                        </p>
+                        <p class="text-left">
+                            <span class="font-weight-bold">Package-Size </span>
+                            This setting defines how many files
                             are combined in one work package for analysis.
                             Please provide a number between <code>10</code>
                             and <code>1000</code> here.
-                            A reliable default value is <code>250</code>.
+                            A reliable default value is <code>100</code>.
+                        </p>
+                        <p class="text-left">
+                            <span class="font-weight-bold">Force-Update </span>
                             If you want to stop a possible currently running
-                            execution and run the new one, set the <b>update</b> value
+                            execution and run the new one, set the value
                             to <code>Yes</code>, otherwise <code>No</code>.
                         </p>
                         <p></p>
                         <form id="config-form">
+                            <div class="form-group row name">
+                                <label for="name" class="config-input-label">
+                                    Name
+                                </label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="name">
+                                </div>
+                            </div>
+                            <div class="form-group row author">
+                                <label for="author" class="config-input-label">
+                                    Author
+                                </label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="author">
+                                </div>
+                            </div>
+                            <div class="form-group row description">
+                                <label for="description" class="config-input-label">
+                                    Description
+                                </label>
+                                <div class="col-sm-10">
+                                    <textarea type="text" class="form-control" id="description" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="form-group row time-start">
+                                <label for="time-start" class="config-input-label">
+                                    Start
+                                </label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="time-start">
+                                </div>
+                            </div>
+
+                            <div class="form-group row time-interval">
+                                <label for="time-interval" class="config-input-label">
+                                    Interval
+                                </label>
+                                <div class="col-sm-10">
+                                    <input type="range" id="time-interval-hours" min="0" value="0" max="23" style="margin-right: 10%">
+                                    <input type="range" id="time-interval-days" min="0" value="0" max="31">
+                                    <p>
+                                        <span id="time-interval-hours-value">0</span>
+                                        <span> hours ; </span>
+                                        <span id="time-interval-days-value">0</span>
+                                        <span> days</span>
+
+                                    </p>
+                                </div>
+                            </div>
                             <div class="form-group row directories">
-                                <label for="directories" class="col-sm-2 col-form-label">
+                                <label for="directories" class="config-input-label">
                                     Directories
                                 </label>
                                 <div class="col-sm-10">
                                     <input type="text" class="form-control" id="directories">
                                 </div>
                             </div>
-                            <div class="form-group row exiftool">
-                                <label for="exiftool" class="col-sm-2 col-form-label">ExifTool</label>
+                            <div class="form-group row platform">
+                                <label for="platform" class="config-input-label">
+                                    Platform
+                                </label>
                                 <div class="col-sm-10">
-                                    <select id="exiftool" class="form-control">
+                                    <select id="platform" class="form-control">
                                         <option selected value="Linux">Linux</option>
                                         <option value="Windows">Windows</option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="form-group row powerlevel">
-                                <label for="powerlevel" class="col-sm-2 col-form-label">Power level</label>
+                            <div class="form-group row cpu-level">
+                                <label for="powerlevel" class="config-input-label">
+                                    CPU-Level
+                                </label>
                                 <div class="col-sm-10">
-                                    <select id="powerlevel" class="form-control">
+                                    <select id="cpu-level" class="form-control">
                                         <option selected value="1">1</option>
                                         <option value="2">2</option>
                                         <option value="3">3</option>
@@ -234,24 +326,19 @@ export class CrawlerController extends Page {
                                 </div>
                             </div>
                             <div class="form-group row package-size">
-                                <label for="package-size" class="col-sm-2 col-form-label">Package size</label>
+                                <label for="package-size" class="config-input-label">
+                                    Package-Size
+                                </label>
                                 <div class="col-sm-10">
                                     <input type="text" class="form-control" id="package-size">
                                 </div>
                             </div>
-                            <div class="form-group row clear-trace">
-                                <label for="exiftool" class="col-sm-2 col-form-label">Clear Trace</label>
+                            <div class="form-group row force-update">
+                                <label for="update" class="config-input-label">
+                                    Force-Update
+                                </label>
                                 <div class="col-sm-10">
-                                    <select id="clear-trace" class="form-control">
-                                        <option selected value="true">Yes</option>
-                                        <option value="false">No</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group row update">
-                                <label for="update" class="col-sm-2 col-form-label">Update</label>
-                                <div class="col-sm-10">
-                                    <select id="update" class="form-control">
+                                    <select id="force-update" class="form-control">
                                         <option selected value="true">Yes</option>
                                         <option value="false">No</option>
                                     </select>
@@ -262,7 +349,7 @@ export class CrawlerController extends Page {
                                     <button type="submit" class="btn btn-primary btn-block font-weight-bold">SUBMIT</button>
                                 </div>
                                 <div class="col-12 col-md-4 pr-2 pl-2 pt-3">
-                                    <button type="reset" class="btn btn-primary btn-block font-weight-bold">CLEAR</button>
+                                    <button id="clear-config" type="reset" class="btn btn-primary btn-block font-weight-bold">CLEAR</button>
                                 </div>
                                 <div class="col-12 col-md-4 pr-2 pl-2 pt-3">
                                     <button type="reset" id="cancel-config" class="btn btn-primary btn-block font-weight-bold">CANCEL</button>
@@ -282,6 +369,12 @@ export class CrawlerController extends Page {
         `;
     }
 
+    getCurrentTimestampLocalTime() {
+        let currentTime = new Date();
+        let offset = currentTime.getTimezoneOffset() * 60000;
+        let local = new Date(currentTime - offset);
+        return local.toISOString().slice(0, 19).replace('T', ' ');
+    }
 
     updateStatus() {
         let thisdata = this;
@@ -404,8 +497,6 @@ export class CrawlerController extends Page {
                 continuex.stop(true).show(1000);
                 start.stop(true).show(1000);
                 shutdown.stop(true).show(1000);
-
-
                 break;
         }
 
@@ -459,12 +550,30 @@ export class CrawlerController extends Page {
         $("#start-button").click(function () {
             $("#config").show(200);
             $("#config-hr").show(200);
+            $("#author").val(localStorage.getItem("username"));
+            $("#package-size").val(100);
+            $("#time-start").val(self.getCurrentTimestampLocalTime());
             self.progressedWithoutCriticalUserInteraction=false;
         });
 
         $("#cancel-config").click(function () {
             $("#config").hide(500);
             $("#config-hr").hide(500);
+            $('#time-interval-hours-value').html("0");
+            $('#time-interval-days-value').html("0");
+        });
+
+        $("#clear-config").click(function () {
+            $('#time-interval-hours-value').html("0");
+            $('#time-interval-days-value').html("0");
+        });
+
+        $('#time-interval-hours').on('input', function () {
+            $('#time-interval-hours-value').html(this.value);
+        });
+
+        $('#time-interval-days').on('input', function () {
+            $('#time-interval-days-value').html(this.value);
         });
 
         $("#config-form").on("submit", function (e) {
@@ -475,15 +584,11 @@ export class CrawlerController extends Page {
 
     //this method is called each time the user open/go-back to the page here
     onLoad() {
-
-
         let self = this;
         self.updateStatus();
         this.infoTimer = setInterval(function () {
             self.updateStatus()
         }, 2000);
-
-
     }
 
     //this method is called each time the user leave the page
@@ -509,23 +614,34 @@ export class CrawlerController extends Page {
     }
 
     submitConfig(event) {
+        let name = $("#name").val();
+        let author = $("#author").val();
+        let description = $("#description").val();
+        let start = $("#time-start").val();
+        let intervalHours = parseInt($("#time-interval-hours").val());
+        let intervalDays = parseInt($("#time-interval-days").val());
         let directories = $("#directories").val();
-        let exiftool = $("#exiftool").val();
-        let powerLevel = $("#powerlevel").val();
-        let packageSize = $("#package-size").val();
-        let clearTrace = $("#clear-trace").val();
-        let update = $("#update").val();
+        let platform = $("#platform").val();
+        let cpuLevel = parseInt($("#cpu-level").val());
+        let packageSize = parseInt($("#package-size").val());
+        let forceUpdate = $("#force-update").val();
         let config = {
-            "paths": {
-                "inputs": [],
-                "exiftool": ""
+            "name": "",
+            "author": "",
+            "description": "",
+            "time": {
+                "start": "",
+                "interval": -1,
             },
+            "directories": [],
             "options": {
-                "clearTrace": "",
-                "packageSize": "",
-                "powerLevel": "",
+                "cpu-level": "",
+                "package-size": "",
+                "platform": "",
+                "force-update": ""
             }
         };
+        // Validate input directories
         try {
             let splits = directories.split(";");
             splits.forEach(function (item) {
@@ -539,7 +655,7 @@ export class CrawlerController extends Page {
                 } else {
                     throw "Invalid recursive option";
                 }
-                config["paths"]["inputs"].push({
+                config["directories"].push({
                     "path": path,
                     "recursive": recursive_flag
                 });
@@ -547,20 +663,26 @@ export class CrawlerController extends Page {
         } catch (err) {
             this.renderMessage(
                 false,
-                "Ooops, it seems like your input data was invalid :(",
+                "Ooops, it seems like your input directories were invalid :(",
                 "config"
             );
             return;
         }
-        config["paths"]["exiftool"] = exiftool;
-        config["options"]["powerLevel"] = parseInt(powerLevel);
-        config["options"]["packageSize"] = parseInt(packageSize);
-        config["options"]["clearTrace"] = clearTrace === 'true';
-        let url = `start?config=${JSON.stringify(config)}&update=${update}`;
+        let interval = (intervalHours * 3600) + (intervalDays * 86400);
+        config["name"] = name;
+        config["author"] = author;
+        config["description"] = description;
+        config["time"]["start"] = start;
+        config["time"]["interval"] = interval;
+        config["options"]["platform"] = platform;
+        config["options"]["cpu-level"] = cpuLevel;
+        config["options"]["package-size"] = packageSize;
+        config["options"]["force-update"] = forceUpdate === "true" ;
+        let url = `start?config=${JSON.stringify(config)}`;
         //we hide directly
         $("#config").hide(500);
         $("#config-hr").hide(500);
-
+        console.log(url);
         let crawlerProgressBar= $(".my-progress-bar");
         crawlerProgressBar.css('width', `0%`);
         crawlerProgressBar.html(`0%`);

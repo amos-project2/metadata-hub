@@ -58,7 +58,7 @@ public class SearchForFileMetadataFetcher implements DataFetcher
                  (sqlQuery))
         {
 
-            log.info("PreparedStatement: " + preparedStatement);
+            //log.info("PreparedStatement: " + preparedStatement);
             try (ResultSet rs = preparedStatement.executeQuery())
             {
 

@@ -31,6 +31,7 @@
     },
     "dependencies": {
         "bootstrap": "^4.5.0",
+        "bootstrap-autocomplete": "^2.3.5",
         "bootstrap-datetimepicker-npm": "^4.17.37-npm",
         "bootswatch": "^4.5.0",
         "crypto-js": "^4.0.0",
