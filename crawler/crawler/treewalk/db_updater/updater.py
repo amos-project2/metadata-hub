@@ -14,9 +14,9 @@ import threading
 
 
 # Local imports
+from . import database
 import crawler.communication as communication
 import crawler.services.environment as environment
-from .connection import DatabaseConnection
 
 
 _logger = logging.getLogger(__name__)
@@ -24,21 +24,13 @@ _logger = logging.getLogger(__name__)
 
 class DatabaseUpdater(threading.Thread):
 
-    def __init__(self, db_measure_time: bool):
+    def __init__(self, db_info: dict, measure_time: bool):
         super(DatabaseUpdater, self).__init__()
         self._update_interval = environment.env.CRAWLER_DB_UPDATE_INTERVAL
-        self._connection_data = dict(
-            user=environment.env.DATABASE_USER,
-            password=environment.env.DATABASE_PASSWORD,
-            host=environment.env.DATABASE_HOST,
-            port=environment.env.DATABASE_PORT,
-            dbname=environment.env.DATABASE_NAME
+        self._db_connection = database.DBUpdaterDatabaseConnection(
+            db_info=db_info,
+            measure_time=measure_time
         )
-        self._db_connection =  DatabaseConnection(
-            db_info=self._connection_data,
-            measure_time=db_measure_time
-        )
-
 
     def _is_to_remove(
             self,
@@ -82,10 +74,12 @@ class DatabaseUpdater(threading.Thread):
             _logger.info(
                 f'Database updater sleeping for {self._update_interval} seconds.'
             )
-            time.sleep(self._update_interval)
             try:
-                command, _ = communication.database_updater_input.get(False)
-                if command == communication.DATABASE_UPDATER_SHUTDOWN:
+                command = communication.database_updater_input.get(
+                    block=True,
+                    timeout=self._update_interval
+                )
+                if command.command == communication.DATABASE_UPDATER_SHUTDOWN:
                     break
             except queue.Empty:
                 pass

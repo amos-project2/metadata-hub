@@ -14,8 +14,7 @@ def workSize(pathInput: str) -> List[str]:
     root, directories, files = next(os.walk(pathInput))
     return [pathInput, len(files)]
 
-# FIXME: This is just a dummy implementation for testing purposes.
-# The interface should stay the same though
+
 def create_work_packages(
         inputs: List[Tuple[str, bool]],
         work_package_size: int,
@@ -95,5 +94,15 @@ def create_work_packages(
         result[index].append(package)
     return result, split
 
-def get_number_of_workers(power_level: int):
-    return int(power_level * 0.25 * psutil.cpu_count(logical=False))
+
+def get_number_of_workers(cpu_level: int) -> int:
+    """Returns the number of worker processes to create based on the CPU level.
+
+    Args:
+        cpu_level (int): cpu level specified in the configuration
+
+    Returns:
+        int: number of processes to spawn
+
+    """
+    return int(cpu_level * 0.25 * psutil.cpu_count(logical=False))

@@ -41,7 +41,12 @@
         "crawler-db-update-interval": {
             "description": "Time interval in seconds after files marked as deleted are removed",
             "type": "integer",
-            "minumum": 0
+            "minimum": 0
+        },
+        "crawler-scheduler-interval": {
+            "description": "Time interval in seconds for the scheduler to run",
+            "type": "integer",
+            "minimum": 0
         },
         "crawler-logging-level": {
             "description": "Logging level of the crawler",
@@ -54,7 +59,7 @@
                 "CRITICAL"
             ]
         },
-        "crawler-db-measure-time": {
+        "crawler-measure-time": {
             "description": "Measure execution times of database operations",
             "type": "boolean"
         },
@@ -115,6 +120,7 @@
         "crawler-host",
         "crawler-port",
         "crawler-db-update-interval",
+        "crawler-measure-time",
         "crawler-logging-level",
         "server-host",
         "server-port",

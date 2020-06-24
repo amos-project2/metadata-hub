@@ -6,7 +6,6 @@ Running the exiftool and hashing files is a CPU-bounded task, thus processes
 are required for speeding up the execution time.
 """
 
-
 # Python imports
 import json
 import os
@@ -14,79 +13,97 @@ import queue
 import hashlib
 import logging
 import subprocess
-import time # FIXME
-import random # FIXME
 import multiprocessing
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from datetime import datetime
-
 
 # 3rd party imports
 from psycopg2.extensions import connection
 
-
 # Local imports
 from crawler.services.config import Config
 import crawler.database as database
-from crawler.services.tracing import Tracer
 import crawler.communication as communication
-
 
 _logger = logging.getLogger(__name__)
 
 
+def measure_exiftool(func):
+    """Decorator for time measurement of the exiftool execution.
+
+    This decorator is used for roughly estimate the time spent for running
+    the ExifTool on the work packages.
+
+    Args:
+        func (function): function to wrap
+
+    """
+
+    def decorator(self, *args, **kwargs):
+        if self._measure_time:
+            start = datetime.now()
+            result = func(self, *args, **kwargs)
+            end = datetime.now()
+            self._exiftool_time += (end - start).total_seconds()
+        else:
+            result = func(self, *args, **kwargs)
+        return result
+
+    return decorator
+
+
 class Worker(multiprocessing.Process):
 
-
     def __init__(
-            self,
-            queue: multiprocessing.Queue,
-            config: Config,
-            connection_data: dict,
-            tree_walk_id: int,
-            lock: multiprocessing.Lock,
-            counter: multiprocessing.Value,
-            finished: multiprocessing.Event,
-            num_workers: int,
-            db_measure_time: bool
+        self,
+        queue_input: multiprocessing.Queue,
+        queue_output: multiprocessing.Queue,
+        config: Config,
+        connection_data: dict,
+        tree_walk_id: int,
+        lock: multiprocessing.Lock,
+        counter: multiprocessing.Value,
+        finished: multiprocessing.Event,
+        num_workers: int,
+        measure_time: bool
     ):
         super(Worker, self).__init__()
-        self._queue = queue
+        self._queue_input = queue_input
+        self._queue_output = queue_output
         self._config = config
         self._tree_walk_id = tree_walk_id
         self._lock = lock
         self._counter = counter
+        self._measure_time = measure_time
         self._db_connection = database.DatabaseConnection(
             db_info=connection_data,
-            measure_time=db_measure_time
+            measure_time=self._measure_time
         )
         self._exiftool = self._config.get_exiftool_executable()
         self._finished = finished
         self._num_workers = num_workers
-
+        self._exiftool_time = 0
 
     def run(self) -> None:
-        """Run the worker process.
-
-        TODO: Add description
-
-        """
+        """Run the worker process."""
         paused = False
         _logger.info(f'Process {self.pid}: starting.')
         while True:
-            command, data = self._queue.get()
-            _logger.info(f'Process {self.pid}: received command {command}.')
-            if (command == communication.WORKER_PACKAGE) and not paused:
-                self._do_work(data)
-            elif command == communication.WORKER_FINISH:
+            command = self._queue_input.get()
+            _logger.debug(
+                f'Process {self.pid}: received command {command.command}.'
+            )
+            if (command.command == communication.WORKER_PACKAGE) and not paused:
+                self._do_work(command.data)
+            elif command.command == communication.WORKER_FINISH:
                 self._clean_up()
                 break
-            elif command == communication.WORKER_STOP:
+            elif command.command == communication.WORKER_STOP:
                 self._clean_up()
                 break
-            elif (command == communication.WORKER_PAUSE) and not paused:
+            elif (command.command == communication.WORKER_PAUSE) and not paused:
                 paused = True
-            elif (command == communication.WORKER_UNPAUSE) and paused:
+            elif (command.command == communication.WORKER_UNPAUSE) and paused:
                 paused = False
             else:
                 _logger.error(
@@ -94,8 +111,7 @@ class Worker(multiprocessing.Process):
                 )
         _logger.info(f'Process {self.pid}: terminating.')
 
-
-    def createInsert(self, crawl_id:int, exif: json) -> Tuple[str]:
+    def createInsert(self, crawl_id: int, exif: json) -> Tuple[str]:
         """Helper method for collecting all the values from the output of a file.
 
         Args:
@@ -127,21 +143,24 @@ class Worker(multiprocessing.Process):
             except:
                 insert_values += (None,)
         try:
+            # TODO better fix than dumping the json in the worker (after extracting the single file tags)
             insert_values += (json.dumps(exif),)
         except:
             insert_values += ('NULL',)
         for i in ['FileAccessDate', 'FileModifyDate', 'FileCreationDate']:
             try:
                 valueTmp = f'{exif[i]}'
-                insert_values += (valueTmp[:12].replace(':', '-') + valueTmp[13:],)
-
+                valueFormat = valueTmp[:12].replace(':', '-') + valueTmp[13:]
+                if valueFormat == '0000-00-00 0:00:00':
+                    insert_values += ('-infinity',)
+                else:
+                    insert_values += (valueFormat,)
             except:
                 insert_values += ('-infinity',)
         insert_values += (False, '-infinity')
         return insert_values
 
-
-    def getSize(self, size:str) -> int:
+    def getSize(self, size: str) -> int:
         """Convert the size into bytes
 
         Args:
@@ -164,6 +183,49 @@ class Worker(multiprocessing.Process):
             multipl = 1000000000000
         return int(size.split(' ')[0]) * multipl
 
+    def create_metadata_list(self, exif_output: json) -> Dict:
+        # Loop over every tag in the json and sum them up in a dictionary
+        tag_values = {}
+        for single_output in exif_output:
+            fileType = single_output['FileType']
+            if fileType not in tag_values:
+                tag_values[fileType] = {}
+            for tag_value in single_output:
+                if tag_value in tag_values[fileType]:
+                    tag_values[fileType][tag_value] += 1
+                else:
+                    tag_values[fileType][tag_value] = 1
+        return tag_values
+
+
+    @measure_exiftool
+    def run_exiftool(self, package: List[str]) -> dict:
+        """Run the ExifTool on the package.
+
+        Args:
+            package (List[str]): work package
+
+        Returns:
+            dict: metadata output or None on error
+
+        """
+        try:
+            process = subprocess.Popen(
+                [f'{self._exiftool}', '-json', *package],
+                stdout=subprocess.PIPE
+            )
+            # FIXME better solution?
+            output = str(process.stdout.read(), 'utf-8')
+            if output:
+                metadata = json.loads(output)
+            else:
+                return None
+        except:
+            _logger.error(
+                f'Process {self.pid}: Error executing the exiftool in process.'
+            )
+            return None
+        return metadata
 
     def _do_work(self, package: List[str]) -> None:
         """Process the work package.
@@ -191,25 +253,13 @@ class Worker(multiprocessing.Process):
         if not package:
             clean_up()
             return
-
-        try:
-            start = datetime.now();
-            process = subprocess.Popen([f'{self._exiftool}', '-json', *package], stdout=subprocess.PIPE)
-            output = str(process.stdout.read(), 'utf-8') # FIXME better solution?
-            end = datetime.now();
-            total = (end - start).total_seconds();
-            _logger.info('>>>>>>>>>>>>>>>>>>>>>>>')
-            _logger.info('Exiftool - The extracting time: {} '.format(total))
-            if output:
-                metadata = json.loads(output)
-            else:
-                clean_up()
-                return
-        except:
-            _logger.error(f'Process {self.pid}: Error executing the exiftool in process.')
+        # Run the exiftool
+        metadata = self.run_exiftool(package)
+        if metadata is None:
+            clean_up()
             return
-
         inserts = []
+        tag_values = []
         for result in metadata:
             # get the exif output for file x
             insert_values = self.createInsert(self._tree_walk_id, result)
@@ -221,14 +271,14 @@ class Worker(multiprocessing.Process):
             with open(f"{result['Directory']}/{result['FileName']}".replace("\'\'", "\'"), "rb") as file:
                 bytes = file.read()
                 hash256 = hashlib.sha256(bytes).hexdigest()
-                insert_values += (hash256,)
+                insert_values += (hash256, False)
             # add the value string to the rest for insert batching
             inserts.append(insert_values)
+
         # insert into the database
         try:
             # Insert the result in a batched query
             self._db_connection.insert_new_record_files(inserts)
-
         except Exception as e:
             print(e)
             _logger.warning(
@@ -241,17 +291,29 @@ class Worker(multiprocessing.Process):
                 except:
                     _logger.warning('Failed inserting single file again.')
 
+        # Update the values in the 'metadata' table
+        try:
+            # Create a comprehensive dictionary of all updates to be made in the 'metadata' table
+            metadata_list = self.create_metadata_list([json.loads(j[5]) for j in inserts])
+            # Put the new information into the database
+            self._db_connection.update_metadata(metadata_list)
+        except:
+            _logger.warning("Error updating metadata")
+
         # Check if there was a previous entry in the database
         # if yes: Set the tag in the database to true
         toDelete = []
         directories = set([x[1] for x in inserts])
         try:
             for dir in directories:
-                file_ids = self._db_connection.check_directory(dir)
+                file_ids = self._db_connection.check_directory(dir, [x[-2] for x in inserts])
                 if file_ids:
                     toDelete.extend(file_ids)
             if len(toDelete) > 0:
-                self._db_connection.set_deleted(toDelete)
+                # Decrease the dynamic tags in 'metadata' table
+                self._db_connection.decrease_dynamic(toDelete)
+                # Delete the files
+                self._db_connection.delete_files(toDelete)
         except Exception as e:
             print(e)
             _logger.warning(
@@ -259,13 +321,17 @@ class Worker(multiprocessing.Process):
             )
         clean_up()
 
-
     def _clean_up(self) -> None:
         """Clean up method for cleaning up all used resources."""
         _logger.debug(f'Process {self.pid}: cleaning up.')
         self._db_connection.close()
-        # Empty the work package list. Otherwise BrokenPipe errors will appear
-        # because the queue still contains items.
-        # FIXME: the queue should already actually be empty.
-        while not self._queue.empty():
-            self._queue.get(False)
+        response = communication.Response(
+            success=True,
+            message=(self._exiftool_time, self._db_connection.get_time()),
+            command=communication.WORKER_FINISH
+        )
+        self._queue_output.put(response)
+        # Wait for the manager to read the result, otherwise BrokenPipe will
+        # be raised
+        while not self._queue_output.empty():
+            pass
