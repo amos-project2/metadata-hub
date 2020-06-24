@@ -5,7 +5,7 @@ import json
 import logging
 import os
 from datetime import datetime
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 # 3rd party modules
 import psycopg2
@@ -147,20 +147,20 @@ class DatabaseConnection:
         return dbID
 
     @measure_time
-    def insert_new_record_files(self, insert_values: List[Tuple[str]]):
+    def insert_new_record_files(self, insert_values: List[Tuple[str]]) -> None:
         """Insert a new record to the 'files' table based on the ExifTool output.
 
         Args:
-            values (List[Tuple[str]): A list of lists. Contains the values for each row to be inserted.
+            insert_values (List[Tuple[str]): A list of lists. Contains the values for each row to be inserted.
 
         """
-        # Construct the SQL query
-        # FIXME pypika solution?
+        # Construct the SQL query for inserting the new files into the 'files' table
         query = 'INSERT INTO "files" ("crawl_id","dir_path","name","type","size","metadata","creation_time", ' \
                 '"access_time","modification_time","deleted","deleted_time","file_hash", "in_metadata") VALUES '
         curs = self.con.cursor()
         for insert in insert_values:
             query += curs.mogrify("(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s),", insert).decode('utf8')
+        # Execute the constructed query (Rollback in case of error)
         try:
             curs.execute(query[:-1])
         except:
@@ -362,6 +362,9 @@ class DatabaseConnection:
         try:
             curs.execute(query)
             entries = curs.fetchall()
+            self.set_deleted(entries)
+            if len(entries) > 0:
+                self.decrease_dynamic([x[0] for x in entries])
             curs.close()
             self.con.commit()
         except Exception as e:
@@ -369,4 +372,109 @@ class DatabaseConnection:
             _logger.warning('"Error updating file deletion"')
             curs.close()
             self.con.rollback()
-        self.set_deleted(entries)
+
+
+    def update_metadata(self, additions: dict) -> None:
+        """Given a dictionary with key (file type) and values ((tag name, increments)) update the database
+        accordingly
+        Args:
+            additions (dict): key (file type) and values ((tag name, increments))
+        Return:
+
+        """
+        # Query to get the old values from the 'metadata' table (For each file type)
+        query = "SELECT * FROM metadata WHERE file_type IN %s;"
+        curs = self.con.cursor()
+        query = curs.mogrify(query, (tuple([file_type for file_type in additions]),))
+        try:
+            curs.execute(query)
+            entries = curs.fetchall()
+            # Query to update the values of each entry that has a previous entry
+            for entry in entries:
+                file_type = [x for x in entry][0]
+                updates = additions[file_type]
+                query = 'UPDATE metadata SET "tags" = %s WHERE "file_type" = %s;'
+                for tag in entry[1]:
+                    if tag in updates.keys():
+                        entry[1][tag] = int(entry[1][tag]) + int(updates[tag])
+                        del updates[tag]
+                for tag in updates:
+                    entry[1][tag] = int(updates[tag])
+                del additions[file_type]
+                query = curs.mogrify(query, (json.dumps(entry[1]), file_type))
+                curs.execute(query)
+
+            for file_type in additions:
+                # Query to update the values of each entry that has no previous version
+                query = 'INSERT INTO "metadata" ("file_type", "tags")VALUES (%s, %s)'
+                updates = (file_type, json.dumps(additions[file_type]))
+                query = curs.mogrify(query, updates)
+                curs.execute(query)
+            curs.close()
+            self.con.commit()
+        except:
+            curs.close()
+            self.con.rollback()
+            raise
+        # for file_type in additions:
+        #     for tag_name in additions[file_type]:
+        #         additions[file_type][tag_name]
+
+
+    def decrease_dynamic(self, ids: List[int]) -> None:
+        """
+        Decreases the tag values in the 'metadata' table by the tag values of the files present in ids
+        Args:
+            ids (List[int]): file ids that metadata is gathered about
+        """
+
+        def create_metadata(metadata_delete: List[str]) -> Dict:
+            # Loop over every tag in the json and sum them up in a dictionary
+            metadata_dict = {}
+            try:
+                for entry in metadata_delete:
+                    if entry[1] not in metadata_dict.keys():
+                        metadata_dict[entry[1]] = {}
+                    for file_result in entry[0]:
+                        if file_result not in metadata_dict[entry[1]]:
+                            metadata_dict[entry[1]][file_result] = 0
+                        metadata_dict[entry[1]][file_result] += 1
+            except Exception as e:
+                curs.close()
+                self.con.rollback()
+                raise
+            return metadata_dict
+
+        # Query for requesting all the information from the previous entries (Needed to reconstruct the tags used by
+        # each file)
+        query = 'SELECT "metadata", "type" FROM "files" WHERE "id" IN %s'
+        curs = self.con.cursor()
+        query = curs.mogrify(query, (tuple(ids),))
+        try:
+            curs.execute(query)
+            entries = curs.fetchall()
+            metadata = create_metadata(entries)
+            relevant_file_types = tuple(set([x[1] for x in entries]))
+            #for entry in metadata.keys():
+            # Get old value
+            query = 'SELECT * FROM "metadata" WHERE "file_type" in %s'
+            query = curs.mogrify(query, (relevant_file_types,))
+            curs.execute(query)
+            entries = curs.fetchall()
+            # Decrease all the old values
+            for file_type in entries:
+                to_update = file_type[1]
+                merger = metadata[file_type[0]]
+                for key in merger.keys():
+                    to_update[key] = int(file_type[1][key]) - merger[key]
+                query = 'UPDATE metadata SET "tags" = %s WHERE "file_type" = %s;'
+                query = curs.mogrify(query, (json.dumps(to_update), file_type[0]))
+                curs.execute(query)
+            curs.close()
+            self.con.commit()
+
+        except Exception as e:
+            _logger.warning("Error updating the metadata table!")
+            # For each file, go over the JSON data and determine which must be decreased
+            print(e)
+            raise
