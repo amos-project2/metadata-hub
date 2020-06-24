@@ -1,6 +1,7 @@
 package HttpController;
 
 import Config.Config;
+import MetadataAutocompletion.MetadataAutocompletion;
 import Utilities.ClassPathFileLoader;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Singleton
 @Path("/api/metadata-autocomplete/")
@@ -21,12 +24,14 @@ public class MetadataAutocompletionController
 {
 
     private final Config config;
+    private final MetadataAutocompletion metadataAutocompletion;
 
 
     @Inject
-    public MetadataAutocompletionController(Config config)
+    public MetadataAutocompletionController(Config config, MetadataAutocompletion metadataAutocompletion)
     {
         this.config = config;
+        this.metadataAutocompletion = metadataAutocompletion;
     }
 
 
@@ -39,12 +44,23 @@ public class MetadataAutocompletionController
     public String getSuggestions(@QueryParam("q") String query) throws JsonProcessingException
     {
         System.out.println("Q =" + query);
-        ArrayList<String> list = new ArrayList<>();
-        list.add("bla");
-        list.add("blub");
-        list.add("test");
 
-        String json = new ObjectMapper().writeValueAsString(list);
+
+        String[] split = query.split("\\$XXX\\$");
+        String search = split[0].toLowerCase();
+        String used = split[1].toLowerCase();
+        String fileTypes = split[2].toUpperCase();
+
+        List<String> result = metadataAutocompletion.request(Arrays.asList(fileTypes.split("\\$X\\$")), Arrays.asList(used.split("\\$x\\$")), search, 10);
+
+//
+//        ArrayList<String> list = new ArrayList<>();
+//        list.add("bla");
+//        list.add("blub");
+//        list.add("test");
+
+        String json = new ObjectMapper().writeValueAsString(result);
+        System.out.println(json);
         return json;
 
     }

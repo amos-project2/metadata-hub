@@ -3,13 +3,15 @@ package MetadataAutocompletion;
 import Database.Database;
 import com.google.inject.Inject;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MetadataAutocompletion
 {
     private final Database database;
-    private final ConcurrentHashMap<String, MetadataFileCache> cache=new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, MetadataFileCache> cache = new ConcurrentHashMap<>();
 
 
     @Inject
@@ -18,35 +20,68 @@ public class MetadataAutocompletion
         this.database = database;
     }
 
-    public void request(List<String> fileTypes, List<String> usedSearch, String search)
+
+    public List<String> request(List<String> fileTypes, List<String> usedSearch, String search, int count)
     {
+
         String fileTypesAsString = this.getFileTypesAsConcatenatedString(fileTypes);
         MetadataFileCache metadataFileCache;
 
-        //TODO all-fileTypes
-        //fallback for now to jpg
-        if(fileTypes.size()==0)
+        //synchronized because of deadlocks in the concurrentMap
+        synchronized (this)
         {
-            metadataFileCache = cache.computeIfAbsent(fileTypesAsString, (key) ->
+            //TODO all-fileTypes
+            //fallback for now to jpg
+            if (fileTypes.size() == 0)
             {
-                return new MetadataFileCache("jpg", this.database);
-            });
-        }
-        if(fileTypes.size()==1)
-        {
-            metadataFileCache = cache.computeIfAbsent(fileTypesAsString, (key) ->
+                metadataFileCache = cache.computeIfAbsent(fileTypesAsString, (key) ->
+                {
+                    return new MetadataFileCache("JPG", this.database);
+                });
+            }
+            else if (fileTypes.size() == 1)
             {
-                return new MetadataFileCache(fileTypes.get(0), this.database);
-            });
-        }
-        else
-        {
-            metadataFileCache = cache.computeIfAbsent(fileTypesAsString, (key) ->
+                metadataFileCache = cache.computeIfAbsent(fileTypesAsString, (key) ->
+                {
+                    return new MetadataFileCache(fileTypes.get(0), this.database);
+                });
+            }
+            else
             {
-                return new MetadataFileCache(fileTypes, cache);
-            });
+                metadataFileCache = cache.computeIfAbsent(fileTypesAsString, (key) ->
+                {
+                    return new MetadataFileCache(fileTypes, cache, database);
+                });
+            }
+
         }
 
+        ArrayList<String> result = new ArrayList<>();
+        ArrayList<String> resultBackup = new ArrayList<>();
+        AtomicInteger counter = new AtomicInteger(0);//TODO replace through a cheaper Integer-Wrapper, cause atomic is here not necessary
+        metadataFileCache.tagsSorted.forEach((key, value) ->
+        {
+            if (counter.get() >= count) return;
+            if (usedSearch.contains(key.toLowerCase())) return;
+            if (!(key.toLowerCase().contains(search.toLowerCase())))
+            {
+                resultBackup.add(key);
+                return;
+            }
+
+            counter.incrementAndGet();
+            result.add(key);
+        });
+
+        while (result.size() < count)
+        {
+            if (resultBackup.size() == 0) break;
+            result.add(resultBackup.get(0));
+            resultBackup.remove(0);
+        }
+
+
+        return result;
 
     }
 
