@@ -150,8 +150,11 @@ class Worker(multiprocessing.Process):
         for i in ['FileAccessDate', 'FileModifyDate', 'FileCreationDate']:
             try:
                 valueTmp = f'{exif[i]}'
-                insert_values += (valueTmp[:12].replace(':', '-') + valueTmp[13:],)
-
+                valueFormat = valueTmp[:12].replace(':', '-') + valueTmp[13:]
+                if valueFormat == '0000-00-00 0:00:00':
+                    insert_values += ('-infinity',)
+                else:
+                    insert_values += (valueFormat,)
             except:
                 insert_values += ('-infinity',)
         insert_values += (False, '-infinity')
