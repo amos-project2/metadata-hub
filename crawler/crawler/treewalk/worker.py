@@ -6,7 +6,6 @@ Running the exiftool and hashing files is a CPU-bounded task, thus processes
 are required for speeding up the execution time.
 """
 
-
 # Python imports
 import json
 import os
@@ -15,23 +14,18 @@ import hashlib
 import logging
 import subprocess
 import multiprocessing
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from datetime import datetime
-
 
 # 3rd party imports
 from psycopg2.extensions import connection
-
 
 # Local imports
 from crawler.services.config import Config
 import crawler.database as database
 import crawler.communication as communication
 
-
 _logger = logging.getLogger(__name__)
-
-
 
 
 def measure_exiftool(func):
@@ -44,6 +38,7 @@ def measure_exiftool(func):
         func (function): function to wrap
 
     """
+
     def decorator(self, *args, **kwargs):
         if self._measure_time:
             start = datetime.now()
@@ -53,24 +48,24 @@ def measure_exiftool(func):
         else:
             result = func(self, *args, **kwargs)
         return result
+
     return decorator
 
 
 class Worker(multiprocessing.Process):
 
-
     def __init__(
-            self,
-            queue_input: multiprocessing.Queue,
-            queue_output: multiprocessing.Queue,
-            config: Config,
-            connection_data: dict,
-            tree_walk_id: int,
-            lock: multiprocessing.Lock,
-            counter: multiprocessing.Value,
-            finished: multiprocessing.Event,
-            num_workers: int,
-            measure_time: bool
+        self,
+        queue_input: multiprocessing.Queue,
+        queue_output: multiprocessing.Queue,
+        config: Config,
+        connection_data: dict,
+        tree_walk_id: int,
+        lock: multiprocessing.Lock,
+        counter: multiprocessing.Value,
+        finished: multiprocessing.Event,
+        num_workers: int,
+        measure_time: bool
     ):
         super(Worker, self).__init__()
         self._queue_input = queue_input
@@ -88,7 +83,6 @@ class Worker(multiprocessing.Process):
         self._finished = finished
         self._num_workers = num_workers
         self._exiftool_time = 0
-
 
     def run(self) -> None:
         """Run the worker process."""
@@ -117,8 +111,7 @@ class Worker(multiprocessing.Process):
                 )
         _logger.info(f'Process {self.pid}: terminating.')
 
-
-    def createInsert(self, crawl_id:int, exif: json) -> Tuple[str]:
+    def createInsert(self, crawl_id: int, exif: json) -> Tuple[str]:
         """Helper method for collecting all the values from the output of a file.
 
         Args:
@@ -150,6 +143,7 @@ class Worker(multiprocessing.Process):
             except:
                 insert_values += (None,)
         try:
+            # TODO better fix than dumping the json in the worker (after extracting the single file tags)
             insert_values += (json.dumps(exif),)
         except:
             insert_values += ('NULL',)
@@ -163,8 +157,7 @@ class Worker(multiprocessing.Process):
         insert_values += (False, '-infinity')
         return insert_values
 
-
-    def getSize(self, size:str) -> int:
+    def getSize(self, size: str) -> int:
         """Convert the size into bytes
 
         Args:
@@ -186,6 +179,20 @@ class Worker(multiprocessing.Process):
         elif unit[0] == 't':
             multipl = 1000000000000
         return int(size.split(' ')[0]) * multipl
+
+    def create_metadata_list(self, exif_output: json) -> Dict:
+        # Loop over every tag in the json and sum them up in a dictionary
+        tag_values = {}
+        for single_output in exif_output:
+            fileType = single_output['FileType']
+            if fileType not in tag_values:
+                tag_values[fileType] = {}
+            for tag_value in single_output:
+                if tag_value in tag_values[fileType]:
+                    tag_values[fileType][tag_value] += 1
+                else:
+                    tag_values[fileType][tag_value] = 1
+        return tag_values
 
 
     @measure_exiftool
@@ -228,6 +235,7 @@ class Worker(multiprocessing.Process):
             package (List[str]): work package to process
 
         """
+
         def clean_up():
             # Check if all workers are done
             # The last one sets the finished event
@@ -237,7 +245,6 @@ class Worker(multiprocessing.Process):
                     self._counter.value = 0
                     self._finished.set()
                     _logger.debug(f'Process {self.pid}: finished as last.')
-
 
         # If the package is already empty
         if not package:
@@ -249,6 +256,7 @@ class Worker(multiprocessing.Process):
             clean_up()
             return
         inserts = []
+        tag_values = []
         for result in metadata:
             # get the exif output for file x
             insert_values = self.createInsert(self._tree_walk_id, result)
@@ -263,11 +271,11 @@ class Worker(multiprocessing.Process):
                 insert_values += (hash256, False)
             # add the value string to the rest for insert batching
             inserts.append(insert_values)
+
         # insert into the database
         try:
             # Insert the result in a batched query
             self._db_connection.insert_new_record_files(inserts)
-
         except Exception as e:
             print(e)
             _logger.warning(
@@ -280,6 +288,15 @@ class Worker(multiprocessing.Process):
                 except:
                     _logger.warning('Failed inserting single file again.')
 
+        # Update the values in the 'metadata' table
+        try:
+            # Create a comprehensive dictionary of all updates to be made in the 'metadata' table
+            metadata_list = self.create_metadata_list([json.loads(j[5]) for j in inserts])
+            # Put the new information into the database
+            self._db_connection.update_metadata(metadata_list)
+        except:
+            _logger.warning("Error updating metadata")
+
         # Check if there was a previous entry in the database
         # if yes: Set the tag in the database to true
         toDelete = []
@@ -290,7 +307,9 @@ class Worker(multiprocessing.Process):
                 if file_ids:
                     toDelete.extend(file_ids)
             if len(toDelete) > 0:
-                # FIXME actually delete the files
+                # Decrease the dynamic tags in 'metadata' table
+                self._db_connection.decrease_dynamic(toDelete)
+                # Delete the files
                 self._db_connection.delete_files(toDelete)
         except Exception as e:
             print(e)
@@ -298,7 +317,6 @@ class Worker(multiprocessing.Process):
                 'There was an error setting the deleted tags. Manual check necessary!'
             )
         clean_up()
-
 
     def _clean_up(self) -> None:
         """Clean up method for cleaning up all used resources."""
