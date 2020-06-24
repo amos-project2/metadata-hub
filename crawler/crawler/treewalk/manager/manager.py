@@ -205,6 +205,8 @@ class TreeWalkManager(threading.Thread):
                 except queue.Empty:
                     done = self._work()
                     if done:
+                        # Delete files that are persisted in the database, but have been deleted in the file system
+                        # Remove the data from the database
                         self._db_connection.delete_lost(self._tree_walk_id, self._roots)
                         self._log_execution_time()
                         self._reset()
