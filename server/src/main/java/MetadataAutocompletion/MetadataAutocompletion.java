@@ -6,6 +6,8 @@ import com.google.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MetadataAutocompletion
@@ -18,6 +20,7 @@ public class MetadataAutocompletion
     public MetadataAutocompletion(Database database)
     {
         this.database = database;
+        Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(this::cleanCache,1,1, TimeUnit.HOURS);
     }
 
 
@@ -27,8 +30,8 @@ public class MetadataAutocompletion
         String fileTypesAsString = this.getFileTypesAsConcatenatedString(fileTypes);
         MetadataFileCache metadataFileCache;
 
-        //synchronized because of deadlocks in the concurrentMap
-        synchronized (this)
+
+        //synchronized (this) //not needed i think
         {
             //TODO all-fileTypes
             //fallback for now to jpg
@@ -94,6 +97,12 @@ public class MetadataAutocompletion
         }
         return tmp;
     }
+
+    private void cleanCache()
+    {
+        cache.clear();
+    }
+
 
 
 }

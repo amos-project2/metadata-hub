@@ -17,6 +17,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @Singleton
 @Path("/api/metadata-autocomplete/")
@@ -33,9 +36,6 @@ public class MetadataAutocompletionController
         this.config = config;
         this.metadataAutocompletion = metadataAutocompletion;
     }
-
-
-
 
 
     @GET
