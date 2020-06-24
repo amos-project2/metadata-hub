@@ -66,7 +66,6 @@ public class MetadataAutocompletionController
     public String getModalSuggestions(@QueryParam("fileTypes") String fileTypesString) throws JsonProcessingException
     {
         String[] fileTypes = fileTypesString.toUpperCase().split("\\$X\\$");
-        //String fileTypes = split[2].toUpperCase();
 
         List<String> result = metadataAutocompletion.request(Arrays.asList(fileTypes), new ArrayList<>(), null, 20);
 
@@ -74,20 +73,7 @@ public class MetadataAutocompletionController
         System.out.println(json);
         return json;
 
-
-
-//
-//        ArrayList<String> list = new ArrayList<>();
-//        list.add("hey1");
-//        list.add("hey2");
-//        list.add("hey3");
-//
-//        String json = new ObjectMapper().writeValueAsString(list);
-//        return json;
-
     }
-
-
 
 
 }

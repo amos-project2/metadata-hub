@@ -1,4 +1,4 @@
-// import {autocomplete} from "bootstrap-autocomplete";
+//import {autocomplete} from "bootstrap-autocomplete";
 
 var autocompleter = require('bootstrap-autocomplete');
 
@@ -158,13 +158,6 @@ export class MetadataAutocompletion {
             return resultString;
         }
 
-        // $(this.currentFilterListSelector).off("autoComplete");
-        // $(this.currentFilterListSelector).off();
-        // $(this.currentMetadataListSelector).off("autoComplete");
-        // $(this.currentMetadataListSelector).off();
-
-
-        // $('.basicAutoComplete').autoComplete();
         $(this.currentFilterListSelector).autoComplete({
             preventEnter: true,
             minLength: 0,
