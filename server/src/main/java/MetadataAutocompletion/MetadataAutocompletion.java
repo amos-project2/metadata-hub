@@ -20,7 +20,7 @@ public class MetadataAutocompletion
     public MetadataAutocompletion(Database database)
     {
         this.database = database;
-        Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(this::cleanCache,1,1, TimeUnit.HOURS);
+        Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(this::cleanCache, 1, 1, TimeUnit.HOURS);
     }
 
 
@@ -66,10 +66,14 @@ public class MetadataAutocompletion
         {
             if (counter.get() >= count) return;
             if (usedSearch.contains(key.toLowerCase())) return;
-            if (!(key.toLowerCase().contains(search.toLowerCase())))
+            if (search != null)
             {
-                resultBackup.add(key);
-                return;
+
+                if (!(key.toLowerCase().contains(search.toLowerCase())))
+                {
+                    resultBackup.add(key);
+                    return;
+                }
             }
 
             counter.incrementAndGet();
@@ -102,7 +106,6 @@ public class MetadataAutocompletion
     {
         cache.clear();
     }
-
 
 
 }

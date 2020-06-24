@@ -193,7 +193,7 @@ export class MetadataAutocompletion {
             }
         });
 
-
+        //TODO fix it
         //small fix to prevent href to #/ which directs the page to 404
         // $(this.fileTypesSelector).on('autocomplete.select', function(event) {
         //     console.log(event);
@@ -213,7 +213,7 @@ export class MetadataAutocompletion {
     openAndConfigureModal() {
         $(".metadata-autocompletion-suggestions-html").html("Please wait...");
         this.updateListFileType(function () {
-            $(".metadata-autocompletion-suggestions-html").html("content...");
+            $(".metadata-autocompletion-suggestions-html").html("coming soon...");
         });
         $('#metadata-autocompletion-modal').modal();
     }
