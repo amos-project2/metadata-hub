@@ -1,0 +1,7 @@
+@import "~bootstrap/scss/bootstrap";
+
+.config-input-label {
+    @extend .col-sm-2;
+    @extend .col-form-label;
+    text-align: left;
+}

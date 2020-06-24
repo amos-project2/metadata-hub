@@ -9,8 +9,6 @@ Welcome to Metadata-Hub.Crawler's documentation!
 .. toctree::
    :maxdepth: 2
 
-   ./crawler/tracing.rst
-
 
 Indices and tables
 ==================

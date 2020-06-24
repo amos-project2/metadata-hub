@@ -1,5 +1,6 @@
 import {Page} from "../Page";
 import {ResultPresenter} from "../buisnesslogic/ResultPresenter";
+import {MetadataAutocompletion} from "./autocompletion/MetadataAutocompletion";
 // // import {datenrangepicker} from "daterangepicker";
 // import moment from 'moment';
 //
@@ -17,6 +18,15 @@ export class FormQueryEditor extends Page {
         this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
         this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
         this.filterFirstElement = this.getFilterElement();
+
+        this.metadatAutocompletion = new MetadataAutocompletion(
+            this.parent.dependencies.restApiFetcherServer,
+            this.graphQlFetcher,
+            ".filetype-element-input",
+            ".fg-metadata-attribute",
+            ".attribut-element-input",
+            ".modalOpenerSelector"
+        );
     }
 
     content() {
@@ -24,79 +34,86 @@ export class FormQueryEditor extends Page {
         // language=HTML
         return `
             <form class="q-send-query-form-editor">
+
+
+            <!--     for tracking          -->
+
                 <div class="form-row">
 
                     <div class="form-group col-md-6">
                         <label for="fq-query-Name">Query-Name <a class="pover" title="Query-Name" data-content="The Name, which is saved with the query here into the database to find it later again.">[?]</a></label>
-                        <input type="text" class="form-control" id="fq-query-Name">
+                        <input type="text" class="form-control" id="fq-query-Name" value="searchForFileMetadata">
                     </div>
                     <div class="form-group col-md-6">
                         <label for="fq-owner">Owner <a class="pover" title="Owner" data-content="The Owner, which is saved with the query here into the database.">[?]</a></label>
-                        <input type="text" class="form-control" id="fq-owner">
+                        <input type="text" class="form-control" id="fq-owner" >
                     </div>
                 </div>
 
+<!--     date-range-filter           -->
 
-                <!--  <div class="form-row">-->
-                <!--    <div class="form-group col-md-6">-->
-                <!--      <label for="fq-filePattern">Pattern*</label>-->
-                <!--      <input type="text" class="form-control" id="fq-filePattern">-->
-                <!--    </div>-->
-                <!--<div class="form-group col-md-6">-->
-                <!--    <div class="custom-control custom-switch">-->
-                <!--&lt;!&ndash;        <label for="fq-includeVsExclude">Include/Exclude</label><br>&ndash;&gt;-->
-                <!--<br>-->
-                <!--        <input type="checkbox" class="custom-control-input" id="fq-includeVsExclude">-->
-                <!--        <label class="custom-control-label" for="fq-includeVsExclude">Include VS Exclude</label>-->
-                <!--    </div>-->
-                <!--</div>-->
-                <!--</div>-->
-
+               <div class="form-row">
+                    <div class="col-md-12">
+                        <hr>
+                    </div>
+                </div>
 
                 <div class="form-row">
                     <div class="form-group col-md-6">
                         <label for="fq-createFileTimeRangeStart">Start-DateTime (File created)<a class="pover" title="Start-DateTime" data-content="It collects all files, which are older (created-time) than Start-DateTime">[?]</a></label>
-                        <input type="text" class="form-control" id="fq-createFileTimeRangeStart" placeholder="2020-05-22 07:19:29">
+                        <input type="datetime-local" class="form-control" id="fq-createFileTimeRangeStart" placeholder="2020-05-22 07:19:29">
                     </div>
                     <div class="form-group col-md-6">
                         <label for="fq-createFileTimeRangeEnd">End-DateTime (File created)<a class="pover" title="End-DateTime" data-content="It collects all files, which are younger (created-time) than End-DateTime">[?]</a></label>
-                        <input type="text" class="form-control" id="fq-createFileTimeRangeEnd" placeholder="2020-07-28 20:35:22">
+                        <input type="datetime-local" class="form-control" id="fq-createFileTimeRangeEnd" placeholder="2020-07-28 20:35:22">
                     </div>
                 </div>
+
 
 
                 <div class="form-row">
                     <div class="form-group col-md-6">
                         <label for="fq-createFileTimeRangeStartUpdated">Start-DateTime (File modified)<a class="pover" title="Start-DateTime" data-content="It collects all files, which are older (modified-time) than Start-DateTime">[?]</a></label>
-                        <input type="text" class="form-control" id="fq-createFileTimeRangeStartUpdated" placeholder="2020-05-22 07:19:29">
+                        <input type="datetime-local" class="form-control" id="fq-createFileTimeRangeStartUpdated" placeholder="2020-05-22 07:19:29">
                     </div>
                     <div class="form-group col-md-6">
                         <label for="fq-createFileTimeRangeEndUpdated">End-DateTime (File modified)<a class="pover" title="End-DateTime" data-content="It collects all files, which are younger (modified-time) than End-DateTime">[?]</a></label>
-                        <input type="text" class="form-control" id="fq-createFileTimeRangeEndUpdated" placeholder="2020-07-28 20:35:22">
+                        <input type="datetime-local" class="form-control" id="fq-createFileTimeRangeEndUpdated" placeholder="2020-07-28 20:35:22">
                     </div>
                 </div>
+<!--     filetypes filter           -->
 
-
-                <div class="form-row">
-                    <div class="form-group col-md-12">
-                        <label for="fq-limit">Limit <a class="pover" title="Limit" data-content="The max output limit.<br>Empty means no limit.">[?]</a></label>
-                        <input type="text" class="form-control" id="fq-limit">
-                    </div>
-                </div>
-
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="fq-showDeleted">
-                    <label class="form-check-label" for="fq-showDeleted">
-                        Show deleted files
-                        <a class="pover" title="Show deleted files" data-content="If checked deleted files that are still in the database are also shown.">[?]</a>
-                    </label>
-                </div>
-
-                <div class="form-row">
+               <div class="form-row">
                     <div class="col-md-12">
                         <hr>
                     </div>
                 </div>
+
+                <div class="form-row">
+                    <div class="col-md-12">Which Filetypes: <a class="pover" title="Which Filetypes" data-content="Here you can specify a prefilter of filetypes. If it is empty means, no filetype-filter here">[?]</a></div>
+                </div>
+
+
+                <div class="fg-filetype-container form-row">
+
+                    <div class="form-group col-md-4 fg-filetype-element">
+                        <input type="text" class="form-control filetype-element-input" autocomplete="off">
+                    </div>
+                </div>
+                <div class="form-row justify-content-md-center">
+                    <button type="submit" class="btn btn-primary modalOpenerSelector">Open Metadata-Attribut-Selector</button>
+                </div>
+
+
+                <!--     Advanced-Filter           -->
+
+
+               <div class="form-row">
+                    <div class="col-md-12">
+                        <hr>
+                    </div>
+                </div>
+
 
 
                 <div class="form-row">
@@ -106,6 +123,30 @@ export class FormQueryEditor extends Page {
                 <div class="fg-filter-container">
                     ${this.filterFirstElement}
                 </div>
+                <div>
+                <div class="form-row justify-content-md-center">
+                    <div class="form-group col-md-2">
+                    <label for="fg-filter-connector-options">Filter Connector<a class="pover" title="Filter Connector" data-content="ALL AND: all filters are connected with AND<br>ALL AND: all filters are connected with OR<br>Custom Only: you can type in your own bool-expression<br> Custom with AND/OR means all filters you dont reference are append with AND/OR">[?]</a></label>
+                        <select class="custom-select fg-filter-connector-options" id="fg-filter-connector-options">
+                                <option value="all-and" selected>ALL AND</option>
+                                <option value="all-or">ALL OR</option>
+                                <option value="custom-only">Custom Only</option>
+                                <option value="custom-and">Custom And</option>
+                                <option value="custom-or">Custom OR</option>
+                            </select>
+                    </div>
+                </div>
+
+                 <div class="form-row fq-custom-filter-connector-row" style="display:none">
+                    <div class="form-group col-md-12">
+                        <label for="fq-custom-filter-connector">Custom Filter<a class="pover" title="Custom Filter" data-content="Here you can type in your own bool-expression: Example ((f1 AND f2) OR (f3 AND NOT f0)) AND f5">[?]</a></label>
+                        <input type="text" class="form-control" id="fq-custom-filter-connector" value="">
+                    </div>
+                </div>
+
+                </div>
+
+                 <!--     Attribut-Selector           -->
 
 
                 <div class="form-row">
@@ -127,6 +168,38 @@ export class FormQueryEditor extends Page {
                 </div>
 
 
+
+                <!--     limit           -->
+
+                 <div class="form-row">
+                    <div class="col-md-12">
+                        <hr>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        <label for="fq-limit">Limit <a class="pover" title="Limit" data-content="The max output limit.<br>Empty means no limit.">[?]</a></label>
+                        <input type="text"  class="form-control" id="fq-limit" value="3">
+                    </div>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="fq-showDeleted">
+                    <label class="form-check-label" for="fq-showDeleted">
+                        Show deleted files
+                        <a class="pover" title="Show deleted files" data-content="If checked deleted files that are still in the database are also shown.">[?]</a>
+                    </label>
+                </div>
+
+                 <div class="form-row">
+                    <div class="col-md-12">
+                        <hr>
+                    </div>
+                </div>
+
+                <!--     Controll-Buttons           -->
+
                 <button type="submit" class="btn btn-primary">Send</button>
                 <button type="button" class="btn btn-primary open-query">Open Query</button>
                 <button type="button" class="btn btn-primary send-to-graphiql">Send to GraphiQL</button>
@@ -137,6 +210,8 @@ export class FormQueryEditor extends Page {
 
 
             ${this.getModalCode()}
+
+            ${this.metadatAutocompletion.getStaticModalHtml()}
 
             `;
 
@@ -173,10 +248,13 @@ export class FormQueryEditor extends Page {
 
         $(".resultView1").html(this.resultPresenter.getHtml());
 
-        this.helperMethod();
-        this.helperMethod2();
+        this.helperMethodAttributSelector();
+        this.helperMethodAdvancedFilterRows();
+        this.helperMethodFiletypeFilter();
         this.inputValidation();
         this.inputSuggestion();
+        this.metadatAutocompletion.addListener();
+
         let thisdata = this;
 
         $(".q-send-query-form-editor").submit(function (event) {
@@ -192,7 +270,8 @@ export class FormQueryEditor extends Page {
         $(".open-query").click(function () {
 
             $("#graphql-code-content").text(thisdata.buildAndGetGraphQlQuery());
-            $('#graphql-modal').modal()
+            $('#graphql-modal').modal();
+            //thisdata.metadatAutocompletion.showLists();
 
         });
 
@@ -211,6 +290,18 @@ export class FormQueryEditor extends Page {
         });
 
 
+        $(".fg-filter-connector-options").change(function () {
+            if ($(this).val().includes("custom")) {
+                thisdata.reorderFunctionIdsInFilter();
+                $(".fq-custom-filter-connector-row").stop(true).show(1000);
+                // $(".function-name-appender").stop(true).show(1000);
+            } else {
+                $(".fq-custom-filter-connector-row").stop(true).hide(1000);
+                $(".function-name-appender").stop(true).hide(1000);
+            }
+        });
+
+
         //alert(datetimepicker());
         //  datetimepicker(jQuery);
         // alert($('#fq-createFileTimeRange').datetimepicker);
@@ -225,9 +316,11 @@ export class FormQueryEditor extends Page {
         // });
     }
 
-    helperMethod() {
+    helperMethodAttributSelector() {
 
         let dhis_state = this;
+
+
 
         $(".attribut-element-input").focusout(function () {
             if ($(".attribut-element-input").length < 2) {return;}
@@ -235,6 +328,11 @@ export class FormQueryEditor extends Page {
             if ($(this).val() === "") {
                 $(this).parent().remove();
             }
+
+            dhis_state.metadatAutocompletion.updateListsFilterMetadata();
+            dhis_state.metadatAutocompletion.reAddListener();
+
+
         });
 
         $(".attribut-element-input").focusin(function () {
@@ -254,16 +352,62 @@ export class FormQueryEditor extends Page {
     </div>`);
 
 
-                dhis_state.helperMethod();//IMPORTANT: re-add the listener to the new created element(s)
+                dhis_state.helperMethodAttributSelector();//IMPORTANT: re-add the listener to the new created element(s)
             }
 
         });
     }
 
 
-    helperMethod2() {
+    reorderFunctionIdsInFilter() {
+        let countElements = $(".fg-metadata-attribute").length;
+        let counter = 0;
+        let counter2 = -1;
+
+        let customValue = "" + $("#fq-custom-filter-connector").val();
+
+        $(".fg-metadata-attribute").each(function () {
+            counter++;
+            counter2++;
+
+            if (counter == countElements) {
+                $(this).parent().find(".function-name-appender-value").html("not used right now");
+                $(this).parent().find(".function-name-appender").stop(true).hide(1000);
+                return;
+            }
+
+            //reorder function-Ids:
+            let oldValue = $(this).parent().find(".function-name-appender-value").html();
+            if (oldValue !== "f" + counter2) {
+                // customValue = customValue.replaceAll(oldValue, "XXXX" + counter2);
+                customValue = customValue.split(oldValue).join("XXXX" + counter2);
+                customValue = customValue.split("f" + counter2).join("MISSING" + counter2);
+            }
+
+
+            $(this).parent().find(".function-name-appender-value").html("f" + counter2);
+            if ($(".fg-filter-connector-options").val().includes("custom")) {
+                $(this).parent().find(".function-name-appender").stop(true).show(1000);
+            }
+
+        });
+
+        counter2 = -1;
+        $(".fg-metadata-attribute").each(function () {
+            counter2++;
+            // customValue = customValue.replaceAll("XXXX" + counter2, "f"+counter2);
+            customValue = customValue.split("XXXX" + counter2).join("f" + counter2);
+        });
+        $("#fq-custom-filter-connector").val(customValue);
+
+    }
+
+
+    helperMethodAdvancedFilterRows() {
 
         let dhis_state = this;
+        // this.metadatAutocompletion.updateListsFilterMetadata();
+        // this.metadatAutocompletion.reAddListener();
 
         $(".fg-metadata-attribute").focusout(function () {
             if ($(".fg-metadata-attribute").length < 2) {return;}
@@ -271,7 +415,14 @@ export class FormQueryEditor extends Page {
             if ($(this).val() === "") {
                 $(this).parent().remove();
             }
+
+            dhis_state.reorderFunctionIdsInFilter();
+
+            dhis_state.metadatAutocompletion.updateListsFilterMetadata();
+            dhis_state.metadatAutocompletion.reAddListener();
+
         });
+
 
         $(".fg-metadata-attribute").focusin(function () {
             let dhis = this;
@@ -286,25 +437,88 @@ export class FormQueryEditor extends Page {
             if (!emptyTextField) {
                 $(".fg-filter-container").append(dhis_state.getFilterElement());
 
-                dhis_state.helperMethod2();//IMPORTANT: re-add the listener to the new created element(s)
+                dhis_state.reorderFunctionIdsInFilter();
+
+                dhis_state.helperMethodAdvancedFilterRows();//IMPORTANT: re-add the listener to the new created element(s)
             }
 
         });
     }
 
-    inputValidation(){
+    inputValidation() {
+
+        //Validate Date
+        $("#fq-createFileTimeRangeStart").focusout(function(){
+
+            let startDateElement = document.getElementById("fq-createFileTimeRangeStart");
+
+            let startDate = $("#fq-createFileTimeRangeStart").val();
+            let endDate = $("#fq-createFileTimeRangeEnd").val();
+
+            if(startDate != "" && endDate != "" && startDate > endDate){
+                startDateElement.setCustomValidity('Start Time must be before End Time');
+                startDateElement.reportValidity();
+            }else{
+                startDateElement.setCustomValidity("");
+            }
+        })
+
+        $("#fq-createFileTimeRangeEnd").focusout(function(){
+
+            let startDateElement = document.getElementById("fq-createFileTimeRangeEnd");
+
+            let startDate = $("#fq-createFileTimeRangeStart").val();
+            let endDate = $("#fq-createFileTimeRangeEnd").val();
+
+            if(startDate != "" && endDate != "" && startDate > endDate){
+                startDateElement.setCustomValidity('End Time must be after Start Time');
+                startDateElement.reportValidity();
+            }else{
+                startDateElement.setCustomValidity("");
+            }
+        })
+
+        $("#fq-createFileTimeRangeStartUpdated").focusout(function(){
+
+            let startDateElement = document.getElementById("fq-createFileTimeRangeStartUpdated");
+
+            let startDate = $("#fq-createFileTimeRangeStartUpdated").val();
+            let endDate = $("#fq-createFileTimeRangeEndUpdated").val();
+
+            if(startDate != "" && endDate != "" && startDate > endDate){
+                startDateElement.setCustomValidity('Start Time must be before End Time');
+                startDateElement.reportValidity();
+            }else{
+                startDateElement.setCustomValidity("");
+            }
+        })
+
+        $("#fq-createFileTimeRangeEndUpdated").focusout(function(){
+
+            let startDateElement = document.getElementById("fq-createFileTimeRangeEndUpdated");
+
+            let startDate = $("#fq-createFileTimeRangeStartUpdated").val();
+            let endDate = $("#fq-createFileTimeRangeEndUpdated").val();
+
+            if(startDate != "" && endDate != "" && startDate > endDate){
+                startDateElement.setCustomValidity('End Time must be after Start Time');
+                startDateElement.reportValidity();
+            }else{
+                startDateElement.setCustomValidity("");
+            }
+        })
+
+        //Limit Limit input to integer
+        $("#fq-limit").focusout(function(){
+            let tmpLimit = $("#fq-limit").val();
+            $("#fq-limit").val(tmpLimit.replace(/[^0-9]/g,''));
+        })
 
     }
 
-    inputSuggestion(){
-        // $( function() {
-        //     var availableTags = [
-        //         "searchForFileMetadata"
-        //     ];
-        //     $( "#fq-query-Name" ).autocomplete({
-        //         source: availableTags
-        //     });
-        // } );
+    inputSuggestion() {
+        //Set owner to user
+        $("#fq-owner").val(localStorage.getItem("username"))
     }
 
 
@@ -321,14 +535,30 @@ export class FormQueryEditor extends Page {
         let startDateUpdated = $("#fq-createFileTimeRangeStartUpdated").val();
         let endDateUpdated = $("#fq-createFileTimeRangeEndUpdated").val();
 
+        let filterOption = $(".fg-filter-connector-options").val();
+        let filterCustomString = $("#fq-custom-filter-connector").val();
+
+
         // if (filepattern !== "") {filepattern = `pattern: "${filepattern}",`;} else {filepattern = "";}
         // if (!checkbox) {checkbox = "option: included,";} else {checkbox = "option: excluded,";}
         if (limit !== "") {limit = `limitFetchingSize: ${limit},\n  `;} else {limit = "";}
-        if (showDeleted) {deleted = `showDeleted: true`;};
+        if (showDeleted) {deleted = `showDeleted: true,\n  `;}
+
         if (startDate !== "") {startDate = `start_creation_time: "${startDate}",\n  `;} else {startDate = "";}
         if (endDate !== "") {endDate = `end_creation_time: "${endDate}",\n  `;} else {endDate = "";}
         if (startDateUpdated !== "") {startDateUpdated = `start_modification_time: "${startDateUpdated}",\n  `;} else {startDateUpdated = "";}
         if (endDateUpdated !== "") {endDateUpdated = `end_modification_time: "${endDateUpdated}",\n  `;} else {endDateUpdated = "";}
+
+
+        if (filterCustomString !== "" && filterOption.includes("custom")) {filterCustomString = `metadata_filter_logic: "${filterCustomString}",\n  `} else {filterCustomString = "";}
+
+        if (filterOption === "all-and" || filterOption === "custom-and") {
+            filterOption = `metadata_filter_logic_options: and,\n  `;
+        } else if (filterOption === "all-or" || filterOption === "custom-or") {
+            filterOption = `metadata_filter_logic_options: or,\n  `;
+        } else {
+            filterOption = `metadata_filter_logic_options: only_logic_string,\n  `;
+        }
 
 
         let attributes = "";
@@ -344,6 +574,22 @@ export class FormQueryEditor extends Page {
                 attributes = `selected_attributes:[${attributes}],\n  `;
             }
         }
+
+
+        let filetypes = "";
+        {
+            $(".filetype-element-input").each(function () {
+                if ($(this).val() !== "") {
+                    filetypes += `"${$(this).val()}", `;
+                }
+
+            });
+
+            if (filetypes !== "") {
+                filetypes = `file_types:[${filetypes}],\n  `;
+            }
+        }
+
 
         let options_options = "";
         let options_attributes = "";
@@ -371,7 +617,9 @@ export class FormQueryEditor extends Page {
    ${limit}
    ${deleted}
    ${startDate} ${endDate} ${startDateUpdated} ${endDateUpdated}
+   ${filetypes}
    ${options_options} ${options_attributes} ${options_values}
+   ${filterOption} ${filterCustomString}
    ${attributes}
         `;
 
@@ -411,12 +659,13 @@ query
         return query;
 
 
-// searchForFileMetadata(file_ids: [Int!], crawl_ids: [Int!], dir_path: String, dir_path_option: MetadataOption,
-//     file_name: String, file_name_option: MetadataOption, file_type: String, size: Int, size_option: IntOption,
-//     start_creation_time: String, end_creation_time: String, start_access_time: String, end_access_time: String,
-//     start_modification_time: String, end_modification_time: String, file_hashes: [String!],
-//     metadata_attributes: [String!], metadata_values:[String!], metadata_options: [MetadataOption!],
-//     selected_attributes: [String!], limitFetchingSize: Int) : [File]
+        // searchForFileMetadata(file_ids: [Int!], crawl_ids: [Int!], dir_path: String, dir_path_option: MetadataOption,
+        //     file_name: String, file_name_option: MetadataOption, file_types: [String!], size: Int, size_option: IntOption,
+        //     start_creation_time: String, end_creation_time: String, start_access_time: String, end_access_time: String,
+        //     start_modification_time: String, end_modification_time: String, file_hashes: [String!],
+        //     metadata_attributes: [String!], metadata_values:[String!], metadata_options: [MetadataOption!],
+        //     metadata_filter_logic_options: FilterLogicOption, metadata_filter_logic: String,
+        //     selected_attributes: [String!], limitFetchingSize: Int, showDeleted: Boolean) : [File]
 
     }
 
@@ -444,8 +693,51 @@ query
                     </div>
                     <input type="text" class="form-control fg-metadata-attribute" placeholder="Metadata-Attribute">
                     <input type="text" class="form-control fg-metadata-value" placeholder="Value">
+                    <div class="input-group-append function-name-appender" style="display:none;">
+                        <span class="input-group-text font-weight-bold function-name-appender-value" style="color:red;">f1</span>
+                    </div>
                 </div>
             </div>`;
+    }
+
+
+    helperMethodFiletypeFilter() {
+
+        let dhis_state = this;
+
+        $(".filetype-element-input").focusout(function () {
+            if ($(".filetype-element-input").length < 2) {return;}
+
+            if ($(this).val() === "") {
+                $(this).parent().remove();
+            }
+
+            dhis_state.metadatAutocompletion.updateListsFilterMetadata();
+            dhis_state.metadatAutocompletion.reAddListener();
+
+        });
+
+        $(".filetype-element-input").focusin(function () {
+            let dhis = this;
+            let emptyTextField = false;
+            $(".filetype-element-input").each(function () {
+                if (dhis !== this) {
+                    // alert($(this).val());
+                    if ($(this).val() == "") { emptyTextField = true; }
+                }
+            });
+
+            if (!emptyTextField) {
+                $(".fg-filetype-container").append(`
+    <div class="form-group col-md-4 fg-filetype-element">
+          <input type="text" class="form-control filetype-element-input">
+    </div>`);
+
+
+                dhis_state.helperMethodFiletypeFilter();//IMPORTANT: re-add the listener to the new created element(s)
+            }
+
+        });
     }
 
 

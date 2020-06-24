@@ -9,12 +9,7 @@ import unittest
 from sys import exit
 
 
-# Local imports
-import tests.api as api
-
-
 tests = unittest.TestSuite()
-tests.addTest(unittest.makeSuite(api.Parsing))
 runner = unittest.TextTestRunner(verbosity=3)
 result = runner.run(tests)
 if result.wasSuccessful():

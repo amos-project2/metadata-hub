@@ -1,16 +1,15 @@
 {
-    "title": "Crawler Configuration",
-    "description": "Definition of a configuration of the Crawler",
+    "title": "Configuration of an execution of the TreeWalk",
     "definitions": {
-        "root": {
+        "node": {
             "type": "object",
             "properties": {
                 "path": {
-                    "description": "Path of the input",
+                    "description": "Absolute path of the directory",
                     "type": "string"
                 },
                 "recursive": {
-                    "description": "Flag to indicate recursive descent",
+                    "description": "Flag to indicate recursive descent in this directory",
                     "type": "boolean"
                 }
             },
@@ -22,72 +21,88 @@
     },
     "type": "object",
     "properties": {
-        "paths": {
+        "identifier": {
+            "description": "Uniquely identify a configuration",
+            "type": "string"
+        },
+        "name": {
+            "description": "Short name of the configuration",
+            "type": "string"
+        },
+        "author": {
+            "description": "Author of this configuration",
+            "type": "string"
+        },
+        "description": {
+            "description": "Long description of the configuration",
+            "type": "string"
+        },
+        "time": {
             "type": "object",
             "properties": {
-                "inputs": {
-                    "description": "Root directories to crawl",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/root"
-                    }
+                "start": {
+                    "description": "Start timestamp of the configuration",
+                    "type": "string"
                 },
-                "exiftool": {
-                    "description": "Executable of exiftool",
-                    "type": "string",
-                    "enum": [
-                        "Windows",
-                        "Linux"
-                    ]
+                "interval": {
+                    "description": "Periodic interval of the configuration in seconds",
+                    "type": "integer",
+                    "minimum": 0
                 }
             },
             "required": [
-                "inputs",
-                "exiftool"
+                "start",
+                "interval"
             ]
+        },
+        "directories": {
+            "description": "Directories to crawl",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/node"
+            }
         },
         "options": {
             "type": "object",
             "properties": {
-                "powerLevel": {
+                "cpu-level": {
                     "description": "Specify CPU usage as power level 1-4",
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 4
                 },
-                "clearTrace": {
-                    "description": "Clear trace data if present",
-                    "type": "boolean"
-                },
-                "fileTypes": {
-                    "description": "File types to include",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "language": {
-                    "description": "Language of the output data",
-                    "type": "string",
-                    "enum": [
-                        "English",
-                        "German"
-                    ]
-                },
-                "packageSize": {
+                "package-size": {
                     "description": "Number of files of a work package",
                     "type": "integer",
                     "minimum": 10,
                     "maximum": 1000
+                },
+                "platform": {
+                    "description": "Platform to run on",
+                    "type": "string",
+                    "enum": [
+                        "Linux",
+                        "Windows"
+                    ]
+                },
+                "force-update": {
+                    "description": "Abort any running execution",
+                    "type": "boolean"
                 }
             },
             "required": [
-                "powerLevel",
-                "clearTrace",
-                "packageSize"
+                "cpu-level",
+                "package-size",
+                "platform",
+                "force-update"
             ]
         }
-
     },
-    "required": ["paths", "options"]
+    "required": [
+        "name",
+        "author",
+        "time",
+        "directories",
+        "options"
+    ]
 }
