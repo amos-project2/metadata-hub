@@ -13,6 +13,7 @@ from typing import List, Union, Tuple
 
 # Local imports
 from crawler.services.config import Config
+from crawler.services.intervals import TimeInterval
 from crawler.database import DatabaseConnectionBase
 from . import task as task_module
 from . import utils
@@ -29,6 +30,7 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             db_info=db_info,
             measure_time=measure_time
         )
+        self._intervals = []
 
     def get_identifiers(self) -> List[str]:
         """Get the list of present identifiers in the schedule table.
@@ -213,3 +215,49 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             cursor.close()
             self.con.rollback()
             return False
+
+    def remove_interval(self, identifier: str) -> bool:
+        """Remove the interval with given identifier from the database.
+
+        Args:
+            identifier (str): identifier of the interval
+
+        Returns:
+            bool: True on success, False on failure
+
+        """
+        before_len = len(self._intervals)
+        new_intervals = [
+            interval
+            for interval in self._intervals if interval._identifier == identifier
+        ]
+        new_len = len(new_intervals)
+        self._intervals = new_intervals
+        return before_len == new_len
+
+
+    def add_interval(self, interval: TimeInterval ) -> bool:
+        """Add the interval to the database.
+
+        Args:
+            identifier (str): new interval object
+
+        Returns:
+            bool: True on success, False on failure
+
+        """
+        self._intervals.append(interval)
+        return True
+
+
+    def get_intervals(self, as_json: bool) -> Union[List[str], List[TimeInterval]]:
+        """Return all present intervals.
+
+
+        Returns:
+            Union[List[str], List[TimeInterval]]: all intervals
+
+        """
+        if as_json:
+            return [interval.to_json for interval in self._intervals]
+        return self._intervals

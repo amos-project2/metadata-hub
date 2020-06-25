@@ -5,6 +5,7 @@
 import datetime
 from typing import Tuple, List
 from . import task as task_module
+from crawler.services.intervals import TimeInterval
 
 
 def get_timestamp_next_and_pending(
@@ -68,3 +69,39 @@ def get_next_task(tasks: List[task_module.Task]) -> task_module.Task:
             best_index = index
             best_timestamp = task.timestamp_next
     return tasks[best_index]
+
+
+def interval_conflicts(
+    interval_new: TimeInterval, intervals: List[TimeInterval]
+) -> bool:
+    """Checks if the new interval conflicts with the already existing ones.
+
+    Args:
+        interval_new (TimeInterval): new interval
+        intervals (List[TimeIntervals]): already existing intervals
+
+    Returns:
+        bool: True if it conflicts with any, False otherwise
+
+    """
+    return any(interval_new.overlaps(interval) for interval in intervals)
+
+
+def get_present_interval(intervals: List[TimeInterval]) -> TimeInterval:
+    """Return the current interval or None if none is active.
+
+    Args:
+        intervals (List[TimeInterval]): list of intervals
+
+    Returns:
+        TimeInterval: current time interval or None
+
+    """
+
+    curr_time_total = TimeInterval.convert_curr_ts_to_total_time()
+    for interval in intervals:
+        print(curr_time_total, interval._start_total_time, interval._end_total_time)
+        if interval.in_between(curr_time_total):
+            print("FOUND INTERVAL")
+            return interval
+    return None

@@ -20,6 +20,7 @@ from . import task as task_module
 import crawler.treewalk as treewalk
 import crawler.treewalk.manager as manager
 from crawler.services.config import Config
+from crawler.services.intervals import TimeInterval
 import crawler.communication as communication
 
 
@@ -35,6 +36,7 @@ class TreeWalkScheduler(threading.Thread):
             measure_time=measure_time
         )
         self._update_interval = update_interval
+        self._current_interval = None
 
     def _do_command(self, command: communication.Command) -> None:
         """Execute a command.
@@ -53,14 +55,12 @@ class TreeWalkScheduler(threading.Thread):
             if identifier in identifiers_present:
                 responses.respond_config_already_present(identifier)
                 return
+            success = False
             if self._db_connection.insert(config):
-                responses.respond_config_inserted(
-                    identifier=identifier, success=True
-                )
-            else:
-                responses.respond_config_inserted(
-                    identifier=identifier, success=False
-                )
+                success = True
+            responses.respond_config_inserted(
+                identifier=identifier, success=success
+            )
 
         def remove_config() -> None:
             """Helper method: remove config"""
@@ -79,11 +79,41 @@ class TreeWalkScheduler(threading.Thread):
             schedule = self._db_connection.get_schedule(as_json=True)
             responses.respond_schedule(schedule)
 
+        def add_interval() -> None:
+            """Helper method: add an interval."""
+            interval = command.data # type: TimeInterval
+            intervals = self._db_connection.get_intervals(False)
+            if utils.interval_conflicts(interval, intervals):
+                responses.respond_interval_overlaps(interval._identifier)
+            success = False
+            if self._db_connection.add_interval(interval):
+                success = True
+            responses.respond_interval_inserted(
+                identifier=interval._identifier, success=success
+            )
+
+        def remove_interval() -> None:
+            """Helper method: remove an interval."""
+            identifier = command.data
+            success = False
+            if self._db_connection.remove_interval(identifier):
+                success = True
+            responses.respond_interval_deleted(
+                identifier=identifier, success=success
+            )
+
+        def get_intervals() -> None:
+            """Helper method: get all intervals."""
+            intervals = self._db_connection.get_intervals(as_json=True)
+            responses.respond_intervals(intervals)
 
         functions = {
             communication.SCHEDULER_ADD_CONFIG: [add_config, self._update],
             communication.SCHEDULER_REMOVE_CONFIG: [remove_config, self._update],
             communication.SCHEDULER_GET_SCHEDULE: [get_schedule],
+            communication.SCHEDULER_ADD_INTERVAL: [add_interval, self._update],
+            communication.SCHEDULER_REMOVE_INTERVAL: [remove_interval, self._update],
+            communication.SCHEDULER_GET_INTERVALS: [get_intervals],
         }
         for func in functions.get(command.command):
             func()
@@ -96,6 +126,16 @@ class TreeWalkScheduler(threading.Thread):
         self._db_connection.update_schedule(
             tasks=[task for task in schedule if task.update_in_schedule]
         )
+        intervals = self._db_connection.get_intervals(as_json=False)
+        new_interval = utils.get_present_interval(intervals)
+        # FIXME
+        if new_interval == self._current_interval:
+            _logger.error('No interval changed')
+        else:
+            _logger.error(
+                f'Changed from interval {repr({self._current_interval})} '
+                f'to interval {repr(new_interval)}.'
+            )
 
     def _dispatch(self, task: task_module.Task) -> None:
         """Dispatch the config to the manager.

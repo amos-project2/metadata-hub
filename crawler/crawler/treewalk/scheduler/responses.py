@@ -116,3 +116,113 @@ def respond_schedule(schedule: dict) -> None:
             command=communication.SCHEDULER_GET_SCHEDULE
         )
     communication.scheduler_queue_output.put(response)
+
+
+def respond_interval_overlaps(identifier: str) -> None:
+    """Respond that the interval overlaps with a already existing one.
+
+    This function creates a corresponding response object and inserts it
+    in the scheduler output queue.
+
+    Args:
+        identifier (str): identifier of the interval
+
+    """
+    response = communication.Response(
+        success=False,
+        message=(f'Interval with identifier {identifier} is overlapping.'),
+        command=communication.SCHEDULER_ADD_INTERVAL
+    )
+    communication.scheduler_queue_output.put(response)
+
+
+def respond_interval_inserted(identifier: str, success: bool) -> None:
+    """Respond that the interval was inserted in the database.
+
+    This function creates a corresponding response object and inserts it
+    in the scheduler output queue.
+    The response depends if the insertion succeeded or failed.
+
+    Args:
+        identifier (str): identifier of the interval
+        success (bool): insertion succeeded/failed
+
+    """
+    if success:
+        response = communication.Response(
+            success=True,
+            message=(
+                f'Interval with identifier {identifier} '
+                f'was successfully added to the schedule.'
+            ),
+            command=communication.SCHEDULER_ADD_INTERVAL
+        )
+    else:
+        response = communication.Response(
+            success=False,
+            message=(
+                f'Interval with identifier {identifier} '
+                f'wasn\'t added to the database due to an internal error.'
+            ),
+            command=communication.SCHEDULER_ADD_INTERVAL
+        )
+    communication.scheduler_queue_output.put(response)
+
+
+def respond_interval_deleted(identifier: str, success: bool) -> None:
+    """Respond that the interval was deleted from the database.
+
+    This function creates a corresponding response object and inserts it
+    in the scheduler output queue.
+    The response depends if the insertion succeeded or failed.
+
+    Args:
+        identifier (str): identifier of the interval
+        success (bool): insertion succeeded/failed
+
+    """
+    if success:
+        response = communication.Response(
+            success=True,
+            message=(
+                f'Interval with identifier {identifier} '
+                f'was successfully deleted from the database.'
+            ),
+            command=communication.SCHEDULER_REMOVE_INTERVAL
+        )
+    else:
+        response = communication.Response(
+            success=False,
+            message=(
+                f'Interval with identifier {identifier} '
+                f'wasn\'t deleted from the database because it wasn\' present.'
+            ),
+            command=communication.SCHEDULER_REMOVE_INTERVAL
+        )
+    communication.scheduler_queue_output.put(response)
+
+
+def respond_intervals(intervals: dict) -> None:
+    """Respond the intervals.
+
+    This function creates a corresponding response object and inserts it
+    in the scheduler output queue.
+    The response depends if the insertion succeeded or failed.
+
+    Args:
+        intervals (dict): intervals
+
+    """
+    if intervals is None:
+        response = communication.Response(
+            success=False,
+            message='Unable to read intervals.',
+            command=communication.SCHEDULER_GET_INTERVALS
+        )
+    else:
+        response = communication.Response(
+            success=True,
+            message=intervals,
+            command=communication.SCHEDULER_GET_INTERVALS
+        )
+    communication.scheduler_queue_output.put(response)
