@@ -31,7 +31,6 @@ public class CrawlerAPIProxyController
     {
         this.config = config;
         Client client = ClientBuilder.newClient();
-        target = client.target("http://localhost:" + config.getProperty("crawler-port"));
     }
 
     @GET
