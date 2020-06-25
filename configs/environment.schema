@@ -35,6 +35,10 @@
             "description": "Host the crawler API is running on",
             "type": "string"
         },
+        "crawler-service-name": {
+            "description": "Service name acccessible from the outside (might differ from crawler-host)",
+            "type": "string"
+        },
         "crawler-port": {
             "$ref": "#/definitions/port"
         },
@@ -118,6 +122,7 @@
         "database-user",
         "database-password",
         "crawler-host",
+        "crawler-service-name",
         "crawler-port",
         "crawler-db-update-interval",
         "crawler-measure-time",
