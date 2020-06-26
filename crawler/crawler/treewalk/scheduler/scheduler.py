@@ -35,6 +35,7 @@ class TreeWalkScheduler(threading.Thread):
             db_info=db_info,
             measure_time=measure_time
         )
+        self._intervals = []
         self._update_interval = update_interval
         self._current_interval = None
 
@@ -82,12 +83,11 @@ class TreeWalkScheduler(threading.Thread):
         def add_interval() -> None:
             """Helper method: add an interval."""
             interval = command.data # type: TimeInterval
-            intervals = self._db_connection.get_intervals(False)
-            if utils.interval_conflicts(interval, intervals):
+            if utils.interval_conflicts(interval, self._intervals):
                 responses.respond_interval_overlaps(interval._identifier)
                 return
             success = False
-            if self._db_connection.add_interval(interval):
+            if self._db_connection.add_interval(interval, self._intervals):
                 success = True
             responses.respond_interval_inserted(
                 identifier=interval._identifier, success=success
@@ -97,7 +97,7 @@ class TreeWalkScheduler(threading.Thread):
             """Helper method: remove an interval."""
             identifier = command.data
             success = False
-            if self._db_connection.remove_interval(identifier):
+            if self._db_connection.remove_interval(identifier, self._intervals):
                 success = True
             responses.respond_interval_deleted(
                 identifier=identifier, success=success
@@ -105,7 +105,7 @@ class TreeWalkScheduler(threading.Thread):
 
         def get_intervals() -> None:
             """Helper method: get all intervals."""
-            intervals = self._db_connection.get_intervals(as_json=True)
+            intervals = [interval.to_json() for interval in self._intervals]
             responses.respond_intervals(intervals)
 
         functions = {
@@ -129,7 +129,6 @@ class TreeWalkScheduler(threading.Thread):
         )
         intervals = self._db_connection.get_intervals(as_json=False)
         new_interval = utils.get_present_interval(intervals)
-        # FIXME
         if new_interval == self._current_interval:
             _logger.info(f'Current interval: {repr(self._current_interval)}')
         else:
@@ -175,6 +174,7 @@ class TreeWalkScheduler(threading.Thread):
     def run(self) -> None:
         """Run the scheduler thread."""
         _logger.info('Running TreeWalk Scheduler (TWS).')
+        self._intervals = self._db_connection.get_intervals(as_json=False)
         while True:
             try:
                 _logger.info('TWS waiting for command.')

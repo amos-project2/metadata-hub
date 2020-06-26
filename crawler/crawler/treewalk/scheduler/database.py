@@ -216,39 +216,84 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             self.con.rollback()
             return False
 
-    def remove_interval(self, identifier: str) -> bool:
+    def remove_interval(
+            self,
+            identifier: str,
+            intervals: List[TimeInterval]
+    ) -> bool:
         """Remove the interval with given identifier from the database.
+
+        It automatically removes the time interval from the in-memory list
+        as well on success.
 
         Args:
             identifier (str): identifier of the interval
+            intervals (List[TimeInterval]): in memory list of time intervals
 
         Returns:
             bool: True on success, False on failure
 
         """
-        before_len = len(self._intervals)
-        new_intervals = [
-            interval
-            for interval in self._intervals if interval._identifier != identifier
-        ]
-        new_len = len(new_intervals)
-        self._intervals = new_intervals
-        return before_len != new_len
+        SQL = 'DELETE FROM time_intervals WHERE id = %s;'
+        cursor = self.con.cursor()
+        query = cursor.mogrify(SQL, (identifier, ))
+        try:
+            cursor.execute(query)
+            status = cursor.rowcount == 1
+            cursor.close()
+            self.con.commit()
+        except Exception as e:
+            _logger.warning(f'Failed removing config from schedule: {str(e)}')
+            cursor.close()
+            self.con.rollback()
+            return False
+        if status:
+            for index, interval in enumerate(intervals):
+                if interval._identifier == identifier:
+                    intervals.pop(index)
+                    break
+        return status
 
-
-    def add_interval(self, interval: TimeInterval ) -> bool:
+    def add_interval(
+            self,
+            interval: TimeInterval,
+            intervals: List[TimeInterval]
+    ) -> bool:
         """Add the interval to the database.
+
+        The in-memory list of intervals is passed as well, so the interval
+        is automatically appended if the insertion was successful.
 
         Args:
             identifier (str): new interval object
+            intervals (List[TimeInterval]): in memory list of time intervals
 
         Returns:
             bool: True on success, False on failure
 
         """
-        self._intervals.append(interval)
-        return True
-
+        data = (
+            interval._identifier, # identifier
+            interval._start_str, # start_str
+            interval._end_str, # end_str
+            interval._cpu_level # cpu_level
+        )
+        SQL = 'INSERT INTO time_intervals VALUES %s RETURNING id;'
+        cursor = self.con.cursor()
+        query = cursor.mogrify(SQL, (data, ))
+        try:
+            cursor.execute(query)
+            status = cursor.rowcount == 1
+            cursor.close()
+            self.con.commit()
+        except Exception as e:
+            _logger.warning(f'Failed inserting interval in database: {str(e)}')
+            cursor.close()
+            self.con.rollback()
+            return False
+        if status:
+            intervals.append(interval)
+        return status
 
     def get_intervals(self, as_json: bool) -> Union[List[str], List[TimeInterval]]:
         """Return all present intervals.
@@ -258,6 +303,24 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             Union[List[str], List[TimeInterval]]: all intervals
 
         """
-        if as_json:
-            return [interval.to_json() for interval in self._intervals]
-        return self._intervals
+        SQL = 'SELECT * FROM time_intervals;'
+        cursor = self.con.cursor()
+        query = cursor.mogrify(SQL)
+        try:
+            cursor.execute(query)
+            intervals = cursor.fetchall()
+            cursor.close()
+            self.con.commit()
+        except Exception as e:
+            _logger.warning(
+                f'Failed getting time intervals from database: {str(e)}'
+            )
+            cursor.close()
+            self.con.rollback()
+            return None
+        return [
+            TimeInterval(start_str, end_str, cpu_level, identifier).to_json()
+            if as_json
+            else TimeInterval(start_str, end_str, cpu_level, identifier)
+            for identifier, start_str, end_str, cpu_level in intervals
+        ]

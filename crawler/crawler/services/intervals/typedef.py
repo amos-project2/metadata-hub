@@ -87,10 +87,19 @@ class TimeInterval:
         _, hm_str = time_str.split(':', 1)
         return (total_time, weekday, hm_str)
 
-    def __init__(self, start_str: str, end_str: str, cpu_level: int):
+    def __init__(
+            self,
+            start_str: str,
+            end_str: str,
+            cpu_level: int,
+            identifier: str = None
+    ):
         self._start_str = start_str
         self._end_str = end_str
-        self._identifier = self._compute_identifier()
+        if identifier is None:
+            self._identifier = self._compute_identifier()
+        else:
+            self._identifier = identifier
         self._cpu_level = cpu_level
         tmp = TimeInterval.parse(start_str)
         self._start_total_time, self._start_weekday, self._start_hm_str = tmp
