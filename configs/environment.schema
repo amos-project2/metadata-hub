@@ -20,6 +20,7 @@
             "type": "string"
         },
         "database-port": {
+            "description": "Port the database is running on",
             "$ref": "#/definitions/port"
         },
         "database-user": {
@@ -34,8 +35,37 @@
             "description": "Host the crawler API is running on",
             "type": "string"
         },
+        "crawler-service-name": {
+            "description": "Service name acccessible from the outside (might differ from crawler-host)",
+            "type": "string"
+        },
         "crawler-port": {
             "$ref": "#/definitions/port"
+        },
+        "crawler-db-update-interval": {
+            "description": "Time interval in seconds after files marked as deleted are removed",
+            "type": "integer",
+            "minimum": 0
+        },
+        "crawler-scheduler-interval": {
+            "description": "Time interval in seconds for the scheduler to run",
+            "type": "integer",
+            "minimum": 0
+        },
+        "crawler-logging-level": {
+            "description": "Logging level of the crawler",
+            "type": "string",
+            "enum": [
+                "DEBUG",
+                "INFO",
+                "WARNING",
+                "ERROR",
+                "CRITICAL"
+            ]
+        },
+        "crawler-measure-time": {
+            "description": "Measure execution times of database operations",
+            "type": "boolean"
         },
         "server-host": {
             "description": "Host the server is running on",
@@ -43,7 +73,47 @@
         },
         "server-port": {
             "$ref": "#/definitions/port"
+        },
+
+        "webui-queryConstructorEnabled": {
+           "description": "activate/deactivate the Query-Constructor in the webui",
+           "type": "boolean"
+        },
+
+        "webui-crawlerEnabled": {
+           "description": "activate/deactivate the Crawler-Controlling in the webui",
+           "type": "boolean"
+        },
+
+        "webui-defaultUsername": {
+           "description": "Insert in the loginfield a default Username",
+           "type": "string"
+        },
+
+        "webui-adminLoginEnabeled": {
+           "description": "activate/deactivate the loginpossibility for the admin-role",
+           "type": "boolean"
+        },
+
+        "webui-enduserLoginEnabled": {
+           "description": "activate/deactivate the loginpossibility for the enduser-role",
+           "type": "boolean"
+        },
+
+        "webui-autoLogin": {
+           "description": "autologin as a enduser or admin or deactivate autologin with an empty string",
+           "type": "string",
+           "enum": [
+               "admin",
+               "enduser",
+               ""
+           ]
+        },
+        "webui-pageChangeAnimation": {
+           "description": "activate/deactivate the main animations in the webui",
+           "type": "boolean"
         }
+
     },
     "required": [
         "database-name",
@@ -52,9 +122,20 @@
         "database-user",
         "database-password",
         "crawler-host",
+        "crawler-service-name",
         "crawler-port",
+        "crawler-db-update-interval",
+        "crawler-measure-time",
+        "crawler-logging-level",
         "server-host",
-        "server-port"
+        "server-port",
+        "webui-queryConstructorEnabled",
+        "webui-crawlerEnabled",
+        "webui-defaultUsername",
+        "webui-adminLoginEnabeled",
+        "webui-enduserLoginEnabled",
+        "webui-autoLogin",
+        "webui-pageChangeAnimation"
     ]
 }
 

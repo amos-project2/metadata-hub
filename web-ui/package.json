@@ -4,9 +4,10 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "build": "webpack",
-        "dev-build": "webpack -o ../server/src/main/resources/static-files/bundle.js",
-        "runtime-build": "webpack -o ../server/target/classes/static-files/bundle.js",
+        "dev-build-vendor": "webpack --config webpack.config.vendor.js -o ../server/src/main/resources/static-files/vendor.bundle.js",
+        "dev-build-app": "webpack -o ../server/src/main/resources/static-files/bundle.js",
+        "runtime-build-vendor": "webpack --config webpack.config.vendor.js -o ../server/target/classes/static-files/vendor.bundle.js",
+        "runtime-build-app": "webpack -o ../server/target/classes/static-files/bundle.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [],
@@ -30,11 +31,16 @@
     },
     "dependencies": {
         "bootstrap": "^4.5.0",
+        "bootstrap-autocomplete": "^2.3.5",
         "bootstrap-datetimepicker-npm": "^4.17.37-npm",
+        "bootswatch": "^4.5.0",
+        "crypto-js": "^4.0.0",
+        "darkreader": "^4.9.10",
         "daterangepicker": "^3.1.0",
         "graphiql": "^0.17.2",
         "graphql": "^14.0.0",
         "jquery": "^3.5.1",
+        "js-sha256": "^0.9.0",
         "moment": "^2.26.0",
         "popper.js": "^1.16.1",
         "precss": "^4.0.0"

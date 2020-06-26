@@ -1,37 +1,26 @@
 package Benchmark;
 
-import Model.File;
-import Model.Metadatum;
-import Start.Registry;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zaxxer.hikari.HikariDataSource;
-import lombok.SneakyThrows;
-import org.jooq.tools.json.JSONArray;
-import org.jooq.tools.json.JSONObject;
-import org.jooq.tools.json.JSONParser;
+import Database.Database;
+import Start.DependenciesContainer;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Map;
 
 public class BenchmarkTest
 {
-    private final Registry registry;
     private final Client client;
+    private final DependenciesContainer dependenciesContainer;
+    private final Database database;
 
-    public BenchmarkTest(Registry registry)
+    public BenchmarkTest(DependenciesContainer dependenciesContainer)
     {
-
-        this.registry = registry;
+        this.dependenciesContainer=dependenciesContainer;
+        database = dependenciesContainer.getInjector().getInstance(Database.class);
         client = ClientBuilder.newClient();
 
     }
@@ -42,6 +31,7 @@ public class BenchmarkTest
     }
 
     public void doBenchmark() throws InterruptedException, SQLException {
+
         System.out.println("START BENCHMARK TESTS:\n\n");
         var allComparer = new ArrayList<DirectJsonToEavComparer>();
 
@@ -84,14 +74,14 @@ public class BenchmarkTest
         var c = this.createAndGetComparer("Test 1");
 
         //Use of Khangs Data dump -> has to be loaded into the database
-        HikariDataSource dataSource = registry.getDatabaseProvider().getHikariDataSource();
+        //HikariDataSource dataSource = registry.getDatabaseProvider().getHikariDataSource();
         String dir_path = "G:/";
 
 
         System.out.println("Start Test(1): Fetching First 100.000 ROWS");
         c.startJsonTime();
         {
-            try (Connection connection = dataSource.getConnection();
+            try (Connection connection = database.gC();
                  PreparedStatement selectStmt = connection.prepareStatement
                      ("SELECT * FROM public.files " +
                          "WHERE public.files.dir_path LIKE ?" +
@@ -105,7 +95,7 @@ public class BenchmarkTest
 
         c.startEavTime();
         {
-            try (Connection connection = dataSource.getConnection();
+            try (Connection connection = database.gC();
                  PreparedStatement selectStmt = connection.prepareStatement
                      ("SELECT *, public.files.id AS file_id " +
                          "FROM public.files " +
@@ -128,14 +118,14 @@ public class BenchmarkTest
      */
     private DirectJsonToEavComparer test2() throws InterruptedException, SQLException {
         //Use of Khangs Data dump -> has to be loaded into the database
-        HikariDataSource dataSource = registry.getDatabaseProvider().getHikariDataSource();
+        //HikariDataSource dataSource = registry.getDatabaseProvider().getHikariDataSource();
         String dir_path = "G:/";
 
         System.out.println("Start Test(2): Get all Files with FileSize 40 kB");
         return this.createAndGetComparer("Test 2").testJson(() ->
         {
 
-            try (Connection connection = dataSource.getConnection();
+            try (Connection connection = database.gC();
                  PreparedStatement selectStmt = connection.prepareStatement
                      ("SELECT * FROM public.files " +
                          "WHERE public.files.metadata ->> 'FileSize' = '40 kB' ")) {
@@ -143,7 +133,7 @@ public class BenchmarkTest
             }
         }).testEav(() ->
         {
-            try (Connection connection = dataSource.getConnection();
+            try (Connection connection = database.gC();
                  PreparedStatement selectStmt = connection.prepareStatement
                      ("SELECT * " +
                          "FROM public.files " +
@@ -159,14 +149,14 @@ public class BenchmarkTest
         var c = this.createAndGetComparer("Test 3");
 
         //Use of Khangs Data dump -> has to be loaded into the database
-        HikariDataSource dataSource = registry.getDatabaseProvider().getHikariDataSource();
+      //  HikariDataSource dataSource = registry.getDatabaseProvider().getHikariDataSource();
         String dir_path = "G:/";
 
 
         System.out.println("Start Test(3): Counting all Rows");
         c.startJsonTime();
         {
-            try (Connection connection = dataSource.getConnection();
+            try (Connection connection = database.gC();
                  PreparedStatement selectStmt = connection.prepareStatement
                      ("SELECT COUNT(crawl_id) FROM public.files " +
                          "WHERE public.files.dir_path LIKE ?")) {
@@ -181,7 +171,7 @@ public class BenchmarkTest
 
         c.startEavTime();
         {
-            try (Connection connection = dataSource.getConnection();
+            try (Connection connection = database.gC();
                  PreparedStatement selectStmt = connection.prepareStatement
                      ("SELECT COUNT(files.crawl_id)" +
                          "FROM public.files " +

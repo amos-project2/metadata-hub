@@ -3,58 +3,128 @@ Collection of all available Queries
 """
 type Query{
     """
-    A query that returns Metadata of a File identified by its file_id
-    """
-    getFileMetadata(file_id: String! sel_attributes: [String!] eav: Boolean) : [Metadatum]
+    searchForFileMetadata:
+    Searches for all file metadata dependent on the specified search options.
+    If no options are specified, all file metadata is returned.
 
+    Search Options:
+    file_id: Only returns file metadata belonging to one of the file ids in the list.
+    crawl_id: Only returns file metadata belonging to one of the crawl ids in the list.
+    dir_path: Only returns file metadata where their directory path matches the specified pattern.
+        Default PatternOption is "included".
+    dir_path_option: Different PatternOptions can be used, which change how "dir_path" gets compared to other Strings.
+    file_name: Only returns file metadata where their file_name matches the specified pattern.
+        Default PatternOption is "included"
+    file_name_option: Different PatternOptions can be used, which change how "file_name" gets compared to other Strings.
+    file_types: Only returns file metadata where the file type is exactly one of the types specified in the list
+    size: Only returns file metadata of a certain size depending on the used IntOption. Default IntOption is "equal".
+    size_option: Here the IntOption for "size" can be specified.
+    !Notice to timestamps!: timestamps follow the ISO 8601 standard, e.g. "2004-10-19 10:23:54+02", if no timezone is specified
+        it is assumed to be in the system's timezone, if no time is specified "00:00:00" is used.
+    start_creation_time: Only returns file metadata, which got created later or at the same point as "start_creation_time".
+    end_creation_time: Only returns file metadata, which got created earlier than "end_creation_time".
+    start_access_time: Only returns file metadata, which got accessed later or at the same point as "start_access_time".
+    end_access_time: Only returns file metadata, which got accessed earlier than "end_access_time".
+    start_modification_time: Only returns file metadata, which got modified later or at the same point as "start_modification_time".
+    end_modification_time: Only returns file metadata, which got modified earlier than "end_modification_time".
+    file_hash: Only returns file metadata where the file has the same sha_254 hash as the hashes in the list.
+    metadata_attributes: (see in metadata_values)
+    metadata_values: Only returns file metadata, where the file has the attribute specified in
+        metadata_attributes and its value matches the value of metadata_values. Different PatternOptions can be used.
+        Both lists have to be the same length as their ordering relates them to each other.
+        Default PatternOption is "included".
+    metadata_options: Different PatternOptions can be used for metadata_values. The index in metadata_option relates to the index
+        in meta_data_values e.g. metadata_option[1] will be used for metadata_value[1]. If used both lists need to have the same length.
+    metadata_filter_logic_options: Different FilterLogicOptions can be specified, which change how the metadata filters get logically used. [e.g. "AND" or "OR"]
+        Default option is "AND".
+    metadata_filter_logic: A String that can specify how the used metadata filters should logically be used.
+        All filters are applied [AND], one of the filters is applied [OR]. e.g. "( f5 AND f2 ) OR f1"
+        numbers correspond to the metadata list indexes (metadata_attributes, metadata_values) starting with 0
+        Unused filter options that are in the list but not in the statement just use "AND"
+    selected_attributes: For all file metadata only the specified metadata attributes are returned.
+    limitFetchingSize: Limits how many files will get fetched by the search.
+    showDeleted: if true, the query also returns metadata info about deleted files
     """
-    A query that returns all Files of a stated directory and its sub-directories
-    """
-    getDirMetadata(dir_path: String! sel_attributes: [String!] eav: Boolean) : [File]
-
-    """
-    A query that returns all Files matching or not matching a pattern depending on the used PatternOption,
-    and if specified between a certain time range
-    and if specified in limitFetchingSize only a certain amount of files.
-    """
-    search(pattern: String! option: PatternOption startTime: String endTime: String sel_attributes: [String!] limitFetchingSize: Int) : [File]
+    searchForFileMetadata(file_ids: [Int!], crawl_ids: [Int!], dir_path: String, dir_path_option: MetadataOption,
+        file_name: String, file_name_option: MetadataOption, file_types: [String!], size: Int, size_option: IntOption,
+        start_creation_time: String, end_creation_time: String, start_access_time: String, end_access_time: String,
+        start_modification_time: String, end_modification_time: String, file_hashes: [String!],
+        metadata_attributes: [String!], metadata_values:[String!], metadata_options: [MetadataOption!],
+        metadata_filter_logic_options: FilterLogicOption, metadata_filter_logic: String,
+        selected_attributes: [String!], limitFetchingSize: Int, showDeleted: Boolean) : [File]
 }
 
-enum PatternOption{
-    included,
+"""
+Different options for checking Strings for patterns:
+included: the String has the pattern included
+excluded: the String does not! have the pattern included
+equal: the String has to exactly match the pattern
+bigger: the String has to be lexicographically bigger than the pattern
+smaller: the String has to be lexicogarphicaly smaller than the pattern
+exists: the String is not NULL
+"""
+enum MetadataOption{
+    included
     excluded
+    equal
+    bigger
+    smaller
+    exists
+}
+
+"""
+Different options for checking int values:
+equal: int value has to be equal to specified value
+bigger: int value has to be bigger than specified value
+smaller: int value has to be smaller than specified value
+"""
+enum IntOption{
+    equal
+    bigger
+    smaller
+}
+
+"""
+Different options for using the metadata filters:
+and: every filter option is "AND"-ed together, besides the filters that are possibly used in the metadata_filter_logic String
+or: every filter option is "OR"-ed together, besides the filters that are possibly used in the metadata_filter_logic String
+only_logic_string: only the filter options specified in the logic String are considered
+"""
+enum FilterLogicOption{
+    and
+    or
+    only_logic_string
 }
 
 type File{
     id: String!
-    tree_walk_id: String!
-    sub_path: String!
+    crawl_id: String!
+    dir_path: String!
     name: String!
-    file_type: String!
-    creation_date: String
-    modification_date: String
-    access_date: String
-    metadataJson: String
+    type: String
+    size: String
     metadata: [Metadatum!]!
+    creation_time: String
+    access_time: String
+    modification_time: String
+    file_hash: String
+    deleted: Boolean
 }
 
 type Metadatum{
-    id: String!
-    tree_walk_id: String!
-    file_id: String!
     name: String!
     value: String!
 }
 
-type Tree_Walk{
+type Crawl{
     id: String!
+    dir_path: String!
     name: String!
-    notes: String
-    root_path: String!
-    start_time: String!
-    end_time: String
     status: String!
     crawl_config: String
+    analyzed_dirs: String
+    starting_time: String!
+    finished_time: String
     update_time: String!
-    save_in_generic_table: Boolean!
+    analyzed_dirs_hash: String
 }

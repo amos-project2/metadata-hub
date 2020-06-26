@@ -276,6 +276,20 @@ ALTER TABLE ONLY public.schedule
 
 ALTER TABLE ONLY public.time_intervals
     ADD CONSTRAINT interval_pkey PRIMARY KEY (id);
+--
+-- Name: metadata metadata_pkey; Type: CONSTRAINT; Schema: public; Owner: metadatahub
+--
+
+ALTER TABLE ONLY public.metadata
+    ADD CONSTRAINT metadata_pkey PRIMARY KEY (file_type);
+
+
+--
+-- Name: schedule schedule_pkey; Type: CONSTRAINT; Schema: public; Owner: metadatahub
+--
+
+ALTER TABLE ONLY public.schedule
+    ADD CONSTRAINT schedule_pkey PRIMARY KEY (id);
 
 -- Completed on 2020-05-31 00:55:10
 

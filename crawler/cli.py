@@ -41,7 +41,7 @@ def check_connection() -> bool:
     return True
 
 
-def make_request(url: str, post: bool = False) -> None:
+def make_request(url: str, post: bool = False, json_output: bool = False) -> None:
     """Helper function to make a request to the crawler API.
 
     Args:
@@ -55,9 +55,13 @@ def make_request(url: str, post: bool = False) -> None:
         response = requests.get(url)
     data = json.loads(response.text or '{}')
     if response.ok:
-        print(data.get('message', 'OK'))
+        res = data.get('message', 'OK')
     else:
-        print(data.get('error', 'Unavailable to load error message'))
+        res = data.get('error', 'Unavailable to load error message')
+    if json_output:
+        print(json.dumps(res, indent=4))
+    else:
+        print(res)
 
 
 def info(subparser: argparse._SubParsersAction = None):
@@ -70,7 +74,7 @@ def info(subparser: argparse._SubParsersAction = None):
     """
     name = 'info'
     if subparser is None:
-        make_request(f'{_API}/{name}')
+        make_request(f'{_API}/{name}', json_output=True)
         return
     subparser.add_parser(
         name,
@@ -183,11 +187,66 @@ def shutdown(
     """
     name = 'shutdown'
     if subparser is None:
-        make_request(f'{_API}/{name}', True)
+        requests.post(f'{_API}/{name}')
         return
     subparser.add_parser(
         name,
         description='Shutdown the crawler'
+    )
+
+
+def schedule_list(subparser: argparse._SubParsersAction = None):
+    """Forward to /schedule/list
+
+    Args:
+        subparser (argparse._SubParsersAction, optional):
+            Parser for command 'schedule-list'. Defaults to None.
+
+    """
+    name = 'schedule-list'
+    if subparser is None:
+        make_request(
+            url=f'{_API}/schedule/list',
+            post=True,
+            json_output=True
+        )
+        return
+    parser = subparser.add_parser(
+        name,
+        description='List the current schedule'
+    )
+
+
+def schedule_remove(
+    subparser: argparse._SubParsersAction = None,
+    args: argparse.Namespace = None
+):
+    """Forward to /schedule/remove?id={identifier}
+
+    Args:
+        subparser (argparse._SubParsersAction, optional):
+            Parser for command 'schedule-remove'. Defaults to None.
+        args (argparse.Namespace, optional):
+            Arguments of command 'schedule-remove'. Defaults to None.
+
+    """
+    name = 'schedule-remove'
+    if subparser is None:
+        make_request(
+            url=f'{_API}/schedule/remove?id={args.identifier}',
+            post=False,
+            json_output=False
+        )
+        return
+    parser = subparser.add_parser(
+        name,
+        description='Remove the given configuration from the schedule'
+    )
+    parser.add_argument(
+        'identifier',
+        type=str,
+        metavar='identifier',
+        help='Identifier of the configuration to remove.'
     )
 
 
@@ -207,6 +266,8 @@ if __name__ == '__main__':
     pause(subparser=subparser)
     unpause(subparser=subparser)
     shutdown(subparser=subparser)
+    schedule_list(subparser=subparser)
+    schedule_remove(subparser=subparser)
     args = parser.parse_args()
     # Check connection and run command
     if not check_connection():
@@ -223,3 +284,7 @@ if __name__ == '__main__':
         unpause()
     if args.command == 'shutdown':
         shutdown()
+    if args.command == 'schedule-list':
+        schedule_list()
+    if args.command == 'schedule-remove':
+        schedule_remove(args=args)

@@ -5,7 +5,19 @@
     "database-user": "metadatahub",
     "database-password": "metadatahub",
     "crawler-host": "0.0.0.0",
+    "crawler-service-name": "0.0.0.0",
     "crawler-port": 9000,
+    "crawler-logging-level": "INFO",
+    "crawler-db-update-interval": 3600,
+    "crawler-scheduler-interval": 60,
+    "crawler-measure-time": false,
     "server-host": "0.0.0.0",
-    "server-port": 8080
+    "server-port": 8080,
+    "webui-queryConstructorEnabled": true,
+    "webui-crawlerEnabled": true,
+    "webui-defaultUsername": "User",
+    "webui-adminLoginEnabeled": true,
+    "webui-enduserLoginEnabled": true,
+    "webui-autoLogin": "",
+    "webui-pageChangeAnimation": true
 }

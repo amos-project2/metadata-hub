@@ -8,7 +8,25 @@
 <body style="margin: 0;">
 <div class="app-root"></div>
 
-<script src="main.bundle.js"></script>
+<!--"admin" or "enduser" or "" at autoLogin-->
+<script>
+    window.myApplication = {
+        graphQLApi: "%graphQLApi%",
+        serverApi: "%serverApi%",
+        crawlerApi: "%crawlerApi%",
+        queryConstructorEnabled: %queryConstructorEnabled%,
+        crawlerEnabled: %crawlerEnabled%,
+        defaultUsername: "%defaultUsername%",
+        adminLoginEnabeled: %adminLoginEnabeled%,
+        enduserLoginEnabled: %enduserLoginEnabled%,
+        autoLogin: "%autoLogin%",
+        pageChangeAnimation: %pageChangeAnimation%,
+        version: "%version%"
+    };
+</script>
+
+
+<script src="vendor.bundle.js"></script>
 <script src="bundle.js"></script>
 
 </body>

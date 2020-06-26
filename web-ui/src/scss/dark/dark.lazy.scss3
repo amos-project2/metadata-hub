@@ -1,0 +1,2 @@
+//additional style informations which also can override the existing one
+//this stylesheet here is only loaded if the darkmode is enabled
