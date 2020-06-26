@@ -37,7 +37,7 @@ class TreeWalkScheduler(threading.Thread):
         )
         self._intervals = []
         self._update_interval = update_interval
-        self._current_interval = None
+        self._current_interval = None # type: TimeInterval
 
     def _do_command(self, command: communication.Command) -> None:
         """Execute a command.
@@ -136,6 +136,10 @@ class TreeWalkScheduler(threading.Thread):
                 f'Changed from interval {repr(self._current_interval)} '
                 f'to interval {repr(new_interval)}.'
             )
+            if self._current_interval is not None:
+                self._current_interval.deactivate()
+            if new_interval is not None:
+                new_interval.activate()
             self._current_interval = new_interval
 
     def _dispatch(self, task: task_module.Task) -> None:

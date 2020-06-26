@@ -49,6 +49,8 @@ class TimeInterval:
             bool: True if valid, False otherwise
 
         """
+        if start_str == end_str:
+            return False
         try:
             for string in [start_str, end_str]:
                 parts = string.split(':')
@@ -94,6 +96,7 @@ class TimeInterval:
             cpu_level: int,
             identifier: str = None
     ):
+        self._active = False
         self._start_str = start_str
         self._end_str = end_str
         if identifier is None:
@@ -105,6 +108,14 @@ class TimeInterval:
         self._start_total_time, self._start_weekday, self._start_hm_str = tmp
         tmp = TimeInterval.parse(end_str)
         self._end_total_time, self._end_weekday, self._end_hm_str = tmp
+
+    def activate(self) -> None:
+        """Set this interval to active"""
+        self._active = True
+
+    def deactivate(self) -> None:
+        """Set this interval to inactive"""
+        self._active = False
 
     def _compute_identifier(self) -> str:
         """Compute the identifier for the time interval object.
@@ -168,7 +179,8 @@ class TimeInterval:
             'start': f'{self._start_weekday} {self._start_hm_str}',
             'end': f'{self._end_weekday} {self._end_hm_str}',
             'cpu-level': self._cpu_level,
-            'identifier': self._identifier
+            'identifier': self._identifier,
+            'active': self._active
         }
 
     def overlaps(self, other: 'TimeInterval') -> bool:

@@ -188,7 +188,7 @@ def shutdown():
 
 
 @app.route('/intervals/add', methods=['GET', 'POST'])
-def add_interval() -> flask.Response:
+def intervals_add() -> flask.Response:
     """API endpoint to add intervals for maximum resource consumption.
 
     Returns:
@@ -209,6 +209,17 @@ def add_interval() -> flask.Response:
         response = communication.Response(
             success=False,
             message='Invalid start/end times.',
+            command=communication.SCHEDULER_ADD_INTERVAL,
+        )
+        return _get_response(response)
+    try:
+        cpu = int(cpu)
+        if cpu not in range(1,5):
+            raise ValueError
+    except ValueError:
+        response = communication.Response(
+            success=False,
+            message='The CPU level must be 1, 2, 3 or 4.',
             command=communication.SCHEDULER_ADD_INTERVAL,
         )
         return _get_response(response)
@@ -233,7 +244,7 @@ def intervals_remove() -> flask.Response:
 
 
 @app.route('/intervals/list', methods=['GET', 'POST'])
-def intervals() -> flask.Response:
+def intervals_list() -> flask.Response:
     """API endpoint to list all intervals for maximum resource consumption.
 
     Returns:
