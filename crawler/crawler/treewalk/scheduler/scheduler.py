@@ -85,6 +85,7 @@ class TreeWalkScheduler(threading.Thread):
             intervals = self._db_connection.get_intervals(False)
             if utils.interval_conflicts(interval, intervals):
                 responses.respond_interval_overlaps(interval._identifier)
+                return
             success = False
             if self._db_connection.add_interval(interval):
                 success = True
@@ -130,12 +131,13 @@ class TreeWalkScheduler(threading.Thread):
         new_interval = utils.get_present_interval(intervals)
         # FIXME
         if new_interval == self._current_interval:
-            _logger.error('No interval changed')
+            _logger.info(f'Current interval: {repr(self._current_interval)}')
         else:
-            _logger.error(
-                f'Changed from interval {repr({self._current_interval})} '
+            _logger.info(
+                f'Changed from interval {repr(self._current_interval)} '
                 f'to interval {repr(new_interval)}.'
             )
+            self._current_interval = new_interval
 
     def _dispatch(self, task: task_module.Task) -> None:
         """Dispatch the config to the manager.

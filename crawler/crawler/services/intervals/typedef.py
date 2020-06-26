@@ -129,7 +129,10 @@ class TimeInterval:
             str: representation
 
         """
-        return f'TimeInterval(id={self._identifier}'
+        return (
+            f'TimeInterval({self._start_weekday} {self._start_hm_str}, '
+            f'{self._end_weekday} {self._end_hm_str})'
+        )
 
     def __eq__(self, obj: Any) -> bool:
         """Override equals.
@@ -152,12 +155,12 @@ class TimeInterval:
             dict: JSON representation
 
         """
-        return json.dumps({
+        return {
             'start': f'{self._start_weekday} {self._start_hm_str}',
             'end': f'{self._end_weekday} {self._end_hm_str}',
             'cpu-level': self._cpu_level,
             'identifier': self._identifier
-        })
+        }
 
     def overlaps(self, other: 'TimeInterval') -> bool:
         """Check if two time intervals overlap.
@@ -170,10 +173,12 @@ class TimeInterval:
 
         """
         return any([
-            other._start_total_time <= self._start_total_time <= other._end_total_time,
-            other._start_total_time <= self._end_total_time <= other._end_total_time,
-            self._start_total_time <= other._start_total_time <= self._end_total_time,
-            self._start_total_time <= other._end_total_time <= self._end_total_time,
+            other._start_total_time < self._start_total_time < other._end_total_time,
+            other._start_total_time < self._end_total_time < other._end_total_time,
+            self._start_total_time < other._start_total_time < self._end_total_time,
+            self._start_total_time < other._end_total_time < self._end_total_time,
+            self._start_total_time == other._start_total_time,
+            self._end_total_time == other._end_total_time
         ])
 
     def in_between(self, total_time: int) -> bool:
@@ -186,4 +191,4 @@ class TimeInterval:
             bool: True if it is in between this interval, False otherwise
 
         """
-        return self._start_total_time <= total_time <= self._end_total_time
+        return self._start_total_time <= total_time < self._end_total_time

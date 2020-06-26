@@ -229,11 +229,11 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
         before_len = len(self._intervals)
         new_intervals = [
             interval
-            for interval in self._intervals if interval._identifier == identifier
+            for interval in self._intervals if interval._identifier != identifier
         ]
         new_len = len(new_intervals)
         self._intervals = new_intervals
-        return before_len == new_len
+        return before_len != new_len
 
 
     def add_interval(self, interval: TimeInterval ) -> bool:
@@ -259,5 +259,5 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
 
         """
         if as_json:
-            return [interval.to_json for interval in self._intervals]
+            return [interval.to_json() for interval in self._intervals]
         return self._intervals

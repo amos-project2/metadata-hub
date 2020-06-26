@@ -100,8 +100,6 @@ def get_present_interval(intervals: List[TimeInterval]) -> TimeInterval:
 
     curr_time_total = TimeInterval.convert_curr_ts_to_total_time()
     for interval in intervals:
-        print(curr_time_total, interval._start_total_time, interval._end_total_time)
         if interval.in_between(curr_time_total):
-            print("FOUND INTERVAL")
             return interval
     return None
