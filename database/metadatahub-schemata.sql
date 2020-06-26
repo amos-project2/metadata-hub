@@ -181,7 +181,8 @@ CREATE TABLE public.time_intervals
 (
     id text NOT NULL,
     start_time text NOT NULL,
-    end_time text NOT NULL
+    end_time text NOT NULL,
+    cpu_level bigint NOT NULL
 );
 
 ALTER TABLE public.time_intervals OWNER to metadatahub;
