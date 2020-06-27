@@ -184,7 +184,14 @@ class Worker(multiprocessing.Process):
         return int(size.split(' ')[0]) * multipl
 
     def create_metadata_list(self, exif_output: json) -> Dict:
-        # Loop over every tag in the json and sum them up in a dictionary
+        """Creates an easy to process dictionary for updating the 'metadata' table in the database
+
+        Args:
+            exif_output (json): The output from the ExifTool output.
+        Returns:
+            Dict: key: file type | value: Dict: key: tag value: count
+        """
+        # Loop over every tag for each file in the ExifTool output and add them to the dictionary
         tag_values = {}
         for single_output in exif_output:
             fileType = single_output['FileType']
