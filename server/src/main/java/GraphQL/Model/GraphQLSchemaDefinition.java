@@ -11,7 +11,7 @@ public class GraphQLSchemaDefinition {
     public static final String QUERY_DIR_PATH_OPTION = "dir_path_option";
     public static final String QUERY_FILE_NAME = "file_name";
     public static final String QUERY_FILE_NAME_OPTION = "file_name_option";
-    public static final String QUERY_FILE_TYPE = "file_type";
+    public static final String QUERY_FILE_TYPES = "file_types";
     public static final String QUERY_SIZE = "size";
     public static final String QUERY_SIZE_OPTION = "size_option";
     public static final String QUERY_START_CREATION_TIME = "start_creation_time";
@@ -24,6 +24,8 @@ public class GraphQLSchemaDefinition {
     public static final String QUERY_METADATA_ATTRIBUTES = "metadata_attributes";
     public static final String QUERY_METADATA_VALUES = "metadata_values";
     public static final String QUERY_METADATA_OPTIONS = "metadata_options";
+    public static final String QUERY_METADATA_FILTER_LOGIC_OPTIONS = "metadata_filter_logic_options";
+    public static final String QUERY_METADATA_FILTER_LOGIC = "metadata_filter_logic";
     public static final String QUERY_SELECTED_ATTRIBUTES = "selected_attributes";
     public static final String QUERY_LIMIT_FETCHING_SIZE = "limitFetchingSize";
     public static final String QUERY_SHOW_DELETED = "showDeleted";
@@ -48,6 +50,14 @@ public class GraphQLSchemaDefinition {
      */
     public static final String METADATUM_NAME = "name";
     public static final String METADATUM_VALUE = "value";
+
+    /**
+     * Enum Type Definition of "FilterLogicOption"
+     */
+    public static final String FILTER_LOGIC_OPTION_AND = "and";
+    public static final String FILTER_LOGIC_OPTION_OR = "or";
+    public static final String FILTER_LOGIC_OPTION_ONLY_LOGIC = "only_logic_string";
+
 
 
 }

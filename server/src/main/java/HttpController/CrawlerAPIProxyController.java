@@ -31,7 +31,8 @@ public class CrawlerAPIProxyController
     {
         this.config = config;
         Client client = ClientBuilder.newClient();
-        target = client.target("http://localhost:" + config.getProperty("crawler-port"));
+        //target = client.target("http://localhost:" + config.getProperty("crawler-port"));
+        target = client.target("http://"+config.getProperty("crawler-service-name")+":" + config.getProperty("crawler-port"));
     }
 
     @GET
@@ -62,7 +63,8 @@ public class CrawlerAPIProxyController
         for (String value : parameters.keySet()){
             if(parameters.getFirst(value) !=null)
             {
-                webTarget=webTarget.queryParam(value, URLEncoder.encode(parameters.getFirst(value), "UTF-8"));
+                webTarget=webTarget.queryParam(value, URLEncoder.encode(parameters.getFirst(value), "UTF-8").replaceAll("\\+", "%20"));
+                System.out.println("value -> " + value + " | key -> " + parameters.getFirst(value));
             }
 
 

@@ -66,7 +66,7 @@ public class WebuiController
         String content = out.toString();
 
         content = content.replaceAll("%graphQLApi%", "graphql/");
-        content = content.replaceAll("%serverApi%", "api/");
+        content = content.replaceAll("%serverApi%", "api");
         content = content.replaceAll("%crawlerApi%", "crawlerapi/");
 
         System.out.println(config.getProperty("webui-queryConstructorEnabled"));
