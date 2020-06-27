@@ -295,6 +295,7 @@ class Worker(multiprocessing.Process):
                 hash256 = hashlib.sha256(bytes).hexdigest()
                 insert_values += (hash256, False)
             # add the value string to the rest for insert batching
+            # FIXME Better solution for ignoring files with no file_type?
             if insert_values[3] == 'NULL':
                 continue
             inserts.append(insert_values)
