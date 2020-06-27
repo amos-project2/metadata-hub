@@ -4,6 +4,7 @@
 import json
 import logging
 import os
+from builtins import print
 from datetime import datetime
 from typing import List, Tuple, Dict
 
@@ -416,9 +417,6 @@ class DatabaseConnection:
             curs.close()
             self.con.rollback()
             raise
-        # for file_type in additions:
-        #     for tag_name in additions[file_type]:
-        #         additions[file_type][tag_name]
 
 
     def decrease_dynamic(self, ids: List[int]) -> None:
@@ -440,8 +438,6 @@ class DatabaseConnection:
                             metadata_dict[entry[1]][file_result] = 0
                         metadata_dict[entry[1]][file_result] += 1
             except Exception as e:
-                curs.close()
-                self.con.rollback()
                 raise
             return metadata_dict
 
@@ -453,15 +449,16 @@ class DatabaseConnection:
         try:
             curs.execute(query)
             entries = curs.fetchall()
+            # Create a dictionary structure for further processing
             metadata = create_metadata(entries)
+            # Create a tuple with every relevant file type (For fetching the corresponding metadata)
             relevant_file_types = tuple(set([x[1] for x in entries]))
-            #for entry in metadata.keys():
-            # Get old value
+            # Query for obtaining the old data from the 'metadata' table
             query = 'SELECT * FROM "metadata" WHERE "file_type" in %s'
             query = curs.mogrify(query, (relevant_file_types,))
             curs.execute(query)
             entries = curs.fetchall()
-            # Decrease all the old values
+            # Go over every value in the old data and update it with new values
             for file_type in entries:
                 to_update = file_type[1]
                 merger = metadata[file_type[0]]
@@ -475,6 +472,8 @@ class DatabaseConnection:
 
         except Exception as e:
             _logger.warning("Error updating the metadata table!")
-            # For each file, go over the JSON data and determine which must be decreased
+            # TODO Make sure the main method knows a reevaluate method should be called
             print(e)
+            curs.close()
+            self.con.rollback()
             raise
