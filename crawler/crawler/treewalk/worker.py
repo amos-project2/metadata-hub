@@ -204,6 +204,14 @@ class Worker(multiprocessing.Process):
                     tag_values[fileType][tag_value] = 1
         return tag_values
 
+    def output_type(self, to_check: str) -> int:
+        """Determine whether the output value of a file is a digit or a string
+        Args:
+            to_check (str): The string variant of the value
+        Returns:
+            int: 1 if the value is a digit, 0 if it is a string
+        """
+        pass
 
     @measure_exiftool
     def run_exiftool(self, package: List[str]) -> dict:
