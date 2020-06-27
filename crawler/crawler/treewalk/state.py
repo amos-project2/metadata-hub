@@ -56,6 +56,8 @@ class State:
     # TreeWalk is preparing
     PREPARING = 'preparing'
 
+    MAX_CPU_LEVEL = -1
+
     def __init__(self):
         self._status = State.READY
         self._config = None # type: Config
@@ -63,6 +65,7 @@ class State:
         self._cpu_level = -1
         self._num_workers = -1
         self._progress = 0
+        self._running_workers = 0
 
     @synchronized_state
     def get_status(self) -> str:
@@ -233,6 +236,16 @@ class State:
         self._progress = progress
 
     @synchronized_state
+    def set_running_workers(self, num_workers: int) -> None:
+        """Set the number of running worker processes.
+
+        Args:
+            num_workers (int): number of running worker processes
+
+        """
+        self._running_workers = num_workers
+
+    @synchronized_state
     def info(self) -> communication.Response:
         """Return the current status.
 
@@ -243,13 +256,16 @@ class State:
         if self._is_ready():
             data = {
                 'status': self._status,
-                'config': self._config
+                'config': self._config,
+                'processes': self._running_workers
             }
         else:
             data = {
                 'status': self._status,
                 'config': self._config.get_data(as_json=False),
-                'progress': self._progress
+                'processes': self._running_workers,
+                'progress': self._progress,
+
             }
         return communication.Response(
             success=True,

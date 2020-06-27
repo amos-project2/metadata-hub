@@ -153,7 +153,7 @@ def respond_interval_inserted(identifier: str, success: bool) -> None:
             success=True,
             message=(
                 f'Interval with identifier {identifier} '
-                f'was successfully added to the schedule.'
+                f'was successfully added.'
             ),
             command=communication.SCHEDULER_ADD_INTERVAL
         )

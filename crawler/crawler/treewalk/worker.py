@@ -64,7 +64,7 @@ class Worker(multiprocessing.Process):
         lock: multiprocessing.Lock,
         counter: multiprocessing.Value,
         finished: multiprocessing.Event,
-        num_workers: int,
+        num_workers: multiprocessing.Value,
         measure_time: bool
     ):
         super(Worker, self).__init__()
@@ -244,7 +244,7 @@ class Worker(multiprocessing.Process):
             # The last one sets the finished event
             with self._lock:
                 self._counter.value += 1
-                if self._counter.value == self._num_workers:
+                if self._counter.value == self._num_workers.value:
                     self._counter.value = 0
                     self._finished.set()
                     _logger.debug(f'Process {self.pid}: finished as last.')

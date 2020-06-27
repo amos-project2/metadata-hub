@@ -206,24 +206,58 @@ class TreeWalkManager(threading.Thread):
             f'Total: T={str_diff}'
         )
 
-    def _update_workers(self, max_num_workers: int) -> None:
-        """[summary]
+    def _update_workers(self, num_workers: int, reduce: bool) -> None:
+        """Update the workers due to maximum resource consumption.
+
+        Args:
+            num_workers (int): new number of workers
+            reduce (bool): if True reduce, otherwise increase
+
         """
-        diff = self._num_workers.value - max_num_workers
-        command = communication.Command(
-            command=communication.WORKER_STOP,
-            data=None
-        )
-        for worker_id in range(diff):
-            worker, queue_input, queue_output = self._workers[worker_id]
-            queue_input.put(command)
-            queue_output.get()
-            worker.join()
+        if reduce:
+            diff = self._num_workers.value - num_workers
+            command = communication.Command(
+                command=communication.WORKER_STOP,
+                data=None
+            )
+            for worker_id in range(diff):
+                worker, queue_input, queue_output = self._workers.pop()
+                queue_input.put(command)
+                queue_output.get()
+                worker.join()
+            _logger.info(
+                f'Reduced the number of workers by {diff} due to interval restriction.'
+            )
+        else:
+            diff = num_workers - self._num_workers.value
+            for id_worker in range(diff):
+                queue_input = multiprocessing.Queue()
+                queue_output = multiprocessing.Queue()
+                worker = treewalk.Worker(
+                    queue_input=queue_input,
+                    queue_output=queue_output,
+                    config=self._config,
+                    connection_data=self._connection_data,
+                    tree_walk_id=self._tree_walk_id,
+                    lock=self._worker_lock,
+                    counter=self._worker_counter,
+                    finished=self._workers_finished,
+                    num_workers=self._num_workers,
+                    measure_time=self._measure_time
+                )
+                self._workers.append((worker, queue_input, queue_output))
+                worker.start()
+            _logger.info(
+                f'Increased the number of workers by {diff} due to no interval restriction.'
+            )
+
         self._work_packages = treewalk.resize_work_packages(
             work_packages=self._work_packages,
-            num_workers=max_num_workers
+            num_workers=num_workers
         )
-        self._num_workers.value = max_num_workers
+        self._state.set_running_workers(num_workers)
+        self._num_workers.value = num_workers
+
 
     def run(self) -> None:
         """Run method of TreeWalk manager."""
@@ -232,8 +266,17 @@ class TreeWalkManager(threading.Thread):
             check = False
             if self._state.is_running():
                 max_cpu_level, max_num_workers = self._state.get_cpu_level()
-                if (max_cpu_level > 0) and (max_num_workers < self._num_workers.value):
-                    self._update_workers(max_num_workers)
+                workers_by_config = treewalk.get_number_of_workers(
+                    self._config.get_cpu_level()
+                )
+                reduce = (max_cpu_level > 0) and (max_num_workers < self._num_workers.value)
+                increase = (max_cpu_level < 0) and (workers_by_config > self._num_workers.value)
+                self._worker_lock.acquire()
+                if reduce:
+                    self._update_workers(num_workers=max_num_workers, reduce=True)
+                if increase:
+                    self._update_workers(num_workers=workers_by_config, reduce=False)
+                self._worker_lock.release()
                 try:
                     command = communication.manager_queue_input.get(False)
                     check = True
@@ -397,6 +440,15 @@ class TreeWalkManager(threading.Thread):
             number_of_workers = treewalk.get_number_of_workers(
                 config.get_cpu_level()
             )
+            max_cpu_level, max_num_workers = self._state.get_cpu_level()
+            if max_cpu_level > 0:
+                actual = number_of_workers
+                number_of_workers = min(max_num_workers, number_of_workers)
+                _logger.info(
+                    f'Reduced the number of workers by '
+                    f'{abs(max_num_workers - actual)} '
+                    f'due to interval restriction.'
+                )
             # Prepare analyzed dirs
             # FIXME: GET ALREADY PROCESSED NODES HERE
             analyzedDirectories = json.dumps({"analyzed directories": []})
@@ -441,7 +493,7 @@ class TreeWalkManager(threading.Thread):
                 lock=self._worker_lock,
                 counter=self._worker_counter,
                 finished=self._workers_finished,
-                num_workers=num_workers,
+                num_workers=self._num_workers,
                 measure_time=self._measure_time
             )
             self._workers.append((worker, queue_input, queue_output))
@@ -456,6 +508,7 @@ class TreeWalkManager(threading.Thread):
         self._total = self._get_number_of_work_packages()
         self._tree_walk_id = tree_walk_id
         self._state.set_running(config)
+        self._state.set_running_workers(self._num_workers.value)
         return communication.Response(
             success=True,
             message=communication.MANAGER_OK,
