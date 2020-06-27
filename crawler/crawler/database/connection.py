@@ -395,6 +395,7 @@ class DatabaseConnection:
                 file_type = [x for x in entry][0]
                 updates = additions[file_type]
                 query = 'UPDATE metadata SET "tags" = %s WHERE "file_type" = %s;'
+                # increase the values of each entry according to the new files
                 for tag in entry[1]:
                     if tag in updates.keys():
                         entry[1][tag] = int(entry[1][tag]) + int(updates[tag])
@@ -404,9 +405,8 @@ class DatabaseConnection:
                 del additions[file_type]
                 query = curs.mogrify(query, (json.dumps(entry[1]), file_type))
                 curs.execute(query)
-
+            # Insert the updated values of each corresponding data type
             for file_type in additions:
-                # Query to update the values of each entry that has no previous version
                 query = 'INSERT INTO "metadata" ("file_type", "tags")VALUES (%s, %s)'
                 updates = (file_type, json.dumps(additions[file_type]))
                 query = curs.mogrify(query, updates)
@@ -414,6 +414,8 @@ class DatabaseConnection:
             curs.close()
             self.con.commit()
         except:
+            _logger.warning("Error increasing the values of the metadata table!")
+            # TODO Make sure the main method knows a reevaluate method should be called
             curs.close()
             self.con.rollback()
             raise
@@ -453,7 +455,7 @@ class DatabaseConnection:
             metadata = create_metadata(entries)
             # Create a tuple with every relevant file type (For fetching the corresponding metadata)
             relevant_file_types = tuple(set([x[1] for x in entries]))
-            # Query for obtaining the old data from the 'metadata' table
+            # Query for obtaining the old data from the 'metadata' table (Must be decreased by the previous values)
             query = 'SELECT * FROM "metadata" WHERE "file_type" in %s'
             query = curs.mogrify(query, (relevant_file_types,))
             curs.execute(query)
@@ -470,10 +472,9 @@ class DatabaseConnection:
             curs.close()
             self.con.commit()
 
-        except Exception as e:
-            _logger.warning("Error updating the metadata table!")
+        except:
+            _logger.warning("Error decreasing the values of the metadata table!")
             # TODO Make sure the main method knows a reevaluate method should be called
-            print(e)
             curs.close()
             self.con.rollback()
             raise
