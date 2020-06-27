@@ -151,7 +151,6 @@ class Worker(multiprocessing.Process):
             try:
                 valueTmp = f'{exif[i]}'
                 insert_values += (valueTmp[:12].replace(':', '-') + valueTmp[13:],)
-
             except:
                 insert_values += ('-infinity',)
         insert_values += (False, '-infinity')
@@ -270,6 +269,8 @@ class Worker(multiprocessing.Process):
                 hash256 = hashlib.sha256(bytes).hexdigest()
                 insert_values += (hash256, False)
             # add the value string to the rest for insert batching
+            if insert_values[3] == 'NULL':
+                continue
             inserts.append(insert_values)
 
         # insert into the database
