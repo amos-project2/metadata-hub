@@ -31,7 +31,7 @@ def create_work_packages(
         already_processed (List[str]): list of already processed directories
 
     Returns:
-        Tuple[List[List[str]], List[str]]: (list of workpackages with directories < X, list of workpackages >X)
+        Tuple[List[List[List[str]]], List[str]]: (list of workpackages with directories < X, list of workpackages >X)
 
     """
     def combine_directories(directories: List[str]):
@@ -106,3 +106,32 @@ def get_number_of_workers(cpu_level: int) -> int:
 
     """
     return int(cpu_level * 0.25 * psutil.cpu_count(logical=False))
+
+
+def resize_work_packages(
+        work_packages: List[List[List[str]]],
+        num_workers: int
+) -> List[List[List[str]]]:
+    """Updates the single work packages accordingly to the number of new workers.
+
+    When a time interval for maximum resource consumption changes the number
+    of maximum allowed workers, the single work packages have to be distributed
+    again.
+
+    Args:
+        work_packages (List[List[List[str]]]): single work packages
+        num_workers (int): new number of workers
+
+    """
+    new_work_packages = [[] for _ in range(num_workers)]
+    flatten_work_packages = [
+        package
+        for worker_packages in work_packages
+        for package in worker_packages
+    ]
+    index = 0
+    while flatten_work_packages:
+        package = flatten_work_packages.pop()
+        new_work_packages[index].append(package)
+        index = (index + 1) % num_workers
+    return new_work_packages

@@ -17,6 +17,7 @@ import flask
 
 # Local imports
 from . import defaults
+import crawler.treewalk as treewalk
 import crawler.treewalk.manager as manager
 import crawler.treewalk.scheduler as scheduler
 import crawler.treewalk.db_updater as db_updater
@@ -27,6 +28,7 @@ import crawler.communication as communication
 
 
 app = flask.Flask(__name__)
+TW_STATE = None # type: treewalk.State
 
 _logger_werkzeug = logging.getLogger('werkzeug')
 _logger_werkzeug.setLevel(logging.ERROR)
@@ -108,7 +110,8 @@ def info() -> flask.Response:
         flask.Response: REST response
 
     """
-    response = manager.info()
+    global TW_STATE
+    response = TW_STATE.info()
     return _get_response(response)
 
 
@@ -264,8 +267,10 @@ def home():
     return resp
 
 
-def start() -> None:
+def start(tw_state: treewalk.State ) -> None:
     """Start the Flask application."""
+    global TW_STATE
+    TW_STATE = tw_state
     app.run(
         host=environment.env.CRAWLER_HOST,
         port=environment.env.CRAWLER_PORT

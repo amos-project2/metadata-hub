@@ -29,7 +29,13 @@ _logger = logging.getLogger(__name__)
 
 class TreeWalkScheduler(threading.Thread):
 
-    def __init__(self, db_info: dict, measure_time: bool, update_interval: int):
+    def __init__(
+            self,
+            db_info: dict,
+            measure_time: bool,
+            update_interval: int,
+            tw_state: treewalk.State
+    ):
         super(TreeWalkScheduler, self).__init__()
         self._db_connection = database.SchedulerDatabaseConnection(
             db_info=db_info,
@@ -38,6 +44,7 @@ class TreeWalkScheduler(threading.Thread):
         self._intervals = []
         self._update_interval = update_interval
         self._current_interval = None # type: TimeInterval
+        self._tw_state = tw_state # type: treewalk.State
 
     def _do_command(self, command: communication.Command) -> None:
         """Execute a command.
@@ -140,6 +147,9 @@ class TreeWalkScheduler(threading.Thread):
                 self._current_interval.deactivate()
             if new_interval is not None:
                 new_interval.activate()
+                self._tw_state.set_cpu_level(new_interval._cpu_level)
+            else:
+                self._tw_state.set_cpu_level(treewalk.State.MAX_CPU_LEVEL)
             self._current_interval = new_interval
 
     def _dispatch(self, task: task_module.Task) -> None:
