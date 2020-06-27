@@ -138,7 +138,7 @@ class Worker(multiprocessing.Process):
                 insert_values += ('NULL',)
         for i in ['FileSize']:
             try:
-                val = self.getSize(exif[i])
+                val = exif[i]
                 insert_values += (val,)
             except:
                 insert_values += (None,)
@@ -233,7 +233,7 @@ class Worker(multiprocessing.Process):
         """
         try:
             process = subprocess.Popen(
-                [f'{self._exiftool}', '-json', *package],
+                [f'{self._exiftool}', '-n', '-json', *package],
                 stdout=subprocess.PIPE
             )
             # FIXME better solution?
