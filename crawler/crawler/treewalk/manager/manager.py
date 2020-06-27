@@ -188,6 +188,7 @@ class TreeWalkManager(threading.Thread):
             for worker, _, output_queue in self._workers:
                 _ = output_queue.get()
                 worker.join()
+                return
         time_end = datetime.now()
         exiftool_time, db_time = ([], [])
         for _, _, output_queue in self._workers:
