@@ -160,28 +160,28 @@ class Worker(multiprocessing.Process):
         insert_values += (False, '-infinity')
         return insert_values
 
-    def getSize(self, size: str) -> int:
-        """Convert the size into bytes
-
-        Args:
-            size (str): the exif output for size
-
-        Returns:
-            str: string with the value in bytes
-
-        """
-
-        unit = size.split(' ')[1]
-        multipl = 1
-        if unit[0] == 'k':
-            multipl = 1000
-        elif unit[0] == 'm':
-            multipl = 1000000
-        elif unit[0] == 'g':
-            multipl = 1000000000
-        elif unit[0] == 't':
-            multipl = 1000000000000
-        return int(size.split(' ')[0]) * multipl
+    # def getSize(self, size: str) -> int:
+    #     """Convert the size into bytes
+    #
+    #     Args:
+    #         size (str): the exif output for size
+    #
+    #     Returns:
+    #         str: string with the value in bytes
+    #
+    #     """
+    #
+    #     unit = size.split(' ')[1]
+    #     multipl = 1
+    #     if unit[0] == 'k':
+    #         multipl = 1000
+    #     elif unit[0] == 'm':
+    #         multipl = 1000000
+    #     elif unit[0] == 'g':
+    #         multipl = 1000000000
+    #     elif unit[0] == 't':
+    #         multipl = 1000000000000
+    #     return int(size.split(' ')[0]) * multipl
 
     def create_metadata_list(self, exif_output: json) -> Dict:
         """Creates an easy to process dictionary for updating the 'metadata' table in the database
