@@ -198,20 +198,27 @@ class Worker(multiprocessing.Process):
             if fileType not in tag_values:
                 tag_values[fileType] = {}
             for tag_value in single_output:
+                # test = dict(single_output)
+                # print(type(self.output_type(test[tag_value])))
+                #print(single_output[tag_values])
                 if tag_value in tag_values[fileType]:
                     tag_values[fileType][tag_value] += 1
                 else:
                     tag_values[fileType][tag_value] = 1
         return tag_values
 
-    def output_type(self, to_check: str) -> int:
+    def output_type(self, to_check: str):
         """Determine whether the output value of a file is a digit or a string
         Args:
             to_check (str): The string variant of the value
         Returns:
-            int: 1 if the value is a digit, 0 if it is a string
+            float representation if conversion is possible, string otherwise
         """
-        pass
+        try:
+            checked = float(to_check)
+            return checked
+        except:
+            return to_check
 
     @measure_exiftool
     def run_exiftool(self, package: List[str]) -> dict:
