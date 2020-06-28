@@ -17,15 +17,18 @@ import flask
 
 # Local imports
 from . import defaults
+import crawler.treewalk as treewalk
 import crawler.treewalk.manager as manager
 import crawler.treewalk.scheduler as scheduler
 import crawler.treewalk.db_updater as db_updater
 import crawler.services.config as config_service
+import crawler.services.intervals as interval_pkg
 import crawler.services.environment as environment
 import crawler.communication as communication
 
 
 app = flask.Flask(__name__)
+TW_STATE = None # type: treewalk.State
 
 _logger_werkzeug = logging.getLogger('werkzeug')
 _logger_werkzeug.setLevel(logging.ERROR)
@@ -107,7 +110,8 @@ def info() -> flask.Response:
         flask.Response: REST response
 
     """
-    response = manager.info()
+    global TW_STATE
+    response = TW_STATE.info()
     return _get_response(response)
 
 
@@ -143,7 +147,7 @@ def start() -> flask.Response:
     return _get_response(response)
 
 
-@app.route('/schedule/list', methods=['GET'])
+@app.route('/schedule/list', methods=['GET', 'POST'])
 def schedule() -> flask.Response:
     """Return the TreeWalk schedule.
 
@@ -155,7 +159,7 @@ def schedule() -> flask.Response:
     return _get_response(response)
 
 
-@app.route('/schedule/remove', methods=['GET'])
+@app.route('/schedule/remove', methods=['GET', 'POST'])
 def schedule_remove() -> flask.Response:
     """Return the TreeWalk schedule.
 
@@ -186,6 +190,74 @@ def shutdown():
     return _get_response(response)
 
 
+@app.route('/intervals/add', methods=['GET', 'POST'])
+def intervals_add() -> flask.Response:
+    """API endpoint to add intervals for maximum resource consumption.
+
+    Returns:
+        flask.Response: REST response
+
+    """
+    start = flask.request.args.get('start')
+    end = flask.request.args.get('end')
+    cpu = flask.request.args.get('cpu')
+    if (start is None) or (end is None) or (cpu is None):
+        response = communication.Response(
+            success=False,
+            message='Please provide a start/end time and a cpu level.',
+            command=communication.SCHEDULER_ADD_INTERVAL,
+        )
+        return _get_response(response)
+    if not interval_pkg.TimeInterval.assert_valid(start_str=start, end_str=end):
+        response = communication.Response(
+            success=False,
+            message='Invalid start/end times.',
+            command=communication.SCHEDULER_ADD_INTERVAL,
+        )
+        return _get_response(response)
+    try:
+        cpu = int(cpu)
+        if cpu not in range(1,5):
+            raise ValueError
+    except ValueError:
+        response = communication.Response(
+            success=False,
+            message='The CPU level must be 1, 2, 3 or 4.',
+            command=communication.SCHEDULER_ADD_INTERVAL,
+        )
+        return _get_response(response)
+    interval = interval_pkg.TimeInterval(
+        start_str=start, end_str=end, cpu_level=cpu
+    )
+    response = scheduler.add_interval(interval)
+    return _get_response(response)
+
+
+@app.route('/intervals/remove', methods=['GET', 'POST'])
+def intervals_remove() -> flask.Response:
+    """API endpoint to remove and interval with a certain ID.
+
+    Returns:
+        flask.Response: REST response
+
+    """
+    identifier = flask.request.args.get('id', '')
+    response = scheduler.remove_interval(identifier)
+    return _get_response(response)
+
+
+@app.route('/intervals/list', methods=['GET', 'POST'])
+def intervals_list() -> flask.Response:
+    """API endpoint to list all intervals for maximum resource consumption.
+
+    Returns:
+        flask.Response: REST response
+
+    """
+    response = scheduler.get_intervals()
+    return _get_response(response)
+
+
 @app.route('/', methods=['GET'])
 def home():
     resp = flask.Response(
@@ -195,8 +267,10 @@ def home():
     return resp
 
 
-def start() -> None:
+def start(tw_state: treewalk.State ) -> None:
     """Start the Flask application."""
+    global TW_STATE
+    TW_STATE = tw_state
     app.run(
         host=environment.env.CRAWLER_HOST,
         port=environment.env.CRAWLER_PORT

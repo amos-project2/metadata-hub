@@ -17,6 +17,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @Singleton
 @Path("/api/metadata-autocomplete/")
@@ -35,9 +38,6 @@ public class MetadataAutocompletionController
     }
 
 
-
-
-
     @GET
     @Produces("application/json")
     @Path("/suggestions")
@@ -53,12 +53,6 @@ public class MetadataAutocompletionController
 
         List<String> result = metadataAutocompletion.request(Arrays.asList(fileTypes.split("\\$X\\$")), Arrays.asList(used.split("\\$x\\$")), search, 10);
 
-//
-//        ArrayList<String> list = new ArrayList<>();
-//        list.add("bla");
-//        list.add("blub");
-//        list.add("test");
-
         String json = new ObjectMapper().writeValueAsString(result);
         System.out.println(json);
         return json;
@@ -69,19 +63,17 @@ public class MetadataAutocompletionController
     @GET
     @Produces("application/json")
     @Path("/modal-suggestions")
-    public String getModalSuggestions() throws JsonProcessingException
+    public String getModalSuggestions(@QueryParam("fileTypes") String fileTypesString) throws JsonProcessingException
     {
-        ArrayList<String> list = new ArrayList<>();
-        list.add("hey1");
-        list.add("hey2");
-        list.add("hey3");
+        String[] fileTypes = fileTypesString.toUpperCase().split("\\$X\\$");
 
-        String json = new ObjectMapper().writeValueAsString(list);
+        List<String> result = metadataAutocompletion.request(Arrays.asList(fileTypes), new ArrayList<>(), null, 20);
+
+        String json = new ObjectMapper().writeValueAsString(result);
+        System.out.println(json);
         return json;
 
     }
-
-
 
 
 }

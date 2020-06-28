@@ -1,4 +1,4 @@
-// import {autocomplete} from "bootstrap-autocomplete";
+//import {autocomplete} from "bootstrap-autocomplete";
 
 var autocompleter = require('bootstrap-autocomplete');
 
@@ -158,13 +158,6 @@ export class MetadataAutocompletion {
             return resultString;
         }
 
-        // $(this.currentFilterListSelector).off("autoComplete");
-        // $(this.currentFilterListSelector).off();
-        // $(this.currentMetadataListSelector).off("autoComplete");
-        // $(this.currentMetadataListSelector).off();
-
-
-        // $('.basicAutoComplete').autoComplete();
         $(this.currentFilterListSelector).autoComplete({
             preventEnter: true,
             minLength: 0,
@@ -193,7 +186,7 @@ export class MetadataAutocompletion {
             }
         });
 
-
+        //TODO fix it
         //small fix to prevent href to #/ which directs the page to 404
         // $(this.fileTypesSelector).on('autocomplete.select', function(event) {
         //     console.log(event);
@@ -213,7 +206,7 @@ export class MetadataAutocompletion {
     openAndConfigureModal() {
         $(".metadata-autocompletion-suggestions-html").html("Please wait...");
         this.updateListFileType(function () {
-            $(".metadata-autocompletion-suggestions-html").html("content...");
+            $(".metadata-autocompletion-suggestions-html").html("coming soon...");
         });
         $('#metadata-autocompletion-modal').modal();
     }

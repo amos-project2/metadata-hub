@@ -10,6 +10,7 @@ from typing import Any
 
 # Local imports
 from crawler.services.config import Config
+from crawler.services.intervals import TimeInterval
 import crawler.communication as communication
 
 
@@ -73,6 +74,48 @@ def get_schedule() -> communication.Response:
 
     """
     return _do_command(command=communication.SCHEDULER_GET_SCHEDULE)
+
+
+def add_interval(interval: TimeInterval) -> communication.Response:
+    """Add an interval for maximum resource consumption.
+
+    Args:
+        interval (TimeInterval): time interval to add
+
+    Returns:
+        communication.Response: response object
+
+    """
+    return _do_command(
+        command=communication.SCHEDULER_ADD_INTERVAL,
+        data=interval
+    )
+
+
+def remove_interval(identifier: str) -> communication.Response:
+    """Remove an interval for maximum resource consumption.
+
+    Args:
+        identifier (str): identifier of interval to remove
+
+    Returns:
+        communication.Response: response object
+
+    """
+    return _do_command(
+        command=communication.SCHEDULER_REMOVE_INTERVAL,
+        data=identifier
+    )
+
+
+def get_intervals() -> communication.Response:
+    """Get all present intervals for maximum resource consumption.
+
+    Returns:
+        communication.Response: response object
+
+    """
+    return _do_command(command=communication.SCHEDULER_GET_INTERVALS)
 
 
 def shutdown() -> None:

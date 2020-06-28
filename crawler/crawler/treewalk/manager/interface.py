@@ -91,21 +91,6 @@ def stop() -> communication.Response:
     return communication.manager_queue_output.get()
 
 
-def info() -> communication.Response:
-    """Retrieve information about the current state  of the TreeWalk.
-
-    Returns:
-        communication.Response: response object
-
-    """
-    command = communication.Command(
-        command=communication.MANAGER_INFO,
-        data=None
-    )
-    communication.manager_queue_input.put(command)
-    return communication.manager_queue_output.get()
-
-
 def shutdown() -> communication.Response:
     """Retrieve information about the current state  of the TreeWalk.
 
