@@ -1,9 +1,8 @@
 package GraphQL.Fetcher;
 
-import Database.DatabaseSchemaDefinition;
+import Database.Model.DatabaseSchemaDefinition;
 import GraphQL.Model.GraphQLSchemaDefinition;
 import graphql.GraphQLException;
-import org.jooq.meta.derby.sys.Sys;
 
 import java.util.HashMap;
 import java.util.List;
