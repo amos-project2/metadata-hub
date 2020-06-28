@@ -1,4 +1,6 @@
 import {Page} from "../Page";
+import {Message} from "./components/Message";
+import {Config} from "./components/Config";
 
 export class CrawlerController extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
@@ -32,7 +34,7 @@ export class CrawlerController extends Page {
             <div class="container">
                 <div class="row mt-3 mb-3">
                     <div class="col" align="center">
-                        <h2 class="text-dark">Information</h2>
+                        <h2 class="text-dark">Controller</h2>
                         <p></p>
                         <p style="text-align: left;">
                             This is the panel for controlling the crawler.
@@ -361,7 +363,7 @@ export class CrawlerController extends Page {
                 </div>
                 <hr>
                 <div class="row mt-3 mb-3">
-                    <div id="messages" class="col" align="center">
+                    <div id="messages" class="col">
                         <p></p>
                     </div>
                 </div>
@@ -456,8 +458,8 @@ export class CrawlerController extends Page {
         let stop = $(".cc-action-stop");
         let pause = $(".cc-action-pause");
         let continuex = $(".cc-action-continue");
-        let shutdown =$(".cc-action-shutdown"); //its always visible
-        let start = $(".cc-action-start");
+        let shutdown =$(".cc-action-shutdown"); // it's always visible
+        let start = $(".cc-action-start"); // it's always visible
 
         //the stop-method is an amition-stop
 
@@ -473,14 +475,14 @@ export class CrawlerController extends Page {
                 stop.stop(true).show(1000);
                 pause.stop(true).hide(1000);
                 continuex.stop(true).show(1000);
-                start.stop(true).hide(1000);
+                start.stop(true).show(1000);
                 shutdown.stop(true).show(1000);
                 break;
             case "running":
                 stop.stop(true).show(1000);
                 pause.stop(true).show(1000);
                 continuex.stop(true).hide(1000);
-                start.stop(true).hide(1000);
+                start.stop(true).show(1000);
                 shutdown.stop(true).show(1000);
                 break;
             case "unavailable":
@@ -597,19 +599,22 @@ export class CrawlerController extends Page {
     }
 
 
+    showMessage(message) {
+        let messages = $("#messages");
+        messages.append(message.render()).hide().fadeIn(1000);
+        $('html, body').animate({
+            scrollTop: messages.offset().top
+        }, 1000);
+    }
+
     runActionWithMessage(route, callback) {
         let self = this;
+        let messages = $("#messages");
         self.restAPIFetcherCrawler.fetchGet(route, function (event) {
             self.updateStatus();
-            self.renderMessage(
-                event.data.success, event.data.message, event.data.command
-            );
-            $('html, body').animate({
-                scrollTop: $("#messages").offset().top
-            }, 1000);
-
+            let message = new Message(event.data);
+            self.showMessage(message);
             callback(event);
-
         });
     }
 
@@ -618,115 +623,44 @@ export class CrawlerController extends Page {
         let author = $("#author").val();
         let description = $("#description").val();
         let start = $("#time-start").val();
-        let intervalHours = parseInt($("#time-interval-hours").val());
-        let intervalDays = parseInt($("#time-interval-days").val());
+        let intervalHours = $("#time-interval-hours").val();
+        let intervalDays = $("#time-interval-days").val();
         let directories = $("#directories").val();
         let platform = $("#platform").val();
-        let cpuLevel = parseInt($("#cpu-level").val());
-        let packageSize = parseInt($("#package-size").val());
+        let cpuLevel = $("#cpu-level").val();
+        let packageSize = $("#package-size").val();
         let forceUpdate = $("#force-update").val();
-        let config = {
-            "name": "",
-            "author": "",
-            "description": "",
-            "time": {
-                "start": "",
-                "interval": -1,
-            },
-            "directories": [],
-            "options": {
-                "cpu-level": "",
-                "package-size": "",
-                "platform": "",
-                "force-update": ""
+        let config = new Config(
+            name, author, description, start, intervalHours, intervalDays,
+            directories, platform, cpuLevel, packageSize, forceUpdate
+        )
+        let data = config.parse()
+        if (data === null) {
+            data = {
+                "success": false,
+                "message": "Ooops, it seems like your input directories were invalid :(",
+                "command": "config"
             }
-        };
-        // Validate input directories
-        try {
-            let splits = directories.split(";");
-            splits.forEach(function (item) {
-                let path = item.split(",")[0].trim();
-                let recursive = item.split(",")[1].trim().toLowerCase();
-                let recursive_flag = false;
-                if (recursive === "true") {
-                    recursive_flag = true;
-                } else if (recursive === "false") {
-                    recursive_flag = false;
-                } else {
-                    throw "Invalid recursive option";
-                }
-                config["directories"].push({
-                    "path": path,
-                    "recursive": recursive_flag
-                });
-            });
-        } catch (err) {
-            this.renderMessage(
-                false,
-                "Ooops, it seems like your input directories were invalid :(",
-                "config"
-            );
-            return;
-        }
-        let interval = (intervalHours * 3600) + (intervalDays * 86400);
-        config["name"] = name;
-        config["author"] = author;
-        config["description"] = description;
-        config["time"]["start"] = start;
-        config["time"]["interval"] = interval;
-        config["options"]["platform"] = platform;
-        config["options"]["cpu-level"] = cpuLevel;
-        config["options"]["package-size"] = packageSize;
-        config["options"]["force-update"] = forceUpdate === "true" ;
-        let url = `start?config=${JSON.stringify(config)}`;
-        //we hide directly
-        $("#config").hide(500);
-        $("#config-hr").hide(500);
-        console.log(url);
-        let crawlerProgressBar= $(".my-progress-bar");
-        crawlerProgressBar.css('width', `0%`);
-        crawlerProgressBar.html(`0%`);
-
-
-        let thisdata=this;
-        this.runActionWithMessage(url, function (event) {
-            if (!event.data.success) {
-                //if there is an error in the api-request, then we show it again
-
-                $("#config").stop(true).show(200);
-                $("#config-hr").stop(true).show(200);
-            } else {
-                thisdata.isSubmitted=true;
-            }
-
-        });
-
-
-    }
-
-    renderMessage(success, message, command) {
-        let alertType = "";
-        let title = "";
-        let timestamp = new Date().toLocaleString();
-        if (success) {
-            alertType = "alert-success";
-            title = "Success";
-            message = "";
+            this.showMessage(new Message(data));
         } else {
-            alertType = "alert-warning";
-            title = "Warning";
+            let url = `start?config=${JSON.stringify(data)}`;
+            //we hide directly
+            $("#config").hide(500);
+            $("#config-hr").hide(500);
+            let crawlerProgressBar= $(".my-progress-bar");
+            crawlerProgressBar.css('width', `0%`);
+            crawlerProgressBar.html(`0%`);
+            let self = this;
+            this.runActionWithMessage(url, function (event) {
+                if (!event.data.success) {
+                    //if there is an error in the api-request, then we show it again
+                    $("#config").stop(true).show(200);
+                    $("#config-hr").stop(true).show(200);
+                } else {
+                    self.isSubmitted=true;
+                }
+            });
         }
-        $("#messages").append(`
-            <div class="alert ${alertType} alert-dismissible fade show" role="alert">
-                <h4 class="alert-heading">${title} @ ${command}</h4>
-                <hr>
-                <p>${message} Time was: ${timestamp} </p>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        `);
     }
-
 
 }
