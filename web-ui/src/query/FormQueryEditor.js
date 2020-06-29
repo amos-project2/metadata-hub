@@ -126,7 +126,7 @@ export class FormQueryEditor extends Page {
                 <div>
                 <div class="form-row justify-content-md-center">
                     <div class="form-group col-md-2">
-                    <label for="fg-filter-connector-options">Filter Connector<a class="pover" title="Filter Connector" data-content="ALL AND: all filters are connected with AND<br>ALL AND: all filters are connected with OR<br>Custom Only: you can type in your own bool-expression<br> Custom with AND/OR means all filters you dont reference are append with AND/OR">[?]</a></label>
+                    <label for="fg-filter-connector-options">Filter Connector<a class="pover-filter-connector" style="cursor:pointer; color: #007bff;">[?]</a></label>
                         <select class="custom-select fg-filter-connector-options" id="fg-filter-connector-options">
                                 <option value="all-and" selected>ALL AND</option>
                                 <option value="all-or">ALL OR</option>
@@ -135,6 +135,18 @@ export class FormQueryEditor extends Page {
                                 <option value="custom-or">Custom OR</option>
                             </select>
                     </div>
+                </div>
+
+                 <div class="form-row fq-custom-filter-connector-row-description" style="display:none">
+                 <p class="text-left"><b>Filter-Connector-Description:</b>
+                   <br>You can choose here from 5 different filter-connector options. Each option connects your filter in a different way.
+                   <br><b>All AND</b> connects a filter with an AND.
+                   <br><b>ALL OR</b> connects all filter with an OR.
+                   <br><b>Custom Only</b> connects the filter in that way, you want to connect them. So you can connect some filters with an AND some others with an OR, you can also use braces to group it. If you want to negate a filter you can use a NOT
+                   <br><b>Custom And</b> connects the filter the same way Custum Only does, but appends automatically all not in your custom-input referenced filters with an AND
+                   <br><b>Custom Or</b> connects the filter the same way Custum Only does, but appends automatically all not in your custom-input referenced filters with an OR
+                   <br>
+                   </p>
                 </div>
 
                  <div class="form-row fq-custom-filter-connector-row" style="display:none">
@@ -301,6 +313,10 @@ export class FormQueryEditor extends Page {
             }
         });
 
+        $(".pover-filter-connector").click(function () {
+            $(".fq-custom-filter-connector-row-description").toggle(1000);
+        });
+
 
         //alert(datetimepicker());
         //  datetimepicker(jQuery);
@@ -452,7 +468,6 @@ export class FormQueryEditor extends Page {
             }
 
         });
-
 
 
     }
@@ -750,8 +765,6 @@ query
             }
 
         });
-
-
 
 
     }
