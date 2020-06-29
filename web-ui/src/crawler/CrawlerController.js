@@ -283,16 +283,25 @@ export class CrawlerController extends Page {
                                 <label for="time-interval" class="config-input-label">
                                     Interval
                                 </label>
-                                <div class="col-sm-10">
-                                    <input type="range" id="time-interval-hours" min="0" value="0" max="23" style="margin-right: 10%">
-                                    <input type="range" id="time-interval-days" min="0" value="0" max="31">
-                                    <p>
-                                        <span id="time-interval-hours-value">0</span>
-                                        <span> hours ; </span>
-                                        <span id="time-interval-days-value">0</span>
-                                        <span> days</span>
-
-                                    </p>
+                                <div class="col-sm-5">
+                                    <input
+                                        type="number"
+                                        class="form-control"
+                                        id="time-interval-days"
+                                        min="0"
+                                        max="31"
+                                        placeholder="Days"
+                                    >
+                                </div>
+                                <div class="col-sm-5">
+                                    <input
+                                        type="number"
+                                        class="form-control"
+                                        id="time-interval-hours"
+                                        min="0"
+                                        max="23"
+                                        placeholder="Hours"
+                                    >
                                 </div>
                             </div>
                             <div class="form-group row directories">
@@ -561,22 +570,11 @@ export class CrawlerController extends Page {
         $("#cancel-config").click(function () {
             $("#config").hide(500);
             $("#config-hr").hide(500);
-            $('#time-interval-hours-value').html("0");
-            $('#time-interval-days-value').html("0");
         });
 
         $("#clear-config").click(function () {
-            $('#time-interval-hours-value').html("0");
-            $('#time-interval-days-value').html("0");
         });
 
-        $('#time-interval-hours').on('input', function () {
-            $('#time-interval-hours-value').html(this.value);
-        });
-
-        $('#time-interval-days').on('input', function () {
-            $('#time-interval-days-value').html(this.value);
-        });
 
         $("#config-form").on("submit", function (e) {
             e.preventDefault();
