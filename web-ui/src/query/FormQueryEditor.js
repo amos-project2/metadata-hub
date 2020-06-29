@@ -321,7 +321,6 @@ export class FormQueryEditor extends Page {
         let dhis_state = this;
 
 
-
         $(".attribut-element-input").focusout(function () {
             if ($(".attribut-element-input").length < 2) {return;}
 
@@ -443,75 +442,88 @@ export class FormQueryEditor extends Page {
             }
 
         });
+
+
+        $(".fg-filter-function").change(function () {
+            if ($(this).val() === "exists") {
+                $(this).parent().parent().find(".fg-metadata-value").hide();
+            } else {
+                $(this).parent().parent().find(".fg-metadata-value").show();
+            }
+
+        });
+
+
+
     }
 
     inputValidation() {
 
         //Validate Date
-        $("#fq-createFileTimeRangeStart").focusout(function(){
+        $("#fq-createFileTimeRangeStart").focusout(function () {
 
             let startDateElement = document.getElementById("fq-createFileTimeRangeStart");
 
             let startDate = $("#fq-createFileTimeRangeStart").val();
             let endDate = $("#fq-createFileTimeRangeEnd").val();
 
-            if(startDate != "" && endDate != "" && startDate > endDate){
+            if (startDate != "" && endDate != "" && startDate > endDate) {
                 startDateElement.setCustomValidity('Start Time must be before End Time');
                 startDateElement.reportValidity();
-            }else{
+            } else {
                 startDateElement.setCustomValidity("");
             }
         })
 
-        $("#fq-createFileTimeRangeEnd").focusout(function(){
+        $("#fq-createFileTimeRangeEnd").focusout(function () {
 
             let startDateElement = document.getElementById("fq-createFileTimeRangeEnd");
 
             let startDate = $("#fq-createFileTimeRangeStart").val();
             let endDate = $("#fq-createFileTimeRangeEnd").val();
 
-            if(startDate != "" && endDate != "" && startDate > endDate){
+            if (startDate != "" && endDate != "" && startDate > endDate) {
                 startDateElement.setCustomValidity('End Time must be after Start Time');
                 startDateElement.reportValidity();
-            }else{
+            } else {
                 startDateElement.setCustomValidity("");
             }
         })
 
-        $("#fq-createFileTimeRangeStartUpdated").focusout(function(){
+        $("#fq-createFileTimeRangeStartUpdated").focusout(function () {
 
             let startDateElement = document.getElementById("fq-createFileTimeRangeStartUpdated");
 
             let startDate = $("#fq-createFileTimeRangeStartUpdated").val();
             let endDate = $("#fq-createFileTimeRangeEndUpdated").val();
 
-            if(startDate != "" && endDate != "" && startDate > endDate){
+            if (startDate != "" && endDate != "" && startDate > endDate) {
                 startDateElement.setCustomValidity('Start Time must be before End Time');
                 startDateElement.reportValidity();
-            }else{
+            } else {
                 startDateElement.setCustomValidity("");
             }
         })
 
-        $("#fq-createFileTimeRangeEndUpdated").focusout(function(){
+        $("#fq-createFileTimeRangeEndUpdated").focusout(function () {
 
             let startDateElement = document.getElementById("fq-createFileTimeRangeEndUpdated");
 
             let startDate = $("#fq-createFileTimeRangeStartUpdated").val();
             let endDate = $("#fq-createFileTimeRangeEndUpdated").val();
 
-            if(startDate != "" && endDate != "" && startDate > endDate){
+            if (startDate != "" && endDate != "" && startDate > endDate) {
                 startDateElement.setCustomValidity('End Time must be after Start Time');
                 startDateElement.reportValidity();
-            }else{
+            } else {
                 startDateElement.setCustomValidity("");
             }
         })
 
         //Limit Limit input to integer
-        $("#fq-limit").focusout(function(){
+        $("#fq-limit").focusout(function () {
             let tmpLimit = $("#fq-limit").val();
-            $("#fq-limit").val(tmpLimit.replace(/[^0-9]/g,''));
+            $("#fq-limit").val(tmpLimit.replace(/[^0-9]/g, ''));
         })
 
     }
@@ -729,15 +741,19 @@ query
 
             if (!emptyTextField) {
                 $(".fg-filetype-container").append(`
-    <div class="form-group col-md-4 fg-filetype-element">
-          <input type="text" class="form-control filetype-element-input">
-    </div>`);
-
+                    <div class="form-group col-md-4 fg-filetype-element">
+                          <input type="text" class="form-control filetype-element-input">
+                    </div>
+                `);
 
                 dhis_state.helperMethodFiletypeFilter();//IMPORTANT: re-add the listener to the new created element(s)
             }
 
         });
+
+
+
+
     }
 
 
