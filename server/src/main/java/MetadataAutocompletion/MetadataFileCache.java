@@ -42,7 +42,29 @@ public class MetadataFileCache
 //            });
 //        }
 
-        this.tagsSorted = createSortedMap(this.metadataTags);
+        Map<String, DatabaseSchemaMetadatum> tags = new HashMap<>();
+        for (MetadataFileCache value : metadataFileCacheList)
+        {
+            value.tagsSorted.forEach((key2, value2)->{
+                tags.compute(key2, (k, remapping)->{
+
+                    //add DatabaseSchemaMetadatum if key not exists
+                    if(remapping==null)return value2;
+
+                    //if exists -> merge it
+                    return remapping.merge(value2);
+                });
+            });
+        }
+
+
+        //TODO sort tags and save the result into a list or map
+
+        this.tagsSorted = tags; //its unsorted //TODO sort it or refactor it to a list
+
+
+        //TODO notice: metadataTags is empty here
+     //   this.tagsSorted = createSortedMap(this.metadataTags);
 //        this.tagsSorted = this.sortByValue(this.metadataTags);
 
 
