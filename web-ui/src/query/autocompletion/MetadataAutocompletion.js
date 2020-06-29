@@ -167,7 +167,7 @@ export class MetadataAutocompletion {
             },
             events: {
                 searchPre: function (value) {
-                    return value + "$XXX$" + getUsedAsString(0) + "$XXX$" + getFileString();
+                    return value.trim() + "$XXX$" + getUsedAsString(0) + "$XXX$" + getFileString();
                 }
             }
         });
@@ -181,10 +181,40 @@ export class MetadataAutocompletion {
             },
             events: {
                 searchPre: function (value) {
-                    return value + "$XXX$" + getUsedAsString(1) + "$XXX$" + getFileString();
+                    return value.trim() + "$XXX$" + getUsedAsString(1) + "$XXX$" + getFileString();
                 }
             }
         });
+
+        $(this.currentFilterListSelector).on('autocomplete.dd.shown', function (event) {
+            if ($(this).val() == "") {
+                $(this).val(" ");
+            }
+
+        });
+
+        $(this.currentFilterListSelector).on('autocomplete.dd.hidden', function (event) {
+            if ($(this).val() == " ") {
+                $(this).val("");
+                $(this).trigger("focusout");
+            }
+        });
+
+
+        $(this.currentMetadataListSelector).on('autocomplete.dd.shown', function (event) {
+            if ($(this).val() == "") {
+                $(this).val(" ");
+            }
+
+        });
+
+        $(this.currentMetadataListSelector).on('autocomplete.dd.hidden', function (event) {
+            if ($(this).val() == " ") {
+                $(this).val("");
+                $(this).trigger("focusout");
+            }
+        });
+
 
         //TODO fix it
         //small fix to prevent href to #/ which directs the page to 404
@@ -198,6 +228,17 @@ export class MetadataAutocompletion {
         // });
 
         // $(this.fileTypesSelector).val("bla");
+
+
+        //show the autocomplete directly if the field is selected
+        $(this.currentFilterListSelector).focusin(function () {
+            $(this).autoComplete('show');
+        });
+
+        $(this.currentMetadataListSelector).focusin(function () {
+            $(this).autoComplete('show');
+        });
+
 
     }
 
