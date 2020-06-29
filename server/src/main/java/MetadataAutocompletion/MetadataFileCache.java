@@ -42,6 +42,9 @@ public class MetadataFileCache
 //            });
 //        }
 
+
+        //be careful DatabaseSchemaMetadatum is for performance reasons not in-mutable
+        //so a deep-copy is neceassary if we want to change the data in an other context
         Map<String, DatabaseSchemaMetadatum> tags = new HashMap<>();
         for (MetadataFileCache value : metadataFileCacheList)
         {
@@ -49,7 +52,7 @@ public class MetadataFileCache
                 tags.compute(key2, (k, remapping)->{
 
                     //add DatabaseSchemaMetadatum if key not exists
-                    if(remapping==null)return value2;
+                    if(remapping==null)return value2.copy();
 
                     //if exists -> merge it
                     return remapping.merge(value2);

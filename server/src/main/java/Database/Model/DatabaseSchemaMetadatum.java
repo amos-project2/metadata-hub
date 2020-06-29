@@ -35,5 +35,11 @@ public class DatabaseSchemaMetadatum implements Comparable<DatabaseSchemaMetadat
 
         return this;
     }
+
+    public DatabaseSchemaMetadatum copy()
+    {
+        //deep-copy
+        return new DatabaseSchemaMetadatum(this.attribute, this.occurrence, this.valueDatatype);
+    }
 }
 
