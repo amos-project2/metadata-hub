@@ -94,14 +94,11 @@ export class CrawlerScheduler extends Page {
             if (response.success) {
                 self.update(self.hideTimeout);
             }
-            $("#remove-id").val("");
         });
     }
 
     appendSchedule(tasks) {
-        let self = this;
         let schedule = $("#schedule");
-        let taskHTML = "";
         let task = null;
         tasks.forEach(function(value, index, arr) {
             task = new Task(value);
