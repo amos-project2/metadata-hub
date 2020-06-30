@@ -319,10 +319,7 @@ class Worker(multiprocessing.Process):
         # Update the values in the 'metadata' table
         try:
             # Create a comprehensive dictionary of all updates to be made in the 'metadata' table
-            print("ABC")
             metadata_list = self.create_metadata_list([json.loads(j[5]) for j in inserts])
-            print("HI")
-            print(metadata_list)
             # Put the new information into the database
             self._db_connection.update_metadata(metadata_list)
         except:
