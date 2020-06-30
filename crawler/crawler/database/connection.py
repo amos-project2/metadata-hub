@@ -448,7 +448,6 @@ class DatabaseConnection:
                     if entry[1] not in metadata_dict.keys():
                         metadata_dict[entry[1]] = {}
                     for file_result in entry[0]:
-                        print(metadata_dict[entry[1]])
                         if file_result not in metadata_dict[entry[1]]:
                             metadata_dict[entry[1]][file_result] = [0, self.output_type(entry[0][file_result])]
                         metadata_dict[entry[1]][file_result][0] += 1
@@ -478,7 +477,7 @@ class DatabaseConnection:
                 to_update = file_type[1]
                 merger = metadata[file_type[0]]
                 for key in merger.keys():
-                    to_update[key] = int(file_type[1][key]) - merger[key]
+                    to_update[key] = int(file_type[1][key][0]) - merger[key][0]
                 query = 'UPDATE metadata SET "tags" = %s WHERE "file_type" = %s;'
                 query = curs.mogrify(query, (json.dumps(to_update), file_type[0]))
                 curs.execute(query)
