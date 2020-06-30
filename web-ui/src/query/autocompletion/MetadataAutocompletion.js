@@ -9,7 +9,8 @@ var autocompleter = require('bootstrap-autocomplete');
  */
 export class MetadataAutocompletion {
 
-    constructor(restApiFetcherServer, graphQlFetcher, fileTypesSelector, currentFilterListSelector, currentMetadataListSelector, modalOpenerSelector) {
+    constructor(restApiFetcherServer, graphQlFetcher, fileTypesSelector,
+                currentFilterListSelector, currentMetadataListSelector, modalOpenerSelector) {
         this.restApiFetcherServer = restApiFetcherServer;
         this.graphQlFetcher = graphQlFetcher;
         this.fileTypesSelector = fileTypesSelector;
@@ -146,6 +147,7 @@ export class MetadataAutocompletion {
             existing.forEach(element => {
                 resultString += element + "$X$";
             });
+            if (resultString === "") resultString = " ";
             return resultString;
         }
 
@@ -155,98 +157,80 @@ export class MetadataAutocompletion {
             thisdata.fileTypes.forEach(element => {
                 resultString += element + "$X$";
             });
+
+            if (resultString === "") resultString = " ";
             return resultString;
         }
 
-        // $(this.currentFilterListSelector).off('autocomplete');
-        // $.removeData($(this.currentFilterListSelector));
-        $(this.currentFilterListSelector).autoComplete({
-            preventEnter: true,
-            minLength: 0,
-            resolverSettings: {
-                //url: 'http://localhost:8080/api/metadata-autocomplete/suggestions/?type=0&used=' + encodeURIComponent(getUsedAsString(0)) + '&files=' + encodeURIComponent(getFileString()) //TODO its hardcoded use config server-url
-                url: 'http://localhost:8080/api/metadata-autocomplete/suggestions/'
-            },
-            events: {
-                searchPre: function (value) {
-                    //alert("hier drinnen");
-                    return value.trim() + "$XXX$" + getUsedAsString(0) + "$XXX$" + getFileString();
+
+        function autoCompleteBuilder(method, func) {
+            return {
+                preventEnter: true,
+                minLength: 0,
+                resolverSettings: {
+                    url: 'http://localhost:8080/api/metadata-autocomplete/' + method,
+                    requestThrottling: 100
+                },
+                events: {
+                    searchPre: func
                 }
             }
-        });
+        }
 
-        $(this.currentMetadataListSelector).autoComplete({
-            preventEnter: true,
-            minLength: 0,
-            resolverSettings: {
-                //url: 'http://localhost:8080/api/metadata-autocomplete/suggestions/?type=1&used=' + encodeURIComponent(getUsedAsString(1)) + '&files=' + encodeURIComponent(getFileString()) //TODO its hardcoded use config server-url
-                url: 'http://localhost:8080/api/metadata-autocomplete/suggestions/'
-            },
-            events: {
-                searchPre: function (value) {
-                    return value.trim() + "$XXX$" + getUsedAsString(1) + "$XXX$" + getFileString();
-                }
-            }
-        });
+        $(this.currentFilterListSelector).autoComplete(autoCompleteBuilder("suggestions", value => {
+            return value.trim() + "$XXX$" + getUsedAsString(0) + "$XXX$" + getFileString();
+        }));
 
-        $(this.currentFilterListSelector).on('autocomplete.dd.shown', function (event) {
+
+        $(this.currentMetadataListSelector).autoComplete(autoCompleteBuilder("suggestions", value => {
+            return value.trim() + "$XXX$" + getUsedAsString(1) + "$XXX$" + getFileString();
+        }));
+
+        $(this.fileTypesSelector).autoComplete(autoCompleteBuilder("filetype-suggestions", value => {
+            return value.trim() + "$XXX$" + getFileString();
+        }));
+
+
+        function ddShown(event) {
             if ($(this).val() == "") {
                 $(this).val(" ");
             }
+        }
 
-        });
-
-        $(this.currentFilterListSelector).on('autocomplete.dd.hidden', function (event) {
+        function ddHidden(event) {
             if ($(this).val() == " ") {
                 $(this).val("");
                 $(this).trigger("focusout");
             }
-        });
+            thisdata.reAddListener();
+        }
 
 
-        $(this.currentMetadataListSelector).on('autocomplete.dd.shown', function (event) {
-            if ($(this).val() == "") {
-                $(this).val(" ");
-            }
+        $(this.currentFilterListSelector).on('autocomplete.dd.shown', ddShown);
+        $(this.currentFilterListSelector).on('autocomplete.dd.hidden', ddHidden);
 
-        });
+        $(this.currentMetadataListSelector).on('autocomplete.dd.shown', ddShown);
+        $(this.currentMetadataListSelector).on('autocomplete.dd.hidden', ddHidden);
 
-        $(this.currentMetadataListSelector).on('autocomplete.dd.hidden', function (event) {
-            if ($(this).val() == " ") {
-                $(this).val("");
-                $(this).trigger("focusout");
-            }
-        });
-
-
-        //TODO fix it
-        //small fix to prevent href to #/ which directs the page to 404
-        // $(this.fileTypesSelector).on('autocomplete.select', function(event) {
-        //     console.log(event);
-        //     event.preventDefault();
-        //     alert("shown");
-        //     $("a").click(function(event2){
-        //          event2.preventDefault();
-        //      });
-        // });
-
-        // $(this.fileTypesSelector).val("bla");
+        $(this.fileTypesSelector).on('autocomplete.dd.shown', ddShown);
+        $(this.fileTypesSelector).on('autocomplete.dd.hidden', ddHidden);
 
 
         //show the autocomplete directly if the field is selected
-        $(this.currentFilterListSelector).focusin(function () {
+
+        function showDirect() {
             $(this).autoComplete('show');
-        });
+        }
 
-        $(this.currentMetadataListSelector).focusin(function () {
-            $(this).autoComplete('show');
-        });
+        $(this.currentFilterListSelector).focusin(showDirect);
+        $(this.currentMetadataListSelector).focusin(showDirect);
+        $(this.fileTypesSelector).focusin(showDirect);
 
 
-        console.log(
-            '$element events:',
-            $._data($(this.currentFilterListSelector).get(0), 'events')
-        );
+        // console.log(
+        //     '$element events:',
+        //     $._data($(this.currentFilterListSelector).get(0), 'events')
+        // );
 
     }
 

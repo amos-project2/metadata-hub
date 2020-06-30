@@ -29,8 +29,11 @@ public class MetadataAutocompletionService
     }
 
 
-    public List<String> request(List<String> fileTypes, List<String> usedSearch, String search, int count)
+    //it is ok having here so much arguments, because its a request-method -> a refactor to an request-object as input would be possible
+    public List<String> request(List<String> fileTypes, List<String> usedSearch, String search, int count, boolean fillToCount)
     {
+        System.out.println(fileTypes+"BLA");
+        System.out.println(fileTypes.size());
 
         String fileTypesAsString = this.getFileTypesAsConcatenatedString(fileTypes);
         MetadataFileCache metadataFileCache;
@@ -44,7 +47,7 @@ public class MetadataAutocompletionService
             {
                 metadataFileCache = cache.computeIfAbsent(fileTypesAsString, (key) ->
                 {
-                    return new MetadataFileCache("JPG", this.database);
+                    return new MetadataFileCache("JPEG", this.database);
                 });
             }
             else if (fileTypes.size() == 1)
@@ -86,13 +89,15 @@ public class MetadataAutocompletionService
             result.add(key);
         });
 
-        while (result.size() < count)
+        if (fillToCount)
         {
-            if (resultBackup.size() == 0) break;
-            result.add(resultBackup.get(0));
-            resultBackup.remove(0);
+            while (result.size() < count)
+            {
+                if (resultBackup.size() == 0) break;
+                result.add(resultBackup.get(0));
+                resultBackup.remove(0);
+            }
         }
-
 
         System.out.println(result.toString());
         return result;

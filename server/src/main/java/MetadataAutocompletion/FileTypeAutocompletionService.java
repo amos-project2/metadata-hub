@@ -35,10 +35,11 @@ public class FileTypeAutocompletionService
 
         ArrayList<String> ret = new ArrayList<String>();
         String file_type;
+
         try (Connection con = database.gC())
         {
-            PreparedStatement preparedStatement = con.prepareStatement("SELECT file_type FROM public.metadata WHERE file_type ILIKE '%?%'");
-            preparedStatement.setString(1, search);
+            PreparedStatement preparedStatement = con.prepareStatement("SELECT file_type FROM public.metadata WHERE file_type ILIKE ?");
+            preparedStatement.setString(1, "%" + search + "%");
             ResultSet resultSet = preparedStatement.executeQuery();
 
 
@@ -73,7 +74,7 @@ public class FileTypeAutocompletionService
         try (Connection con = database.gC())
         {
             PreparedStatement preparedStatement;
-            if(limit==-1)
+            if (limit == -1)
             {
                 preparedStatement = con.prepareStatement("SELECT file_type FROM public.metadata WHERE true offset ?;");
                 preparedStatement.setLong(1, offset);
@@ -94,7 +95,6 @@ public class FileTypeAutocompletionService
         }
         return ret;
     }
-
 
 
 }
