@@ -420,6 +420,18 @@ class DatabaseConnection:
             self.con.rollback()
             raise
 
+    def output_type(self, to_check: str):
+        """Determine whether the output value of a file is a digit or a string
+        Args:
+            to_check (str): The string variant of the value
+        Returns:
+            float representation if conversion is possible, string otherwise
+        """
+        try:
+            checked = float(to_check)
+            return 'dig'
+        except:
+            return 'str'
 
     def decrease_dynamic(self, ids: List[int]) -> None:
         """
@@ -436,9 +448,10 @@ class DatabaseConnection:
                     if entry[1] not in metadata_dict.keys():
                         metadata_dict[entry[1]] = {}
                     for file_result in entry[0]:
+                        print(metadata_dict[entry[1]])
                         if file_result not in metadata_dict[entry[1]]:
-                            metadata_dict[entry[1]][file_result] = 0
-                        metadata_dict[entry[1]][file_result] += 1
+                            metadata_dict[entry[1]][file_result] = [0, self.output_type(entry[0][file_result])]
+                        metadata_dict[entry[1]][file_result][0] += 1
             except Exception as e:
                 raise
             return metadata_dict
