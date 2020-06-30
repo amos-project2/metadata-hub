@@ -1,10 +1,12 @@
 package MetadataAutocompletion;
 
 import Database.Database;
+import Database.Model.DatabaseSchemaMetadatum;
 import com.google.inject.Inject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -62,7 +64,8 @@ public class MetadataAutocompletion
         ArrayList<String> result = new ArrayList<>();
         ArrayList<String> resultBackup = new ArrayList<>();
         AtomicInteger counter = new AtomicInteger(0);//TODO replace through a cheaper Integer-Wrapper, cause atomic is here not necessary
-        metadataFileCache.tagsSorted.forEach((key, value) ->
+        Map<String, DatabaseSchemaMetadatum> sortedTagsMap = metadataFileCache.getTagsSorted();
+        sortedTagsMap.forEach((key, value) ->
         {
             if (counter.get() >= count) return;
             if (usedSearch.contains(key.toLowerCase())) return;
@@ -88,6 +91,7 @@ public class MetadataAutocompletion
         }
 
 
+        System.out.println(result.toString());
         return result;
 
     }

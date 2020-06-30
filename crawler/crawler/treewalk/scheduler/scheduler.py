@@ -112,7 +112,16 @@ class TreeWalkScheduler(threading.Thread):
 
         def get_intervals() -> None:
             """Helper method: get all intervals."""
-            intervals = [interval.to_json() for interval in self._intervals]
+            if self._current_interval is None:
+                intervals = [interval.to_json() for interval in self._intervals]
+                responses.respond_intervals(intervals)
+                return
+            intervals = [
+                interval.to_json()
+                for interval in self._intervals
+                if interval._identifier != self._current_interval._identifier
+            ]
+            intervals.append(self._current_interval.to_json())
             responses.respond_intervals(intervals)
 
         functions = {
