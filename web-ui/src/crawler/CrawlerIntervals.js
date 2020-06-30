@@ -37,7 +37,7 @@ export class CrawlerIntervals extends Page {
                 each item. They are periodically defined for each week.
                 The page is refreshed every <strong>60</strong> or
                 upon adding/deleting time intervals. If you want to update it
-                manually, just click on the tab at the top right corner again.
+                manually, just click the refresh button.
             </p>
         `;
     }
@@ -71,6 +71,9 @@ export class CrawlerIntervals extends Page {
         $(`#${this.intervalForm.formID}`).on("submit", function (e) {
             e.preventDefault();
             self.addInterval();
+        });
+        $(`#${this.intervalForm.refreshID}`).on("click", function (e) {
+            self.update(self.hideTimeout)
         });
         $(document).on('click', `.${Interval.getClassButtonRemove()}`, function() {
             let identifier = $(this).data("identifier");
