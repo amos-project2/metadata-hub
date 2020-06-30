@@ -272,12 +272,34 @@ export class CrawlerController extends Page {
                                 </div>
                             </div>
                             <div class="form-group row time-start">
-                                <label for="time-start" class="config-input-label">
-                                    Start
-                                </label>
-                                <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="time-start">
-                                </div>
+
+
+                                <div class="input-group mb-2">
+                                        <label for="time-start-select" class="config-input-label">
+                                            Start
+                                        </label>
+                                        <div class="col-sm-10">
+                                        <div class="input-group-prepend">
+                                            <select class="custom-select fg-filter-function" id="time-start-select">
+                                                <option selected value="now">Start Now</option>
+                                                <option value="later">Start Later (Scheduled)</option>
+                                            </select>
+                                        </div>
+<!--                                        <input type="text" class="form-control fg-metadata-attribute" placeholder="Metadata-Attribute">-->
+                                        <input type="text" class="form-control " id="time-start">
+                                        </div>
+                                 </div>
+
+
+
+<!--                                <label for="time-start" class="config-input-label">-->
+<!--                                    Start-->
+<!--                                </label>-->
+<!--                                <div class="col-sm-10">-->
+<!--                                    <input type="text" class="form-control" id="time-start">-->
+<!--                                </div>-->
+
+
                             </div>
 
                             <div class="form-group row time-interval">
