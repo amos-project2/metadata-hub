@@ -55,7 +55,7 @@ export class CrawlerIntervals extends Page {
                     </div>
                 </div>
                 <div class="row mt-3 mb-3">
-                    <div id="messages" class="col">
+                    <div id="messages-interval" class="col">
                     </div>
                 </div>
                 <div class="row mt-3 mb-3">
@@ -139,10 +139,12 @@ export class CrawlerIntervals extends Page {
         let end = `${endDay}:${endHours}:${endMinutes}`;
         let url = `intervals/add?start=${start}&end=${end}&cpu=${cpu}`;
         let self = this;
-        let messages = $("#messages");
+        let messages = $("#messages-interval");
         self.restAPIFetcherCrawler.fetchGet(url, function (event) {
             let message = new Message(event.data);
-            messages.append(message.render()).hide().fadeIn(self.hideTimeout);
+            messages.append(message.render());//.hide().fadeIn(self.hideTimeout);
+            message.fadeIn(self.hideTimeout);
+
             if (message.success) {
                 self.update(self.hideTimeout);
             }
@@ -152,11 +154,12 @@ export class CrawlerIntervals extends Page {
     removeInterval(identifier) {
         let self = this;
         let url = `intervals/remove?id=${identifier}`;
-        let messages = $("#messages");
+        let messages = $("#messages-interval");
         this.restAPIFetcherCrawler.fetchGet(url, function (event) {
             let response = event.data;
             let message = new Message(response);
-            messages.append(message.render()).hide().fadeIn(self.hideTimeout);
+            messages.append(message.render());//.hide().fadeIn(self.hideTimeout);
+            message.fadeIn(self.hideTimeout);
             if (response.success) {
                 self.update(self.hideTimeout);
             }

@@ -391,7 +391,7 @@ export class CrawlerController extends Page {
                 </div>
                 <hr>
                 <div class="row mt-3 mb-3">
-                    <div id="messages" class="col">
+                    <div id="messages-controller" class="col">
                         <p></p>
                     </div>
                 </div>
@@ -645,8 +645,9 @@ export class CrawlerController extends Page {
 
 
     showMessage(message) {
-        let messages = $("#messages");
-        messages.append(message.render()).hide().fadeIn(1000);
+        let messages = $("#messages-controller");
+        messages.append(message.render());//.hide().fadeIn(1000);
+        message.fadeIn();
         $('html, body').animate({
             scrollTop: messages.offset().top
         }, 1000);
@@ -654,7 +655,7 @@ export class CrawlerController extends Page {
 
     runActionWithMessage(route, callback) {
         let self = this;
-        let messages = $("#messages");
+       // let messages = $("#messages-controller");
         self.restAPIFetcherCrawler.fetchGet(route, function (event) {
             self.updateStatus();
             let message = new Message(event.data);
