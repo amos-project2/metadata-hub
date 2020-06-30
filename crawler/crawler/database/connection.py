@@ -398,10 +398,11 @@ class DatabaseConnection:
                 # increase the values of each entry according to the new files
                 for tag in entry[1]:
                     if tag in updates.keys():
-                        entry[1][tag] = int(entry[1][tag]) + int(updates[tag])
+                        entry[1][tag][0] = int(entry[1][tag][0]) + int(updates[tag][0])
                         del updates[tag]
+                # Tag doesn't exist yet
                 for tag in updates:
-                    entry[1][tag] = int(updates[tag])
+                    entry[1][tag] = [int(updates[tag][0]), '?']
                 del additions[file_type]
                 query = curs.mogrify(query, (json.dumps(entry[1]), file_type))
                 curs.execute(query)
@@ -413,7 +414,8 @@ class DatabaseConnection:
                 curs.execute(query)
             curs.close()
             self.con.commit()
-        except:
+        except Exception as e:
+            print(e)
             _logger.warning("Error increasing the values of the metadata table!")
             # TODO Make sure the main method knows a reevaluate method should be called
             curs.close()
@@ -477,7 +479,7 @@ class DatabaseConnection:
                 to_update = file_type[1]
                 merger = metadata[file_type[0]]
                 for key in merger.keys():
-                    to_update[key] = int(file_type[1][key][0]) - merger[key][0]
+                    to_update[key][0] = int(file_type[1][key][0]) - merger[key][0]
                 query = 'UPDATE metadata SET "tags" = %s WHERE "file_type" = %s;'
                 query = curs.mogrify(query, (json.dumps(to_update), file_type[0]))
                 curs.execute(query)
