@@ -177,14 +177,16 @@ export class MetadataAutocompletion {
             }
         }
 
-        $(this.currentFilterListSelector).autoComplete(autoCompleteBuilder("suggestions", value => {
+
+        $(this.currentFilterListSelector).not(".autocompleteAdded").autoComplete(autoCompleteBuilder("suggestions", value => {
             return value.trim() + "$XXX$" + getUsedAsString(0) + "$XXX$" + getFileString();
         }));
 
 
-        $(this.currentMetadataListSelector).autoComplete(autoCompleteBuilder("suggestions", value => {
+        $(this.currentMetadataListSelector).not(".autocompleteAdded").autoComplete(autoCompleteBuilder("suggestions", value => {
             return value.trim() + "$XXX$" + getUsedAsString(1) + "$XXX$" + getFileString();
         }));
+
 
         $(this.fileTypesSelector).autoComplete(autoCompleteBuilder("filetype-suggestions", value => {
             return value.trim() + "$XXX$" + getFileString();
@@ -206,14 +208,14 @@ export class MetadataAutocompletion {
         }
 
 
-        $(this.currentFilterListSelector).on('autocomplete.dd.shown', ddShown);
-        $(this.currentFilterListSelector).on('autocomplete.dd.hidden', ddHidden);
+        $(this.currentFilterListSelector).not(".autocompleteAdded").on('autocomplete.dd.shown', ddShown);
+        $(this.currentFilterListSelector).not(".autocompleteAdded").on('autocomplete.dd.hidden', ddHidden);
 
-        $(this.currentMetadataListSelector).on('autocomplete.dd.shown', ddShown);
-        $(this.currentMetadataListSelector).on('autocomplete.dd.hidden', ddHidden);
+        $(this.currentMetadataListSelector).not(".autocompleteAdded").on('autocomplete.dd.shown', ddShown);
+        $(this.currentMetadataListSelector).not(".autocompleteAdded").on('autocomplete.dd.hidden', ddHidden);
 
-        $(this.fileTypesSelector).on('autocomplete.dd.shown', ddShown);
-        $(this.fileTypesSelector).on('autocomplete.dd.hidden', ddHidden);
+        $(this.fileTypesSelector).not(".autocompleteAdded").on('autocomplete.dd.shown', ddShown);
+        $(this.fileTypesSelector).not(".autocompleteAdded").on('autocomplete.dd.hidden', ddHidden);
 
 
         //show the autocomplete directly if the field is selected
@@ -222,9 +224,14 @@ export class MetadataAutocompletion {
             $(this).autoComplete('show');
         }
 
-        $(this.currentFilterListSelector).focusin(showDirect);
-        $(this.currentMetadataListSelector).focusin(showDirect);
-        $(this.fileTypesSelector).focusin(showDirect);
+        $(this.currentFilterListSelector).not(".autocompleteAdded").focusin(showDirect);
+        $(this.currentMetadataListSelector).not(".autocompleteAdded").focusin(showDirect);
+        $(this.fileTypesSelector).not(".autocompleteAdded").focusin(showDirect);
+
+        $(this.currentFilterListSelector).not(".autocompleteAdded").addClass("autocompleteAdded");
+        $(this.currentMetadataListSelector).not(".autocompleteAdded").addClass("autocompleteAdded");
+        $(this.fileTypesSelector).not(".autocompleteAdded").not(".autocompleteAdded").addClass("autocompleteAdded");
+
 
 
         // console.log(
