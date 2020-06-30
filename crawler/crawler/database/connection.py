@@ -402,7 +402,7 @@ class DatabaseConnection:
                         del updates[tag]
                 # Tag doesn't exist yet
                 for tag in updates:
-                    entry[1][tag] = [int(updates[tag][0]), '?']
+                    entry[1][tag] = [int(updates[tag][0]), updates[tag][1]]
                 del additions[file_type]
                 query = curs.mogrify(query, (json.dumps(entry[1]), file_type))
                 curs.execute(query)
