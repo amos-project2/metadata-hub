@@ -46,7 +46,7 @@ export class FormQueryEditor extends Page {
                     </div>
                     <div class="form-group col-md-6">
                         <label for="fq-owner">Owner <a class="pover" title="Owner" data-content="The Owner, which is saved with the query here into the database.">[?]</a></label>
-                        <input type="text" class="form-control" id="fq-owner" >
+                        <input type="text" class="form-control" id="fq-owner" value="${localStorage.getItem("username")}" disabled>
                     </div>
                 </div>
 
@@ -555,7 +555,7 @@ export class FormQueryEditor extends Page {
 
     inputSuggestion() {
         //Set owner to user
-        $("#fq-owner").val(localStorage.getItem("username"))
+        //$("#fq-owner").val(localStorage.getItem("username"))
     }
 
 

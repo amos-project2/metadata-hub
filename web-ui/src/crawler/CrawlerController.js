@@ -260,7 +260,7 @@ export class CrawlerController extends Page {
                                     Author
                                 </label>
                                 <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="author">
+                                    <input type="text" class="form-control" id="author" value="${localStorage.getItem("username")}" disabled>
                                 </div>
                             </div>
                             <div class="form-group row description">
@@ -342,7 +342,7 @@ export class CrawlerController extends Page {
                                     Package-Size
                                 </label>
                                 <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="package-size">
+                                    <input type="text" class="form-control" id="package-size" >
                                 </div>
                             </div>
                             <div class="form-group row force-update">
@@ -562,7 +562,7 @@ export class CrawlerController extends Page {
         $("#start-button").click(function () {
             $("#config").show(200);
             $("#config-hr").show(200);
-            $("#author").val(localStorage.getItem("username"));
+            //$("#author").val(localStorage.getItem("username"));
             $("#package-size").val(100);
             $("#time-start").val(self.getCurrentTimestampLocalTime());
             self.progressedWithoutCriticalUserInteraction=false;
@@ -619,7 +619,7 @@ export class CrawlerController extends Page {
 
     submitConfig(event) {
         let name = $("#name").val();
-        let author = $("#author").val();
+        let author = localStorage.getItem("username"); //$("#author").val();
         let description = $("#description").val();
         let start = $("#time-start").val();
         let intervalHours = $("#time-interval-hours").val();
