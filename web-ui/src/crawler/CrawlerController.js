@@ -24,8 +24,8 @@ export class CrawlerController extends Page {
         this.infoTimer = null;
         this.crawlerLastInfoState = "null";
         this.lastUserAction = "null";
-        this.progressedWithoutCriticalUserInteraction=false;
-        this.isSubmitted=false;
+        this.progressedWithoutCriticalUserInteraction = false;
+        this.isSubmitted = false;
 
     }
 
@@ -272,23 +272,19 @@ export class CrawlerController extends Page {
                                 </div>
                             </div>
                             <div class="form-group row time-start">
-
-
-                                <div class="input-group mb-2">
                                         <label for="time-start-select" class="config-input-label">
                                             Start
                                         </label>
-                                        <div class="col-sm-10">
-                                        <div class="input-group-prepend">
-                                            <select class="custom-select fg-filter-function" id="time-start-select">
+                                        <div class="col-sm-10 time-select-container">
+                                            <select class="custom-select" id="time-start-select">
                                                 <option selected value="now">Start Now</option>
                                                 <option value="later">Start Later (Scheduled)</option>
                                             </select>
                                         </div>
+                                        <div class="col-sm-6 time-start-container" style="display:none;">
 <!--                                        <input type="text" class="form-control fg-metadata-attribute" placeholder="Metadata-Attribute">-->
-                                        <input type="text" class="form-control " id="time-start">
+                                        <input type="datetime-local" class="form-control " id="time-start">
                                         </div>
-                                 </div>
 
 
 
@@ -403,11 +399,25 @@ export class CrawlerController extends Page {
         `;
     }
 
+    //2020-06-30 14:17:11
     getCurrentTimestampLocalTime() {
-        let currentTime = new Date();
-        let offset = currentTime.getTimezoneOffset() * 60000;
-        let local = new Date(currentTime - offset);
-        return local.toISOString().slice(0, 19).replace('T', ' ');
+        return "1970-01-01 00:00:00";
+        // let currentTime = new Date();
+        // let offset = currentTime.getTimezoneOffset() * 60000;
+        // let local = new Date(currentTime - offset);
+        // return local.toISOString().slice(0, 19).replace('T', ' ');
+    }
+
+    convertTime(timeValue) {
+        try {
+            let currentTime = new Date(timeValue);
+            let offset = currentTime.getTimezoneOffset() * 60000;
+            let local = new Date(currentTime - offset);
+            return local.toISOString().slice(0, 19).replace('T', ' ');
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
     }
 
     updateStatus() {
@@ -415,7 +425,7 @@ export class CrawlerController extends Page {
         this.restAPIFetcherCrawler.fetchGet("info", function (event) {
             let crawlerStatus = $("#crawler-status");
             let crawlerProgress = $("#crawler-progress");
-            let crawlerProgressBar= $(".my-progress-bar");
+            let crawlerProgressBar = $(".my-progress-bar");
             let crawlerConfig = $("#config-value");
             if (event.status !== 1) {
                 crawlerStatus.removeClass();
@@ -446,7 +456,7 @@ export class CrawlerController extends Page {
                 return;
             }
             let progress = event.data.message.progress;
-            thisdata.progressedWithoutCriticalUserInteraction=true;
+            thisdata.progressedWithoutCriticalUserInteraction = true;
             crawlerProgress.html(`. Progress is ${progress} %.`);
             crawlerProgressBar.css('width', `${progress}%`);
             crawlerProgressBar.html(`${progress}%`);
@@ -461,8 +471,8 @@ export class CrawlerController extends Page {
     }
 
     update100PercentProgressBar(crawlerState) {
-        if(this.isSubmitted && crawlerState==="ready"){
-            let crawlerProgressBar= $(".my-progress-bar");
+        if (this.isSubmitted && crawlerState === "ready") {
+            let crawlerProgressBar = $(".my-progress-bar");
             crawlerProgressBar.css('width', `100%`);
             crawlerProgressBar.html(`100%`);
         }
@@ -477,9 +487,7 @@ export class CrawlerController extends Page {
         // }
 
 
-
-        this.isSubmitted=false;
-
+        this.isSubmitted = false;
 
 
     }
@@ -490,7 +498,7 @@ export class CrawlerController extends Page {
         let stop = $(".cc-action-stop");
         let pause = $(".cc-action-pause");
         let continuex = $(".cc-action-continue");
-        let shutdown =$(".cc-action-shutdown"); // it's always visible
+        let shutdown = $(".cc-action-shutdown"); // it's always visible
         let start = $(".cc-action-start"); // it's always visible
 
         //the stop-method is an amition-stop
@@ -563,22 +571,22 @@ export class CrawlerController extends Page {
         $("#continue-button").click(function () {
             self.lastUserAction = "continue";
             self.runActionWithMessage("continue");
-            self.progressedWithoutCriticalUserInteraction=true;
+            self.progressedWithoutCriticalUserInteraction = true;
         });
         $("#pause-button").click(function () {
             self.lastUserAction = "pause";
             self.runActionWithMessage("pause");
-            self.progressedWithoutCriticalUserInteraction=false;
+            self.progressedWithoutCriticalUserInteraction = false;
         });
         $("#stop-button").click(function () {
             self.lastUserAction = "stop";
             self.runActionWithMessage("stop");
-            self.progressedWithoutCriticalUserInteraction=false;
+            self.progressedWithoutCriticalUserInteraction = false;
         });
         $("#shutdown-button").click(function () {
             self.lastUserAction = "shutdown";
             self.runActionWithMessage("shutdown");
-            self.progressedWithoutCriticalUserInteraction=false;
+            self.progressedWithoutCriticalUserInteraction = false;
         });
 
         $("#start-button").click(function () {
@@ -586,8 +594,8 @@ export class CrawlerController extends Page {
             $("#config-hr").show(200);
             //$("#author").val(localStorage.getItem("username"));
             $("#package-size").val(100);
-            $("#time-start").val(self.getCurrentTimestampLocalTime());
-            self.progressedWithoutCriticalUserInteraction=false;
+            //$("#time-start").val(self.getCurrentTimestampLocalTime());
+            self.progressedWithoutCriticalUserInteraction = false;
         });
 
         $("#cancel-config").click(function () {
@@ -603,6 +611,22 @@ export class CrawlerController extends Page {
             e.preventDefault();
             self.submitConfig(e);
         });
+
+        $("#time-start-select").change(function () {
+            if ($(this).val() === "now") {
+                $(".time-select-container").addClass("col-sm-10");
+                $(".time-select-container").removeClass("col-sm-4");
+                $(".time-start-container").hide();
+
+            } else {
+
+                $(".time-select-container").addClass("col-sm-4");
+                $(".time-select-container").removeClass("col-sm-10");
+                $(".time-start-container").show();
+            }
+        });
+
+
     }
 
     //this method is called each time the user open/go-back to the page here
@@ -643,7 +667,29 @@ export class CrawlerController extends Page {
         let name = $("#name").val();
         let author = localStorage.getItem("username"); //$("#author").val();
         let description = $("#description").val();
-        let start = $("#time-start").val();
+        let start;
+
+        if ($("#time-start-select").val() === "now") {
+            start = this.getCurrentTimestampLocalTime();
+        } else {
+
+            let timeInputValue = $("#time-start").val();
+            start = this.convertTime(timeInputValue);
+            if (start === null) {
+
+                let data = {
+                    "success": false,
+                    "message": "You selected the option <b>Start Scheduled</b>. Please insert a valid DateTime",
+                    "command": "config"
+                };
+                this.showMessage(new Message(data));
+                return;
+
+            }
+
+
+        }
+
         let intervalHours = $("#time-interval-hours").val();
         let intervalDays = $("#time-interval-days").val();
         let directories = $("#directories").val();
@@ -668,7 +714,7 @@ export class CrawlerController extends Page {
             //we hide directly
             $("#config").hide(500);
             $("#config-hr").hide(500);
-            let crawlerProgressBar= $(".my-progress-bar");
+            let crawlerProgressBar = $(".my-progress-bar");
             crawlerProgressBar.css('width', `0%`);
             crawlerProgressBar.html(`0%`);
             let self = this;
@@ -678,7 +724,7 @@ export class CrawlerController extends Page {
                     $("#config").stop(true).show(200);
                     $("#config-hr").stop(true).show(200);
                 } else {
-                    self.isSubmitted=true;
+                    self.isSubmitted = true;
                 }
             });
         }
