@@ -34,6 +34,23 @@ public class MetadataAutocompletionController
         this.fileTypeAutocompletionService = fileTypeAutocompletionService;
     }
 
+    @GET
+    @Produces("application/json")
+    @Path("/datatype")
+    public String getMetadataDatatype(@QueryParam("q") String query) throws JsonProcessingException
+    {
+        System.out.println("Query =" + query);
+
+        String[] split = query.split("\\$XXX\\$");
+        String metadataTag = split[0].toLowerCase().trim();
+        String fileTypes = split[1].toUpperCase().trim();
+
+        String datatype = metadataAutocompletionService.getMetadataDatatype(this.createList(fileTypes,true), metadataTag);
+
+        String json = new ObjectMapper().writeValueAsString(datatype);
+        System.out.println(json);
+        return json;
+    }
 
     @GET
     @Produces("application/json")

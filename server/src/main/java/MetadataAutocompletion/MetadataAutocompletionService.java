@@ -3,6 +3,7 @@ package MetadataAutocompletion;
 import Database.Database;
 import Database.Model.MetadataInfo;
 import com.google.inject.Inject;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,36 +37,8 @@ public class MetadataAutocompletionService
         System.out.println(fileTypes.size());
 
         String fileTypesAsString = this.getFileTypesAsConcatenatedString(fileTypes);
-        MetadataFileCache metadataFileCache;
+        MetadataFileCache metadataFileCache = getMetadataInfoCache(fileTypes, fileTypesAsString);
 
-
-        //synchronized (this) //not needed i think
-        {
-            //TODO all-fileTypes
-            //fallback for now to jpg
-            if (fileTypes.size() == 0)
-            {
-                metadataFileCache = cache.computeIfAbsent(fileTypesAsString, (key) ->
-                {
-                    return new MetadataFileCache("JPEG", this.database);
-                });
-            }
-            else if (fileTypes.size() == 1)
-            {
-                metadataFileCache = cache.computeIfAbsent(fileTypesAsString, (key) ->
-                {
-                    return new MetadataFileCache(fileTypes.get(0), this.database);
-                });
-            }
-            else
-            {
-                metadataFileCache = cache.computeIfAbsent(fileTypesAsString, (key) ->
-                {
-                    return new MetadataFileCache(fileTypes, cache, database);
-                });
-            }
-
-        }
 
         ArrayList<String> result = new ArrayList<>();
         ArrayList<String> resultBackup = new ArrayList<>();
@@ -104,9 +77,52 @@ public class MetadataAutocompletionService
 
     }
 
+    public String getMetadataDatatype(List<String> fileTypes, String metadataTag){
+
+        String fileTypesID = getFileTypesAsConcatenatedString(fileTypes);
+        MetadataFileCache metadataInfoCache = getMetadataInfoCache(fileTypes, fileTypesID);
+
+        String datatype = metadataInfoCache.getTagsSorted().get(metadataTag).getValueDatatype().toString();
+
+        return datatype;
+    }
+
+    @NotNull
+    private MetadataFileCache getMetadataInfoCache(List<String> fileTypes, String fileTypesAsString) {
+        MetadataFileCache metadataFileCache;//synchronized (this) //not needed i think
+        {
+            //TODO all-fileTypes
+            //fallback for now to jpg
+            if (fileTypes.size() == 0)
+            {
+                metadataFileCache = cache.computeIfAbsent(fileTypesAsString, (key) ->
+                {
+                    return new MetadataFileCache("JPEG", this.database);
+                });
+            }
+            else if (fileTypes.size() == 1)
+            {
+                metadataFileCache = cache.computeIfAbsent(fileTypesAsString, (key) ->
+                {
+                    return new MetadataFileCache(fileTypes.get(0), this.database);
+                });
+            }
+            else
+            {
+                metadataFileCache = cache.computeIfAbsent(fileTypesAsString, (key) ->
+                {
+                    return new MetadataFileCache(fileTypes, cache, database);
+                });
+            }
+
+        }
+        return metadataFileCache;
+    }
+
     private String getFileTypesAsConcatenatedString(List<String> fileTypes)
     {
         String tmp = "";
+        fileTypes.sort(String::compareTo);
         for (String value : fileTypes)
         {
             tmp += value;

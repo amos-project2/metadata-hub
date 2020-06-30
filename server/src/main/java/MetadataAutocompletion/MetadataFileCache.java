@@ -33,18 +33,6 @@ public class MetadataFileCache
             }));
         }
 
-        //TODO What does this do?
-//        for (MetadataFileCache value : metadataFileCacheList)
-//        {
-//            value.tagsSorted.forEach((key, value2)->{
-//                metadataTags.compute(key, (k, remapping)->{
-//                    if(remapping==null)return value2;
-//                    return remapping + value2;
-//                });
-//            });
-//        }
-
-
         //be careful DatabaseSchemaMetadatum is for performance reasons not in-mutable
         //so a deep-copy is neceassary if we want to change the data in an other context
         Map<String, MetadataInfo> tags = new HashMap<>();
