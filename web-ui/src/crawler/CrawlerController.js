@@ -342,7 +342,7 @@ export class CrawlerController extends Page {
                                     Package-Size
                                 </label>
                                 <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="package-size" >
+                                    <input type="number" class="form-control" id="package-size" value="100" max="100" min="10" >
                                 </div>
                             </div>
                             <div class="form-group row force-update">
