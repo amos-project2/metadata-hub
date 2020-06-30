@@ -198,13 +198,11 @@ class Worker(multiprocessing.Process):
             if fileType not in tag_values:
                 tag_values[fileType] = {}
             for tag_value in single_output:
-                # test = dict(single_output)
-                # print(type(self.output_type(test[tag_value])))
-                #print(single_output[tag_values])
+                test = dict(single_output)
                 if tag_value in tag_values[fileType]:
-                    tag_values[fileType][tag_value] += 1
+                    tag_values[fileType][tag_value][0] += 1
                 else:
-                    tag_values[fileType][tag_value] = 1
+                    tag_values[fileType][tag_value] = [1, '?']
         return tag_values
 
     def output_type(self, to_check: str):
@@ -319,7 +317,10 @@ class Worker(multiprocessing.Process):
         # Update the values in the 'metadata' table
         try:
             # Create a comprehensive dictionary of all updates to be made in the 'metadata' table
+            print("ABC")
             metadata_list = self.create_metadata_list([json.loads(j[5]) for j in inserts])
+            print("HI")
+            print(metadata_list)
             # Put the new information into the database
             self._db_connection.update_metadata(metadata_list)
         except:
