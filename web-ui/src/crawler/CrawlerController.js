@@ -5,7 +5,8 @@ import {Config} from "./components/Config";
 export class CrawlerController extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         super(parent, identifier, mountpoint, titleSelector);
-        this.title = "";
+        this.title = "Crawler Controller";
+        this.titleActive = false;
         this.restAPIFetcherCrawler = this.parent.dependencies.restApiFetcherCrawler;
         this.cacheLevel = 3;
         //use 0 for no caching (the dom for this page will be deleted and onMound/onUnMount is called each enter and leaving the page here)

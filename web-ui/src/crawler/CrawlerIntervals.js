@@ -15,7 +15,8 @@ export class CrawlerIntervals extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         // Page
         super(parent, identifier, mountpoint, titleSelector);
-        this.title = "";
+        this.title = "Crawler Intervals";
+        this.titleActive = false;
         this.cacheLevel = 3;
         this.restAPIFetcherCrawler = this.parent.dependencies.restApiFetcherCrawler;
         // Custom
