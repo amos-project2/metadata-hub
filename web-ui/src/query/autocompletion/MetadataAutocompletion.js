@@ -158,6 +158,8 @@ export class MetadataAutocompletion {
             return resultString;
         }
 
+        // $(this.currentFilterListSelector).off('autocomplete');
+        // $.removeData($(this.currentFilterListSelector));
         $(this.currentFilterListSelector).autoComplete({
             preventEnter: true,
             minLength: 0,
@@ -167,6 +169,7 @@ export class MetadataAutocompletion {
             },
             events: {
                 searchPre: function (value) {
+                    //alert("hier drinnen");
                     return value.trim() + "$XXX$" + getUsedAsString(0) + "$XXX$" + getFileString();
                 }
             }
@@ -239,6 +242,11 @@ export class MetadataAutocompletion {
             $(this).autoComplete('show');
         });
 
+
+        console.log(
+            '$element events:',
+            $._data($(this.currentFilterListSelector).get(0), 'events')
+        );
 
     }
 

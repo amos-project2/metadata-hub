@@ -344,7 +344,11 @@ export class FormQueryEditor extends Page {
                 $(this).parent().remove();
             }
 
-            dhis_state.metadatAutocompletion.updateListsFilterMetadata();
+            //here must be any race, the value isnt in all cases visible in updateListFilterMetadata
+            //so i added a small delay
+            setTimeout(function(){
+                dhis_state.metadatAutocompletion.updateListsFilterMetadata();
+            },200);
             dhis_state.metadatAutocompletion.reAddListener();
 
 
@@ -433,8 +437,14 @@ export class FormQueryEditor extends Page {
 
             dhis_state.reorderFunctionIdsInFilter();
 
-            dhis_state.metadatAutocompletion.updateListsFilterMetadata();
+
+            //here must be any race, the value isnt in all cases visible in updateListFilterMetadata
+            //so i added a small delay
+            setTimeout(function(){
+                dhis_state.metadatAutocompletion.updateListsFilterMetadata();
+            },200);
             dhis_state.metadatAutocompletion.reAddListener();
+
 
         });
 
@@ -739,7 +749,12 @@ query
                 $(this).parent().remove();
             }
 
+            //here must be any race, the value isnt in all cases visible in updateListFilterMetadata
+            //so i added a small delay
             dhis_state.metadatAutocompletion.updateListsFilterMetadata();
+            setTimeout(function(){
+                dhis_state.metadatAutocompletion.updateListsFilterMetadata();
+            },200);
             dhis_state.metadatAutocompletion.reAddListener();
 
         });
