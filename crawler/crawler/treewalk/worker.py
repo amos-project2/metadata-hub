@@ -203,6 +203,8 @@ class Worker(multiprocessing.Process):
                     tag_values[fileType][tag_value][0] += 1
                 else:
                     tag_values[fileType][tag_value] = [1, '?']
+                if tag_values[fileType][tag_value][1] == '?':
+                    tag_values[fileType][tag_value][1] = self.output_type(test[tag_value])
         return tag_values
 
     def output_type(self, to_check: str):
@@ -214,9 +216,9 @@ class Worker(multiprocessing.Process):
         """
         try:
             checked = float(to_check)
-            return checked
+            return 'dig'
         except:
-            return to_check
+            return 'str'
 
     @measure_exiftool
     def run_exiftool(self, package: List[str]) -> dict:
