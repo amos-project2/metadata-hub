@@ -89,69 +89,15 @@ export class CrawlerController extends Page {
                             In the following, each input will be briefly
                             explained.
                         </p>
-                        <p class="text-left">
-                            <span class="font-weight-bold">Name </span>
-                            The name of the conifguration. It should be a short
-                            name that describes the purpose of the configuration,
-                            e.g. <code>My vacation pictures</code>.
-                        </p>
-                        <p class="text-left">
-                            <span class="font-weight-bold">Author </span>
-                            The author of the conifguration, simply input your
-                            name here, e.g. <code>John Doe</code>.
-                        </p>
-                        <p class="text-left">
-                            <span class="font-weight-bold">Description </span>
-                            A more detailed description of the configuration that
-                            explains its purpose.
-                        </p>
-                        <p class="text-left">
-                            <span class="font-weight-bold">Start </span>
-                            Start timestamp of the configuration. It <b>must</b>
-                            be according to the format
-                            <code>'YEAR-MONTH-DAYS HOURS:MINUTES:SECONDS'</code>,
-                            e.g. <code>'2020-07-22 10:15:00'</code>.
-                            This is due the internal implementation of the TreeWalk.
-                        </p>
-                        <p class="text-left">
-                            <span class="font-weight-bold">Interval </span>
-                            This defines the interval in which the configuration
-                            is executed periodically. Input the number of hours
-                            and days the in which the execution should be repeated.
-                            If the configuration should only be executed once,
-                            leave both values as <code>0</code>.
-                        </p>
-                        <p class="text-left">
-                            <span class="font-weight-bold">Directories </span>
-                            Please input the list of directories separated by
-                            <code>;</code> in the following way:
-                            <code>directoryA, True ; directoryB, False ; ...</code>.
-                            This input will crawl <code>directoryA</code> recursively
-                            and only files that are directly located in
-                            <code>directoryB</code>.
-                        </p>
-                        <p class="text-left">
-                            <span class="font-weight-bold">CPU-Level </span>
-                            This an indicator for how many CPU cores will be used.
-                            Setting this value to <code>4</code> will use all
-                            available physical cores, the value <code>1</code>
-                            will result in using about one quarter of the
-                            available cores.
-                        </p>
-                        <p class="text-left">
-                            <span class="font-weight-bold">Package-Size </span>
-                            This setting defines how many files
-                            are combined in one work package for analysis.
-                            Please provide a number between <code>10</code>
-                            and <code>1000</code> here.
-                            A reliable default value is <code>100</code>.
-                        </p>
-                        <p class="text-left">
-                            <span class="font-weight-bold">Force-Update </span>
-                            If you want to stop a possible currently running
-                            execution and run the new one, set the value
-                            to <code>Yes</code>, otherwise <code>No</code>.
-                        </p>
+                        ${Descriptions.configurationName()}
+                        ${Descriptions.configurationAuthor()}
+                        ${Descriptions.configurationDescription()}
+                        ${Descriptions.configurationStart()}
+                        ${Descriptions.configurationInterval()}
+                        ${Descriptions.configurationDirectories()}
+                        ${Descriptions.configurationCPULevel()}
+                        ${Descriptions.configurationPackageSize()}
+                        ${Descriptions.configurationForceUpdate()}
                         <p></p>
                         <form id="config-form">
                             <div class="form-group row name">
@@ -307,7 +253,7 @@ export class CrawlerController extends Page {
     }
 
     getCurrentTimestampLocalTime() {
-        return "1970-01-01 00:00:00";
+        return this.convertTime(new Date());
     }
 
     convertTime(timeValue) {
