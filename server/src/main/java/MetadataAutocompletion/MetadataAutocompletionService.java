@@ -109,7 +109,7 @@ public class MetadataAutocompletionService
         return tmp;
     }
 
-    private void cleanCache()
+    public void cleanCache()
     {
         cache.clear();
     }
