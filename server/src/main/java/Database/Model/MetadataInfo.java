@@ -1,14 +1,12 @@
 package Database.Model;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
 @AllArgsConstructor
 @Getter
-public class DatabaseSchemaMetadatum implements Comparable<DatabaseSchemaMetadatum>
+public class MetadataInfo implements Comparable<MetadataInfo>
 {
 
     //AttributeName
@@ -21,12 +19,12 @@ public class DatabaseSchemaMetadatum implements Comparable<DatabaseSchemaMetadat
     private MetadatumValueDatatype valueDatatype;
 
     @Override
-    public int compareTo(@NotNull DatabaseSchemaMetadatum other)
+    public int compareTo(@NotNull MetadataInfo other)
     {
         return this.occurrence.compareTo(other.getOccurrence());
     }
 
-    public DatabaseSchemaMetadatum merge(DatabaseSchemaMetadatum other)
+    public MetadataInfo merge(MetadataInfo other)
     {
         this.occurrence += other.getOccurrence(); //merge occurrence
 
@@ -36,10 +34,10 @@ public class DatabaseSchemaMetadatum implements Comparable<DatabaseSchemaMetadat
         return this;
     }
 
-    public DatabaseSchemaMetadatum copy()
+    public MetadataInfo copy()
     {
         //deep-copy
-        return new DatabaseSchemaMetadatum(this.attribute, this.occurrence, this.valueDatatype);
+        return new MetadataInfo(this.attribute, this.occurrence, this.valueDatatype);
     }
 }
 

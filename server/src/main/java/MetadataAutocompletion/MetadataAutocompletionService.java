@@ -1,7 +1,7 @@
 package MetadataAutocompletion;
 
 import Database.Database;
-import Database.Model.DatabaseSchemaMetadatum;
+import Database.Model.MetadataInfo;
 import com.google.inject.Inject;
 
 import java.util.ArrayList;
@@ -12,14 +12,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class MetadataAutocompletion
+/**
+ * Service-Class
+ */
+public class MetadataAutocompletionService
 {
     private final Database database;
     private final ConcurrentHashMap<String, MetadataFileCache> cache = new ConcurrentHashMap<>();
 
 
     @Inject
-    public MetadataAutocompletion(Database database)
+    public MetadataAutocompletionService(Database database)
     {
         this.database = database;
         Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(this::cleanCache, 1, 1, TimeUnit.HOURS);
@@ -64,7 +67,7 @@ public class MetadataAutocompletion
         ArrayList<String> result = new ArrayList<>();
         ArrayList<String> resultBackup = new ArrayList<>();
         AtomicInteger counter = new AtomicInteger(0);//TODO replace through a cheaper Integer-Wrapper, cause atomic is here not necessary
-        Map<String, DatabaseSchemaMetadatum> sortedTagsMap = metadataFileCache.getTagsSorted();
+        Map<String, MetadataInfo> sortedTagsMap = metadataFileCache.getTagsSorted();
         sortedTagsMap.forEach((key, value) ->
         {
             if (counter.get() >= count) return;

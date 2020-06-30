@@ -1,6 +1,6 @@
 package MetadataAutocompletion;
 import Database.Database;
-import Database.Model.DatabaseSchemaMetadatum;
+import Database.Model.MetadataInfo;
 import Database.Model.MetadatumValueDatatype;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
@@ -15,9 +15,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Getter @Setter
 public class MetadataFileCache
 {
-    private List<DatabaseSchemaMetadatum> metadataTags = new ArrayList<>();
+    private List<MetadataInfo> metadataTags = new ArrayList<>();
     //TODO find a better way of sorting, than a map sorted by its values?
-    private Map<String, DatabaseSchemaMetadatum> tagsSorted = new HashMap<>();
+    private Map<String, MetadataInfo> tagsSorted = new HashMap<>();
 
 
     public MetadataFileCache(List<String> fileTypes, ConcurrentHashMap<String, MetadataFileCache> cache, Database database)
@@ -45,7 +45,7 @@ public class MetadataFileCache
 
         //be careful DatabaseSchemaMetadatum is for performance reasons not in-mutable
         //so a deep-copy is neceassary if we want to change the data in an other context
-        Map<String, DatabaseSchemaMetadatum> tags = new HashMap<>();
+        Map<String, MetadataInfo> tags = new HashMap<>();
         for (MetadataFileCache value : metadataFileCacheList)
         {
             value.tagsSorted.forEach((key2, value2)->{
@@ -108,20 +108,20 @@ public class MetadataFileCache
 
     }
 
-    private List<DatabaseSchemaMetadatum> convertToMetadataList(Map<String, ArrayList> metadataMap){
+    private List<MetadataInfo> convertToMetadataList(Map<String, ArrayList> metadataMap){
 
-        List<DatabaseSchemaMetadatum> metadataList = new ArrayList<>();
+        List<MetadataInfo> metadataList = new ArrayList<>();
 
         for(Map.Entry<String, ArrayList> entry: metadataMap.entrySet()){
-            metadataList.add(new DatabaseSchemaMetadatum(entry.getKey(), (Integer) entry.getValue().get(0), MetadatumValueDatatype.valueOf((String) entry.getValue().get(1))));
+            metadataList.add(new MetadataInfo(entry.getKey(), (Integer) entry.getValue().get(0), MetadatumValueDatatype.valueOf((String) entry.getValue().get(1))));
         }
         return metadataList;
     }
 
-    private Map<String, DatabaseSchemaMetadatum> createSortedMap(List<DatabaseSchemaMetadatum> metadataList){
+    private Map<String, MetadataInfo> createSortedMap(List<MetadataInfo> metadataList){
 
-        Map<String, DatabaseSchemaMetadatum> sortedMap = new LinkedHashMap<>();
-        for(DatabaseSchemaMetadatum metadatum : metadataList){
+        Map<String, MetadataInfo> sortedMap = new LinkedHashMap<>();
+        for(MetadataInfo metadatum : metadataList){
             sortedMap.put(metadatum.getAttribute(), metadatum);
         }
 
