@@ -101,9 +101,6 @@ export class IntervalForm {
                     >
                         Refresh
                     </button>
-
-
-
                 </div>
             </div>
         `;
