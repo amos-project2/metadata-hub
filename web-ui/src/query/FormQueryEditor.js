@@ -101,7 +101,7 @@ export class FormQueryEditor extends Page {
                     </div>
                 </div>
                 <div class="form-row justify-content-md-center">
-                    <button type="submit" class="btn btn-primary modalOpenerSelector">Open Metadata-Attribut-Selector</button>
+                    <button type="button" class="btn btn-primary modalOpenerSelector">Open Metadata-Attribut-Selector</button>
                 </div>
 
 
@@ -337,7 +337,7 @@ export class FormQueryEditor extends Page {
         let dhis_state = this;
 
 
-        $(".attribut-element-input").focusout(function () {
+        $(".attribut-element-input").not(".listenerAdded").focusout(function () {
             if ($(".attribut-element-input").length < 2) {return;}
 
             if ($(this).val() === "") {
@@ -354,7 +354,7 @@ export class FormQueryEditor extends Page {
 
         });
 
-        $(".attribut-element-input").focusin(function () {
+        $(".attribut-element-input").not(".listenerAdded").focusin(function () {
             let dhis = this;
             let emptyTextField = false;
             $(".attribut-element-input").each(function () {
@@ -375,6 +375,10 @@ export class FormQueryEditor extends Page {
             }
 
         });
+
+        //must be the last method
+        $(".attribut-element-input").not(".listenerAdded").addClass("listenerAdded");
+
     }
 
 
@@ -428,7 +432,7 @@ export class FormQueryEditor extends Page {
         // this.metadatAutocompletion.updateListsFilterMetadata();
         // this.metadatAutocompletion.reAddListener();
 
-        $(".fg-metadata-attribute").focusout(function () {
+        $(".fg-metadata-attribute").not(".listenerAdded").focusout(function () {
             if ($(".fg-metadata-attribute").length < 2) {return;}
 
             if ($(this).val() === "") {
@@ -467,7 +471,7 @@ export class FormQueryEditor extends Page {
         });
 
 
-        $(".fg-metadata-attribute").focusin(function () {
+        $(".fg-metadata-attribute").not(".listenerAdded").focusin(function () {
             let dhis = this;
             let emptyTextField = false;
             $(".fg-metadata-attribute").each(function () {
@@ -488,7 +492,7 @@ export class FormQueryEditor extends Page {
         });
 
 
-        $(".fg-filter-function").change(function () {
+        $(".fg-filter-function").not(".listenerAdded").change(function () {
             if ($(this).val() === "exists") {
                 $(this).parent().parent().find(".fg-metadata-value").hide();
             } else {
@@ -496,6 +500,10 @@ export class FormQueryEditor extends Page {
             }
 
         });
+
+        //must be the last method
+        $(".fg-metadata-attribute").not(".listenerAdded").addClass("listenerAdded");
+        $(".fg-filter-function").not(".listenerAdded").addClass("listenerAdded");
 
 
     }
@@ -762,7 +770,7 @@ query
 
         let dhis_state = this;
 
-        $(".filetype-element-input").focusout(function () {
+        $(".filetype-element-input").not(".listenerAdded").focusout(function () {
             if ($(".filetype-element-input").length < 2) {return;}
 
             if ($(this).val() === "") {
@@ -779,7 +787,7 @@ query
 
         });
 
-        $(".filetype-element-input").focusin(function () {
+        $(".filetype-element-input").not(".listenerAdded").focusin(function () {
             let dhis = this;
             let emptyTextField = false;
             $(".filetype-element-input").each(function () {
@@ -800,6 +808,9 @@ query
             }
 
         });
+
+        //must be the last method
+        $(".filetype-element-input").not(".listenerAdded").addClass("listenerAdded");
 
 
     }

@@ -156,7 +156,15 @@ export class Descriptions {
         let name = "Package-Size";
         let text = `
             This setting defines how many files
-            are combined in one work package for analysis.
+            are combined in one work package for processing.
+            Directories with a large amount of files are split up and directories
+            with a small amount of files are combined according to this
+            value in order to use the resources more efficently.
+            A very small value for this setting results in the TreeWalk being
+            more responsive, e.g. stopping the TreeWalk during an execution
+            will be faster. On the other hand, performance will be slowed down
+            due to additional overhead. A large value will result in an opposite
+            behaviour.
             Please provide a number between <code>10</code>
             and <code>1000</code> here.
             A reliable default value is <code>100</code>.

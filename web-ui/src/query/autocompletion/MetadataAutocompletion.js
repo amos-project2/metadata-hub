@@ -9,6 +9,16 @@ var autocompleter = require('bootstrap-autocomplete');
  */
 export class MetadataAutocompletion {
 
+    static increaseCount() {
+        this.count = this.getCount() + 1;
+        return this.count;
+    }
+
+    static getCount() {
+        return this.count || 0;
+    }
+
+
     constructor(restApiFetcherServer, graphQlFetcher, fileTypesSelector,
                 currentFilterListSelector, currentMetadataListSelector, modalOpenerSelector) {
         this.restApiFetcherServer = restApiFetcherServer;
@@ -159,9 +169,26 @@ export class MetadataAutocompletion {
             thisdata.saveModal();
         });
 
+        $(".load-more-suggestions").click(function () {
+            thisdata.loadMoreSuggestions();
+        })
+
         this.reAddListener();
 
     }
+
+    //private
+    getFileString() {
+
+        let resultString = "";
+        this.fileTypes.forEach(element => {
+            resultString += element + "$X$";
+        });
+
+        if (resultString === "") resultString = " ";
+        return resultString;
+    }
+
 
     reAddListener() {
 
@@ -182,17 +209,6 @@ export class MetadataAutocompletion {
             return resultString;
         }
 
-        function getFileString() {
-
-            let resultString = "";
-            thisdata.fileTypes.forEach(element => {
-                resultString += element + "$X$";
-            });
-
-            if (resultString === "") resultString = " ";
-            return resultString;
-        }
-
 
         function autoCompleteBuilder(method, func) {
             return {
@@ -208,17 +224,19 @@ export class MetadataAutocompletion {
             }
         }
 
-        $(this.currentFilterListSelector).autoComplete(autoCompleteBuilder("suggestions", value => {
-            return value.trim() + "$XXX$" + getUsedAsString(0) + "$XXX$" + getFileString();
+
+        $(this.currentFilterListSelector).not(".autocompleteAdded").autoComplete(autoCompleteBuilder("suggestions", value => {
+            return value.trim() + "$XXX$" + getUsedAsString(0) + "$XXX$" + this.getFileString();
         }));
 
 
-        $(this.currentMetadataListSelector).autoComplete(autoCompleteBuilder("suggestions", value => {
-            return value.trim() + "$XXX$" + getUsedAsString(1) + "$XXX$" + getFileString();
+        $(this.currentMetadataListSelector).not(".autocompleteAdded").autoComplete(autoCompleteBuilder("suggestions", value => {
+            return value.trim() + "$XXX$" + getUsedAsString(1) + "$XXX$" + this.getFileString();
         }));
+
 
         $(this.fileTypesSelector).autoComplete(autoCompleteBuilder("filetype-suggestions", value => {
-            return value.trim() + "$XXX$" + getFileString();
+            return value.trim() + "$XXX$" + this.getFileString();
         }));
 
 
@@ -237,25 +255,30 @@ export class MetadataAutocompletion {
         }
 
 
-        $(this.currentFilterListSelector).on('autocomplete.dd.shown', ddShown);
-        $(this.currentFilterListSelector).on('autocomplete.dd.hidden', ddHidden);
+        $(this.currentFilterListSelector).not(".autocompleteAdded").on('autocomplete.dd.shown', ddShown);
+        $(this.currentFilterListSelector).not(".autocompleteAdded").on('autocomplete.dd.hidden', ddHidden);
 
-        $(this.currentMetadataListSelector).on('autocomplete.dd.shown', ddShown);
-        $(this.currentMetadataListSelector).on('autocomplete.dd.hidden', ddHidden);
+        $(this.currentMetadataListSelector).not(".autocompleteAdded").on('autocomplete.dd.shown', ddShown);
+        $(this.currentMetadataListSelector).not(".autocompleteAdded").on('autocomplete.dd.hidden', ddHidden);
 
-        $(this.fileTypesSelector).on('autocomplete.dd.shown', ddShown);
-        $(this.fileTypesSelector).on('autocomplete.dd.hidden', ddHidden);
+        $(this.fileTypesSelector).not(".autocompleteAdded").on('autocomplete.dd.shown', ddShown);
+        $(this.fileTypesSelector).not(".autocompleteAdded").on('autocomplete.dd.hidden', ddHidden);
 
 
         //show the autocomplete directly if the field is selected
 
         function showDirect() {
+            if ($(this).hasClass("autocompleteDeactivated")) return;
             $(this).autoComplete('show');
         }
 
-        $(this.currentFilterListSelector).focusin(showDirect);
-        $(this.currentMetadataListSelector).focusin(showDirect);
-        $(this.fileTypesSelector).focusin(showDirect);
+        $(this.currentFilterListSelector).not(".autocompleteAdded").focusin(showDirect);
+        $(this.currentMetadataListSelector).not(".autocompleteAdded").focusin(showDirect);
+        $(this.fileTypesSelector).not(".autocompleteAdded").focusin(showDirect);
+
+        $(this.currentFilterListSelector).not(".autocompleteAdded").addClass("autocompleteAdded");
+        $(this.currentMetadataListSelector).not(".autocompleteAdded").addClass("autocompleteAdded");
+        $(this.fileTypesSelector).not(".autocompleteAdded").not(".autocompleteAdded").addClass("autocompleteAdded");
 
 
         // console.log(
@@ -265,14 +288,161 @@ export class MetadataAutocompletion {
 
     }
 
+    //private
+    retrieveMetadataSuggestions(limit, offset, callback) {
+
+        this.restApiFetcherServer.fetchGet(`metadata-autocomplete/modal-suggestions/?limit=${limit}&offset=${offset}&fileTypes=` + encodeURIComponent(this.getFileString()), function (event) {
+            console.log(event.data);
+            //this.bestMatchingFromServer = ["foo", "bar", "xyz", "usw"];
+            //thisdata.bestMatchingFromServer = event.data;
+            callback(event.data);
+        });
+
+    }
+
 
     //private
     openAndConfigureModal() {
-        $(".metadata-autocompletion-suggestions-html").html("Please wait...");
-        this.updateListFileType(function () {
-            $(".metadata-autocompletion-suggestions-html").html("coming soon...");
-        });
+
+        this.modalOffset = 0;
+
+        let thisdata = this;
+        // $(".metadata-autocompletion-suggestions-html").html();
+        $(".load-more-suggestions").show();
+        $(".metadata-autocompletion-suggestions-html").html(`
+                 <div class ="sugesstion-waiter" >Please wait...</div>
+                 <div class ="container suggestion-container">
+
+                 </div>
+            `);
+        // this.retrieveMetadataSuggestions(20, this.modalOffset, function (data) {
+        //     let initTable = thisdata.generateAndGetSuggestionTable(data);
+        //     $(".metadata-autocompletion-suggestions-html").html(`
+        //          <div class="container suggestion-container">
+        //             ${initTable}
+        //          </div>
+        //     `);
+        //     $(".adder-block").show(1000);
+        //
+        // });
+        // this.modalOffset += 20;
         $('#metadata-autocompletion-modal').modal();
+        setTimeout(function () {
+            thisdata.loadMoreSuggestions();
+        }, 200);
+
+    }
+
+    //private
+    loadMoreSuggestions() {
+        let thisdata = this;
+        this.retrieveMetadataSuggestions(10, this.modalOffset, function (data) {
+            $(".sugesstion-waiter").hide(700);
+            if (data.length < 10) {
+                $(".load-more-suggestions").hide(2000);
+            }
+            let htmlTable = thisdata.generateAndGetSuggestionTable(data);
+            $(".suggestion-container").append(htmlTable);
+            $(".adder-block").show(1000);
+
+            $(".filter-adder").not(".listenerAdded").click(function () {
+                let lastElement = $(".fg-metadata-attribute").last();
+
+                lastElement.addClass("autocompleteDeactivated");
+                lastElement.val($(this).data("adderto"));
+                lastElement.trigger("focusin");
+                lastElement.trigger("focusout");
+
+                let jqThis = $(this);
+                jqThis.parent().find(".filter-adder-message").show();
+                jqThis.hide();
+
+                setTimeout(function () {
+                    jqThis.parent().find(".filter-adder-message").hide(600);
+                    jqThis.show(600);
+                    lastElement.removeClass("autocompleteDeactivated");
+                }, 1000)
+
+
+                //lastElement.removeClass("autocompleteDeactivated");
+
+                //alert($(this).data("adderto"));
+            });
+
+            $(".metadata-adder").not(".listenerAdded").change(function () {
+
+                let lastElement
+
+                if ($(this).is(':checked')) {
+                    lastElement = $(".attribut-element-input").last();
+                    lastElement.val($(this).data("adderto"));
+                    lastElement.addClass("autocompleteDeactivated");
+                    lastElement.trigger("focusin");
+                    lastElement.trigger("focusout");
+                    lastElement.removeClass("autocompleteDeactivated");
+                } else {
+                    let jqThis = $(this);
+                    $(".attribut-element-input").each(function () {
+                            if ($(this).val().toLowerCase().trim() === jqThis.data("adderto").toLowerCase().trim()) {
+                                $(this).val("");
+                                lastElement = $(this);
+                                lastElement.addClass("autocompleteDeactivated");
+                                lastElement.trigger("focusin");
+                                lastElement.trigger("focusout");
+                                lastElement.removeClass("autocompleteDeactivated");
+                            }
+                    });
+                }
+
+
+
+            });
+
+            $(".filter-adder").not(".listenerAdded").addClass("listenerAdded");
+            $(".metadata-adder").not(".listenerAdded").addClass("listenerAdded");
+
+
+        });
+        this.modalOffset += 10;
+    }
+
+
+    generateAndGetSuggestionTable(data) {
+        let result = `<div class="adder-block" style="display:none;">`;
+
+        data.forEach(element => {
+            let counter = MetadataAutocompletion.increaseCount();
+
+            let checked = ``;
+            this.metadata.forEach(element2 => {
+                if (element.toLowerCase().trim() === element2.toLowerCase().trim()) {
+                    checked = `checked`;
+                }
+            });
+
+            // language=HTML
+            result += `
+                    <div class="row" style="margin-bottom: 8px;">
+                        <div class="col-sm-6"">
+                           ${element}
+                        </div>
+                        <div class="col-sm-3"">
+                            <span class="filter-adder-message" style="display:none;">ADDED</span>
+                            <button type="button" class="btn-primary filter-adder" data-adderto="${element}">ADD</button>
+                        </div>
+                        <div class="col-sm-3"">
+                         <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input metadata-adder" data-adderto="${element}" id="adder-switch-${counter}" ${checked}>
+                            <label class="custom-control-label" for="adder-switch-${counter}"> </label>
+                         </div>
+
+                        </div>
+                    </div>
+                `;
+        });
+
+        result += `</div>`;
+        return result;
     }
 
 
@@ -318,7 +488,7 @@ export class MetadataAutocompletion {
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-success save-metadata-autocompletion" data-dismiss="modal">Save</button>
+                            <button type="button" class="btn btn-success load-more-suggestions">Load more suggestions</button>
 
                         </div>
                     </div>

@@ -6,12 +6,14 @@ import com.google.inject.Inject;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Service-Class
@@ -33,7 +35,7 @@ public class MetadataAutocompletionService
     //it is ok having here so much arguments, because its a request-method -> a refactor to an request-object as input would be possible
     public List<String> request(List<String> fileTypes, List<String> usedSearch, String search, int count, boolean fillToCount)
     {
-        System.out.println(fileTypes+"BLA");
+        System.out.println(fileTypes + "BLA");
         System.out.println(fileTypes.size());
 
         String fileTypesAsString = this.getFileTypesAsConcatenatedString(fileTypes);
@@ -77,7 +79,33 @@ public class MetadataAutocompletionService
 
     }
 
-    public String getMetadataDatatype(List<String> fileTypes, String metadataTag){
+    public List<String> request(List<String> fileTypes, long limit, long offset)
+    {
+        String fileTypesAsString = this.getFileTypesAsConcatenatedString(fileTypes);
+        MetadataFileCache metadataFileCache = getMetadataInfoCache(fileTypes, fileTypesAsString);
+        ArrayList<String> result = new ArrayList<>();
+
+        Map<String, MetadataInfo> sortedTagsMap = metadataFileCache.getTagsSorted();
+
+        //Todo replace through a cheaper final-wrapper;
+        AtomicLong offsetCounter = new AtomicLong(0);
+        AtomicLong limitCounter = new AtomicLong(0);
+        sortedTagsMap.forEach((key, value) ->
+        {
+            //TODO maybe refactor to a normal for-loop, that we can abbort directly
+            if (offsetCounter.getAndIncrement() < offset) return;
+            if (limitCounter.incrementAndGet() > limit) return;
+
+            result.add(key);
+
+        });
+
+        return result;
+    }
+
+
+    public String getMetadataDatatype(List<String> fileTypes, String metadataTag)
+    {
 
         String tagDatatype;
 
@@ -95,7 +123,8 @@ public class MetadataAutocompletionService
     }
 
     @NotNull
-    private MetadataFileCache getMetadataInfoCache(List<String> fileTypes, String fileTypesAsString) {
+    private MetadataFileCache getMetadataInfoCache(List<String> fileTypes, String fileTypesAsString)
+    {
         MetadataFileCache metadataFileCache;//synchronized (this) //not needed i think
         {
             //TODO all-fileTypes

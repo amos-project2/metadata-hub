@@ -51,7 +51,7 @@ public class MetadataAutocompletionController
         }
         System.out.println("getMetadata:  tag: " + metadataTag + " fileTypes: " + fileTypes);
 
-        String datatype = metadataAutocompletionService.getMetadataDatatype(this.createList(fileTypes,true), metadataTag);
+        String datatype = metadataAutocompletionService.getMetadataDatatype(this.createList(fileTypes, true), metadataTag);
 
         String json = new ObjectMapper().writeValueAsString(datatype);
         System.out.println("Returned Datatype: " + json);
@@ -71,7 +71,7 @@ public class MetadataAutocompletionController
         String used = split[1].toLowerCase().trim();
         String fileTypes = split[2].toUpperCase().trim();
 
-        List<String> result = metadataAutocompletionService.request(this.createList(fileTypes,true), this.createList(used), search, 10, false);
+        List<String> result = metadataAutocompletionService.request(this.createList(fileTypes, true), this.createList(used), search, 10, false);
 
         String json = new ObjectMapper().writeValueAsString(result);
         System.out.println(json);
@@ -83,11 +83,13 @@ public class MetadataAutocompletionController
     @GET
     @Produces("application/json")
     @Path("/modal-suggestions")
-    public String getModalSuggestions(@QueryParam("fileTypes") String fileTypesString) throws JsonProcessingException
+    public String getModalSuggestions(@QueryParam("limit") long limit, @QueryParam("offset") long offset, @QueryParam("fileTypes") String fileTypesString) throws JsonProcessingException
     {
-        String[] fileTypes = fileTypesString.toUpperCase().split("\\$X\\$");
+        List<String> fileTypes = this.createList(fileTypesString.toUpperCase().trim(), true);
 
-        List<String> result = metadataAutocompletionService.request(Arrays.asList(fileTypes), new ArrayList<>(), null, 20, false);
+//        List<String> result = metadataAutocompletionService.request(Arrays.asList(fileTypes), new ArrayList<>(), null, 20, false);
+
+        List<String> result = metadataAutocompletionService.request(fileTypes, limit, offset);
 
         String json = new ObjectMapper().writeValueAsString(result);
         System.out.println(json);
