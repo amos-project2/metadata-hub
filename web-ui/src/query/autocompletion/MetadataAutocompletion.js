@@ -9,6 +9,16 @@ var autocompleter = require('bootstrap-autocomplete');
  */
 export class MetadataAutocompletion {
 
+    static increaseCount() {
+        this.count = this.getCount() + 1;
+        return this.count;
+    }
+
+    static getCount() {
+        return this.count || 0;
+    }
+
+
     constructor(restApiFetcherServer, graphQlFetcher, fileTypesSelector,
                 currentFilterListSelector, currentMetadataListSelector, modalOpenerSelector) {
         this.restApiFetcherServer = restApiFetcherServer;
@@ -227,6 +237,7 @@ export class MetadataAutocompletion {
         //show the autocomplete directly if the field is selected
 
         function showDirect() {
+            if ($(this).hasClass("autocompleteDeactivated")) return;
             $(this).autoComplete('show');
         }
 
@@ -265,7 +276,7 @@ export class MetadataAutocompletion {
         this.modalOffset = 0;
 
         let thisdata = this;
-       // $(".metadata-autocompletion-suggestions-html").html();
+        // $(".metadata-autocompletion-suggestions-html").html();
         $(".load-more-suggestions").show();
         $(".metadata-autocompletion-suggestions-html").html(`
                  <div class ="sugesstion-waiter" >Please wait...</div>
@@ -283,11 +294,11 @@ export class MetadataAutocompletion {
         //     $(".adder-block").show(1000);
         //
         // });
-       // this.modalOffset += 20;
+        // this.modalOffset += 20;
         $('#metadata-autocompletion-modal').modal();
         setTimeout(function () {
             thisdata.loadMoreSuggestions();
-        },200);
+        }, 200);
 
     }
 
@@ -302,6 +313,39 @@ export class MetadataAutocompletion {
             let htmlTable = thisdata.generateAndGetSuggestionTable(data);
             $(".suggestion-container").append(htmlTable);
             $(".adder-block").show(1000);
+
+            $(".filter-adder").not(".listenerAdded").click(function () {
+                let lastElement = $(".fg-metadata-attribute").last();
+
+                lastElement.addClass("autocompleteDeactivated");
+                lastElement.val($(this).data("adderto"));
+                lastElement.trigger("focusin");
+                lastElement.trigger("focusout");
+
+                let jqThis=$(this);
+                jqThis.parent().find(".filter-adder-message").show();
+                jqThis.hide();
+
+                setTimeout(function () {
+                    jqThis.parent().find(".filter-adder-message").hide(600);
+                    jqThis.show(600);
+                    lastElement.removeClass("autocompleteDeactivated");
+                },1000)
+
+
+                //lastElement.removeClass("autocompleteDeactivated");
+
+                //alert($(this).data("adderto"));
+            });
+
+            $(".metadata-adder").not(".listenerAdded").change(function () {
+                alert($(this).data("adderto"));
+            });
+
+            $(".filter-adder").not(".listenerAdded").addClass("listenerAdded");
+            $(".metadata-adder").not(".listenerAdded").addClass("listenerAdded");
+
+
         });
         this.modalOffset += 10;
     }
@@ -309,10 +353,9 @@ export class MetadataAutocompletion {
 
     generateAndGetSuggestionTable(data) {
         let result = `<div class="adder-block" style="display:none;">`;
-        let counter = 0;
 
         data.forEach(element => {
-            counter++;
+            let counter = MetadataAutocompletion.increaseCount();
             // language=HTML
             result += `
                     <div class="row" style="margin-bottom: 8px;">
@@ -320,7 +363,8 @@ export class MetadataAutocompletion {
                            ${element}
                         </div>
                         <div class="col-sm-3"">
-                            <button type="button" class="btn-primary filter-adder" data-adderto="${element}">Add</button>
+                            <span class="filter-adder-message" style="display:none;">ADDED</span>
+                            <button type="button" class="btn-primary filter-adder" data-adderto="${element}">ADD</button>
                         </div>
                         <div class="col-sm-3"">
                          <div class="custom-control custom-switch">
@@ -333,7 +377,7 @@ export class MetadataAutocompletion {
                 `;
         });
 
-        result +=`</div>`;
+        result += `</div>`;
         return result;
     }
 
