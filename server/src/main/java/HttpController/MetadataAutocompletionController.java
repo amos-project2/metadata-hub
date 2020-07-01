@@ -46,7 +46,8 @@ public class MetadataAutocompletionController
 
         //Default value if no file type is used
         String fileTypes = "JPEG";
-        if(split.length > 1){
+        if (split.length > 1)
+        {
             fileTypes = split[1].toUpperCase().trim();
         }
         System.out.println("getMetadata:  tag: " + metadataTag + " fileTypes: " + fileTypes);
@@ -115,6 +116,17 @@ public class MetadataAutocompletionController
         System.out.println(json);
         return json;
 
+    }
+
+
+    @GET
+    @Produces("application/json")
+    @Path("/clear-cache")
+    public String clearCache()
+    {
+        System.out.println("clear-cache");
+        this.metadataAutocompletionService.cleanCache();
+        return "";
     }
 
 

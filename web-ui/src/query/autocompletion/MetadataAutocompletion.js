@@ -39,7 +39,7 @@ export class MetadataAutocompletion {
     }
 
     // get the Datatype of a given tag from the Server
-    getDataType(tag){
+    getDataType(tag) {
 
         let thisdata = this;
         let datatype;
@@ -172,6 +172,8 @@ export class MetadataAutocompletion {
         $(".load-more-suggestions").click(function () {
             thisdata.loadMoreSuggestions();
         })
+
+        this.clearCacheModalOpenerAndRequest();
 
         this.reAddListener();
 
@@ -383,17 +385,16 @@ export class MetadataAutocompletion {
                 } else {
                     let jqThis = $(this);
                     $(".attribut-element-input").each(function () {
-                            if ($(this).val().toLowerCase().trim() === jqThis.data("adderto").toLowerCase().trim()) {
-                                $(this).val("");
-                                lastElement = $(this);
-                                lastElement.addClass("autocompleteDeactivated");
-                                lastElement.trigger("focusin");
-                                lastElement.trigger("focusout");
-                                lastElement.removeClass("autocompleteDeactivated");
-                            }
+                        if ($(this).val().toLowerCase().trim() === jqThis.data("adderto").toLowerCase().trim()) {
+                            $(this).val("");
+                            lastElement = $(this);
+                            lastElement.addClass("autocompleteDeactivated");
+                            lastElement.trigger("focusin");
+                            lastElement.trigger("focusout");
+                            lastElement.removeClass("autocompleteDeactivated");
+                        }
                     });
                 }
-
 
 
             });
@@ -495,5 +496,40 @@ export class MetadataAutocompletion {
                 </div>
             </div>`;
     }
+
+    clearCacheModalOpenerAndRequest() {
+        let thisdata = this;
+        $(".modalClearCache").click(function () {
+            $('#metadata-autocompletion-modal-clear-cache').modal();
+            thisdata.restApiFetcherServer.fetchGet(`metadata-autocomplete/clear-cache/`, function (event) {});
+        });
+    }
+
+
+    getStaticModalHtmlClearCache() {
+
+        return `
+            <div class="modal fade" id="metadata-autocompletion-modal-clear-cache" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Metadata Suggestions - Clear Cache</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            The Autocompletion-Cache is cleared automatically after each 60min. Now you forced to clear it.<br><br>
+                            It was succesfully cleared.
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+    }
+
 
 }
