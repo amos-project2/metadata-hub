@@ -40,7 +40,7 @@ export class Config {
     }
 
     parse() {
-        directories = this.parseDirectories();
+        let directories = this.parseDirectories();
         if (directories === null) {return null;}
         this.data["time"]["interval"] = this.parseInterval();
         this.data["directories"] = directories;

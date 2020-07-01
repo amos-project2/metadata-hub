@@ -48,7 +48,7 @@ export class Task {
 
     setBadgeForce(force) {
         if (force) {
-            this.badgeForce = `<span class="badge badge-danger">FORCE</span>`;
+            this.badgeForce = `<span class="badge badge-danger mr-2">FORCE</span>`;
         }
     }
 
@@ -93,10 +93,12 @@ export class Task {
             <div class="card mt-3" id=${this.idElement}>
                 <div class="card-header">
                     <div class="row">
-                        <div class="col-lg-12 col-xl-10">
-                            ${this.name}
+                        <div class="col-md-12 col-xl-9">
+                            <h5>
+                                ${this.name}
+                            </h5>
                         </div>
-                        <div class="col-lg-12 col-xl-2">
+                        <div class="col-md-12 col-xl-3">
                             ${this.badgeStatus}
                             ${this.badgeForce}
                             ${this.badgePeriodic}

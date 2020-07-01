@@ -5,6 +5,7 @@ export class IntervalForm {
 
     constructor() {
         this.formID = "form-interval";
+        this.refreshID = "refresh-interval";
         this.startDayID = "start-day";
         this.startHoursID = "start-hours";
         this.startMinutesID = "start-minutes";
@@ -89,9 +90,16 @@ export class IntervalForm {
                     <button
                         id="clear-config"
                         type="reset"
-                        class="btn btn-primary font-weight-bold"
+                        class="btn btn-danger font-weight-bold mr-3"
                     >
                         CLEAR
+                    </button>
+                    <button
+                        id="refresh-interval"
+                        type="button"
+                        class="btn btn-info font-weight-bold"
+                    >
+                        Refresh
                     </button>
                 </div>
             </div>

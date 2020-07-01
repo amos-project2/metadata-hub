@@ -12,7 +12,8 @@ export class CrawlerScheduler extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         // Page
         super(parent, identifier, mountpoint, titleSelector);
-        this.title = "";
+        this.title = "Crawler Scheduler";
+        this.titleActive = false;
         this.cacheLevel = 3;
         this.restAPIFetcherCrawler = this.parent.dependencies.restApiFetcherCrawler;
         // Custom
@@ -32,7 +33,7 @@ export class CrawlerScheduler extends Page {
                     </div>
                 </div>
                 <div class="row mt-3 mb-3">
-                    <div id="messages" class="col">
+                    <div id="messages-scheduler" class="col">
                     </div>
                 </div>
                 <div class="row mt-3 mb-3">
@@ -86,11 +87,14 @@ export class CrawlerScheduler extends Page {
     removeTask(identifier) {
         let self = this;
         let url = `schedule/remove?id=${identifier}`;
-        let messages = $("#messages");
+        let messages = $("#messages-scheduler");
         this.restAPIFetcherCrawler.fetchGet(url, function (event) {
             let response = event.data;
             let message = new Message(response);
-            messages.append(message.render()).hide().fadeIn(self.hideTimeout);
+            messages.append(message.render());//.hide().fadeIn(self.hideTimeout);
+            message.fadeIn(self.hideTimeout);
+
+
             if (response.success) {
                 self.update(self.hideTimeout);
             }

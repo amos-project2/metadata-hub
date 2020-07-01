@@ -1,73 +1,55 @@
 import {Page} from "../Page";
 import {Message} from "./components/Message";
 import {Config} from "./components/Config";
+import {Descriptions} from "./components/Descriptions";
+
+import {Action} from "./components/Action";
 
 export class CrawlerController extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
+        // Page
         super(parent, identifier, mountpoint, titleSelector);
-        this.title = "";
+        this.title = "Crawler Controller";
+        this.titleActive = false;
         this.restAPIFetcherCrawler = this.parent.dependencies.restApiFetcherCrawler;
         this.cacheLevel = 3;
-        //use 0 for no caching (the dom for this page will be deleted and onMound/onUnMount is called each enter and leaving the page here)
-        //use 3 for complete caching(the dome for this page stay after leaving
-        //     (its only hidden, be careful, of using html-classes/ids in more areas of the whole webpage, that they dont overlap))
-        //     onMount is only called at the first time, unOnLoad-never (except if you use the delete-cache-method)
-        //     i think using 3 here is a good idea, so the user can work on a formular go to other page and go back to work on
-        //     the dynamic stuff in the page is handled by javascript, timers who reload parts for page in a specific way for specific page-components
-
-
-        //here you set the title-attribut
-        //you can here also set the caching_behavour and much more
-        //take a look in class Page
-
+        // Timers and Infos
         this.infoTimer = null;
         this.crawlerLastInfoState = "null";
         this.lastUserAction = "null";
-        this.progressedWithoutCriticalUserInteraction=false;
-        this.isSubmitted=false;
-
+        this.progressedWithoutCriticalUserInteraction = false;
+        this.isSubmitted = false;
+        // Actions
+        this.actionStop = "cc-action-stop";
+        this.actionPause = "cc-action-pause";
+        this.actionContinue = "cc-action-continue";
+        this.actionShutdown = "cc-action-shutdown";
+        this.actionStart = "cc-action-start";
     }
 
     content() {
-        // let thisData = this; //its unused TODO remove?
         return `
             <div class="container">
                 <div class="row mt-3 mb-3">
                     <div class="col" align="center">
-                        <h2 class="text-dark">Controller</h2>
-                        <p></p>
-                        <p style="text-align: left;">
-                            This is the panel for controlling the crawler.
-                            The crawler has three states:
-                            <b>ready</b>, <b>running</b> and <b>paused</b>.
-                            All these actions are safe to use in all states,
-                            but some may have no impact in a certain state.
-                            For example, stopping the crawler when it was running
-                            will stop the current execution, but stopping when
-                            the crawler was ready will have no consequences.
-                            Make sure to wait for the response if you invoked an
-                            action. You'll see an alert message at the bottom
-                            once the action has finished.
-                            Especially starting the crawler might take some time
-                            due to the generation of the work packages.
-                        </p>
+                        <h2 class="text-dark mb-3">Controller</h2>
+                        <p class="text-left">${Descriptions.controllerInfo()}</p>
                     </div>
                 </div>
                 <hr>
                 <div class="row mt-3 mb-3">
                     <div class="col">
-                        <h2 class="text-dark text-center">Status</h2>
-                        <p class="text-center">
-                            The crawler is currently
-                            <span id="crawler-status"></span>
-                            <span id="crawler-progress">.</span>
-
-                            <div class="progress" style="height:25px">
-                                <div class="progress-bar my-progress-bar " role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                        <div class="text-center mb-3">
+                            <h2 id="crawler-status"></h2>
+                        </div>
+                        <div class="progress">
+                            <div
+                                class="progress-bar my-progress-bar"
+                                role="progressbar"
+                                style="width: 0%; color: red" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+                            >
                             </div>
-
-
-                        <p>
+                        </div>
                         <p class="text-left">
                             <pre><code id="config-value"></code></pre>
                         </p>
@@ -79,95 +61,21 @@ export class CrawlerController extends Page {
                         <h2 class="text-dark">Actions</h2>
                     </div>
                 </div>
-                <div class="row mt-1 mb-1 cc-action-stop">
-                    <div class="col-md-12 col-lg-8">
-                        <p>
-                            <b>Stop</b> the current execution.
-                            If the crawler is ready, the action will be ignored.
-                            Otherwise, the running/paused execution will be aborted.
-                        </p>
-                    </div>
-                    <div class="col-md-12 col-lg-2">
-                        <p></p>
-                    </div>
-                    <div class="col-md-12 col-lg-2 mb-5" align="center">
-                        <button id="stop-button" type="button" class="btn btn-primary btn-block font-weight-bold">
-                            STOP
-                        </button>
-                    </div>
-                </div>
-                <div class="row mt-1 mb-1 cc-action-pause">
-                    <div class="col-md-12 col-lg-8">
-                        <p>
-                            <b>Pause</b> the current execution.
-                            If the crawler is ready or already paused,
-                            the action will be ignored.
-                            Otherwise, it will pause the current exeution
-                            so that it can be continued later on.
-                        </p>
-                    </div>
-                    <div class="col-md-12 col-lg-2">
-                        <p></p>
-                    </div>
-                    <div class="col-md-12 col-lg-2 mb-5" align="center">
-                        <button id="pause-button" type="button" class="btn btn-primary btn-block font-weight-bold">
-                            PAUSE
-                        </button>
-                    </div>
-                </div>
-                <div class="row mt-1 mb-1 cc-action-continue">
-                    <div class="col-md-12 col-lg-8">
-                        <p>
-                            <b>Continue</b> a paused execution of the crawler.
-                            If the crawler is ready or already running,
-                            the action will be ignored.
-                            Otherwise, it will continue the currently
-                            paused execution.
-                        </p>
-                    </div>
-                    <div class="col-md-12 col-lg-2">
-                        <p></p>
-                    </div>
-                    <div class="col-md-12 col-lg-2 mb-5" align="center">
-                        <button id="continue-button" type="button" class="btn btn-primary btn-block font-weight-bold">
-                            CONTINUE
-                        </button>
-                    </div>
-                </div>
-                <div class="row mt-1 mb-1 cc-action-shutdown">
-                    <div class="col-md-12 col-lg-8">
-                        <p>
-                            <b>Shutdown</b> the crawler entirely.
-                            Stop a possible current execution and terminate
-                            all crawler threads.
-                        </p>
-                    </div>
-                    <div class="col-md-12 col-lg-2">
-                        <p></p>
-                    </div>
-                    <div class="col-md-12 col-lg-2 mb-5" align="center">
-                        <button id="shutdown-button" type="button" class="btn btn-primary btn-block font-weight-bold">
-                            SHUTDOWN
-                        </button>
-                    </div>
-                </div>
-                <div class="row mt-1 mb-1 cc-action-start">
-                    <div class="col-md-12 col-lg-8">
-                        <p>
-                            <b>Start</b> a crawler execution.
-                            Shows the configuration panel for a manual insertion
-                            of the configuration data.
-                        </p>
-                    </div>
-                    <div class="col-md-12 col-lg-2">
-                        <p></p>
-                    </div>
-                    <div class="col-md-12 col-lg-2 mb-5" align="center">
-                        <button id="start-button" type="button" class="btn btn-primary btn-block font-weight-bold">
-                            START
-                        </button>
-                    </div>
-                </div>
+                ${new Action(
+            this.actionStop, Descriptions.actionStop(), "stop"
+        ).render()}
+                ${new Action(
+            this.actionPause, Descriptions.actionPause(), "pause"
+        ).render()}
+                ${new Action(
+            this.actionContinue, Descriptions.actionContinue(), "continue"
+        ).render()}
+                ${new Action(
+            this.actionShutdown, Descriptions.actionShutdown(), "shutdown"
+        ).render()}
+                ${new Action(
+            this.actionStart, Descriptions.actionStart(), "start"
+        ).render()}
                 <hr id="config-hr">
                 <div class="cc-action-start">
                     <div id="config" class="row mt-3 mb-3">
@@ -181,69 +89,15 @@ export class CrawlerController extends Page {
                             In the following, each input will be briefly
                             explained.
                         </p>
-                        <p class="text-left">
-                            <span class="font-weight-bold">Name </span>
-                            The name of the conifguration. It should be a short
-                            name that describes the purpose of the configuration,
-                            e.g. <code>My vacation pictures</code>.
-                        </p>
-                        <p class="text-left">
-                            <span class="font-weight-bold">Author </span>
-                            The author of the conifguration, simply input your
-                            name here, e.g. <code>John Doe</code>.
-                        </p>
-                        <p class="text-left">
-                            <span class="font-weight-bold">Description </span>
-                            A more detailed description of the configuration that
-                            explains its purpose.
-                        </p>
-                        <p class="text-left">
-                            <span class="font-weight-bold">Start </span>
-                            Start timestamp of the configuration. It <b>must</b>
-                            be according to the format
-                            <code>'YEAR-MONTH-DAYS HOURS:MINUTES:SECONDS'</code>,
-                            e.g. <code>'2020-07-22 10:15:00'</code>.
-                            This is due the internal implementation of the TreeWalk.
-                        </p>
-                        <p class="text-left">
-                            <span class="font-weight-bold">Interval </span>
-                            This defines the interval in which the configuration
-                            is executed periodically. Input the number of hours
-                            and days the in which the execution should be repeated.
-                            If the configuration should only be executed once,
-                            leave both values as <code>0</code>.
-                        </p>
-                        <p class="text-left">
-                            <span class="font-weight-bold">Directories </span>
-                            Please input the list of directories separated by
-                            <code>;</code> in the following way:
-                            <code>directoryA, True ; directoryB, False ; ...</code>.
-                            This input will crawl <code>directoryA</code> recursively
-                            and only files that are directly located in
-                            <code>directoryB</code>.
-                        </p>
-                        <p class="text-left">
-                            <span class="font-weight-bold">CPU-Level </span>
-                            This an indicator for how many CPU cores will be used.
-                            Setting this value to <code>4</code> will use all
-                            available physical cores, the value <code>1</code>
-                            will result in using about one quarter of the
-                            available cores.
-                        </p>
-                        <p class="text-left">
-                            <span class="font-weight-bold">Package-Size </span>
-                            This setting defines how many files
-                            are combined in one work package for analysis.
-                            Please provide a number between <code>10</code>
-                            and <code>1000</code> here.
-                            A reliable default value is <code>100</code>.
-                        </p>
-                        <p class="text-left">
-                            <span class="font-weight-bold">Force-Update </span>
-                            If you want to stop a possible currently running
-                            execution and run the new one, set the value
-                            to <code>Yes</code>, otherwise <code>No</code>.
-                        </p>
+                        ${Descriptions.configurationName()}
+                        ${Descriptions.configurationAuthor()}
+                        ${Descriptions.configurationDescription()}
+                        ${Descriptions.configurationStart()}
+                        ${Descriptions.configurationInterval()}
+                        ${Descriptions.configurationDirectories()}
+                        ${Descriptions.configurationCPULevel()}
+                        ${Descriptions.configurationPackageSize()}
+                        ${Descriptions.configurationForceUpdate()}
                         <p></p>
                         <form id="config-form">
                             <div class="form-group row name">
@@ -259,7 +113,7 @@ export class CrawlerController extends Page {
                                     Author
                                 </label>
                                 <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="author">
+                                    <input type="text" class="form-control" id="author" value="${localStorage.getItem("username")}" disabled>
                                 </div>
                             </div>
                             <div class="form-group row description">
@@ -271,12 +125,30 @@ export class CrawlerController extends Page {
                                 </div>
                             </div>
                             <div class="form-group row time-start">
-                                <label for="time-start" class="config-input-label">
-                                    Start
-                                </label>
-                                <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="time-start">
-                                </div>
+                                        <label for="time-start-select" class="config-input-label">
+                                            Start
+                                        </label>
+                                        <div class="col-sm-10 time-select-container">
+                                            <select class="custom-select" id="time-start-select">
+                                                <option selected value="now">Start Now</option>
+                                                <option value="later">Start Later (Scheduled)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-6 time-start-container" style="display:none;">
+<!--                                        <input type="text" class="form-control fg-metadata-attribute" placeholder="Metadata-Attribute">-->
+                                        <input type="datetime-local" class="form-control " id="time-start">
+                                        </div>
+
+
+
+<!--                                <label for="time-start" class="config-input-label">-->
+<!--                                    Start-->
+<!--                                </label>-->
+<!--                                <div class="col-sm-10">-->
+<!--                                    <input type="text" class="form-control" id="time-start">-->
+<!--                                </div>-->
+
+
                             </div>
 
                             <div class="form-group row time-interval">
@@ -341,7 +213,7 @@ export class CrawlerController extends Page {
                                     Package-Size
                                 </label>
                                 <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="package-size">
+                                    <input type="number" class="form-control" id="package-size" value="100" max="1000" min="10" >
                                 </div>
                             </div>
                             <div class="form-group row force-update">
@@ -372,7 +244,7 @@ export class CrawlerController extends Page {
                 </div>
                 <hr>
                 <div class="row mt-3 mb-3">
-                    <div id="messages" class="col">
+                    <div id="messages-controller" class="col">
                         <p></p>
                     </div>
                 </div>
@@ -381,27 +253,34 @@ export class CrawlerController extends Page {
     }
 
     getCurrentTimestampLocalTime() {
-        let currentTime = new Date();
-        let offset = currentTime.getTimezoneOffset() * 60000;
-        let local = new Date(currentTime - offset);
-        return local.toISOString().slice(0, 19).replace('T', ' ');
+        return this.convertTime(new Date());
+    }
+
+    convertTime(timeValue) {
+        try {
+            let currentTime = new Date(timeValue);
+            let offset = currentTime.getTimezoneOffset() * 60000;
+            let local = new Date(currentTime - offset);
+            return local.toISOString().slice(0, 19).replace('T', ' ');
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
     }
 
     updateStatus() {
         let thisdata = this;
         this.restAPIFetcherCrawler.fetchGet("info", function (event) {
             let crawlerStatus = $("#crawler-status");
-            let crawlerProgress = $("#crawler-progress");
-            let crawlerProgressBar= $(".my-progress-bar");
+            let crawlerProgressBar = $(".my-progress-bar");
             let crawlerConfig = $("#config-value");
             if (event.status !== 1) {
                 crawlerStatus.removeClass();
+                crawlerStatus.addClass("text-center");
                 crawlerStatus.addClass("font-weight-bold");
                 crawlerStatus.addClass("text-secondary");
-                crawlerProgress.html("");
                 crawlerConfig.html("");
                 crawlerProgressBar.css('width', `${0}%`);
-                crawlerProgressBar.html(`${0}%`);
                 crawlerStatus.html("NOT AVAILABLE");
                 thisdata.updateControllerElements("unavailable");
                 return;
@@ -410,25 +289,25 @@ export class CrawlerController extends Page {
             thisdata.updateControllerElements(event.data.message.status);
             thisdata.update100PercentProgressBar(event.data.message.status);
             crawlerStatus.removeClass();
+            crawlerStatus.addClass("text-center");
             crawlerStatus.addClass("font-weight-bold");
             crawlerStatus.html(`${status}`);
             if (status === "READY") {
                 crawlerStatus.addClass("text-success");
-                crawlerProgress.html("");
                 crawlerConfig.html("");
-
                 //this override the 100% i want to show at the end of an successfull progress
                 crawlerProgressBar.css('width', `${0}%`);
-                crawlerProgressBar.html(`${0}%`);
                 return;
             }
-            let progress = event.data.message.progress;
-            thisdata.progressedWithoutCriticalUserInteraction=true;
-            crawlerProgress.html(`. Progress is ${progress} %.`);
+            let progress = parseFloat(event.data.message.progress).toFixed(2);
+            thisdata.progressedWithoutCriticalUserInteraction = true;
             crawlerProgressBar.css('width', `${progress}%`);
-            crawlerProgressBar.html(`${progress}%`);
-            console.log(event.data.message.config);
-            crawlerConfig.html(JSON.stringify(event.data.message.config, undefined, 4));
+            console.log(event.data.message);
+            crawlerConfig.html(JSON.stringify({
+                "progress": `${progress}%`,
+                "processes": event.data.message.processes,
+                "config": event.data.message.config
+            }, undefined, 4));
             if (status === "PAUSED") {
                 crawlerStatus.addClass("text-info");
             } else {
@@ -438,40 +317,21 @@ export class CrawlerController extends Page {
     }
 
     update100PercentProgressBar(crawlerState) {
-        if(this.isSubmitted && crawlerState==="ready"){
-            let crawlerProgressBar= $(".my-progress-bar");
+        if (this.isSubmitted && crawlerState === "ready") {
+            let crawlerProgressBar = $(".my-progress-bar");
             crawlerProgressBar.css('width', `100%`);
-            crawlerProgressBar.html(`100%`);
         }
-
-        //TODO fix it
-
-        // if (crawlerState === "ready" && (this.progressedWithoutCriticalUserInteraction)) {
-        //
-        //     let crawlerProgressBar= $(".my-progress-bar");
-        //     crawlerProgressBar.css('width', `100%`);
-        //     crawlerProgressBar.html(`100%`);
-        // }
-
-
-
-        this.isSubmitted=false;
-
-
-
+        this.isSubmitted = false;
     }
 
     updateControllerElements(crawlerState) {
-        if (crawlerState === this.crawlerLastInfoState) {return;}//no ui-change
-
-        let stop = $(".cc-action-stop");
-        let pause = $(".cc-action-pause");
-        let continuex = $(".cc-action-continue");
-        let shutdown =$(".cc-action-shutdown"); // it's always visible
-        let start = $(".cc-action-start"); // it's always visible
-
-        //the stop-method is an amition-stop
-
+        if (crawlerState === this.crawlerLastInfoState) {return;} // no ui-change
+        let stop = $(`.${this.actionStop}`);
+        let pause = $(`.${this.actionPause}`);
+        let continuex = $(`.${this.actionContinue}`);
+        let shutdown = $(`.${this.actionShutdown}`); // always visible
+        let start = $(`.${this.actionStart}`); // always visible
+        // the stop-method is an animation-stop
         switch (crawlerState) {
             case "ready":
                 stop.stop(true).hide(1000);
@@ -502,7 +362,7 @@ export class CrawlerController extends Page {
                 shutdown.stop(true).hide(1000);
                 break;
             default:
-                //i hope dont getting in there here
+                // I hope dont getting in there here
                 stop.stop(true).show(1000);
                 pause.stop(true).show(1000);
                 continuex.stop(true).show(1000);
@@ -510,7 +370,6 @@ export class CrawlerController extends Page {
                 shutdown.stop(true).show(1000);
                 break;
         }
-
         this.crawlerLastInfoState = crawlerState;
     }
 
@@ -520,51 +379,42 @@ export class CrawlerController extends Page {
     onMount() {
         // Register callback functions for action buttons
         let self = this;
-
-        let stop = $(".cc-action-stop");
-        let pause = $(".cc-action-pause");
-        let continuex = $(".cc-action-continue");
-        //let shutdown =$(".cc-action-shutdown"); //its always visible
-        let start = $(".cc-action-start");
-
+        let stop = $(`.${this.actionStop}`);
+        let pause = $(`.${this.actionPause}`);
+        let continuex = $(`.${this.actionContinue}`);
+        let start = $(`.${this.actionStart}`);
         stop.hide();
         pause.hide();
         continuex.hide();
-        //shutdown.hide();
         start.hide();
-
         $("#config").hide();
         $("#config-hr").hide();
 
-
-        $("#continue-button").click(function () {
+        $(`#${this.actionContinue}-button`).click(function () {
             self.lastUserAction = "continue";
             self.runActionWithMessage("continue");
-            self.progressedWithoutCriticalUserInteraction=true;
+            self.progressedWithoutCriticalUserInteraction = true;
         });
-        $("#pause-button").click(function () {
+        $(`#${this.actionPause}-button`).click(function () {
             self.lastUserAction = "pause";
             self.runActionWithMessage("pause");
-            self.progressedWithoutCriticalUserInteraction=false;
+            self.progressedWithoutCriticalUserInteraction = false;
         });
-        $("#stop-button").click(function () {
+        $(`#${this.actionStop}-button`).click(function () {
             self.lastUserAction = "stop";
             self.runActionWithMessage("stop");
-            self.progressedWithoutCriticalUserInteraction=false;
+            self.progressedWithoutCriticalUserInteraction = false;
         });
-        $("#shutdown-button").click(function () {
+        $(`#${this.actionShutdown}-button`).click(function () {
             self.lastUserAction = "shutdown";
             self.runActionWithMessage("shutdown");
-            self.progressedWithoutCriticalUserInteraction=false;
+            self.progressedWithoutCriticalUserInteraction = false;
         });
-
-        $("#start-button").click(function () {
+        $(`#${this.actionStart}-button`).click(function () {
             $("#config").show(200);
             $("#config-hr").show(200);
-            $("#author").val(localStorage.getItem("username"));
             $("#package-size").val(100);
-            $("#time-start").val(self.getCurrentTimestampLocalTime());
-            self.progressedWithoutCriticalUserInteraction=false;
+            self.progressedWithoutCriticalUserInteraction = false;
         });
 
         $("#cancel-config").click(function () {
@@ -572,14 +422,23 @@ export class CrawlerController extends Page {
             $("#config-hr").hide(500);
         });
 
-        $("#clear-config").click(function () {
-        });
-
-
         $("#config-form").on("submit", function (e) {
             e.preventDefault();
             self.submitConfig(e);
         });
+
+        $("#time-start-select").change(function () {
+            if ($(this).val() === "now") {
+                $(".time-select-container").addClass("col-sm-10");
+                $(".time-select-container").removeClass("col-sm-4");
+                $(".time-start-container").hide();
+            } else {
+                $(".time-select-container").addClass("col-sm-4");
+                $(".time-select-container").removeClass("col-sm-10");
+                $(".time-start-container").show();
+            }
+        });
+
     }
 
     //this method is called each time the user open/go-back to the page here
@@ -598,8 +457,9 @@ export class CrawlerController extends Page {
 
 
     showMessage(message) {
-        let messages = $("#messages");
-        messages.append(message.render()).hide().fadeIn(1000);
+        let messages = $("#messages-controller");
+        messages.append(message.render());//.hide().fadeIn(1000);
+        message.fadeIn();
         $('html, body').animate({
             scrollTop: messages.offset().top
         }, 1000);
@@ -607,7 +467,7 @@ export class CrawlerController extends Page {
 
     runActionWithMessage(route, callback) {
         let self = this;
-        let messages = $("#messages");
+        // let messages = $("#messages-controller");
         self.restAPIFetcherCrawler.fetchGet(route, function (event) {
             self.updateStatus();
             let message = new Message(event.data);
@@ -618,11 +478,37 @@ export class CrawlerController extends Page {
 
     submitConfig(event) {
         let name = $("#name").val();
-        let author = $("#author").val();
+        let author = localStorage.getItem("username"); //$("#author").val();
         let description = $("#description").val();
-        let start = $("#time-start").val();
+        let start;
+
+        if ($("#time-start-select").val() === "now") {
+            start = this.getCurrentTimestampLocalTime();
+        } else {
+
+            let timeInputValue = $("#time-start").val();
+            start = this.convertTime(timeInputValue);
+            if (start === null) {
+
+                let data = {
+                    "success": false,
+                    "message": "You selected the option <b>Start Scheduled</b>. Please insert a valid DateTime",
+                    "command": "config"
+                };
+                this.showMessage(new Message(data));
+                return;
+
+            }
+
+
+        }
+
         let intervalHours = $("#time-interval-hours").val();
+        if (intervalHours === "") intervalHours = "0";
+
         let intervalDays = $("#time-interval-days").val();
+        if (intervalDays === "") intervalDays = "0";
+
         let directories = $("#directories").val();
         let platform = $("#platform").val();
         let cpuLevel = $("#cpu-level").val();
@@ -645,9 +531,8 @@ export class CrawlerController extends Page {
             //we hide directly
             $("#config").hide(500);
             $("#config-hr").hide(500);
-            let crawlerProgressBar= $(".my-progress-bar");
+            let crawlerProgressBar = $(".my-progress-bar");
             crawlerProgressBar.css('width', `0%`);
-            crawlerProgressBar.html(`0%`);
             let self = this;
             this.runActionWithMessage(url, function (event) {
                 if (!event.data.success) {
@@ -655,7 +540,7 @@ export class CrawlerController extends Page {
                     $("#config").stop(true).show(200);
                     $("#config-hr").stop(true).show(200);
                 } else {
-                    self.isSubmitted=true;
+                    self.isSubmitted = true;
                 }
             });
         }

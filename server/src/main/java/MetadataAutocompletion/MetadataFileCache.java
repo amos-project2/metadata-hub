@@ -1,6 +1,7 @@
 package MetadataAutocompletion;
+
 import Database.Database;
-import Database.Model.DatabaseSchemaMetadatum;
+import Database.Model.MetadataInfo;
 import Database.Model.MetadatumValueDatatype;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
@@ -12,12 +13,13 @@ import java.sql.ResultSet;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Getter @Setter
+@Getter
+@Setter
 public class MetadataFileCache
 {
-    private List<DatabaseSchemaMetadatum> metadataTags = new ArrayList<>();
+    private List<MetadataInfo> metadataTags = new ArrayList<>();
     //TODO find a better way of sorting, than a map sorted by its values?
-    private Map<String, DatabaseSchemaMetadatum> tagsSorted = new HashMap<>();
+    private Map<String, MetadataInfo> tagsSorted = new HashMap<>();
 
 
     public MetadataFileCache(List<String> fileTypes, ConcurrentHashMap<String, MetadataFileCache> cache, Database database)
@@ -31,21 +33,34 @@ public class MetadataFileCache
             }));
         }
 
-        //TODO What does this do?
-//        for (MetadataFileCache value : metadataFileCacheList)
-//        {
-//            value.tagsSorted.forEach((key, value2)->{
-//                metadataTags.compute(key, (k, remapping)->{
-//                    if(remapping==null)return value2;
-//                    return remapping + value2;
-//                });
-//            });
-//        }
+        //be careful DatabaseSchemaMetadatum is for performance reasons not in-mutable
+        //so a deep-copy is neceassary if we want to change the data in an other context
+        Map<String, MetadataInfo> tags = new HashMap<>();
+        for (MetadataFileCache value : metadataFileCacheList)
+        {
+            value.tagsSorted.forEach((key2, value2) ->
+            {
+                tags.compute(key2, (k, remapping) ->
+                {
 
-        this.tagsSorted = createSortedMap(this.metadataTags);
+                    //add DatabaseSchemaMetadatum if key not exists
+                    if (remapping == null) return value2.copy();
+
+                    //if exists -> merge it
+                    return remapping.merge(value2);
+                });
+            });
+        }
+
+
+        //TODO sort tags and save the result into a list or map
+
+        this.tagsSorted = tags; //its unsorted //TODO sort it or refactor it to a list
+
+
+        //TODO notice: metadataTags is empty here
+        //   this.tagsSorted = createSortedMap(this.metadataTags);
 //        this.tagsSorted = this.sortByValue(this.metadataTags);
-
-
 
 
     }
@@ -83,20 +98,24 @@ public class MetadataFileCache
 
     }
 
-    private List<DatabaseSchemaMetadatum> convertToMetadataList(Map<String, ArrayList> metadataMap){
+    private List<MetadataInfo> convertToMetadataList(Map<String, ArrayList> metadataMap)
+    {
 
-        List<DatabaseSchemaMetadatum> metadataList = new ArrayList<>();
+        List<MetadataInfo> metadataList = new ArrayList<>();
 
-        for(Map.Entry<String, ArrayList> entry: metadataMap.entrySet()){
-            metadataList.add(new DatabaseSchemaMetadatum(entry.getKey(), (Integer) entry.getValue().get(0), MetadatumValueDatatype.valueOf((String) entry.getValue().get(1))));
+        for (Map.Entry<String, ArrayList> entry : metadataMap.entrySet())
+        {
+            metadataList.add(new MetadataInfo(entry.getKey(), (Integer) entry.getValue().get(0), MetadatumValueDatatype.valueOf((String) entry.getValue().get(1))));
         }
         return metadataList;
     }
 
-    private Map<String, DatabaseSchemaMetadatum> createSortedMap(List<DatabaseSchemaMetadatum> metadataList){
+    private Map<String, MetadataInfo> createSortedMap(List<MetadataInfo> metadataList)
+    {
 
-        Map<String, DatabaseSchemaMetadatum> sortedMap = new LinkedHashMap<>();
-        for(DatabaseSchemaMetadatum metadatum : metadataList){
+        Map<String, MetadataInfo> sortedMap = new LinkedHashMap<>();
+        for (MetadataInfo metadatum : metadataList)
+        {
             sortedMap.put(metadatum.getAttribute(), metadatum);
         }
 
