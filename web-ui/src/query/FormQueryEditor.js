@@ -139,10 +139,10 @@ export class FormQueryEditor extends Page {
 
                  <div class="form-row fq-custom-filter-connector-row-description" style="display:none">
                  <p class="text-left"><b>Filter-Connector-Description:</b>
-                   <br>You can choose here from 5 different filter-connector options. Each option connects your filter in a different way.
-                   <br><b>All AND</b> connects a filter with an AND.
+                   <br><br>You can choose here from 5 different filter-connector options. Each option connects your filter in a different way.
+                   <br><b>All AND</b> connects al filter with an AND.
                    <br><b>ALL OR</b> connects all filter with an OR.
-                   <br><b>Custom Only</b> connects the filter in that way, you want to connect them. So you can connect some filters with an AND some others with an OR, you can also use braces to group it. If you want to negate a filter you can use a NOT
+                   <br><b>Custom Only</b> connects the filter in that way, you want to connect them. So you can connect some filters with an AND some others with an OR, you can also use brackets to group it. If you want to negate a filter you can use a NOT
                    <br><b>Custom And</b> connects the filter the same way Custum Only does, but appends automatically all not in your custom-input referenced filters with an AND
                    <br><b>Custom Or</b> connects the filter the same way Custum Only does, but appends automatically all not in your custom-input referenced filters with an OR
                    <br>
