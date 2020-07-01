@@ -251,7 +251,7 @@ End index test!
 ```
 
 ### Index Insertion Times
-Insertion Times got tested with 17.458 files
+Insertion Times tested with 17.458 files
 
 1. no index:                                                   118.563 sec
 1. gin index on files.metadata:                                119.177 sec
@@ -260,6 +260,16 @@ Insertion Times got tested with 17.458 files
 1. btree index on files.name:                                  119.491 sec
 1. btree index on files.size:                                  121.083 sec
 1. btree index that combines dir_path + name into a full path: 122.049 sec
+
+Insertion Times tested with 663,645 files
+
+1. no index:                                                   1540.74 sec
+1. gin index on files.metadata:                                1811.34 sec
+1. gin index with the jsonb_path_ops operator:                 5376.05 sec
+1. btree index on metadata->>FileName:                         1795.60 sec
+1. btree index on files.name:                                  1617.96 sec
+1. btree index on files.size:                                  4342.36 sec
+1. btree index that combines dir_path + name into a full path: 1588.51 sec
 
 The insertion times of the crawler with and without the indexes can be found [here](https://drive.google.com/drive/folders/1_ZKsWZbUbNF59RixjDvktCSrTypWAz7w)
 
