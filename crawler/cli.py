@@ -250,6 +250,105 @@ def schedule_remove(
     )
 
 
+def intervals_list(subparser: argparse._SubParsersAction = None):
+    """Forward to /intervals/list
+
+    Args:
+        subparser (argparse._SubParsersAction, optional):
+            Parser for command 'intervals-list'. Defaults to None.
+
+    """
+    name = 'intervals-list'
+    if subparser is None:
+        make_request(
+            url=f'{_API}/intervals/list',
+            post=True,
+            json_output=True
+        )
+        return
+    parser = subparser.add_parser(
+        name,
+        description='List the current intervals'
+    )
+
+def intervals_remove(
+    subparser: argparse._SubParsersAction = None,
+    args: argparse.Namespace = None
+):
+    """Forward to /intervals/remove?id={identifier}
+
+    Args:
+        subparser (argparse._SubParsersAction, optional):
+            Parser for command 'intervals-remove'. Defaults to None.
+        args (argparse.Namespace, optional):
+            Arguments of command 'intervals-remove'. Defaults to None.
+
+    """
+    name = 'intervals-remove'
+    if subparser is None:
+        make_request(
+            url=f'{_API}/intervals/remove?id={args.identifier}',
+            post=False,
+            json_output=False
+        )
+        return
+    parser = subparser.add_parser(
+        name,
+        description='Remove the given time interval.'
+    )
+    parser.add_argument(
+        'identifier',
+        type=str,
+        metavar='identifier',
+        help='Identifier of the time interval to remove.'
+    )
+
+
+def intervals_add(
+    subparser: argparse._SubParsersAction = None,
+    args: argparse.Namespace = None
+):
+    """Forward to /intervals/add?start={start}&end={end}&cpu={cpu}
+
+    Args:
+        subparser (argparse._SubParsersAction, optional):
+            Parser for command 'intervals-add'. Defaults to None.
+        args (argparse.Namespace, optional):
+            Arguments of command 'intervals-add'. Defaults to None.
+
+    """
+    name = 'intervals-add'
+    if subparser is None:
+        make_request(
+            url=f'{_API}/intervals/add?start={args.start}&end={args.end}&cpu={args.cpu}',
+            post=False,
+            json_output=False
+        )
+        return
+    parser = subparser.add_parser(
+        name,
+        description='Add a time interval for maximum resource consumption.'
+    )
+    parser.add_argument(
+        'start',
+        type=str,
+        metavar='start',
+        help='Start of the interval.'
+    )
+    parser.add_argument(
+        'end',
+        type=str,
+        metavar='end',
+        help='End of the interval.'
+    )
+    parser.add_argument(
+        'cpu',
+        type=int,
+        metavar='cpu',
+        help='Maximum CPU level of the interval.'
+    )
+
+
 if __name__ == '__main__':
     try:
         environment.init()
@@ -268,6 +367,9 @@ if __name__ == '__main__':
     shutdown(subparser=subparser)
     schedule_list(subparser=subparser)
     schedule_remove(subparser=subparser)
+    intervals_list(subparser=subparser)
+    intervals_remove(subparser=subparser)
+    intervals_add(subparser=subparser)
     args = parser.parse_args()
     # Check connection and run command
     if not check_connection():
@@ -288,3 +390,9 @@ if __name__ == '__main__':
         schedule_list()
     if args.command == 'schedule-remove':
         schedule_remove(args=args)
+    if args.command == 'intervals-list':
+        intervals_list()
+    if args.command == 'intervals-remove':
+        intervals_remove(args=args)
+    if args.command == 'intervals-add':
+        intervals_add(args=args)

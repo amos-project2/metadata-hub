@@ -6,6 +6,7 @@ import {GraphqlQueryEditor} from "./query/GraphqlQueryEditor";
 import {HashQuery} from "./query/HashQuery";
 import {CrawlerController} from "./crawler/CrawlerController";
 import {CrawlerScheduler} from "./crawler/CrawlerScheduler";
+import { CrawlerIntervals } from "./crawler/CrawlerIntervals";
 import {ErrorPage} from "./ErrorPage";
 import {Logout} from "./logout/Logout";
 
@@ -156,6 +157,7 @@ export class Template {
         this.addNavGroup(2, "Crawler", n => {
             n.addOneNavElement(new NavElement(2, "Controller", "crawler-controller", t => {return new CrawlerController(t)}));
             n.addOneNavElement(new NavElement(2, "Scheduler", "crawler-scheduler", t => {return new CrawlerScheduler(t)}));
+            n.addOneNavElement(new NavElement(2, "Intervals", "crawler-intervals", t => {return new CrawlerIntervals(t)}));
         });
 
 

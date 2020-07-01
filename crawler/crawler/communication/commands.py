@@ -63,3 +63,12 @@ SCHEDULER_GET_SCHEDULE = 'get-schedule'
 
 # Shutdown the scheduler
 SCHEDULER_SHUTDOWN = 'shutdown'
+
+# Add a interval for max resource consumption
+SCHEDULER_ADD_INTERVAL = 'add-interval'
+
+# Remove a interval for max resource consumption
+SCHEDULER_REMOVE_INTERVAL = 'remove-interval'
+
+# Get all intervals for max resource consumption
+SCHEDULER_GET_INTERVALS = 'get-intervals'

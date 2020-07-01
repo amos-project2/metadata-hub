@@ -104,47 +104,6 @@ ALTER SEQUENCE public.crawls_id_seq OWNED BY public.crawls.id;
 
 
 --
--- TOC entry 208 (class 1259 OID 16824)
--- Name: file_generic_data_eav; Type: TABLE; Schema: public; Owner: metadatahub
---
-
-CREATE TABLE public.file_generic_data_eav (
-    id bigint NOT NULL,
-    tree_walk_id bigint NOT NULL,
-    file_generic_id bigint NOT NULL,
-    attribute text NOT NULL,
-    value text NOT NULL,
-    unit text NOT NULL
-);
-
-
-ALTER TABLE public.file_generic_data_eav OWNER TO metadatahub;
-
---
--- TOC entry 207 (class 1259 OID 16822)
--- Name: file_generic_data_eav_id_seq; Type: SEQUENCE; Schema: public; Owner: metadatahub
---
-
-CREATE SEQUENCE public.file_generic_data_eav_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    MINVALUE 0
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.file_generic_data_eav_id_seq OWNER TO metadatahub;
-
---
--- TOC entry 2887 (class 0 OID 0)
--- Dependencies: 207
--- Name: file_generic_data_eav_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: metadatahub
---
-
-ALTER SEQUENCE public.file_generic_data_eav_id_seq OWNED BY public.file_generic_data_eav.id;
-
-
---
 -- TOC entry 206 (class 1259 OID 16807)
 -- Name: files; Type: TABLE; Schema: public; Owner: metadatahub
 --
@@ -213,6 +172,21 @@ CREATE SEQUENCE public.files_id_seq
 
 ALTER TABLE public.files_id_seq OWNER TO metadatahub;
 
+
+--
+-- Name: time_intervals; Type: TABLE; Schema: public; Owner: metadatahub
+--
+
+CREATE TABLE public.time_intervals
+(
+    id text NOT NULL,
+    start_time text NOT NULL,
+    end_time text NOT NULL,
+    cpu_level bigint NOT NULL
+);
+
+ALTER TABLE public.time_intervals OWNER to metadatahub;
+
 --
 -- TOC entry 2888 (class 0 OID 0)
 -- Dependencies: 205
@@ -231,14 +205,6 @@ ALTER TABLE ONLY public.crawls ALTER COLUMN id SET DEFAULT nextval('public.crawl
 
 
 --
--- TOC entry 2742 (class 2604 OID 16827)
--- Name: file_generic_data_eav id; Type: DEFAULT; Schema: public; Owner: metadatahub
---
-
-ALTER TABLE ONLY public.file_generic_data_eav ALTER COLUMN id SET DEFAULT nextval('public.file_generic_data_eav_id_seq'::regclass);
-
-
---
 -- TOC entry 2741 (class 2604 OID 16810)
 -- Name: files id; Type: DEFAULT; Schema: public; Owner: metadatahub
 --
@@ -253,15 +219,6 @@ ALTER TABLE ONLY public.files ALTER COLUMN id SET DEFAULT nextval('public.files_
 
 ALTER TABLE ONLY public.crawls
     ADD CONSTRAINT crawls_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2748 (class 2606 OID 16832)
--- Name: file_generic_data_eav file_generic_data_eav_pkey; Type: CONSTRAINT; Schema: public; Owner: metadatahub
---
-
-ALTER TABLE ONLY public.file_generic_data_eav
-    ADD CONSTRAINT file_generic_data_eav_pkey PRIMARY KEY (id);
 
 
 --
@@ -299,23 +256,6 @@ ALTER TABLE ONLY public.files
 
 
 --
--- TOC entry 2750 (class 2606 OID 16833)
--- Name: file_generic_data_eav crawl_id; Type: FK CONSTRAINT; Schema: public; Owner: metadatahub
---
-
-ALTER TABLE ONLY public.file_generic_data_eav
-    ADD CONSTRAINT crawl_id FOREIGN KEY (tree_walk_id) REFERENCES public.crawls(id);
-
-
---
--- TOC entry 2751 (class 2606 OID 16838)
--- Name: file_generic_data_eav file_id; Type: FK CONSTRAINT; Schema: public; Owner: metadatahub
---
-
-ALTER TABLE ONLY public.file_generic_data_eav
-    ADD CONSTRAINT file_id FOREIGN KEY (file_generic_id) REFERENCES public.files(id);
-
---
 -- Name: metadata metadata_pkey; Type: CONSTRAINT; Schema: public; Owner: metadatahub
 --
 
@@ -329,6 +269,15 @@ ALTER TABLE ONLY public.metadata
 
 ALTER TABLE ONLY public.schedule
     ADD CONSTRAINT schedule_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: schedule interval_pkey; Type: CONSTRAINT; Schema: public; Owner: metadatahub
+--
+
+ALTER TABLE ONLY public.time_intervals
+    ADD CONSTRAINT interval_pkey PRIMARY KEY (id);
+
 
 -- Completed on 2020-05-31 00:55:10
 

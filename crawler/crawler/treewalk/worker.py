@@ -64,7 +64,7 @@ class Worker(multiprocessing.Process):
         lock: multiprocessing.Lock,
         counter: multiprocessing.Value,
         finished: multiprocessing.Event,
-        num_workers: int,
+        num_workers: multiprocessing.Value,
         measure_time: bool
     ):
         super(Worker, self).__init__()
@@ -138,7 +138,7 @@ class Worker(multiprocessing.Process):
                 insert_values += ('NULL',)
         for i in ['FileSize']:
             try:
-                val = self.getSize(exif[i])
+                val = exif[i]
                 insert_values += (val,)
             except:
                 insert_values += (None,)
@@ -160,43 +160,65 @@ class Worker(multiprocessing.Process):
         insert_values += (False, '-infinity')
         return insert_values
 
-    def getSize(self, size: str) -> int:
-        """Convert the size into bytes
-
-        Args:
-            size (str): the exif output for size
-
-        Returns:
-            str: string with the value in bytes
-
-        """
-
-        unit = size.split(' ')[1]
-        multipl = 1
-        if unit[0] == 'k':
-            multipl = 1000
-        elif unit[0] == 'm':
-            multipl = 1000000
-        elif unit[0] == 'g':
-            multipl = 1000000000
-        elif unit[0] == 't':
-            multipl = 1000000000000
-        return int(size.split(' ')[0]) * multipl
+    # def getSize(self, size: str) -> int:
+    #     """Convert the size into bytes
+    #
+    #     Args:
+    #         size (str): the exif output for size
+    #
+    #     Returns:
+    #         str: string with the value in bytes
+    #
+    #     """
+    #
+    #     unit = size.split(' ')[1]
+    #     multipl = 1
+    #     if unit[0] == 'k':
+    #         multipl = 1000
+    #     elif unit[0] == 'm':
+    #         multipl = 1000000
+    #     elif unit[0] == 'g':
+    #         multipl = 1000000000
+    #     elif unit[0] == 't':
+    #         multipl = 1000000000000
+    #     return int(size.split(' ')[0]) * multipl
 
     def create_metadata_list(self, exif_output: json) -> Dict:
-        # Loop over every tag in the json and sum them up in a dictionary
+        """Creates an easy to process dictionary for updating the 'metadata' table in the database
+
+        Args:
+            exif_output (json): The output from the ExifTool output.
+        Returns:
+            Dict: key: file type | value: Dict: key: tag value: count
+        """
+        # Loop over every tag for each file in the ExifTool output and add them to the dictionary
         tag_values = {}
         for single_output in exif_output:
             fileType = single_output['FileType']
             if fileType not in tag_values:
                 tag_values[fileType] = {}
             for tag_value in single_output:
+                test = dict(single_output)
                 if tag_value in tag_values[fileType]:
-                    tag_values[fileType][tag_value] += 1
+                    tag_values[fileType][tag_value][0] += 1
                 else:
-                    tag_values[fileType][tag_value] = 1
+                    tag_values[fileType][tag_value] = [1, '?']
+                if tag_values[fileType][tag_value][1] == '?':
+                    tag_values[fileType][tag_value][1] = self.output_type(test[tag_value])
         return tag_values
 
+    def output_type(self, to_check: str):
+        """Determine whether the output value of a file is a digit or a string
+        Args:
+            to_check (str): The string variant of the value
+        Returns:
+            float representation if conversion is possible, string otherwise
+        """
+        try:
+            checked = float(to_check)
+            return 'dig'
+        except:
+            return 'str'
 
     @measure_exiftool
     def run_exiftool(self, package: List[str]) -> dict:
@@ -211,7 +233,7 @@ class Worker(multiprocessing.Process):
         """
         try:
             process = subprocess.Popen(
-                [f'{self._exiftool}', '-json', *package],
+                [f'{self._exiftool}', '-n', '-json', *package],
                 stdout=subprocess.PIPE
             )
             # FIXME better solution?
@@ -244,7 +266,7 @@ class Worker(multiprocessing.Process):
             # The last one sets the finished event
             with self._lock:
                 self._counter.value += 1
-                if self._counter.value == self._num_workers:
+                if self._counter.value == self._num_workers.value:
                     self._counter.value = 0
                     self._finished.set()
                     _logger.debug(f'Process {self.pid}: finished as last.')
@@ -273,6 +295,9 @@ class Worker(multiprocessing.Process):
                 hash256 = hashlib.sha256(bytes).hexdigest()
                 insert_values += (hash256, False)
             # add the value string to the rest for insert batching
+            # FIXME Better solution for ignoring files with no file_type?
+            if insert_values[3] == 'NULL':
+                continue
             inserts.append(insert_values)
 
         # insert into the database

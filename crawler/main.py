@@ -43,7 +43,7 @@ if __name__ == '__main__':
         measure_time=measure_time,
         state=tree_walk_state
     )
-    thread_api = threading.Thread(target=api.start)
+    thread_api = threading.Thread(target=api.start, args=(tree_walk_state,))
     thread_database_updater = db_updater.DatabaseUpdater(
         db_info=db_connection_data,
         measure_time=measure_time
@@ -51,7 +51,8 @@ if __name__ == '__main__':
     thread_treewalk_scheduler = scheduler.TreeWalkScheduler(
         db_info=db_connection_data,
         measure_time=measure_time,
-        update_interval=environment.env.CRAWLER_SCHEDULER_INTERVAL
+        update_interval=environment.env.CRAWLER_SCHEDULER_INTERVAL,
+        tw_state=tree_walk_state
     )
     # Starting threads
     thread_api.start()
