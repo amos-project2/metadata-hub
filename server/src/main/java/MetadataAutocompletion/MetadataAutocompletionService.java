@@ -79,12 +79,19 @@ public class MetadataAutocompletionService
 
     public String getMetadataDatatype(List<String> fileTypes, String metadataTag){
 
+        String tagDatatype;
+
         String fileTypesID = getFileTypesAsConcatenatedString(fileTypes);
         MetadataFileCache metadataInfoCache = getMetadataInfoCache(fileTypes, fileTypesID);
+        Map sortedTags = metadataInfoCache.getTagsSorted();
 
-        String datatype = metadataInfoCache.getTagsSorted().get(metadataTag).getValueDatatype().toString();
+        if(sortedTags.containsKey(metadataTag)){
+           tagDatatype = metadataInfoCache.getTagsSorted().get(metadataTag).getValueDatatype().toString();
+        }else{
+            tagDatatype = "";
+        }
 
-        return datatype;
+        return tagDatatype;
     }
 
     @NotNull

@@ -446,6 +446,24 @@ export class FormQueryEditor extends Page {
             dhis_state.metadatAutocompletion.reAddListener();
 
 
+            //Validate Metadata Datatype:
+            // Queries the server to know which kind of datatype the metadatavalue of a given metadata tag has
+            console.log("Tag: " + $(this).val())
+            if($(this).val().length > 1){
+
+                let datatype = dhis_state.metadatAutocompletion.getDataType($(this).val());
+
+                console.log("datatype: " + datatype)
+
+                if(datatype == "str"){
+                    console.log("datatype str");
+                }else if(datatype == "dig"){
+                    console.log("dig");
+                }else{
+                    console.log("no datatype :(")
+                }
+            }
+
         });
 
 
@@ -554,6 +572,8 @@ export class FormQueryEditor extends Page {
     }
 
     inputSuggestion() {
+
+
         //Set owner to user
         //$("#fq-owner").val(localStorage.getItem("username"))
     }

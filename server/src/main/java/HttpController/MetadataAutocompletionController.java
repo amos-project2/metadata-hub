@@ -39,16 +39,22 @@ public class MetadataAutocompletionController
     @Path("/datatype")
     public String getMetadataDatatype(@QueryParam("q") String query) throws JsonProcessingException
     {
-        System.out.println("Query =" + query);
+        System.out.println("Datatype Query =" + query);
 
         String[] split = query.split("\\$XXX\\$");
-        String metadataTag = split[0].toLowerCase().trim();
-        String fileTypes = split[1].toUpperCase().trim();
+        String metadataTag = split[0].trim();
+
+        //Default value if no file type is used
+        String fileTypes = "JPEG";
+        if(split.length > 1){
+            fileTypes = split[1].toUpperCase().trim();
+        }
+        System.out.println("getMetadata:  tag: " + metadataTag + " fileTypes: " + fileTypes);
 
         String datatype = metadataAutocompletionService.getMetadataDatatype(this.createList(fileTypes,true), metadataTag);
 
         String json = new ObjectMapper().writeValueAsString(datatype);
-        System.out.println(json);
+        System.out.println("Returned Datatype: " + json);
         return json;
     }
 

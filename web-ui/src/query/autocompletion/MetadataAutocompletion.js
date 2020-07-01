@@ -28,6 +28,37 @@ export class MetadataAutocompletion {
 
     }
 
+    // get the Datatype of a given tag from the Server
+    getDataType(tag){
+
+        let thisdata = this;
+        let datatype;
+
+        function getFileString() {
+
+            let resultString = tag + "$XXX$";
+            thisdata.fileTypes.forEach(element => {
+                resultString += element + "$X$";
+            });
+            return resultString + "$XXX$";
+        }
+
+        let query = getFileString();
+        console.log("Query? : " + query);
+        this.restApiFetcherServer.fetchGet("metadata-autocomplete/datatype/?q=" + encodeURIComponent(getFileString()), function (event) {
+            console.log("First Datatype: " + event.data.toString());
+            datatype = event.data.toString();
+            return datatype;
+        });
+
+        //This executes before Rest Call returns! so no useful value is returned
+        console.log("SECOND");
+        console.log("Returned Datatype: " + datatype);
+        return datatype;
+
+    }
+
+
     //private
     //TODO rename and append also FileType
     updateListsFilterMetadata() {
