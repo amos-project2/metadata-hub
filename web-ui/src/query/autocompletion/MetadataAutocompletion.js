@@ -322,7 +322,7 @@ export class MetadataAutocompletion {
                 lastElement.trigger("focusin");
                 lastElement.trigger("focusout");
 
-                let jqThis=$(this);
+                let jqThis = $(this);
                 jqThis.parent().find(".filter-adder-message").show();
                 jqThis.hide();
 
@@ -330,7 +330,7 @@ export class MetadataAutocompletion {
                     jqThis.parent().find(".filter-adder-message").hide(600);
                     jqThis.show(600);
                     lastElement.removeClass("autocompleteDeactivated");
-                },1000)
+                }, 1000)
 
 
                 //lastElement.removeClass("autocompleteDeactivated");
@@ -339,7 +339,32 @@ export class MetadataAutocompletion {
             });
 
             $(".metadata-adder").not(".listenerAdded").change(function () {
-                alert($(this).data("adderto"));
+
+                let lastElement
+
+                if ($(this).is(':checked')) {
+                    lastElement = $(".attribut-element-input").last();
+                    lastElement.val($(this).data("adderto"));
+                    lastElement.addClass("autocompleteDeactivated");
+                    lastElement.trigger("focusin");
+                    lastElement.trigger("focusout");
+                    lastElement.removeClass("autocompleteDeactivated");
+                } else {
+                    let jqThis = $(this);
+                    $(".attribut-element-input").each(function () {
+                            if ($(this).val().toLowerCase().trim() === jqThis.data("adderto").toLowerCase().trim()) {
+                                $(this).val("");
+                                lastElement = $(this);
+                                lastElement.addClass("autocompleteDeactivated");
+                                lastElement.trigger("focusin");
+                                lastElement.trigger("focusout");
+                                lastElement.removeClass("autocompleteDeactivated");
+                            }
+                    });
+                }
+
+
+
             });
 
             $(".filter-adder").not(".listenerAdded").addClass("listenerAdded");
@@ -356,6 +381,14 @@ export class MetadataAutocompletion {
 
         data.forEach(element => {
             let counter = MetadataAutocompletion.increaseCount();
+
+            let checked = ``;
+            this.metadata.forEach(element2 => {
+                if (element.toLowerCase().trim() === element2.toLowerCase().trim()) {
+                    checked = `checked`;
+                }
+            });
+
             // language=HTML
             result += `
                     <div class="row" style="margin-bottom: 8px;">
@@ -368,7 +401,7 @@ export class MetadataAutocompletion {
                         </div>
                         <div class="col-sm-3"">
                          <div class="custom-control custom-switch">
-                            <input type="checkbox" class="custom-control-input metadata-adder" data-adderto="${element}" id="adder-switch-${counter}">
+                            <input type="checkbox" class="custom-control-input metadata-adder" data-adderto="${element}" id="adder-switch-${counter}" ${checked}>
                             <label class="custom-control-label" for="adder-switch-${counter}"> </label>
                          </div>
 
