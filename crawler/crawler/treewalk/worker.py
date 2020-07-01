@@ -198,13 +198,13 @@ class Worker(multiprocessing.Process):
             if fileType not in tag_values:
                 tag_values[fileType] = {}
             for tag_value in single_output:
-                # test = dict(single_output)
-                # print(type(self.output_type(test[tag_value])))
-                #print(single_output[tag_values])
+                test = dict(single_output)
                 if tag_value in tag_values[fileType]:
-                    tag_values[fileType][tag_value] += 1
+                    tag_values[fileType][tag_value][0] += 1
                 else:
-                    tag_values[fileType][tag_value] = 1
+                    tag_values[fileType][tag_value] = [1, '?']
+                if tag_values[fileType][tag_value][1] == '?':
+                    tag_values[fileType][tag_value][1] = self.output_type(test[tag_value])
         return tag_values
 
     def output_type(self, to_check: str):
@@ -216,9 +216,9 @@ class Worker(multiprocessing.Process):
         """
         try:
             checked = float(to_check)
-            return checked
+            return 'dig'
         except:
-            return to_check
+            return 'str'
 
     @measure_exiftool
     def run_exiftool(self, package: List[str]) -> dict:
@@ -295,6 +295,7 @@ class Worker(multiprocessing.Process):
                 hash256 = hashlib.sha256(bytes).hexdigest()
                 insert_values += (hash256, False)
             # add the value string to the rest for insert batching
+            # FIXME Better solution for ignoring files with no file_type?
             if insert_values[3] == 'NULL':
                 continue
             inserts.append(insert_values)

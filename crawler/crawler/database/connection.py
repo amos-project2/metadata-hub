@@ -398,10 +398,11 @@ class DatabaseConnection:
                 # increase the values of each entry according to the new files
                 for tag in entry[1]:
                     if tag in updates.keys():
-                        entry[1][tag] = int(entry[1][tag]) + int(updates[tag])
+                        entry[1][tag][0] = int(entry[1][tag][0]) + int(updates[tag][0])
                         del updates[tag]
+                # Tag doesn't exist yet
                 for tag in updates:
-                    entry[1][tag] = int(updates[tag])
+                    entry[1][tag] = [int(updates[tag][0]), updates[tag][1]]
                 del additions[file_type]
                 query = curs.mogrify(query, (json.dumps(entry[1]), file_type))
                 curs.execute(query)
@@ -413,13 +414,26 @@ class DatabaseConnection:
                 curs.execute(query)
             curs.close()
             self.con.commit()
-        except:
+        except Exception as e:
+            print(e)
             _logger.warning("Error increasing the values of the metadata table!")
             # TODO Make sure the main method knows a reevaluate method should be called
             curs.close()
             self.con.rollback()
             raise
 
+    def output_type(self, to_check: str):
+        """Determine whether the output value of a file is a digit or a string
+        Args:
+            to_check (str): The string variant of the value
+        Returns:
+            float representation if conversion is possible, string otherwise
+        """
+        try:
+            checked = float(to_check)
+            return 'dig'
+        except:
+            return 'str'
 
     def decrease_dynamic(self, ids: List[int]) -> None:
         """
@@ -437,8 +451,8 @@ class DatabaseConnection:
                         metadata_dict[entry[1]] = {}
                     for file_result in entry[0]:
                         if file_result not in metadata_dict[entry[1]]:
-                            metadata_dict[entry[1]][file_result] = 0
-                        metadata_dict[entry[1]][file_result] += 1
+                            metadata_dict[entry[1]][file_result] = [0, self.output_type(entry[0][file_result])]
+                        metadata_dict[entry[1]][file_result][0] += 1
             except Exception as e:
                 raise
             return metadata_dict
@@ -465,7 +479,7 @@ class DatabaseConnection:
                 to_update = file_type[1]
                 merger = metadata[file_type[0]]
                 for key in merger.keys():
-                    to_update[key] = int(file_type[1][key]) - merger[key]
+                    to_update[key][0] = int(file_type[1][key][0]) - merger[key][0]
                 query = 'UPDATE metadata SET "tags" = %s WHERE "file_type" = %s;'
                 query = curs.mogrify(query, (json.dumps(to_update), file_type[0]))
                 curs.execute(query)
