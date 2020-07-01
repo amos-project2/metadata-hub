@@ -62,20 +62,20 @@ export class CrawlerController extends Page {
                     </div>
                 </div>
                 ${new Action(
-                    this.actionStop, Descriptions.actionStop(), "stop"
-                ).render()}
+            this.actionStop, Descriptions.actionStop(), "stop"
+        ).render()}
                 ${new Action(
-                    this.actionPause, Descriptions.actionPause(), "pause"
-                ).render()}
+            this.actionPause, Descriptions.actionPause(), "pause"
+        ).render()}
                 ${new Action(
-                    this.actionContinue, Descriptions.actionContinue(), "continue"
-                ).render()}
+            this.actionContinue, Descriptions.actionContinue(), "continue"
+        ).render()}
                 ${new Action(
-                    this.actionShutdown, Descriptions.actionShutdown(), "shutdown"
-                ).render()}
+            this.actionShutdown, Descriptions.actionShutdown(), "shutdown"
+        ).render()}
                 ${new Action(
-                    this.actionStart, Descriptions.actionStart(), "start"
-                ).render()}
+            this.actionStart, Descriptions.actionStart(), "start"
+        ).render()}
                 <hr id="config-hr">
                 <div class="cc-action-start">
                     <div id="config" class="row mt-3 mb-3">
@@ -467,7 +467,7 @@ export class CrawlerController extends Page {
 
     runActionWithMessage(route, callback) {
         let self = this;
-       // let messages = $("#messages-controller");
+        // let messages = $("#messages-controller");
         self.restAPIFetcherCrawler.fetchGet(route, function (event) {
             self.updateStatus();
             let message = new Message(event.data);
@@ -504,7 +504,11 @@ export class CrawlerController extends Page {
         }
 
         let intervalHours = $("#time-interval-hours").val();
+        if (intervalHours === "") intervalHours = "0";
+
         let intervalDays = $("#time-interval-days").val();
+        if (intervalDays === "") intervalDays = "0";
+
         let directories = $("#directories").val();
         let platform = $("#platform").val();
         let cpuLevel = $("#cpu-level").val();
