@@ -101,7 +101,7 @@ export class FormQueryEditor extends Page {
                     </div>
                 </div>
                 <div class="form-row justify-content-md-center">
-                    <button type="submit" class="btn btn-primary modalOpenerSelector">Open Metadata-Attribut-Selector</button>
+                    <button type="button" class="btn btn-primary modalOpenerSelector">Open Metadata-Attribut-Selector</button>
                 </div>
 
 
