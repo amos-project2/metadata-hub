@@ -5,6 +5,7 @@
     "database-user": "metadatahub",
     "database-password": "metadatahub",
     "crawler-host": "0.0.0.0",
+    "crawler-service-name": "0.0.0.0",
     "crawler-port": 9000,
     "crawler-logging-level": "INFO",
     "crawler-db-update-interval": 60,

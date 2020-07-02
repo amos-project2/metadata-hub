@@ -46,7 +46,7 @@ export class FormQueryEditor extends Page {
                     </div>
                     <div class="form-group col-md-6">
                         <label for="fq-owner">Owner <a class="pover" title="Owner" data-content="The Owner, which is saved with the query here into the database.">[?]</a></label>
-                        <input type="text" class="form-control" id="fq-owner" >
+                        <input type="text" class="form-control" id="fq-owner" value="${localStorage.getItem("username")}" disabled>
                     </div>
                 </div>
 
@@ -101,7 +101,8 @@ export class FormQueryEditor extends Page {
                     </div>
                 </div>
                 <div class="form-row justify-content-md-center">
-                    <button type="submit" class="btn btn-primary modalOpenerSelector">Open Metadata-Attribut-Selector</button>
+                    <button type="button" class="btn btn-primary modalOpenerSelector mr-3">Open Metadata-Attribut-Selector</button>
+                    <button type="button" class="btn btn-danger modalClearCache mr-3">Clear Autocompletion Cache</button>
                 </div>
 
 
@@ -126,7 +127,7 @@ export class FormQueryEditor extends Page {
                 <div>
                 <div class="form-row justify-content-md-center">
                     <div class="form-group col-md-2">
-                    <label for="fg-filter-connector-options">Filter Connector<a class="pover" title="Filter Connector" data-content="ALL AND: all filters are connected with AND<br>ALL AND: all filters are connected with OR<br>Custom Only: you can type in your own bool-expression<br> Custom with AND/OR means all filters you dont reference are append with AND/OR">[?]</a></label>
+                    <label for="fg-filter-connector-options">Filter Connector<a class="pover-filter-connector" style="cursor:pointer; color: #007bff;">[?]</a></label>
                         <select class="custom-select fg-filter-connector-options" id="fg-filter-connector-options">
                                 <option value="all-and" selected>ALL AND</option>
                                 <option value="all-or">ALL OR</option>
@@ -135,6 +136,18 @@ export class FormQueryEditor extends Page {
                                 <option value="custom-or">Custom OR</option>
                             </select>
                     </div>
+                </div>
+
+                 <div class="form-row fq-custom-filter-connector-row-description" style="display:none">
+                 <p class="text-left"><b>Filter-Connector-Description:</b>
+                   <br><br>You can choose here from 5 different filter-connector options. Each option connects your filter in a different way.
+                   <br><b>All AND</b> connects al filter with an AND.
+                   <br><b>ALL OR</b> connects all filter with an OR.
+                   <br><b>Custom Only</b> connects the filter in that way, you want to connect them. So you can connect some filters with an AND some others with an OR, you can also use brackets to group it. If you want to negate a filter you can use a NOT
+                   <br><b>Custom And</b> connects the filter the same way Custum Only does, but appends automatically all not in your custom-input referenced filters with an AND
+                   <br><b>Custom Or</b> connects the filter the same way Custum Only does, but appends automatically all not in your custom-input referenced filters with an OR
+                   <br>
+                   </p>
                 </div>
 
                  <div class="form-row fq-custom-filter-connector-row" style="display:none">
@@ -212,6 +225,7 @@ export class FormQueryEditor extends Page {
             ${this.getModalCode()}
 
             ${this.metadatAutocompletion.getStaticModalHtml()}
+            ${this.metadatAutocompletion.getStaticModalHtmlClearCache()}
 
             `;
 
@@ -301,6 +315,10 @@ export class FormQueryEditor extends Page {
             }
         });
 
+        $(".pover-filter-connector").click(function () {
+            $(".fq-custom-filter-connector-row-description").toggle(1000);
+        });
+
 
         //alert(datetimepicker());
         //  datetimepicker(jQuery);
@@ -321,21 +339,24 @@ export class FormQueryEditor extends Page {
         let dhis_state = this;
 
 
-
-        $(".attribut-element-input").focusout(function () {
+        $(".attribut-element-input").not(".listenerAdded").focusout(function () {
             if ($(".attribut-element-input").length < 2) {return;}
 
             if ($(this).val() === "") {
                 $(this).parent().remove();
             }
 
-            dhis_state.metadatAutocompletion.updateListsFilterMetadata();
+            //here must be any race, the value isnt in all cases visible in updateListFilterMetadata
+            //so i added a small delay
+            setTimeout(function(){
+                dhis_state.metadatAutocompletion.updateListsFilterMetadata();
+            },200);
             dhis_state.metadatAutocompletion.reAddListener();
 
 
         });
 
-        $(".attribut-element-input").focusin(function () {
+        $(".attribut-element-input").not(".listenerAdded").focusin(function () {
             let dhis = this;
             let emptyTextField = false;
             $(".attribut-element-input").each(function () {
@@ -356,6 +377,10 @@ export class FormQueryEditor extends Page {
             }
 
         });
+
+        //must be the last method
+        $(".attribut-element-input").not(".listenerAdded").addClass("listenerAdded");
+
     }
 
 
@@ -409,7 +434,7 @@ export class FormQueryEditor extends Page {
         // this.metadatAutocompletion.updateListsFilterMetadata();
         // this.metadatAutocompletion.reAddListener();
 
-        $(".fg-metadata-attribute").focusout(function () {
+        $(".fg-metadata-attribute").not(".listenerAdded").focusout(function () {
             if ($(".fg-metadata-attribute").length < 2) {return;}
 
             if ($(this).val() === "") {
@@ -418,13 +443,37 @@ export class FormQueryEditor extends Page {
 
             dhis_state.reorderFunctionIdsInFilter();
 
-            dhis_state.metadatAutocompletion.updateListsFilterMetadata();
+
+            //here must be any race, the value isnt in all cases visible in updateListFilterMetadata
+            //so i added a small delay
+            setTimeout(function(){
+                dhis_state.metadatAutocompletion.updateListsFilterMetadata();
+            },200);
             dhis_state.metadatAutocompletion.reAddListener();
+
+
+            //Validate Metadata Datatype:
+            // Queries the server to know which kind of datatype the metadatavalue of a given metadata tag has
+            console.log("Tag: " + $(this).val())
+            if($(this).val().length > 1){
+
+                let datatype = dhis_state.metadatAutocompletion.getDataType($(this).val());
+
+                console.log("datatype: " + datatype)
+
+                if(datatype == "str"){
+                    console.log("datatype str");
+                }else if(datatype == "dig"){
+                    console.log("dig");
+                }else{
+                    console.log("no datatype :(")
+                }
+            }
 
         });
 
 
-        $(".fg-metadata-attribute").focusin(function () {
+        $(".fg-metadata-attribute").not(".listenerAdded").focusin(function () {
             let dhis = this;
             let emptyTextField = false;
             $(".fg-metadata-attribute").each(function () {
@@ -443,82 +492,100 @@ export class FormQueryEditor extends Page {
             }
 
         });
+
+
+        $(".fg-filter-function").not(".listenerAdded").change(function () {
+            if ($(this).val() === "exists") {
+                $(this).parent().parent().find(".fg-metadata-value").hide();
+            } else {
+                $(this).parent().parent().find(".fg-metadata-value").show();
+            }
+
+        });
+
+        //must be the last method
+        $(".fg-metadata-attribute").not(".listenerAdded").addClass("listenerAdded");
+        $(".fg-filter-function").not(".listenerAdded").addClass("listenerAdded");
+
+
     }
 
     inputValidation() {
 
         //Validate Date
-        $("#fq-createFileTimeRangeStart").focusout(function(){
+        $("#fq-createFileTimeRangeStart").focusout(function () {
 
             let startDateElement = document.getElementById("fq-createFileTimeRangeStart");
 
             let startDate = $("#fq-createFileTimeRangeStart").val();
             let endDate = $("#fq-createFileTimeRangeEnd").val();
 
-            if(startDate != "" && endDate != "" && startDate > endDate){
+            if (startDate != "" && endDate != "" && startDate > endDate) {
                 startDateElement.setCustomValidity('Start Time must be before End Time');
                 startDateElement.reportValidity();
-            }else{
+            } else {
                 startDateElement.setCustomValidity("");
             }
         })
 
-        $("#fq-createFileTimeRangeEnd").focusout(function(){
+        $("#fq-createFileTimeRangeEnd").focusout(function () {
 
             let startDateElement = document.getElementById("fq-createFileTimeRangeEnd");
 
             let startDate = $("#fq-createFileTimeRangeStart").val();
             let endDate = $("#fq-createFileTimeRangeEnd").val();
 
-            if(startDate != "" && endDate != "" && startDate > endDate){
+            if (startDate != "" && endDate != "" && startDate > endDate) {
                 startDateElement.setCustomValidity('End Time must be after Start Time');
                 startDateElement.reportValidity();
-            }else{
+            } else {
                 startDateElement.setCustomValidity("");
             }
         })
 
-        $("#fq-createFileTimeRangeStartUpdated").focusout(function(){
+        $("#fq-createFileTimeRangeStartUpdated").focusout(function () {
 
             let startDateElement = document.getElementById("fq-createFileTimeRangeStartUpdated");
 
             let startDate = $("#fq-createFileTimeRangeStartUpdated").val();
             let endDate = $("#fq-createFileTimeRangeEndUpdated").val();
 
-            if(startDate != "" && endDate != "" && startDate > endDate){
+            if (startDate != "" && endDate != "" && startDate > endDate) {
                 startDateElement.setCustomValidity('Start Time must be before End Time');
                 startDateElement.reportValidity();
-            }else{
+            } else {
                 startDateElement.setCustomValidity("");
             }
         })
 
-        $("#fq-createFileTimeRangeEndUpdated").focusout(function(){
+        $("#fq-createFileTimeRangeEndUpdated").focusout(function () {
 
             let startDateElement = document.getElementById("fq-createFileTimeRangeEndUpdated");
 
             let startDate = $("#fq-createFileTimeRangeStartUpdated").val();
             let endDate = $("#fq-createFileTimeRangeEndUpdated").val();
 
-            if(startDate != "" && endDate != "" && startDate > endDate){
+            if (startDate != "" && endDate != "" && startDate > endDate) {
                 startDateElement.setCustomValidity('End Time must be after Start Time');
                 startDateElement.reportValidity();
-            }else{
+            } else {
                 startDateElement.setCustomValidity("");
             }
         })
 
         //Limit Limit input to integer
-        $("#fq-limit").focusout(function(){
+        $("#fq-limit").focusout(function () {
             let tmpLimit = $("#fq-limit").val();
-            $("#fq-limit").val(tmpLimit.replace(/[^0-9]/g,''));
+            $("#fq-limit").val(tmpLimit.replace(/[^0-9]/g, ''));
         })
 
     }
 
     inputSuggestion() {
+
+
         //Set owner to user
-        $("#fq-owner").val(localStorage.getItem("username"))
+        //$("#fq-owner").val(localStorage.getItem("username"))
     }
 
 
@@ -705,19 +772,24 @@ query
 
         let dhis_state = this;
 
-        $(".filetype-element-input").focusout(function () {
+        $(".filetype-element-input").not(".listenerAdded").focusout(function () {
             if ($(".filetype-element-input").length < 2) {return;}
 
             if ($(this).val() === "") {
                 $(this).parent().remove();
             }
 
+            //here must be any race, the value isnt in all cases visible in updateListFilterMetadata
+            //so i added a small delay
             dhis_state.metadatAutocompletion.updateListsFilterMetadata();
+            setTimeout(function(){
+                dhis_state.metadatAutocompletion.updateListsFilterMetadata();
+            },200);
             dhis_state.metadatAutocompletion.reAddListener();
 
         });
 
-        $(".filetype-element-input").focusin(function () {
+        $(".filetype-element-input").not(".listenerAdded").focusin(function () {
             let dhis = this;
             let emptyTextField = false;
             $(".filetype-element-input").each(function () {
@@ -729,15 +801,20 @@ query
 
             if (!emptyTextField) {
                 $(".fg-filetype-container").append(`
-    <div class="form-group col-md-4 fg-filetype-element">
-          <input type="text" class="form-control filetype-element-input">
-    </div>`);
-
+                    <div class="form-group col-md-4 fg-filetype-element">
+                          <input type="text" class="form-control filetype-element-input">
+                    </div>
+                `);
 
                 dhis_state.helperMethodFiletypeFilter();//IMPORTANT: re-add the listener to the new created element(s)
             }
 
         });
+
+        //must be the last method
+        $(".filetype-element-input").not(".listenerAdded").addClass("listenerAdded");
+
+
     }
 
 

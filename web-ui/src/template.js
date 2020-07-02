@@ -6,6 +6,7 @@ import {GraphqlQueryEditor} from "./query/GraphqlQueryEditor";
 import {HashQuery} from "./query/HashQuery";
 import {CrawlerController} from "./crawler/CrawlerController";
 import {CrawlerScheduler} from "./crawler/CrawlerScheduler";
+import {CrawlerIntervals} from "./crawler/CrawlerIntervals";
 import {ErrorPage} from "./ErrorPage";
 import {Logout} from "./logout/Logout";
 
@@ -131,7 +132,7 @@ export class Template {
         //this.errorPage = new ErrorPage(this, "error-404")
 
         this.replaceState = false;
-        this.lastPage="UNDEFINED xxx";
+        this.lastPage = "UNDEFINED xxx";
 
 
         // let thisdata = this;
@@ -156,6 +157,7 @@ export class Template {
         this.addNavGroup(2, "Crawler", n => {
             n.addOneNavElement(new NavElement(2, "Controller", "crawler-controller", t => {return new CrawlerController(t)}));
             n.addOneNavElement(new NavElement(2, "Scheduler", "crawler-scheduler", t => {return new CrawlerScheduler(t)}));
+            n.addOneNavElement(new NavElement(2, "Intervals", "crawler-intervals", t => {return new CrawlerIntervals(t)}));
         });
 
 
@@ -306,8 +308,12 @@ export class Template {
 
         window.onpopstate = function (event) {
             let page = thisdata.dependencies.utilities.getUrlVars()["p"];
-            page = page.split("#!").join("");
-            if(page==thisdata.lastPage) return;
+            if (page.includes("#!")) {
+                history.replaceState('no-data', $("title"), '?p=' + page.split("#!").join(""));
+                return;
+            }
+            //page = page.split("#!").join("");
+            if (page == thisdata.lastPage) return;
             thisdata.goToPage(page);
         };
     }

@@ -1,8 +1,7 @@
 package GraphQL.Fetcher;
 
 import Database.Database;
-import Database.Database.*;
-import Database.DatabaseSchemaDefinition;
+import Database.Model.DatabaseSchemaDefinition;
 import GraphQL.Model.File;
 import GraphQL.Model.GraphQLSchemaDefinition;
 import GraphQL.Model.Metadatum;

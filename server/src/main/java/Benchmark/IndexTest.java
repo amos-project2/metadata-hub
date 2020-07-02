@@ -15,7 +15,7 @@ public class IndexTest {
 
 
 
-    private final int ITERATIONS = 100;
+    private final int ITERATIONS = 50;
 
 
     public IndexTest(DependenciesContainer dependenciesContainer) throws SQLException {
@@ -38,38 +38,46 @@ public class IndexTest {
 
     public void test_gin_index_metadata() throws SQLException {
 
-//        turnOffIndexScans();
-
+        System.out.println("Query Iterations: " + ITERATIONS);
         System.out.println("------ Gin Default ");
         System.out.println("--------------------- ");
-        testQuery("SELECT * FROM files WHERE metadata ? 'FileInodeChangeDate';");
-        testQuery("SELECT * FROM files WHERE metadata ?& array['FileInodeChangeDate', 'Filter', 'Compression', 'XResolution'];");
+        testQuery("SELECT * FROM files WHERE metadata ? 'Format';");
+        testQuery("SELECT * FROM files WHERE metadata ?& array['Format', 'Balance', 'HistoryWhen', 'MajorBrand'];");
 
         System.out.println("------ Gin Jsonb Path Ops");
         System.out.println("------------------------- ");
         testQuery( "SELECT * FROM files WHERE metadata @> '{\"MIMEType\":\"image/jpeg\"}';");
+        testQuery( "SELECT * FROM files WHERE metadata @> '{\"MIMEType\":\"image/jpeg\", \"BitsPerSample\": 8, \"FilePermissions\": 770, \"YCbCrSubSampling\": \"2 2\"}';");
+        testQuery( "SELECT * FROM files WHERE metadata @> '{\"MIMEType\":\"image/jpeg\", \"BitsPerSample\": 8, \"FilePermissions\": 770, \"YCbCrSubSampling\": \"2 2\"," +
+            " \"ImageSize\": \"78 78\", \"YResolution\": 1, \"ColorComponents\": 3, \"EncodingProcess\": 0, \"Megapixels\": 0.006084}';");
+        testQuery( "SELECT * FROM files WHERE metadata @> '{\"MIMEType\":\"image/jpeg\"}' AND metadata @> '{\"BitsPerSample\": 8}' AND metadata @> '{\"FilePermissions\": 770}'" +
+            "AND metadata @> '{\"YCbCrSubSampling\": \"2 2\"}' AND metadata @> '{\"ImageSize\": \"78 78\"}' AND metadata @> '{\"YResolution\": 1}'" +
+            "AND metadata @> '{\"ColorComponents\": 3}' AND metadata @> '{\"EncodingProcess\": 0}' AND metadata @> '{\"Megapixels\": 0.006084}';");
 
         System.out.println("------ Btree metadata ->>'FileName'");
         System.out.println("------------------------------------ ");
-        testQuery("SELECT * FROM files WHERE metadata ->> 'FileName' LIKE 'CNV-53%';");
-        testQuery("SELECT * FROM files WHERE metadata ->> 'FileName' LIKE 'CNV-5311%';");
+        testQuery("SELECT * FROM files WHERE metadata ->> 'FileName' LIKE '01-02-01-01-01-01-11.mp4%';");
+        testQuery("SELECT * FROM files WHERE metadata ->> 'FileName' LIKE '01-02-01-%';");
+        testQuery("SELECT * FROM files WHERE metadata ->> 'FileName' LIKE '01-%';");
 
         System.out.println("----- Btree files.name");
         System.out.println("----------------------- ");
-        testQuery("SELECT * FROM files WHERE name LIKE 'CNV-53%';");
-        testQuery("SELECT * FROM files WHERE name LIKE 'CNV-5311%';");
-
+        testQuery("SELECT * FROM files WHERE name LIKE '01-02-01-01-01-01-11.mp4%';");
+        testQuery("SELECT * FROM files WHERE name LIKE '01-02-01-%';");
+        testQuery("SELECT * FROM files WHERE name LIKE '01-%';");
+//
         System.out.println("----- Btree files.size");
         System.out.println("----------------------- ");
-        testQuery("SELECT * FROM files WHERE size <= 300000;");
-        testQuery("SELECT * FROM files WHERE size >= 300000;");
-        testQuery("SELECT * FROM files WHERE size >= 500000;");
+        testQuery("SELECT * FROM files WHERE size <= 300000 AND size >= 250000;");
+        testQuery("SELECT * FROM files WHERE size >= 300000 AND size <= 350000;");
+        testQuery("SELECT * FROM files WHERE size >= 800000 AND size <= 900000;");
         testQuery("SELECT * FROM files WHERE size >= 800000;");
-
+//
         System.out.println("----- Btree fullpath");
         System.out.println("----------------------- ");
-        testQuery("SELECT * FROM files WHERE (dir_path||'/'||files.name) LIKE '/tmp/test_tree/dir2/dir4/dir7/dir8/%';");
-        testQuery("SELECT * FROM files WHERE (dir_path||'/'||files.name) LIKE '/tmp/test_tree/dir2/dir4/dir7/dir8/dir10/%';");
+        testQuery("SELECT * FROM files WHERE (dir_path||'/'||files.name) LIKE '/media/benjamin/WD2TB/Dataset/Video_Song_Actor_11/Actor_11/0%';");
+        testQuery("SELECT * FROM files WHERE (dir_path||'/'||files.name) LIKE '/media/benjamin/WD2TB/Dataset/Video_Song_Actor_11/Actor_11/01-02-04-02-%';");
+        testQuery("SELECT * FROM files WHERE (dir_path||'/'||files.name) LIKE '/media/benjamin/WD2TB/Dataset/Video_Song_Actor_11/Actor_11/01-02-04-02-02-02-11.mp4%';");
 
     }
 
@@ -119,7 +127,7 @@ public class IndexTest {
 
         averageTimeNormal = averageTimeNormal / ITERATIONS;
         averageTimeIndex = averageTimeIndex / ITERATIONS;
-        System.out.println("Average Time Normal : " + getResultAsString(averageTimeNormal));
+        System.out.println("Average Time Sequential : " + getResultAsString(averageTimeNormal));
         System.out.println("Average Time Index : " + getResultAsString(averageTimeIndex));
         System.out.println("Index Speed Up: " + getResultAsString(averageTimeNormal - averageTimeIndex));
         System.out.println("-------------------------------------------------------------");
