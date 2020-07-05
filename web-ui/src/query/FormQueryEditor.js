@@ -2,14 +2,6 @@ import {Page} from "../Page";
 import {ResultPresenter} from "../buisnesslogic/ResultPresenter";
 import {MetadataAutocompletion} from "./autocompletion/MetadataAutocompletion";
 import {InputFieldMultiplier} from "../buisnesslogic/InputFieldMultiplier";
-// // import {datenrangepicker} from "daterangepicker";
-// import moment from 'moment';
-//
-// import {datetimepicker} from 'bootstrap-datetimepicker-npm';
-// //import 'style!css!eonasdan-bootstrap-datetimepicker/bootstrap-datetimepicker.css';
-//
-//
-
 
 export class FormQueryEditor extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
@@ -435,19 +427,6 @@ export class FormQueryEditor extends Page {
             $(".fq-custom-filter-connector-row-description").toggle(1000);
         });
 
-
-        //alert(datetimepicker());
-        //  datetimepicker(jQuery);
-        // alert($('#fq-createFileTimeRange').datetimepicker);
-        // $('#fq-createFileTimeRange').datetimepicker();
-        // $('#fq-createFileTimeRange').daterangepicker({
-        //     timePicker: true,
-        //     startDate: moment().startOf('hour'),
-        //     endDate: moment().startOf('hour').add(32, 'hour'),
-        //     locale: {
-        //         format: 'M/DD hh:mm A'
-        //     }
-        // });
     }
 
 
