@@ -15,57 +15,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 @Setter
-public class MetadataFileCache
+public class MetadataInfoCache
 {
     private List<MetadataInfo> metadataTags = new ArrayList<>();
     //TODO find a better way of sorting, than a map sorted by its values?
     private Map<String, MetadataInfo> tagsSorted = new HashMap<>();
 
 
-    public MetadataFileCache(List<String> fileTypes, ConcurrentHashMap<String, MetadataFileCache> cache, Database database)
-    {
-        ArrayList<MetadataFileCache> metadataFileCacheList = new ArrayList<>();
-        for (String value : fileTypes)
-        {
-            metadataFileCacheList.add(cache.computeIfAbsent(value, (key) ->
-            {
-                return new MetadataFileCache(value, database);
-            }));
-        }
-
-        //be careful DatabaseSchemaMetadatum is for performance reasons not in-mutable
-        //so a deep-copy is neceassary if we want to change the data in an other context
-        Map<String, MetadataInfo> tags = new HashMap<>();
-        for (MetadataFileCache value : metadataFileCacheList)
-        {
-            value.tagsSorted.forEach((key2, value2) ->
-            {
-                tags.compute(key2, (k, remapping) ->
-                {
-
-                    //add DatabaseSchemaMetadatum if key not exists
-                    if (remapping == null) return value2.copy();
-
-                    //if exists -> merge it
-                    return remapping.merge(value2);
-                });
-            });
-        }
-
-
-        //TODO sort tags and save the result into a list or map
-
-        this.tagsSorted = tags; //its unsorted //TODO sort it or refactor it to a list
-
-
-        //TODO notice: metadataTags is empty here
-        //   this.tagsSorted = createSortedMap(this.metadataTags);
-//        this.tagsSorted = this.sortByValue(this.metadataTags);
-
-
-    }
-
-    public MetadataFileCache(String fileType, Database database)
+    public MetadataInfoCache(String fileType, Database database)
     {
         try (Connection con = database.gC())
         {
@@ -83,24 +40,52 @@ public class MetadataFileCache
                 this.metadataTags = convertToMetadataList(metadataMap);
                 Collections.sort(metadataTags);
                 this.tagsSorted = createSortedMap(this.metadataTags);
-                System.out.println("List: " + metadataTags.toString());
 //                this.tagsSorted = this.sortByAttributeOccurence(this.metadataTags);
-
             }
-
-
         }
         catch (Throwable throwables)
         {
             throwables.printStackTrace();
             throw new RuntimeException(throwables);
         }
+    }
 
+    public MetadataInfoCache(List<String> fileTypes, ConcurrentHashMap<String, MetadataInfoCache> cache, Database database)
+    {
+        ArrayList<MetadataInfoCache> metadataInfoCacheList = new ArrayList<>();
+        for (String fileType : fileTypes)
+        {
+            metadataInfoCacheList.add(cache.computeIfAbsent(fileType, (key) -> { return new MetadataInfoCache(fileType, database); }));
+        }
+
+        //be careful DatabaseSchemaMetadatum is for performance reasons not in-mutable
+        //so a deep-copy is necessary if we want to change the data in another context
+        Map<String, MetadataInfo> tags = new HashMap<>();
+        for (MetadataInfoCache infoCache : metadataInfoCacheList)
+        {
+            infoCache.tagsSorted.forEach((tag, metadataInfo) ->
+            {
+                tags.compute(tag, (k, metadataInfo2) ->
+                {
+                    //add DatabaseSchemaMetadatum if key not exists
+                    if (metadataInfo2 == null) return metadataInfo.copy();
+
+                    //if exists -> merge it
+                    return metadataInfo2.merge(metadataInfo);
+                });
+            });
+        }
+
+        //TODO sort tags and save the result into a list or map
+        this.tagsSorted = tags; //its unsorted //TODO sort it or refactor it to a list
+
+        //TODO notice: metadataTags is empty here
+        //   this.tagsSorted = createSortedMap(this.metadataTags);
+//        this.tagsSorted = this.sortByValue(this.metadataTags);
     }
 
     private List<MetadataInfo> convertToMetadataList(Map<String, ArrayList> metadataMap)
     {
-
         List<MetadataInfo> metadataList = new ArrayList<>();
 
         for (Map.Entry<String, ArrayList> entry : metadataMap.entrySet())
@@ -112,7 +97,6 @@ public class MetadataFileCache
 
     private Map<String, MetadataInfo> createSortedMap(List<MetadataInfo> metadataList)
     {
-
         Map<String, MetadataInfo> sortedMap = new LinkedHashMap<>();
         for (MetadataInfo metadatum : metadataList)
         {
