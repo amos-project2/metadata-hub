@@ -36,17 +36,16 @@ export class FormQueryEditor extends Page {
         let appendingHtmlCode = `<div class="form-group col-md-4 fg-filetype-element"><input type="text" class="form-control filetype-element-input"></div>`;
 
         let focusOutFunction = function () {
-            //here must be any race, the value isnt in all cases visible in updateListFilterMetadata
-            //so i added a small delay
             thisdata.metadatAutocompletion.updateListsFilterMetadata();
-            setTimeout(function () {
-                thisdata.metadatAutocompletion.updateListsFilterMetadata();
-            }, 200);
-            thisdata.metadatAutocompletion.reAddListener();
         }
 
+        let focusInIfEmptyFieldFunction = function () {
+            thisdata.metadatAutocompletion.reAddListener();
+        };
+
+
         return new InputFieldMultiplier(".fg-filetype-container", ".filetype-element-input", appendingHtmlCode, emptyFunction,
-            focusOutFunction, emptyFunction, emptyFunction);
+            focusOutFunction, focusInIfEmptyFieldFunction, emptyFunction);
 
     }
 
@@ -58,15 +57,9 @@ export class FormQueryEditor extends Page {
         let appendingHtmlCode = this.getFilterElement();
 
         let focusOutFunction = function (elem) {
+
             thisdata.reorderFunctionIdsInFilter();
-
-            //here must be any race, the value isnt in all cases visible in updateListFilterMetadata
-            //so i added a small delay
-            setTimeout(function () {
-                thisdata.metadatAutocompletion.updateListsFilterMetadata();
-            }, 200);
-            thisdata.metadatAutocompletion.reAddListener();
-
+            thisdata.metadatAutocompletion.updateListsFilterMetadata();
 
             //Validate Metadata Datatype:
             // Queries the server to know which kind of datatype the metadatavalue of a given metadata tag has
@@ -89,6 +82,7 @@ export class FormQueryEditor extends Page {
 
         let focusInIfEmptyFieldFunction = function () {
             thisdata.reorderFunctionIdsInFilter();
+            thisdata.metadatAutocompletion.reAddListener();
         };
 
         let additionalListenerFunction = function () {
@@ -117,16 +111,17 @@ export class FormQueryEditor extends Page {
         let appendingHtmlCode = `<div class="form-group col-md-4 fg-attribut-element"><input type="text" class="form-control attribut-element-input"></div>`;
 
         let focusOutFunction = function () {
-            //here must be any race, the value isnt in all cases visible in updateListFilterMetadata
-            //so i added a small delay
-            setTimeout(function () {
-                thisdata.metadatAutocompletion.updateListsFilterMetadata();
-            }, 200);
-            thisdata.metadatAutocompletion.reAddListener();
+            thisdata.metadatAutocompletion.updateListsFilterMetadata();
         }
 
+
+        let focusInIfEmptyFieldFunction = function () {
+            thisdata.metadatAutocompletion.reAddListener();
+        };
+
+
         return new InputFieldMultiplier(".fg-attribut-container", ".attribut-element-input", appendingHtmlCode, emptyFunction,
-            focusOutFunction, emptyFunction, emptyFunction);
+            focusOutFunction, focusInIfEmptyFieldFunction, emptyFunction);
 
     }
 

@@ -253,7 +253,8 @@ export class MetadataAutocompletion {
                 $(this).val("");
                 $(this).trigger("focusout");
             }
-            thisdata.reAddListener();
+            // thisdata.reAddListener();
+            thisdata.updateListsFilterMetadata();
         }
 
 
