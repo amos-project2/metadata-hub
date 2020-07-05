@@ -589,12 +589,10 @@ export class FormQueryEditor extends Page {
 
         let attributes = "";
         {
-            $(".attribut-element-input").each(function () {
-                if ($(this).val() !== "") {
-                    attributes += `"${$(this).val()}", `;
-                }
-
+            this.inputMultiplierAttributSelector.each(function(elem){
+                attributes += `"${$(elem).val()}", `;
             });
+
 
             if (attributes !== "") {
                 attributes = `selected_attributes:[${attributes}],\n  `;
@@ -604,12 +602,10 @@ export class FormQueryEditor extends Page {
 
         let filetypes = "";
         {
-            $(".filetype-element-input").each(function () {
-                if ($(this).val() !== "") {
-                    filetypes += `"${$(this).val()}", `;
-                }
-
+            this.inputMultiplierFiletypeFilter.each(function (elem) {
+                filetypes += `"${$(elem).val()}", `;
             });
+
 
             if (filetypes !== "") {
                 filetypes = `file_types:[${filetypes}],\n  `;
@@ -621,12 +617,10 @@ export class FormQueryEditor extends Page {
         let options_attributes = "";
         let options_values = "";
         {
-            $(".fg-metadata-attribute").each(function () {
-                if ($(this).val() !== "") {
-                    options_attributes += `"${$(this).val()}", `;
-                    options_options += `${$(this).parent().find(".fg-filter-function").val()}, `;
-                    options_values += `"${$(this).parent().find(".fg-metadata-value").val()}", `;
-                }
+            this.inputMultiplierAdvancedFilterRows.each(function (elem) {
+                options_attributes += `"${$(elem).val()}", `;
+                options_options += `${$(elem).parent().find(".fg-filter-function").val()}, `;
+                options_values += `"${$(elem).parent().find(".fg-metadata-value").val()}", `;
 
             });
 

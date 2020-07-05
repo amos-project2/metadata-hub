@@ -65,6 +65,15 @@ export class InputFieldMultiplier {
 
     }
 
+    each(func) {
+        $(this.fieldSelector).each(function () {
+            if ($(this).val().trim() !== "") {
+                func(this);
+            }
+
+        });
+
+    }
 
 
 }
