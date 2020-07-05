@@ -19,13 +19,13 @@ import javax.ws.rs.core.*;
  */
 @Path("crawlerui")
 @Singleton
-public class CrawlerUiProxyController
+public class CrawlerUIProxyController
 {
     private final WebTarget target;
     private final Config config;
 
     @Inject
-    public CrawlerUiProxyController(Config config)
+    public CrawlerUIProxyController(Config config)
     {
         this.config = config;
         Client client = ClientBuilder.newClient();

@@ -27,9 +27,9 @@ public class JerseyServerImpl implements HttpServer
 
     @Inject
     public JerseyServerImpl(GraphQL graphQl, Config config,
-							CrawlerUiProxyController c0, GraphQLController c1,
-							TestconsoleController c2, WebuiController c3,
-                            CrawlerAPIProxyController c4, MetadataAutocompletionController c5
+                            CrawlerUIProxyController c0, GraphQLController c1,
+                            TestConsoleController c2, WebUIController c3,
+                            CrawlerAPIProxyController c4, WebUIMetadataHelperController c5
     )
     {
         this.config = config;

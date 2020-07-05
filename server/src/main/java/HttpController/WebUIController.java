@@ -17,14 +17,14 @@ import java.io.OutputStream;
 
 @Singleton
 @Path("/")
-public class WebuiController
+public class WebUIController
 {
 
     private final Config config;
     private final ClassPathFileLoader classPathFileLoader;
 
     @Inject
-    public WebuiController(Config config, ClassPathFileLoader classPathFileLoader)
+    public WebUIController(Config config, ClassPathFileLoader classPathFileLoader)
     {
         this.config = config;
         this.classPathFileLoader = classPathFileLoader;
