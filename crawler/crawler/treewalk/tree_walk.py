@@ -1,6 +1,7 @@
 # Python imports
 import os
 import psutil
+import random
 from typing import List, Tuple
 
 def workSize(pathInput: str) -> List[str]:
@@ -18,8 +19,7 @@ def workSize(pathInput: str) -> List[str]:
 def create_work_packages(
         inputs: List[Tuple[str, bool]],
         work_package_size: int,
-        number_of_workers: int,
-        already_processed: List[str] = []
+        number_of_workers: int
 ) -> Tuple[List[List[str]], List[str]]:
     """Create the work packages for the worker processes.
 
@@ -28,10 +28,9 @@ def create_work_packages(
             recursive flag
         work_package_size (int): maximum number of files of each work package
         number_of_workers (int): number of workers, thus number of chunks
-        already_processed (List[str]): list of already processed directories
 
     Returns:
-        Tuple[List[List[List[str]]], List[str]]: (list of workpackages with directories < X, list of workpackages >X)
+        List[List[List[str]]]: list of work packages
 
     """
     def combine_directories(directories: List[str]):
@@ -39,16 +38,11 @@ def create_work_packages(
             yield directories[i: i+work_package_size]
 
     # Create list with every directory that is going to be processed
-    print(f'Initialized tree walk with {len(already_processed)} already processed nodes.')
     directories = []
     for input in inputs:
         path = input.get('path')
         recursive = input.get('recursive')
         for root, subdirs, files in os.walk(path):
-            if root in already_processed:
-                if recursive == 0:
-                    break
-                continue
             if len(files) == 0:
                 continue
             directories.append(root)
@@ -83,7 +77,7 @@ def create_work_packages(
         for directory in workPackageTmp[0]:
             for root, subdirs, files in os.walk(directory):
                 for file in files:
-                    filesTmp.append(root + '/' + file)
+                    filesTmp.append(os.path.join(root,file))
                 break
         workPackages.append(filesTmp)
         if len(directorySize) < 1:
@@ -92,7 +86,24 @@ def create_work_packages(
     for number, package in enumerate(workPackages):
         index = number % number_of_workers
         result[index].append(package)
-    return result, split
+    indices = [(0, i) for i in range(number_of_workers)]
+    for directory in split:
+        files = [
+            os.path.join(directory, fname)
+            for fname in os.listdir(directory)
+            if os.path.isfile(os.path.join(directory, fname))
+        ]
+        packages = split_package(files, work_package_size)
+        for package in packages:
+            total, index = min(indices)
+            result[index].append(package)
+            indices[index] = (total + len(files), index)
+    return result
+
+
+def split_package(lst, length):
+    for index in range(0, len(lst), length):
+        yield lst[index:index + length]
 
 
 def get_number_of_workers(cpu_level: int) -> int:
