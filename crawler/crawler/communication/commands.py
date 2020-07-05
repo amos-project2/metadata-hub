@@ -35,7 +35,7 @@ WORKER_UNPAUSE = 'unpause'
 WORKER_STOP = 'stop'
 
 # Signal the worker to finish
-WORKER_FINISH = 'finish'
+WORKER_FINISH = 'worker-finish'
 
 # Status for database when crawl was stopped
 CRAWL_STATUS_ABORTED = 'aborted'
@@ -72,3 +72,27 @@ SCHEDULER_REMOVE_INTERVAL = 'remove-interval'
 
 # Get all intervals for max resource consumption
 SCHEDULER_GET_INTERVALS = 'get-intervals'
+
+# Assign work to a database thread
+DATABASE_THREAD_WORK = 'database-thread-work'
+
+# Pause a database thread
+DATABASE_THREAD_PAUSE = 'database-thread-pause'
+
+# Stop a database thread
+DATABASE_THREAD_STOP = 'database-thread-stop'
+
+# Continue a database thread
+DATABASE_THREAD_CONTINUE = 'database-thread-continue'
+
+# Finish a database thread
+DATABASE_THREAD_FINISH = 'database-thread-finished'
+
+# Signal that the thread finished
+DATABASE_THREAD_SHUTDOWN = 'database-thread-shutdown'
+
+# Signal that the thread finished
+DATABASE_THREAD_SLEEP = 'database-thread-sleep'
+
+# Signal that the thread finished
+DATABASE_THREAD_WAKEUP = 'database-thread-wakeup'
