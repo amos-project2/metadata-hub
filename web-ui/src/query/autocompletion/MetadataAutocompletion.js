@@ -70,8 +70,7 @@ export class MetadataAutocompletion {
 
 
     //private
-    //TODO rename and append also FileType
-    updateListsFilterMetadata() {
+    updateLists() {
 
         this.filter = [];
         this.metadata = [];
@@ -121,42 +120,6 @@ export class MetadataAutocompletion {
 
     }
 
-
-    //private
-    updateServerList(callback) {
-
-        let thisdata = this;
-
-        function getFileString() {
-
-            let resultString = "";
-            thisdata.fileTypes.forEach(element => {
-                resultString += element + "$X$";
-            });
-            return resultString;
-        }
-
-
-        this.restApiFetcherServer.fetchGet("metadata-autocomplete/modal-suggestions/?fileTypes=" + encodeURIComponent(getFileString()), function (event) {
-            console.log(event.data);
-            //this.bestMatchingFromServer = ["foo", "bar", "xyz", "usw"];
-            thisdata.bestMatchingFromServer = event.data;
-            callback();
-        });
-
-
-    }
-
-    //public
-    showLists() {
-        this.updateListFileType(function () {});
-        this.updateListsFilterMetadata();
-        alert(this.fileTypes);
-        alert(this.filter);
-        alert(this.metadata);
-    }
-
-
     //public
     addListener() {
 
@@ -174,9 +137,7 @@ export class MetadataAutocompletion {
         })
 
         this.clearCacheModalOpenerAndRequest();
-
         this.reAddListener();
-
     }
 
     //private
@@ -254,7 +215,7 @@ export class MetadataAutocompletion {
                 $(this).trigger("focusout");
             }
             // thisdata.reAddListener();
-            thisdata.updateListsFilterMetadata();
+            thisdata.updateLists();
         }
 
 
@@ -296,8 +257,6 @@ export class MetadataAutocompletion {
 
         this.restApiFetcherServer.fetchGet(`metadata-autocomplete/modal-suggestions/?limit=${limit}&offset=${offset}&fileTypes=` + encodeURIComponent(this.getFileString()), function (event) {
             console.log(event.data);
-            //this.bestMatchingFromServer = ["foo", "bar", "xyz", "usw"];
-            //thisdata.bestMatchingFromServer = event.data;
             callback(event.data);
         });
 
@@ -310,7 +269,6 @@ export class MetadataAutocompletion {
         this.modalOffset = 0;
 
         let thisdata = this;
-        // $(".metadata-autocompletion-suggestions-html").html();
         $(".load-more-suggestions").show();
         $(".metadata-autocompletion-suggestions-html").html(`
                  <div class ="sugesstion-waiter" >Please wait...</div>
@@ -318,17 +276,7 @@ export class MetadataAutocompletion {
 
                  </div>
             `);
-        // this.retrieveMetadataSuggestions(20, this.modalOffset, function (data) {
-        //     let initTable = thisdata.generateAndGetSuggestionTable(data);
-        //     $(".metadata-autocompletion-suggestions-html").html(`
-        //          <div class="container suggestion-container">
-        //             ${initTable}
-        //          </div>
-        //     `);
-        //     $(".adder-block").show(1000);
-        //
-        // });
-        // this.modalOffset += 20;
+
         $('#metadata-autocompletion-modal').modal();
         setTimeout(function () {
             thisdata.loadMoreSuggestions();
@@ -366,10 +314,6 @@ export class MetadataAutocompletion {
                     lastElement.removeClass("autocompleteDeactivated");
                 }, 1000)
 
-
-                //lastElement.removeClass("autocompleteDeactivated");
-
-                //alert($(this).data("adderto"));
             });
 
             $(".metadata-adder").not(".listenerAdded").change(function () {
@@ -445,28 +389,6 @@ export class MetadataAutocompletion {
 
         result += `</div>`;
         return result;
-    }
-
-
-    /**
-     * type = 0 -> filter
-     * type = 1 -> metadata
-     */
-    loadSuggestions(type, part, callback) {
-
-        let existing = this.metadata
-        if (type === 0) {
-            existing = this.filter;
-        }
-
-        //load-stub
-        callback(["fileName", "fileSize", "fileType"]);
-    }
-
-
-    saveModal() {
-        //TODO
-        alert("save Modal")
     }
 
 

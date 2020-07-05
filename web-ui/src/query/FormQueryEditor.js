@@ -36,7 +36,7 @@ export class FormQueryEditor extends Page {
         let appendingHtmlCode = `<div class="form-group col-md-4 fg-filetype-element"><input type="text" class="form-control filetype-element-input"></div>`;
 
         let focusOutFunction = function () {
-            thisdata.metadatAutocompletion.updateListsFilterMetadata();
+            thisdata.metadatAutocompletion.updateLists();
         }
 
         let focusInIfEmptyFieldFunction = function () {
@@ -59,7 +59,7 @@ export class FormQueryEditor extends Page {
         let focusOutFunction = function (elem) {
 
             thisdata.reorderFunctionIdsInFilter();
-            thisdata.metadatAutocompletion.updateListsFilterMetadata();
+            thisdata.metadatAutocompletion.updateLists();
 
             //Validate Metadata Datatype:
             // Queries the server to know which kind of datatype the metadatavalue of a given metadata tag has
@@ -111,7 +111,7 @@ export class FormQueryEditor extends Page {
         let appendingHtmlCode = `<div class="form-group col-md-4 fg-attribut-element"><input type="text" class="form-control attribut-element-input"></div>`;
 
         let focusOutFunction = function () {
-            thisdata.metadatAutocompletion.updateListsFilterMetadata();
+            thisdata.metadatAutocompletion.updateLists();
         }
 
 
