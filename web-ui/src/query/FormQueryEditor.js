@@ -469,68 +469,6 @@ export class FormQueryEditor extends Page {
     }
 
 
-    helperMethodAdvancedFilterRows() {
-
-        let dhis_state = this;
-        // this.metadatAutocompletion.updateListsFilterMetadata();
-        // this.metadatAutocompletion.reAddListener();
-
-        $(".fg-metadata-attribute").not(".listenerAdded").focusout(function () {
-            if ($(".fg-metadata-attribute").length < 2) {return;}
-
-            if ($(this).val() === "") {
-                $(this).parent().remove();
-            }
-
-            dhis_state.reorderFunctionIdsInFilter();
-
-
-            //here must be any race, the value isnt in all cases visible in updateListFilterMetadata
-            //so i added a small delay
-            setTimeout(function () {
-                dhis_state.metadatAutocompletion.updateListsFilterMetadata();
-            }, 200);
-            dhis_state.metadatAutocompletion.reAddListener();
-
-
-            //Validate Metadata Datatype:
-            // Queries the server to know which kind of datatype the metadatavalue of a given metadata tag has
-            console.log("Tag: " + $(this).val())
-            if ($(this).val().length > 1) {
-
-                let datatype = dhis_state.metadatAutocompletion.getDataType($(this).val());
-
-                console.log("datatype: " + datatype)
-
-                if (datatype == "str") {
-                    console.log("datatype str");
-                } else if (datatype == "dig") {
-                    console.log("dig");
-                } else {
-                    console.log("no datatype :(")
-                }
-            }
-
-        });
-
-
-
-        $(".fg-filter-function").not(".listenerAdded").change(function () {
-            if ($(this).val() === "exists") {
-                $(this).parent().parent().find(".fg-metadata-value").hide();
-            } else {
-                $(this).parent().parent().find(".fg-metadata-value").show();
-            }
-
-        });
-
-        //must be the last method
-        $(".fg-metadata-attribute").not(".listenerAdded").addClass("listenerAdded");
-        $(".fg-filter-function").not(".listenerAdded").addClass("listenerAdded");
-
-
-    }
-
     inputValidation() {
 
         //Validate Date
