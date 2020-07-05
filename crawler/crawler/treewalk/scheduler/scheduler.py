@@ -196,7 +196,7 @@ class TreeWalkScheduler(threading.Thread):
 
     def run(self) -> None:
         """Run the scheduler thread."""
-        _logger.info('Running TreeWalk Scheduler (TWS).')
+        _logger.info('Hello TWScheduler.')
         self._intervals = self._db_connection.get_intervals(as_json=False)
         while True:
             try:
@@ -218,3 +218,4 @@ class TreeWalkScheduler(threading.Thread):
                 continue
             _logger.info('TWS retrieved a task to dispatch.')
             self._dispatch(task)
+        _logger.info('Goodbye TWScheduler.')
