@@ -32,11 +32,11 @@ def synchronized_state(func):
     """
 
     def decorator(self, *args, **kwargs):
-        self._lock.acquire()
-        try:
-            result = func(self, *args, **kwargs)
-        finally:
-            self._lock.release()
+        # self._lock.acquire()
+        # try:
+        result = func(self, *args, **kwargs)
+        # finally:
+        #     self._lock.release()
         return result
 
     return decorator
@@ -66,6 +66,13 @@ class State:
         self._num_workers = -1
         self._progress = 0
         self._running_workers = 0
+        self._finished = False
+
+    def lock(self):
+        self._lock.acquire()
+
+    def release(self):
+        self._lock.release()
 
     @synchronized_state
     def get_status(self) -> str:
@@ -97,6 +104,24 @@ class State:
 
         """
         return self._status == State.RUNNING
+
+
+    @synchronized_state
+    def set_finished(self) -> bool:
+        """FIXME"""
+        self._finished = True
+
+    @synchronized_state
+    def get_finished(self, clear: bool = False) -> bool:
+        """FIXME"""
+        finished = self._finished
+        if clear:
+            self._finished = False
+        return finished
+
+
+
+
 
     @synchronized_state
     def is_paused(self) -> bool:
@@ -198,6 +223,9 @@ class State:
         """Set status to ready."""
         self._config = None
         self._status = State.READY
+        self._progress = 0
+        self._running_workers = 0
+
 
     @synchronized_state
     def set_cpu_level(self, cpu_level: int) -> None:
