@@ -1,6 +1,7 @@
 import {Page} from "../Page";
 import {ResultPresenter} from "../buisnesslogic/ResultPresenter";
 import {MetadataAutocompletion} from "./autocompletion/MetadataAutocompletion";
+import {InputFieldMultiplier} from "../buisnesslogic/InputFieldMultiplier";
 // // import {datenrangepicker} from "daterangepicker";
 // import moment from 'moment';
 //
@@ -27,7 +28,116 @@ export class FormQueryEditor extends Page {
             ".attribut-element-input",
             ".modalOpenerSelector"
         );
+
+        this.inputMultiplierFiletypeFilter = this.inputMultiplierFiletypeFilterBuilder();
+        this.inputMultiplierAdvancedFilterRows = this.inputMultiplierAdvancedFilterRowsBuilder();
+        this.inputMultiplierAttributSelector = this.inputMultiplierAttributSelectorBuilder();
+
     }
+
+
+    inputMultiplierFiletypeFilterBuilder() {
+
+        let thisdata = this;
+        let emptyFunction = function () {};
+
+        let appendingHtmlCode = `<div class="form-group col-md-4 fg-filetype-element"><input type="text" class="form-control filetype-element-input"></div>`;
+
+        let focusOutFunction = function () {
+            //here must be any race, the value isnt in all cases visible in updateListFilterMetadata
+            //so i added a small delay
+            thisdata.metadatAutocompletion.updateListsFilterMetadata();
+            setTimeout(function () {
+                thisdata.metadatAutocompletion.updateListsFilterMetadata();
+            }, 200);
+            thisdata.metadatAutocompletion.reAddListener();
+        }
+
+        return new InputFieldMultiplier(".fg-filetype-container", ".filetype-element-input", appendingHtmlCode, emptyFunction,
+            focusOutFunction, emptyFunction, emptyFunction);
+
+    }
+
+
+    inputMultiplierAdvancedFilterRowsBuilder() {
+
+        let thisdata = this;
+        let emptyFunction = function () {};
+        let appendingHtmlCode = this.getFilterElement();
+
+        let focusOutFunction = function (elem) {
+            thisdata.reorderFunctionIdsInFilter();
+
+            //here must be any race, the value isnt in all cases visible in updateListFilterMetadata
+            //so i added a small delay
+            setTimeout(function () {
+                thisdata.metadatAutocompletion.updateListsFilterMetadata();
+            }, 200);
+            thisdata.metadatAutocompletion.reAddListener();
+
+
+            //Validate Metadata Datatype:
+            // Queries the server to know which kind of datatype the metadatavalue of a given metadata tag has
+            console.log("Tag: " + $(elem).val())
+            if ($(elem).val().length > 1) {
+
+                let datatype = thisdata.metadatAutocompletion.getDataType($(elem).val());
+
+                console.log("datatype: " + datatype)
+
+                if (datatype == "str") {
+                    console.log("datatype str");
+                } else if (datatype == "dig") {
+                    console.log("dig");
+                } else {
+                    console.log("no datatype :(")
+                }
+            }
+        }
+
+        let focusInIfEmptyFieldFunction = function () {
+            thisdata.reorderFunctionIdsInFilter();
+        };
+
+        let additionalListenerFunction = function () {
+            $(".fg-filter-function").not(".listenerAdded").change(function () {
+                if ($(this).val() === "exists") {
+                    $(this).parent().parent().find(".fg-metadata-value").hide();
+                } else {
+                    $(this).parent().parent().find(".fg-metadata-value").show();
+                }
+
+            });
+
+            $(".fg-filter-function").not(".listenerAdded").addClass("listenerAdded");
+        }
+
+
+        return new InputFieldMultiplier(".fg-filter-container", ".fg-metadata-attribute", appendingHtmlCode, emptyFunction,
+            focusOutFunction, focusInIfEmptyFieldFunction, additionalListenerFunction);
+
+    }
+
+    inputMultiplierAttributSelectorBuilder() {
+
+        let thisdata = this;
+        let emptyFunction = function () {};
+        let appendingHtmlCode = `<div class="form-group col-md-4 fg-attribut-element"><input type="text" class="form-control attribut-element-input"></div>`;
+
+        let focusOutFunction = function () {
+            //here must be any race, the value isnt in all cases visible in updateListFilterMetadata
+            //so i added a small delay
+            setTimeout(function () {
+                thisdata.metadatAutocompletion.updateListsFilterMetadata();
+            }, 200);
+            thisdata.metadatAutocompletion.reAddListener();
+        }
+
+        return new InputFieldMultiplier(".fg-attribut-container", ".attribut-element-input", appendingHtmlCode, emptyFunction,
+            focusOutFunction, emptyFunction, emptyFunction);
+
+    }
+
 
     content() {
 
@@ -96,9 +206,12 @@ export class FormQueryEditor extends Page {
 
                 <div class="fg-filetype-container form-row">
 
-                    <div class="form-group col-md-4 fg-filetype-element">
-                        <input type="text" class="form-control filetype-element-input" autocomplete="off">
-                    </div>
+                       ${this.inputMultiplierFiletypeFilter.getFirstElement()}
+
+<!--                    <div class="form-group col-md-4 fg-filetype-element">-->
+<!--                        <input type="text" class="form-control filetype-element-input" autocomplete="off">-->
+<!--                    </div>-->
+
                 </div>
                 <div class="form-row justify-content-md-center">
                     <button type="button" class="btn btn-primary modalOpenerSelector mr-3">Open Metadata-Attribut-Selector</button>
@@ -122,7 +235,7 @@ export class FormQueryEditor extends Page {
                 </div>
 
                 <div class="fg-filter-container">
-                    ${this.filterFirstElement}
+                    ${this.inputMultiplierAdvancedFilterRows.getFirstElement()}
                 </div>
                 <div>
                 <div class="form-row justify-content-md-center">
@@ -175,9 +288,11 @@ export class FormQueryEditor extends Page {
 
                 <div class="fg-attribut-container form-row">
 
-                    <div class="form-group col-md-4 fg-attribut-element">
-                        <input type="text" class="form-control attribut-element-input">
-                    </div>
+                    ${this.inputMultiplierAttributSelector.getFirstElement()}
+
+<!--                    <div class="form-group col-md-4 fg-attribut-element">-->
+<!--                        <input type="text" class="form-control attribut-element-input">-->
+<!--                    </div>-->
                 </div>
 
 
@@ -262,9 +377,10 @@ export class FormQueryEditor extends Page {
 
         $(".resultView1").html(this.resultPresenter.getHtml());
 
-        this.helperMethodAttributSelector();
-        this.helperMethodAdvancedFilterRows();
-        this.helperMethodFiletypeFilter();
+        this.inputMultiplierFiletypeFilter.listenerAdd();
+        this.inputMultiplierAdvancedFilterRows.listenerAdd();
+        this.inputMultiplierAttributSelector.listenerAdd();
+
         this.inputValidation();
         this.inputSuggestion();
         this.metadatAutocompletion.addListener();
@@ -334,55 +450,6 @@ export class FormQueryEditor extends Page {
         // });
     }
 
-    helperMethodAttributSelector() {
-
-        let dhis_state = this;
-
-
-        $(".attribut-element-input").not(".listenerAdded").focusout(function () {
-            if ($(".attribut-element-input").length < 2) {return;}
-
-            if ($(this).val() === "") {
-                $(this).parent().remove();
-            }
-
-            //here must be any race, the value isnt in all cases visible in updateListFilterMetadata
-            //so i added a small delay
-            setTimeout(function(){
-                dhis_state.metadatAutocompletion.updateListsFilterMetadata();
-            },200);
-            dhis_state.metadatAutocompletion.reAddListener();
-
-
-        });
-
-        $(".attribut-element-input").not(".listenerAdded").focusin(function () {
-            let dhis = this;
-            let emptyTextField = false;
-            $(".attribut-element-input").each(function () {
-                if (dhis !== this) {
-                    // alert($(this).val());
-                    if ($(this).val() == "") { emptyTextField = true; }
-                }
-            });
-
-            if (!emptyTextField) {
-                $(".fg-attribut-container").append(`
-    <div class="form-group col-md-4 fg-attribut-element">
-          <input type="text" class="form-control attribut-element-input">
-    </div>`);
-
-
-                dhis_state.helperMethodAttributSelector();//IMPORTANT: re-add the listener to the new created element(s)
-            }
-
-        });
-
-        //must be the last method
-        $(".attribut-element-input").not(".listenerAdded").addClass("listenerAdded");
-
-    }
-
 
     reorderFunctionIdsInFilter() {
         let countElements = $(".fg-metadata-attribute").length;
@@ -446,52 +513,32 @@ export class FormQueryEditor extends Page {
 
             //here must be any race, the value isnt in all cases visible in updateListFilterMetadata
             //so i added a small delay
-            setTimeout(function(){
+            setTimeout(function () {
                 dhis_state.metadatAutocompletion.updateListsFilterMetadata();
-            },200);
+            }, 200);
             dhis_state.metadatAutocompletion.reAddListener();
 
 
             //Validate Metadata Datatype:
             // Queries the server to know which kind of datatype the metadatavalue of a given metadata tag has
             console.log("Tag: " + $(this).val())
-            if($(this).val().length > 1){
+            if ($(this).val().length > 1) {
 
                 let datatype = dhis_state.metadatAutocompletion.getDataType($(this).val());
 
                 console.log("datatype: " + datatype)
 
-                if(datatype == "str"){
+                if (datatype == "str") {
                     console.log("datatype str");
-                }else if(datatype == "dig"){
+                } else if (datatype == "dig") {
                     console.log("dig");
-                }else{
+                } else {
                     console.log("no datatype :(")
                 }
             }
 
         });
 
-
-        $(".fg-metadata-attribute").not(".listenerAdded").focusin(function () {
-            let dhis = this;
-            let emptyTextField = false;
-            $(".fg-metadata-attribute").each(function () {
-                if (dhis !== this) {
-                    // alert($(this).val());
-                    if ($(this).val() == "") { emptyTextField = true; }
-                }
-            });
-
-            if (!emptyTextField) {
-                $(".fg-filter-container").append(dhis_state.getFilterElement());
-
-                dhis_state.reorderFunctionIdsInFilter();
-
-                dhis_state.helperMethodAdvancedFilterRows();//IMPORTANT: re-add the listener to the new created element(s)
-            }
-
-        });
 
 
         $(".fg-filter-function").not(".listenerAdded").change(function () {
@@ -765,56 +812,6 @@ query
                     </div>
                 </div>
             </div>`;
-    }
-
-
-    helperMethodFiletypeFilter() {
-
-        let dhis_state = this;
-
-        $(".filetype-element-input").not(".listenerAdded").focusout(function () {
-            if ($(".filetype-element-input").length < 2) {return;}
-
-            if ($(this).val() === "") {
-                $(this).parent().remove();
-            }
-
-            //here must be any race, the value isnt in all cases visible in updateListFilterMetadata
-            //so i added a small delay
-            dhis_state.metadatAutocompletion.updateListsFilterMetadata();
-            setTimeout(function(){
-                dhis_state.metadatAutocompletion.updateListsFilterMetadata();
-            },200);
-            dhis_state.metadatAutocompletion.reAddListener();
-
-        });
-
-        $(".filetype-element-input").not(".listenerAdded").focusin(function () {
-            let dhis = this;
-            let emptyTextField = false;
-            $(".filetype-element-input").each(function () {
-                if (dhis !== this) {
-                    // alert($(this).val());
-                    if ($(this).val() == "") { emptyTextField = true; }
-                }
-            });
-
-            if (!emptyTextField) {
-                $(".fg-filetype-container").append(`
-                    <div class="form-group col-md-4 fg-filetype-element">
-                          <input type="text" class="form-control filetype-element-input">
-                    </div>
-                `);
-
-                dhis_state.helperMethodFiletypeFilter();//IMPORTANT: re-add the listener to the new created element(s)
-            }
-
-        });
-
-        //must be the last method
-        $(".filetype-element-input").not(".listenerAdded").addClass("listenerAdded");
-
-
     }
 
 

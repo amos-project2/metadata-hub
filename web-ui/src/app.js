@@ -5,6 +5,7 @@ import {GraphQlFetcher} from "./buisnesslogic/GraphQlFetcher";
 import {RestAPIFetcher} from "./buisnesslogic/RestAPIFetcher";
 import {Utilities} from "./buisnesslogic/Utilities";
 import {Login} from "./login/Login";
+import {InputFieldMultiplier} from "./buisnesslogic/InputFieldMultiplier";
 
 
 
