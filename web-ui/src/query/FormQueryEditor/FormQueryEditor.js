@@ -1,7 +1,7 @@
-import {Page} from "../Page";
-import {ResultPresenter} from "../buisnesslogic/ResultPresenter";
+import {Page} from "../../Page";
+import {ResultPresenter} from "../../buisnesslogic/ResultPresenter";
 import {MetadataAutocompletion} from "./autocompletion/MetadataAutocompletion";
-import {InputFieldMultiplier} from "../buisnesslogic/InputFieldMultiplier";
+import {InputFieldMultiplier} from "../../buisnesslogic/InputFieldMultiplier";
 
 export class FormQueryEditor extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
