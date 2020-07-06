@@ -6,6 +6,7 @@ import {GraphQlIntrospectionModel} from "./Modals/GraphQlIntrospectionModel";
 import {AdvancedFilter} from "./Components/AdvancedFilter";
 import {FormGraphQl} from "./Components/FormGraphQl";
 import {FiletypeFilter} from "./Components/FiletypeFilter";
+import {AttributSelector} from "./Components/AttributSelector";
 
 export class FormQueryEditor extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
@@ -28,31 +29,7 @@ export class FormQueryEditor extends Page {
 
         this.filetypeFilter = new FiletypeFilter(this.metadatAutocompletion);
         this.advancedFilter = new AdvancedFilter(this.metadatAutocompletion);
-
-
-        this.inputMultiplierAttributSelector = this.inputMultiplierAttributSelectorBuilder();
-
-    }
-
-
-    inputMultiplierAttributSelectorBuilder() {
-
-        let thisdata = this;
-        let emptyFunction = function () {};
-        let appendingHtmlCode = `<div class="form-group col-md-4 fg-attribut-element"><input type="text" class="form-control attribut-element-input"></div>`;
-
-        let focusOutFunction = function () {
-            thisdata.metadatAutocompletion.updateLists();
-        }
-
-
-        let focusInIfEmptyFieldFunction = function () {
-            thisdata.metadatAutocompletion.reAddListener();
-        };
-
-
-        return new InputFieldMultiplier(".fg-attribut-container", ".attribut-element-input", appendingHtmlCode, emptyFunction,
-            focusOutFunction, focusInIfEmptyFieldFunction, emptyFunction);
+        this.attributSelector = new AttributSelector(this.metadatAutocompletion);
 
     }
 
@@ -135,21 +112,7 @@ export class FormQueryEditor extends Page {
                 </div>
 
                  <!--     Attribut-Selector           -->
-
-                <div class="form-row">
-                    <div class="col-md-12">Which Attributes: <a class="pover" title="Which Attributes" data-content="Here you can limit the result to the specific metadata attributes.<br>If you dont add least one, then you get a result of all">[?]</a></div>
-                </div>
-
-
-                <div class="fg-attribut-container form-row">
-
-                    ${this.inputMultiplierAttributSelector.getFirstElement()}
-
-<!--                    <div class="form-group col-md-4 fg-attribut-element">-->
-<!--                        <input type="text" class="form-control attribut-element-input">-->
-<!--                    </div>-->
-                </div>
-
+                 ${this.attributSelector.getMainHtmlCode()}
 
 
                 <!--     limit           -->
@@ -206,11 +169,9 @@ export class FormQueryEditor extends Page {
 
         $(".resultView1").html(this.resultPresenter.getHtml());
 
-
-        this.inputMultiplierAttributSelector.listenerAdd();
-
         this.filetypeFilter.onMount();
         this.advancedFilter.onMount();
+        this.attributSelector.onMount();
 
         this.inputValidation();
         this.inputSuggestion();
@@ -329,7 +290,7 @@ export class FormQueryEditor extends Page {
         let formGraphQl = new FormGraphQl();
         this.filetypeFilter.generateGraphQlCodeAndSetTo(formGraphQl);
         this.advancedFilter.generateGraphQlCodeAndSetTo(formGraphQl);
-
+        this.attributSelector.generateGraphQlCodeAndSetTo(formGraphQl);
 
         let limit = $("#fq-limit").val();
         let showDeleted = $("#fq-showDeleted").prop('checked');
@@ -341,8 +302,6 @@ export class FormQueryEditor extends Page {
         let endDateUpdated = $("#fq-createFileTimeRangeEndUpdated").val();
 
 
-        // if (filepattern !== "") {filepattern = `pattern: "${filepattern}",`;} else {filepattern = "";}
-        // if (!checkbox) {checkbox = "option: included,";} else {checkbox = "option: excluded,";}
         if (limit !== "") {limit = `limitFetchingSize: ${limit},\n  `;} else {limit = "";}
         if (showDeleted) {deleted = `showDeleted: true,\n  `;}
 
@@ -358,20 +317,6 @@ export class FormQueryEditor extends Page {
         formGraphQl.startDateUpdated = startDateUpdated;
         formGraphQl.endDateUpdated = endDateUpdated;
 
-        let attributes = "";
-        {
-            this.inputMultiplierAttributSelector.each(function(elem){
-                attributes += `"${$(elem).val()}", `;
-            });
-
-
-            if (attributes !== "") {
-                attributes = `selected_attributes:[${attributes}],\n  `;
-            }
-        }
-
-
-        formGraphQl.attributes = attributes;
 
         return formGraphQl.generateAndGetGraphQlCode();
     }
