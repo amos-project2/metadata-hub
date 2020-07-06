@@ -1,5 +1,5 @@
 import {Page} from "../Page";
-import {ResultPresenter} from "../buisnesslogic/ResultPresenter";
+import {ResultPresenter} from "../ResultPresenter/ResultPresenter";
 
 export class HashQuery extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {

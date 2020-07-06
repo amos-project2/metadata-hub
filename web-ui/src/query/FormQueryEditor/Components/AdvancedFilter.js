@@ -1,4 +1,4 @@
-import {InputFieldMultiplier} from "../../../buisnesslogic/InputFieldMultiplier";
+import {InputFieldMultiplier} from "../../../Utilities/InputFieldMultiplier";
 
 export class AdvancedFilter {
 
