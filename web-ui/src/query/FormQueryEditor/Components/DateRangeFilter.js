@@ -59,5 +59,70 @@ export class DateRangeFilter {
     }
 
 
-}
+    inputValidation() {
+
+        //Validate Date
+        $("#fq-createFileTimeRangeStart").focusout(function () {
+
+            let startDateElement = document.getElementById("fq-createFileTimeRangeStart");
+
+            let startDate = $("#fq-createFileTimeRangeStart").val();
+            let endDate = $("#fq-createFileTimeRangeEnd").val();
+
+            if (startDate != "" && endDate != "" && startDate > endDate) {
+                startDateElement.setCustomValidity('Start Time must be before End Time');
+                startDateElement.reportValidity();
+            } else {
+                startDateElement.setCustomValidity("");
+            }
+        })
+
+        $("#fq-createFileTimeRangeEnd").focusout(function () {
+
+            let startDateElement = document.getElementById("fq-createFileTimeRangeEnd");
+
+            let startDate = $("#fq-createFileTimeRangeStart").val();
+            let endDate = $("#fq-createFileTimeRangeEnd").val();
+
+            if (startDate != "" && endDate != "" && startDate > endDate) {
+                startDateElement.setCustomValidity('End Time must be after Start Time');
+                startDateElement.reportValidity();
+            } else {
+                startDateElement.setCustomValidity("");
+            }
+        })
+
+        $("#fq-createFileTimeRangeStartUpdated").focusout(function () {
+
+            let startDateElement = document.getElementById("fq-createFileTimeRangeStartUpdated");
+
+            let startDate = $("#fq-createFileTimeRangeStartUpdated").val();
+            let endDate = $("#fq-createFileTimeRangeEndUpdated").val();
+
+            if (startDate != "" && endDate != "" && startDate > endDate) {
+                startDateElement.setCustomValidity('Start Time must be before End Time');
+                startDateElement.reportValidity();
+            } else {
+                startDateElement.setCustomValidity("");
+            }
+        })
+
+        $("#fq-createFileTimeRangeEndUpdated").focusout(function () {
+
+            let startDateElement = document.getElementById("fq-createFileTimeRangeEndUpdated");
+
+            let startDate = $("#fq-createFileTimeRangeStartUpdated").val();
+            let endDate = $("#fq-createFileTimeRangeEndUpdated").val();
+
+            if (startDate != "" && endDate != "" && startDate > endDate) {
+                startDateElement.setCustomValidity('End Time must be after Start Time');
+                startDateElement.reportValidity();
+            } else {
+                startDateElement.setCustomValidity("");
+            }
+        })
+    }
+
+
+    }
 
