@@ -43,27 +43,27 @@ export class ResultPresenter {
 
                     <ul class="nav nav-tabs" id="myTab" role="tablist">
                       <li class="nav-item" role="presentation">
-                        <a class="nav-link" id="json-tab" data-toggle="tab" href="#json" role="tab" aria-controls="json" aria-selected="true">Json</a>
+                        <a class="nav-link" id="json-tab" data-toggle="tab" href="#json${this.id}" role="tab" aria-controls="json" aria-selected="true">Json</a>
                       </li>
                       <li class="nav-item" role="presentation">
-                        <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#table" role="tab" aria-controls="table" aria-selected="false">Table</a>
+                        <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#table${this.id}" role="tab" aria-controls="table" aria-selected="false">Table</a>
                       </li>
                       <li class="nav-item" role="presentation">
-                        <a class="nav-link" id="contact-tab" data-toggle="tab" href="#export" role="tab" aria-controls="export" aria-selected="false">Export</a>
+                        <a class="nav-link" id="contact-tab" data-toggle="tab" href="#export${this.id}" role="tab" aria-controls="export" aria-selected="false">Export</a>
                       </li>
                     </ul>
 
                     <div class="tab-content" id="myTabContent">
-                      <div class="tab-pane fade " id="json" role="tabpanel" aria-labelledby="json-tab">
+                      <div class="tab-pane fade " id="json${this.id}" role="tabpanel" aria-labelledby="json-tab">
 
                             ${this.jsonOutput.getMainHtmlCode()}
 
 
                       </div>
-                      <div class="tab-pane fade show active" id="table" role="tabpanel" aria-labelledby="table-tab">
+                      <div class="tab-pane fade show active" id="table${this.id}" role="tabpanel" aria-labelledby="table-tab">
                             ${this.tableOutput.getMainHtmlCode()}
                       </div>
-                      <div class="tab-pane fade" id="export" role="tabpanel" aria-labelledby="export-tab">
+                      <div class="tab-pane fade" id="export${this.id}" role="tabpanel" aria-labelledby="export-tab">
                             ${this.exportOutput.getMainHtmlCode()}
                       </div>
                     </div>

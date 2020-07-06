@@ -17,7 +17,7 @@ export class JsonOutput {
 
     }
 
-    updateText() {
+    updateText(jsonString) {
         this.pSelector.find(".q_result").text(jsonString);
     }
 
