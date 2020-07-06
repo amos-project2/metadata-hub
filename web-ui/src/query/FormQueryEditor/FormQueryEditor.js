@@ -131,7 +131,9 @@ export class FormQueryEditor extends Page {
                 <button type="button" class="btn btn-primary clear-all">Clear All</button>
             </form>
             <br>
-            <div class="resultView1"></div>
+            <div class="resultView1">
+                ${this.resultPresenter.getHtml()}
+            </div>
 
 
             ${this.graphQLIntrospectionModal.getHtmlCode()}
@@ -144,8 +146,6 @@ export class FormQueryEditor extends Page {
     }
 
     onMount() {
-
-        $(".resultView1").html(this.resultPresenter.getHtml());
 
         this.dateRangeFilter.onMount();
         this.filetypeFilter.onMount();

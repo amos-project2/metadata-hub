@@ -31,15 +31,14 @@ export class HashQuery extends Page {
 
             </form>
             <br>
-            <div class="resultView2"></div>
+             <div class="resultView2">
+                ${this.resultPresenter.getHtml()}
+            </div>
         `;
     }
 
     onMount() {
-        $(".resultView2").html(this.resultPresenter.getHtml());
-
         let thisdata = this;
-
 
         $(".q-send-hash-editor").submit(function (event) {
             event.preventDefault();
