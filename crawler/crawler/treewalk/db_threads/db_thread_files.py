@@ -12,7 +12,11 @@ from typing import Any
 # Local imports
 from .db_thread import DBThread
 import crawler.communication as communication
+import crawler.crawler.database as database
+#from crawler.crawler.database import DatabaseConnectionTableFiles
 import crawler.treewalk as treewalk
+
+_logger = logging.getLogger(__name__)
 
 
 class DBThreadFiles(DBThread):
@@ -39,6 +43,10 @@ class DBThreadFiles(DBThread):
             name_thread=self._name,
             name_logger=__name__
         )
+        self._db_connection = database.DatabaseConnectionTableFiles(
+            db_info=db_info,
+            measure_time=measure_time
+        )
 
     # Methods to implement in child class
 
@@ -50,10 +58,31 @@ class DBThreadFiles(DBThread):
 
         """
         logging.info(f'{self._name} doing work.')
+        # Insert each tuple in data into the database
+        try:
+            # Attempt to insert the results in a batched query
+            self._db_connection.insert_new_record_files(data)
+        except:
+            # Try to insert each file's results individually
+            _logger.warning(
+                'There was an error inserting the batched results, attempting to insert each file individually.'
+            )
+            for insert in data:
+                try:
+                    self._db_connection.insert_new_record_files([insert])
+                except:
+                    _logger.warning('Failed inserting single file again.')
+
+        exit(0)
+
+        #TODO Create a dictionary for thread_metadata
+
+        # Pass the dictionary to thread_metadata
         command = communication.Command(
             command=communication.DATABASE_THREAD_WORK, data=data
         )
         communication.database_thread_metadata_input_data.put(command)
+        # Initiate deletion of the old data
 
     def _do_periodic_task(self) -> None:
         """Deleting marked files from FILES table."""
