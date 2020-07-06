@@ -7,6 +7,7 @@ import {AdvancedFilter} from "./Components/AdvancedFilter";
 import {FormGraphQl} from "./Components/FormGraphQl";
 import {FiletypeFilter} from "./Components/FiletypeFilter";
 import {AttributSelector} from "./Components/AttributSelector";
+import {DateRangeFilter} from "./Components/DateRangeFilter";
 
 export class FormQueryEditor extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
@@ -27,6 +28,7 @@ export class FormQueryEditor extends Page {
             ".modalClearCache"
         );
 
+        this.dateRangeFilter = new DateRangeFilter();
         this.filetypeFilter = new FiletypeFilter(this.metadatAutocompletion);
         this.advancedFilter = new AdvancedFilter(this.metadatAutocompletion);
         this.attributSelector = new AttributSelector(this.metadatAutocompletion);
@@ -55,37 +57,14 @@ export class FormQueryEditor extends Page {
                     </div>
                 </div>
 
-<!--     date-range-filter           -->
-
                <div class="form-row">
                     <div class="col-md-12">
                         <hr>
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label for="fq-createFileTimeRangeStart">Start-DateTime (File created)<a class="pover" title="Start-DateTime" data-content="It collects all files, which are older (created-time) than Start-DateTime">[?]</a></label>
-                        <input type="datetime-local" class="form-control" id="fq-createFileTimeRangeStart" placeholder="2020-05-22 07:19:29">
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label for="fq-createFileTimeRangeEnd">End-DateTime (File created)<a class="pover" title="End-DateTime" data-content="It collects all files, which are younger (created-time) than End-DateTime">[?]</a></label>
-                        <input type="datetime-local" class="form-control" id="fq-createFileTimeRangeEnd" placeholder="2020-07-28 20:35:22">
-                    </div>
-                </div>
-
-
-
-                <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label for="fq-createFileTimeRangeStartUpdated">Start-DateTime (File modified)<a class="pover" title="Start-DateTime" data-content="It collects all files, which are older (modified-time) than Start-DateTime">[?]</a></label>
-                        <input type="datetime-local" class="form-control" id="fq-createFileTimeRangeStartUpdated" placeholder="2020-05-22 07:19:29">
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label for="fq-createFileTimeRangeEndUpdated">End-DateTime (File modified)<a class="pover" title="End-DateTime" data-content="It collects all files, which are younger (modified-time) than End-DateTime">[?]</a></label>
-                        <input type="datetime-local" class="form-control" id="fq-createFileTimeRangeEndUpdated" placeholder="2020-07-28 20:35:22">
-                    </div>
-                </div>
+                <!--     date-range-filter           -->
+                ${this.dateRangeFilter.getMainHtmlCode()}
 
                <div class="form-row">
                     <div class="col-md-12">
@@ -169,6 +148,7 @@ export class FormQueryEditor extends Page {
 
         $(".resultView1").html(this.resultPresenter.getHtml());
 
+        this.dateRangeFilter.onMount();
         this.filetypeFilter.onMount();
         this.advancedFilter.onMount();
         this.attributSelector.onMount();
@@ -279,7 +259,6 @@ export class FormQueryEditor extends Page {
 
     inputSuggestion() {
 
-
         //Set owner to user
         //$("#fq-owner").val(localStorage.getItem("username"))
     }
@@ -288,6 +267,8 @@ export class FormQueryEditor extends Page {
     buildAndGetGraphQlQuery() {
 
         let formGraphQl = new FormGraphQl();
+
+        this.dateRangeFilter.generateGraphQlCodeAndSetTo(formGraphQl)
         this.filetypeFilter.generateGraphQlCodeAndSetTo(formGraphQl);
         this.advancedFilter.generateGraphQlCodeAndSetTo(formGraphQl);
         this.attributSelector.generateGraphQlCodeAndSetTo(formGraphQl);
@@ -295,28 +276,12 @@ export class FormQueryEditor extends Page {
         let limit = $("#fq-limit").val();
         let showDeleted = $("#fq-showDeleted").prop('checked');
         let deleted = "";
-        let startDate = $("#fq-createFileTimeRangeStart").val();
-        let endDate = $("#fq-createFileTimeRangeEnd").val();
-
-        let startDateUpdated = $("#fq-createFileTimeRangeStartUpdated").val();
-        let endDateUpdated = $("#fq-createFileTimeRangeEndUpdated").val();
-
 
         if (limit !== "") {limit = `limitFetchingSize: ${limit},\n  `;} else {limit = "";}
         if (showDeleted) {deleted = `showDeleted: true,\n  `;}
 
-        if (startDate !== "") {startDate = `start_creation_time: "${startDate}",\n  `;} else {startDate = "";}
-        if (endDate !== "") {endDate = `end_creation_time: "${endDate}",\n  `;} else {endDate = "";}
-        if (startDateUpdated !== "") {startDateUpdated = `start_modification_time: "${startDateUpdated}",\n  `;} else {startDateUpdated = "";}
-        if (endDateUpdated !== "") {endDateUpdated = `end_modification_time: "${endDateUpdated}",\n  `;} else {endDateUpdated = "";}
-
         formGraphQl.limit = limit;
         formGraphQl.showDeleted = showDeleted;
-        formGraphQl.startDate = startDate;
-        formGraphQl.endDate = endDate;
-        formGraphQl.startDateUpdated = startDateUpdated;
-        formGraphQl.endDateUpdated = endDateUpdated;
-
 
         return formGraphQl.generateAndGetGraphQlCode();
     }
