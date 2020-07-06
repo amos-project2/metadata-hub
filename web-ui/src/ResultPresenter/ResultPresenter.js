@@ -1,3 +1,7 @@
+import {JsonOutput} from "./Components/JsonOutput";
+import {TableOutput} from "./Components/TableOutput";
+import {ExportOutput} from "./Components/ExportOutput";
+
 export class ResultPresenter {
 
     static increaseCount() {
@@ -13,6 +17,20 @@ export class ResultPresenter {
         this.id = "ResultPresenter-" + ResultPresenter.getCount();
         this.pSelector = $("#" + this.id);
         this.graphQlFetcher = graphQlFetcher;
+
+        this.jsonOutput = new JsonOutput();
+        this.tableOutput = new TableOutput();
+        this.exportOutput = new ExportOutput();
+
+    }
+
+    onMount() {
+
+        this.pSelector = $("#" + this.id);
+
+        this.jsonOutput.onMount(this.pSelector);
+        this.tableOutput.onMount(this.pSelector);
+        this.exportOutput.onMount(this.pSelector);
     }
 
 
@@ -38,30 +56,28 @@ export class ResultPresenter {
                     <div class="tab-content" id="myTabContent">
                       <div class="tab-pane fade " id="json" role="tabpanel" aria-labelledby="json-tab">
 
-                        <div>
-                            <pre class="q_result"></pre>
-                        </div>
+                            ${this.jsonOutput.getMainHtmlCode()}
+
 
                       </div>
                       <div class="tab-pane fade show active" id="table" role="tabpanel" aria-labelledby="table-tab">
-                            ...
+                            ${this.tableOutput.getMainHtmlCode()}
                       </div>
                       <div class="tab-pane fade" id="export" role="tabpanel" aria-labelledby="export-tab">
-                            ...
+                            ${this.exportOutput.getMainHtmlCode()}
                       </div>
                     </div>
-
-
 
             </div>`;
 
     }
 
     generateResultAndInjectIntoDom(query) {
-        this.pSelector = $("#" + this.id);//it seems i have to reattach also the beginning of the selector, otherwise it wouldnt work
+        //this.pSelector = $("#" + this.id);//it seems i have to reattach also the beginning of the selector, otherwise it wouldnt work
         let thisdata = this;
         this.graphQlFetcher.fetchAdvanced(query, function (sucess, json, jsonString) {
-            thisdata.pSelector.find(".q_result").text(jsonString);
+            thisdata.jsonOutput.updateText(jsonString);
+            //TODO to more
         });
     }
 
