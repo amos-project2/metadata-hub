@@ -18,17 +18,11 @@ import multiprocessing
 from typing import List, Tuple, Dict
 from datetime import datetime
 
-# 3rd party imports
-from psycopg2.extensions import connection
 
 # Local imports
 from . import utils
-import crawler.database as database
 from crawler.services.config import Config
 import crawler.communication as communication
-
-
-_logger = logging.getLogger(__name__)
 
 
 def measure_exiftool(func):
@@ -61,32 +55,26 @@ class Worker(multiprocessing.Process):
         input_data_queue: multiprocessing.Queue,
         input_command_queue: multiprocessing.Queue,
         config: Config,
-        connection_data: dict,
         tree_walk_id: int,
         lock: multiprocessing.Lock,
         counter: multiprocessing.Value,
         num_workers: multiprocessing.Value,
         work_packages_done: multiprocessing.Value,
         db_thread_input_queue_data: multiprocessing.Queue,
-        db_thread_input_queue_commands: multiprocessing.Queue,
         measure_time: bool
     ):
         super(Worker, self).__init__()
+        self._logger = logging.getLogger(f'Worker {identifier}')
         self._identifier = identifier
         self._input_data_queue = input_data_queue
         self._input_command_queue = input_command_queue
         self._work_packages_done = work_packages_done
         self._db_thread_input_queue_data = db_thread_input_queue_data
-        self._db_thread_input_queue_commands = db_thread_input_queue_commands
         self._tw_config = config
         self._tree_walk_id = tree_walk_id
         self._lock = lock
         self._counter = counter
         self._measure_time = measure_time
-        self._db_connection = database.DatabaseConnection(
-            db_info=connection_data,
-            measure_time=self._measure_time
-        )
         self._shutdown = False
         self._exiftool = self._tw_config.get_exiftool_executable()
         self._num_workers = num_workers
@@ -114,26 +102,24 @@ class Worker(multiprocessing.Process):
         """Log the execution times before exiting."""
         if not self._measure_time:
             return
-        _logger.critical(
+        self._logger.critical(
             f'Worker {self._identifier} (TIME): '
             f'ExifTool={self._exiftool_time:.2f} '
         )
 
     def worker_clean_up(self) -> None:
         """Clean up method for cleaning up all used resources."""
-        _logger.info(f'Worker {self._identifier}: cleaning up.')
-        self._db_connection.close()
+        self._logger.info(f'Worker {self._identifier}: cleaning up.')
         self._shutdown = True
         with self._lock:
             self._counter.value += 1
             if self._counter.value == self._num_workers.value:
-                self._counter.value = 0
                 command = communication.Command(
                     command=communication.DATABASE_THREAD_FINISH,
                     data=None
                 )
-                self._db_thread_input_queue_commands.put(command)
-                _logger.info(f'Worker {self._identifier}: finished as last.')
+                self._db_thread_input_queue_data.put(command)
+                self._logger.info(f'Worker {self._identifier}: finished as last.')
 
     def worker_stop(self) -> None:
         """Stop the worker.
@@ -141,10 +127,13 @@ class Worker(multiprocessing.Process):
         Clear queues the worker is responsible of, otherwise the process will
         end up in a deadlock.
         """
-        self._db_connection.close()
         self._shutdown = True
         Worker.clear_queue(self._input_data_queue)
-        Worker.clear_queue(self._db_thread_input_queue_data)
+        with self._lock:
+            self._counter.value += 1
+            print(f'worker {self._identifier} stopped {self._counter.value}')
+            if self._counter.value == self._num_workers.value:
+                Worker.clear_queue(self._db_thread_input_queue_data)
 
     def worker_pause(self) -> None:
         """TWManager should only call stop/continue here."""
@@ -155,7 +144,7 @@ class Worker(multiprocessing.Process):
 
     def run(self) -> None:
         """Run the worker process."""
-        _logger.info(f'Hello Worker {self._identifier}.')
+        self._logger.info(f'Hello Worker {self._identifier}.')
         while True:
             if self._shutdown:
                 break
@@ -169,9 +158,9 @@ class Worker(multiprocessing.Process):
                 continue
             self._functions[command.command]()
         self.log_time()
-        while not self._input_data_queue.empty():
-            self._input_data_queue.get()
-        _logger.info(f'Goodbye Worker {self._identifier}.')
+        while True:
+            if self._counter.value == self._num_workers.value:
+                break
 
     def increase_work_done(self) -> None:
         """Increase the number of done work packages."""
@@ -201,7 +190,7 @@ class Worker(multiprocessing.Process):
             else:
                 return None
         except:
-            _logger.error(
+            self._logger.error(
                 f'Worker {self._identifier}: Error executing ExifTool.'
             )
             return None
@@ -239,7 +228,7 @@ class Worker(multiprocessing.Process):
             insert_values = utils.create_insert(self._tree_walk_id, result)
             # Check if result is valid
             if insert_values[0] == 0:
-                _logger.warning('Can\'t insert element into database because validity check failed.')
+                self._logger.warning('Can\'t insert element into database because validity check failed.')
                 continue
             # compute the hash256 and add it to the values string
             with open(f"{result['Directory']}/{result['FileName']}".replace("\'\'", "\'"), "rb") as file:
@@ -268,7 +257,7 @@ class Worker(multiprocessing.Process):
             self._db_connection.insert_new_record_files(inserts)
         except Exception as e:
             print(e)
-            _logger.warning(
+            self._logger.warning(
                 'There was an error inserting the batched results, inserting individually.'
             )
             # Try to insert each command individually and print out the problematic result
@@ -276,7 +265,7 @@ class Worker(multiprocessing.Process):
                 try:
                     self._db_connection.insert_new_record_files([insert])
                 except:
-                    _logger.warning('Failed inserting single file again.')
+                    self._logger.warning('Failed inserting single file again.')
 
         # Update the values in the 'metadata' table
         try:
@@ -285,7 +274,7 @@ class Worker(multiprocessing.Process):
             # Put the new information into the database
             self._db_connection.update_metadata(metadata_list)
         except:
-            _logger.warning("Error updating metadata")
+            self._logger.warning("Error updating metadata")
 
         # Check if there was a previous entry in the database
         # if yes: Set the tag in the database to true
@@ -303,7 +292,7 @@ class Worker(multiprocessing.Process):
                 self._db_connection.delete_files(toDelete)
         except Exception as e:
             print(e)
-            _logger.warning(
+            self._logger.warning(
                 'There was an error setting the deleted tags. Manual check necessary!'
             )
         """

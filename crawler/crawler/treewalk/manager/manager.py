@@ -7,6 +7,7 @@ TODO: Add description
 # Python imports
 import os
 import json
+import time
 import queue
 import logging
 import inspect
@@ -62,6 +63,7 @@ class TreeWalkManager(threading.Thread):
         self._roots = []
         self._workers = []
         self._num_workers.value = 0
+        self._worker_counter.value = 0
         self._work_packages = []
         self._work_packages_split = []
         self._tree_walk_id = -1
@@ -203,6 +205,7 @@ class TreeWalkManager(threading.Thread):
                         block=True, timeout=1
                     )
                 except queue.Empty:
+                    self._state.lock()
                     if self._state.get_finished():
                         # Delete files that are persisted in the database,
                         # but have been deleted in the file system
@@ -213,6 +216,7 @@ class TreeWalkManager(threading.Thread):
                         )
                         self._log_execution_time()
                         self._reset()
+                    self._state.release()
                     continue
                 self.exec(command)
             else:
@@ -264,9 +268,10 @@ class TreeWalkManager(threading.Thread):
         )
         for worker, data_queue, command_queue in self._workers:
             command_queue.put(command)
-        _logger.debug('Joining worker processes')
+        while self._worker_counter.value != len(self._workers):
+            time.sleep(0.1)
         for worker, data_queue, command_queue in self._workers:
-            worker.join()
+            worker.terminate()
         command = communication.Command(
             command=communication.DATABASE_THREAD_STOP,
             data=None
@@ -431,19 +436,18 @@ class TreeWalkManager(threading.Thread):
             for package in work_packages[id_worker]:
                 input_data_queue.put(package)
             input_command_queue = multiprocessing.Queue()
+            print(id_worker)
             worker = treewalk.Worker(
                 identifier=id_worker,
                 input_data_queue=input_data_queue,
                 input_command_queue=input_command_queue,
                 config=config,
-                connection_data=self._connection_data,
                 tree_walk_id=tree_walk_id,
                 lock=self._worker_lock,
                 counter=self._worker_counter,
                 num_workers=self._num_workers,
                 work_packages_done=self._work_packages_done,
                 db_thread_input_queue_data=communication.database_thread_files_input_data,
-                db_thread_input_queue_commands=communication.database_thread_files_input_commands,
                 measure_time=self._measure_time
             )
             self._workers.append(
