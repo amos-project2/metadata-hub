@@ -1,5 +1,8 @@
 //import {autocomplete} from "bootstrap-autocomplete";
 
+import {ClearCacheModal} from "./Modals/ClearCacheModal";
+import {SuggestionViewerModal} from "./Modals/SuggestionViewerModal";
+
 var autocompleter = require('bootstrap-autocomplete');
 
 /**
@@ -28,13 +31,14 @@ export class MetadataAutocompletion {
         this.currentMetadataListSelector = currentMetadataListSelector;
         this.modalOpenerSelector = modalOpenerSelector;
 
+        this.clearCacheModal = new ClearCacheModal();
+        this.suggestionViewerModal = new SuggestionViewerModal();
+
         this.fileTypes = [];
         this.filter = [];
         this.metadata = [];
 
 
-        this.bestMatchingFromServer = [];
-        this.lastFileTypesConcatenated = "UNDEFINED xxx";
 
     }
 
@@ -95,30 +99,6 @@ export class MetadataAutocompletion {
 
     }
 
-    //private
-    updateListFileType(callback) {
-
-        //reset
-        this.fileTypes = [];
-
-        let thisdata = this;
-        let tmpConcatenated = "";
-
-
-        $(this.fileTypesSelector).each(function () {
-            if ($(this).val() === "") return;
-            thisdata.fileTypes.push($(this).val());
-            tmpConcatenated += $(this).val();
-        });
-
-        if (tmpConcatenated !== this.lastFileTypesConcatenated) {
-            this.lastFileTypesConcatenated = tmpConcatenated;
-            this.updateServerList(callback);
-        } else {
-            callback();
-        }
-
-    }
 
     //public
     addListener() {
@@ -269,15 +249,14 @@ export class MetadataAutocompletion {
         this.modalOffset = 0;
 
         let thisdata = this;
-        $(".load-more-suggestions").show();
-        $(".metadata-autocompletion-suggestions-html").html(`
+        this.suggestionViewerModal.getLoadMoreSelector().show();
+        this.suggestionViewerModal.getContentSelector().html(`
                  <div class ="sugesstion-waiter" >Please wait...</div>
                  <div class ="container suggestion-container">
-
                  </div>
             `);
 
-        $('#metadata-autocompletion-modal').modal();
+        this.suggestionViewerModal.openModal();
         setTimeout(function () {
             thisdata.loadMoreSuggestions();
         }, 200);
@@ -290,7 +269,7 @@ export class MetadataAutocompletion {
         this.retrieveMetadataSuggestions(10, this.modalOffset, function (data) {
             $(".sugesstion-waiter").hide(700);
             if (data.length < 10) {
-                $(".load-more-suggestions").hide(2000);
+                thisdata.suggestionViewerModal.getLoadMoreSelector().hide(2000);
             }
             let htmlTable = thisdata.generateAndGetSuggestionTable(data);
             $(".suggestion-container").append(htmlTable);
@@ -393,65 +372,24 @@ export class MetadataAutocompletion {
 
 
     //public
+    //delegate
     getStaticModalHtml() {
-
-        return `
-            <div class="modal fade" id="metadata-autocompletion-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel">Metadata Suggestions</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            Here you automatically add Metadataattributes to the filtersection and metadata-select-section.
-                            <hr>
-                            <div class="metadata-autocompletion-suggestions-html"></div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-success load-more-suggestions">Load more suggestions</button>
-
-                        </div>
-                    </div>
-                </div>
-            </div>`;
+        return this.suggestionViewerModal.getHtmlCode();
     }
 
     clearCacheModalOpenerAndRequest() {
         let thisdata = this;
         $(".modalClearCache").click(function () {
-            $('#metadata-autocompletion-modal-clear-cache').modal();
+            thisdata.clearCacheModal.openModal();
             thisdata.restApiFetcherServer.fetchGet(`metadata-autocomplete/clear-cache/`, function (event) {});
         });
     }
 
 
+    //public
+    //delegate
     getStaticModalHtmlClearCache() {
-
-        return `
-            <div class="modal fade" id="metadata-autocompletion-modal-clear-cache" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel">Metadata Suggestions - Clear Cache</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            The Autocompletion-Cache is cleared automatically after each 60min. Now you forced to clear it.<br><br>
-                            It was succesfully cleared.
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
-
-                        </div>
-                    </div>
-                </div>
-            </div>`;
+        return this.clearCacheModal.getHtmlCode();
     }
 
 
