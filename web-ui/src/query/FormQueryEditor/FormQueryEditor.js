@@ -20,7 +20,8 @@ export class FormQueryEditor extends Page {
             ".filetype-element-input",
             ".fg-metadata-attribute",
             ".attribut-element-input",
-            ".modalOpenerSelector"
+            ".modalOpenerSelector",
+            ".modalClearCache"
         );
 
         this.inputMultiplierFiletypeFilter = this.inputMultiplierFiletypeFilterBuilder();
@@ -328,7 +329,7 @@ export class FormQueryEditor extends Page {
 
             ${this.graphQLIntrospectionModal.getHtmlCode()}
 
-            ${this.metadatAutocompletion.getStaticModalHtml()}
+            ${this.metadatAutocompletion.getSuggestionViewer().getStaticModalHtml()}
             ${this.metadatAutocompletion.getStaticModalHtmlClearCache()}
 
             `;

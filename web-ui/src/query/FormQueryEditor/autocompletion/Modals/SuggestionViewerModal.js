@@ -19,7 +19,7 @@ export class SuggestionViewerModal {
                             </button>
                         </div>
                         <div class="modal-body">
-                            Here you automatically add Metadataattributes to the filtersection and metadata-select-section.
+                            Here you can automatically add Metadataattributes to the filtersection and metadata-select-section.
                             <hr>
                             <div class="metadata-autocompletion-suggestions-html"></div>
                         </div>
