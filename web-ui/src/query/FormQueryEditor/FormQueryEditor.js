@@ -5,6 +5,7 @@ import {InputFieldMultiplier} from "../../buisnesslogic/InputFieldMultiplier";
 import {GraphQlIntrospectionModel} from "./Modals/GraphQlIntrospectionModel";
 import {AdvancedFilter} from "./Components/AdvancedFilter";
 import {FormGraphQl} from "./Components/FormGraphQl";
+import {FiletypeFilter} from "./Components/FiletypeFilter";
 
 export class FormQueryEditor extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
@@ -25,37 +26,13 @@ export class FormQueryEditor extends Page {
             ".modalClearCache"
         );
 
-
+        this.filetypeFilter = new FiletypeFilter(this.metadatAutocompletion);
         this.advancedFilter = new AdvancedFilter(this.metadatAutocompletion);
 
-        this.inputMultiplierFiletypeFilter = this.inputMultiplierFiletypeFilterBuilder();
+
         this.inputMultiplierAttributSelector = this.inputMultiplierAttributSelectorBuilder();
 
     }
-
-
-    inputMultiplierFiletypeFilterBuilder() {
-
-        let thisdata = this;
-        let emptyFunction = function () {};
-
-        let appendingHtmlCode = `<div class="form-group col-md-4 fg-filetype-element"><input type="text" class="form-control filetype-element-input"></div>`;
-
-        let focusOutFunction = function () {
-            thisdata.metadatAutocompletion.updateLists();
-        }
-
-        let focusInIfEmptyFieldFunction = function () {
-            thisdata.metadatAutocompletion.reAddListener();
-        };
-
-
-        return new InputFieldMultiplier(".fg-filetype-container", ".filetype-element-input", appendingHtmlCode, emptyFunction,
-            focusOutFunction, focusInIfEmptyFieldFunction, emptyFunction);
-
-    }
-
-
 
 
     inputMultiplierAttributSelectorBuilder() {
@@ -132,7 +109,6 @@ export class FormQueryEditor extends Page {
                         <input type="datetime-local" class="form-control" id="fq-createFileTimeRangeEndUpdated" placeholder="2020-07-28 20:35:22">
                     </div>
                 </div>
-<!--     filetypes filter           -->
 
                <div class="form-row">
                     <div class="col-md-12">
@@ -140,28 +116,8 @@ export class FormQueryEditor extends Page {
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="col-md-12">Which Filetypes: <a class="pover" title="Which Filetypes" data-content="Here you can specify a prefilter of filetypes. If it is empty means, no filetype-filter here">[?]</a></div>
-                </div>
-
-
-                <div class="fg-filetype-container form-row">
-
-                       ${this.inputMultiplierFiletypeFilter.getFirstElement()}
-
-<!--                    <div class="form-group col-md-4 fg-filetype-element">-->
-<!--                        <input type="text" class="form-control filetype-element-input" autocomplete="off">-->
-<!--                    </div>-->
-
-                </div>
-                <div class="form-row justify-content-md-center">
-                    <button type="button" class="btn btn-primary modalOpenerSelector mr-3">Open Metadata-Attribut-Selector</button>
-                    <button type="button" class="btn btn-danger modalClearCache mr-3">Clear Autocompletion Cache</button>
-                </div>
-
-
-
-
+                <!--     filetypes filter           -->
+                ${this.filetypeFilter.getMainHtmlCode()}
 
                <div class="form-row">
                     <div class="col-md-12">
@@ -172,15 +128,13 @@ export class FormQueryEditor extends Page {
                 <!--     Advanced-Filter           -->
                 ${this.advancedFilter.getMainHtmlCode()}
 
-
-                 <!--     Attribut-Selector           -->
-
-
                 <div class="form-row">
                     <div class="col-md-12">
                         <hr>
                     </div>
                 </div>
+
+                 <!--     Attribut-Selector           -->
 
                 <div class="form-row">
                     <div class="col-md-12">Which Attributes: <a class="pover" title="Which Attributes" data-content="Here you can limit the result to the specific metadata attributes.<br>If you dont add least one, then you get a result of all">[?]</a></div>
@@ -252,9 +206,10 @@ export class FormQueryEditor extends Page {
 
         $(".resultView1").html(this.resultPresenter.getHtml());
 
-        this.inputMultiplierFiletypeFilter.listenerAdd();
+
         this.inputMultiplierAttributSelector.listenerAdd();
 
+        this.filetypeFilter.onMount();
         this.advancedFilter.onMount();
 
         this.inputValidation();
@@ -372,6 +327,7 @@ export class FormQueryEditor extends Page {
     buildAndGetGraphQlQuery() {
 
         let formGraphQl = new FormGraphQl();
+        this.filetypeFilter.generateGraphQlCodeAndSetTo(formGraphQl);
         this.advancedFilter.generateGraphQlCodeAndSetTo(formGraphQl);
 
 
@@ -383,9 +339,6 @@ export class FormQueryEditor extends Page {
 
         let startDateUpdated = $("#fq-createFileTimeRangeStartUpdated").val();
         let endDateUpdated = $("#fq-createFileTimeRangeEndUpdated").val();
-
-        let filterOption = $(".fg-filter-connector-options").val();
-        let filterCustomString = $("#fq-custom-filter-connector").val();
 
 
         // if (filepattern !== "") {filepattern = `pattern: "${filepattern}",`;} else {filepattern = "";}
@@ -418,26 +371,9 @@ export class FormQueryEditor extends Page {
         }
 
 
-        let filetypes = "";
-        {
-            this.inputMultiplierFiletypeFilter.each(function (elem) {
-                filetypes += `"${$(elem).val()}", `;
-            });
-
-
-            if (filetypes !== "") {
-                filetypes = `file_types:[${filetypes}],\n  `;
-            }
-        }
-
         formGraphQl.attributes = attributes;
-        formGraphQl.filetypes = filetypes;
-
 
         return formGraphQl.generateAndGetGraphQlCode();
-
-
-
     }
 
 
