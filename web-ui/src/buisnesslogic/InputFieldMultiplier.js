@@ -30,6 +30,8 @@ export class InputFieldMultiplier {
         $(this.fieldSelector).not(".listenerAdded").focusout(function () {
             if ($(thisdata.fieldSelector).length < 2) {return;}
 
+
+
             if ($(this).val() === "") {
                 $(this).parent().remove();
             }
@@ -41,7 +43,7 @@ export class InputFieldMultiplier {
         $(this.fieldSelector).not(".listenerAdded").focusin(function () {
             let dhis = this;
             let emptyTextField = false;
-            $(this.fieldSelector).each(function () {
+            $(thisdata.fieldSelector).each(function () {
                 if (dhis !== this) {
                     if ($(this).val() == "") { emptyTextField = true; }
                 }
