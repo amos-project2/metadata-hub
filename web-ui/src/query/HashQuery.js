@@ -40,6 +40,8 @@ export class HashQuery extends Page {
     onMount() {
         let thisdata = this;
 
+        this.resultPresenter.onMount();
+
         $(".q-send-hash-editor").submit(function (event) {
             event.preventDefault();
             thisdata.resultPresenter.generateResultAndInjectIntoDom(thisdata.getQuery());

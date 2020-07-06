@@ -29,8 +29,10 @@ export class GraphqlQueryEditor extends Page {
     }
 
     onMount() {
-
         let thisdata = this;
+
+        this.resultPresenter.onMount();
+
         $(".q-send-query-editor").submit(function (event) {
             event.preventDefault();
             thisdata.resultPresenter.generateResultAndInjectIntoDom($("#q_textInput").val());

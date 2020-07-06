@@ -147,6 +147,8 @@ export class FormQueryEditor extends Page {
 
     onMount() {
 
+        this.resultPresenter.onMount();
+
         this.dateRangeFilter.onMount();
         this.filetypeFilter.onMount();
         this.advancedFilter.onMount();
