@@ -2,6 +2,7 @@ import {Page} from "../../Page";
 import {ResultPresenter} from "../../buisnesslogic/ResultPresenter";
 import {MetadataAutocompletion} from "./autocompletion/MetadataAutocompletion";
 import {InputFieldMultiplier} from "../../buisnesslogic/InputFieldMultiplier";
+import {GraphQlIntrospectionModel} from "./Modals/GraphQlIntrospectionModel";
 
 export class FormQueryEditor extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
@@ -11,6 +12,7 @@ export class FormQueryEditor extends Page {
         this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
         this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
         this.filterFirstElement = this.getFilterElement();
+        this.graphQLIntrospectionModal = new GraphQlIntrospectionModel()
 
         this.metadatAutocompletion = new MetadataAutocompletion(
             this.parent.dependencies.restApiFetcherServer,
@@ -324,39 +326,13 @@ export class FormQueryEditor extends Page {
             <div class="resultView1"></div>
 
 
-            ${this.getModalCode()}
+            ${this.graphQLIntrospectionModal.getHtmlCode()}
 
             ${this.metadatAutocompletion.getStaticModalHtml()}
             ${this.metadatAutocompletion.getStaticModalHtmlClearCache()}
 
             `;
 
-
-    }
-
-    getModalCode() {
-
-        // language=HTML
-        return `
-            <div class="modal fade" id="graphql-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel">GraphQl Code Inspection</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <pre id="graphql-code-content"></pre>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary send-to-graphiql" data-dismiss="modal">Send to GraphiQL</button>
-                            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
 
     }
 
@@ -378,18 +354,10 @@ export class FormQueryEditor extends Page {
             event.preventDefault();
             thisdata.resultPresenter.generateResultAndInjectIntoDom(thisdata.buildAndGetGraphQlQuery());
 
-            // thisdata.graphQlFetcher.fetchAdvanced(thisdata.buildAndGetGraphQlQuery(), function (sucess, json, jsonString) {
-            //     $(".q_result").text(jsonString);
-            //     thisdata.resultPresenter.addDataToResult(jsonString);
-            // });
         });
 
         $(".open-query").click(function () {
-
-            $("#graphql-code-content").text(thisdata.buildAndGetGraphQlQuery());
-            $('#graphql-modal').modal();
-            //thisdata.metadatAutocompletion.showLists();
-
+            thisdata.graphQLIntrospectionModal.openModalWithContent(thisdata.buildAndGetGraphQlQuery());
         });
 
         $(".send-to-graphiql").click(function () {
