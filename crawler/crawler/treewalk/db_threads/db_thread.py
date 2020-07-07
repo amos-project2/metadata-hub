@@ -111,7 +111,7 @@ class DBThread(threading.Thread):
             self._tw_state.set_finished()
         self._finish = False
         self._shutdown = False
-        # DBThread.clear_queue(self._input_data_queue)
+        DBThread.clear_queue(self._input_data_queue)
 
     def db_thread_sleep(self, data: Any) -> None:
         """Set the thread to sleep.

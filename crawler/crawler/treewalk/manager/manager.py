@@ -436,7 +436,6 @@ class TreeWalkManager(threading.Thread):
             for package in work_packages[id_worker]:
                 input_data_queue.put(package)
             input_command_queue = multiprocessing.Queue()
-            print(id_worker)
             worker = treewalk.Worker(
                 identifier=id_worker,
                 input_data_queue=input_data_queue,
