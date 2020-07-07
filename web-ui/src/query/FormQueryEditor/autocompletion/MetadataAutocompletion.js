@@ -65,34 +65,11 @@ export class MetadataAutocompletion {
         let autocompletionClass = this;
         console.log("Query? : " + query);
 
-        // let dataTypePromise = new Promise(
-        //     function(resolve, reject){
-        //
-        //         this.restApiFetcherServer.fetchGet("metadata-autocomplete/datatype/?q=" + encodeURIComponent(getFileString()), function (event) {
-        //             console.log("First Datatype: " + event.data.toString());
-        //             datatype = event.data.toString();
-        //             resolve(datatype);
-        //         });
-        //     }
-        // )
-
         this.restApiFetcherServer.fetchGet("metadata-autocomplete/datatype/?q=" + encodeURIComponent(getFileString()), function (event) {
             console.log("First Datatype: " + event.data.toString());
             datatype = event.data.toString();
             callback(datatype);
         });
-
-        //This executes before Rest Call returns! so no useful value is returned
-        // let dataType;
-        // dataTypePromise.then(
-        //     function(datatype){
-        //        dataType = datatype;
-        //     }
-        // )
-        // console.log("SECOND");
-        // console.log("Returned Datatype: " + datatype);
-        // return datatype;
-
     }
 
 

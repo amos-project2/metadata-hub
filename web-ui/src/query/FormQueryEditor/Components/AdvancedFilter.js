@@ -212,11 +212,12 @@ export class AdvancedFilter {
                 thisdata.metadatAutocompletion.getDataType($(elem).val(), function (datatype) {
 
                     console.log("datatype is " + datatype)
-                    // $(elem).parent().find(".fg-metadata-value").val(datatype);
-                // .fg-metadata-value
+
                     if (datatype == "str") {
+                        $(elem).parent().find(".fg-metadata-value").prop('placeholder', "Value [Text]");
                         $(elem).parent().find(".fg-metadata-value").prop('type', 'text');
                     } else if (datatype == "dig") {
+                        $(elem).parent().find(".fg-metadata-value").prop('placeholder', "Value [Number]");
                         $(elem).parent().find(".fg-metadata-value").prop('type', 'number');
                     } else {
                         console.log("no datatype")
