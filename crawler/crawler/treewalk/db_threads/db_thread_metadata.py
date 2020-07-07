@@ -1,6 +1,5 @@
 """Database thread for updating the METADATA table."""
 
-
 # Python imports
 import queue
 import logging
@@ -8,10 +7,10 @@ import threading
 import multiprocessing
 from typing import Any
 
-
 # Local imports
 from .db_thread import DBThread
 import crawler.communication as communication
+import crawler.crawler.database as database
 
 
 class DBThreadMetadata(DBThread):
@@ -37,6 +36,11 @@ class DBThreadMetadata(DBThread):
             name_thread=self._name,
             name_logger=__name__
         )
+        self._db_connection = database.DatabaseConnectionTableMetadata(
+            db_info=db_info,
+            measure_time=measure_time
+        )
+
 
     # Methods to implement in child class
 
@@ -47,6 +51,22 @@ class DBThreadMetadata(DBThread):
             data (Any): data from other thread
 
         """
+        print(data[0])
+        if len(data[1].keys()) > 0:
+            # Combine both dictionaries (decrease is always a subset/equal to increase)
+            for data_type in data[0].copy().keys():
+                increase = data[0][data_type]
+                decrease = data[1][data_type]
+                for tag in increase.copy().keys():
+                    # Subtract the decrease values from increase (if 0: remove as there is nothing to update)
+                    if increase[tag][0] - decrease[tag][0] != 0:
+                        data[0][data_type][tag] = increase[tag][0] - decrease[tag][0]
+                    else:
+                        del data[0][data_type][tag]
+                if not data[0][data_type]:
+                    del data[0][data_type]
+        if data[0]:
+            self._db_connection.update_metadata(data[0])
         logging.info(f'{self._name} doing work.')
 
 
