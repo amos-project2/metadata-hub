@@ -12,7 +12,8 @@ import datetime
 
 
 # Local imports
-from crawler.crawler.treewalk.worker import utils
+from . import utils
+#from crawler.crawler.treewalk.worker import utils
 from .db_thread import DBThread
 import crawler.communication as communication
 import crawler.crawler.database as database
