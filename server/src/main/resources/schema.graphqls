@@ -61,7 +61,7 @@ type Query{
         metadata_filter_logic_options: FilterLogicOption, metadata_filter_logic: String,
         selected_attributes: [String!],
         sortBy: [String!], sortBy_options: [SortByOption!], limitFetchingSize: Int, offset: Int,
-        showDeleted: Boolean) : [File]
+        showDeleted: Boolean) : ResultSet
 }
 
 """
@@ -109,6 +109,17 @@ enum FilterLogicOption{
 enum SortByOption{
     ASC
     DESC
+}
+
+"""
+Type that gets returned by the searchForFileMetadata query
+numberOfTotalFiles: the amount of total files the query would return
+numberOfReturnedFiles: the amount of files that are acutally returned, can differ from numberOfTotalFiles when limitFetchingSize or offset is used in the query
+"""
+type ResultSet{
+    numberOfTotalFiles: Int
+    numberOfReturnedFiles: Int
+    files: [File]
 }
 
 type File{

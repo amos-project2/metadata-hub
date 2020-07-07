@@ -2,6 +2,7 @@ package GraphQL.Fetcher;
 
 import Database.Model.DatabaseSchemaDefinition;
 import GraphQL.Model.GraphQLSchemaDefinition;
+import com.google.common.graph.Graph;
 import graphql.GraphQLException;
 
 import java.util.HashMap;
@@ -165,15 +166,14 @@ public class PreparedStatementCreator {
         }
 
         //Only fetch a certain amount of rows
-        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE)) {
+        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE) && !(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_OFFSET))) {
             stringBuilder.append(" LIMIT " + graphQLArguments.get(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE));
         }
 
-        //Ignores all rows of result till offset
-        //TODO: more efficient solution of offset? caching?
-        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_OFFSET)){
-            stringBuilder.append(" OFFSET " + graphQLArguments.get(GraphQLSchemaDefinition.QUERY_OFFSET));
-        }
+//        //Ignores all rows of result till offset
+//        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_OFFSET)){
+//            stringBuilder.append(" OFFSET " + graphQLArguments.get(GraphQLSchemaDefinition.QUERY_OFFSET));
+//        }
 
         return stringBuilder.toString();
     }
