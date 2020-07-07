@@ -73,8 +73,26 @@ class DBThreadFiles(DBThread):
                 except:
                     _logger.warning('Failed inserting single file again.')
 
-        exit(0)
-
+        # Initiate deletion of the old data
+        toDelete = []
+        directories = set([x[1] for x in data])
+        try:
+            # Determine which files need to be deleted
+            for dir in directories:
+                file_ids = self._db_connection.check_directory(dir, [x[-2] for x in data])
+                if file_ids:
+                    toDelete.extend(file_ids)
+            # Delete the files
+            if len(toDelete) > 0:
+                # TODO Create dictionary to pass to the metadata_thread
+                #self._db_connection.decrease_dynamic(toDelete)
+                # Delete the files
+                self._db_connection.delete_files(toDelete)
+        except Exception as e:
+            print(e)
+            self._logger.warning(
+                'There was an error setting the deleted tags. Manual check necessary!'
+            )
         #TODO Create a dictionary for thread_metadata
 
         # Pass the dictionary to thread_metadata
@@ -82,7 +100,6 @@ class DBThreadFiles(DBThread):
             command=communication.DATABASE_THREAD_WORK, data=data
         )
         communication.database_thread_metadata_input_data.put(command)
-        # Initiate deletion of the old data
 
     def _do_periodic_task(self) -> None:
         """Deleting marked files from FILES table."""

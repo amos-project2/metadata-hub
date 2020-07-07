@@ -17,6 +17,7 @@ import crawler.communication as communication
 
 _logger = logging.getLogger(__name__)
 
+
 def measure_time(func):
     """Decorator for time measurement of DatabaseConnection objects.
 
@@ -69,7 +70,6 @@ class DatabaseConnectionTableFiles:
         self._time = 0
         self._measure_time = measure_time
 
-
     @measure_time
     def insert_new_record_files(self, insert_values: List[Tuple[str]]) -> None:
         """Insert a new record to the 'files' table based on the ExifTool output.
@@ -120,6 +120,8 @@ class DatabaseConnectionTableFiles:
             curs.execute(query)
             get = curs.fetchall()
         except:
+            curs.close()
+            self.con.rollback()
             return []
         curs.close()
         self.con.commit()
@@ -160,3 +162,30 @@ class DatabaseConnectionTableFiles:
             _logger.warning('"Error updating file deletion"')
             curs.close()
             self.con.rollback()
+
+    @measure_time
+    def delete_files(self, ids: List[int]) -> int:
+        """Remove the given IDs from the files table.
+
+        Args:
+            ids (List[int]): list of IDs
+
+        Returns:
+            int: number of deleted rows or None on error
+
+        """
+        if not ids:
+            return 0
+        curs = self.con.cursor()
+        sql = curs.mogrify('DELETE FROM files WHERE id IN %s;', (tuple(ids),))
+        try:
+            curs.execute(sql, ids)
+            num = curs.rowcount
+            curs.close()
+            self.con.commit()
+        except Exception as e:
+            _logger.warning(f'Failed deleting files: {str(e)}')
+            curs.close()
+            self.con.rollback()
+            return None
+        return num
