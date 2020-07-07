@@ -8,6 +8,7 @@ import threading
 import multiprocessing
 from typing import Any
 import json
+import datetime
 
 
 # Local imports
@@ -15,7 +16,6 @@ from crawler.crawler.treewalk.worker import utils
 from .db_thread import DBThread
 import crawler.communication as communication
 import crawler.crawler.database as database
-#from crawler.crawler.database import DatabaseConnectionTableFiles
 import crawler.treewalk as treewalk
 
 _logger = logging.getLogger(__name__)
@@ -107,8 +107,43 @@ class DBThreadFiles(DBThread):
     def _do_periodic_task(self) -> None:
         """Deleting marked files from FILES table."""
         logging.info(f'{self._name} doing periodic task.')
-
+        # Search for ids that are set to be deleted
+        curr_time = datetime.datetime.now()
+        to_delete = self._db_connection.get_ids_to_delete()
+        to_delete = [
+            identifier
+            for (identifier, timestamp) in to_delete
+            if self._is_to_remove(curr_time=curr_time, remove_time=timestamp)
+        ]
+        print(to_delete)
+        num = self._db_connection.delete_files(ids=to_delete)
     # Override
+
+    def _is_to_remove(
+            self,
+            curr_time: datetime.datetime,
+            remove_time: datetime.datetime
+    ) -> bool:
+        """Check if the given timestamp exceeds the update interval.
+
+        This method checks if the given timestamp 'remove_time' exceeds
+        the current time by the update interval and thus is to be removed.
+
+        Args:
+            curr_time (datetime.datetime): current timestamp
+            remove_time (datetime.datetime):
+                timestamp when the file was marked as to removed
+
+        Returns:
+            bool: True if the timestamps exceeds the interval, False otherwise
+
+        """
+        if remove_time is None:
+            return True
+        diff = (curr_time - remove_time).total_seconds()
+        if diff >= self._update_interval:
+            return True
+        return False
 
     def db_thread_finish(self, data: Any) -> None:
         """Finish the files thread.

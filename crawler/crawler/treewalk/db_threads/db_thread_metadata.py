@@ -51,7 +51,6 @@ class DBThreadMetadata(DBThread):
             data (Any): data from other thread
 
         """
-        print(data[0])
         if len(data[1].keys()) > 0:
             # Combine both dictionaries (decrease is always a subset/equal to increase)
             for data_type in data[0].copy().keys():

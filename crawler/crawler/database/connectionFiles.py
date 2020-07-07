@@ -4,7 +4,7 @@ import json
 import logging
 import os
 from builtins import print
-from datetime import datetime
+import datetime
 from typing import List, Tuple, Dict
 
 # 3rd party modules
@@ -190,3 +190,32 @@ class DatabaseConnectionTableFiles:
             self.con.rollback()
             return None
         return num
+
+    @measure_time
+    def get_ids_to_delete(self) -> List[Tuple[int, datetime.datetime]]:
+        """Get the list of IDs which are marked as to be deleted.
+
+        The result consists of a set of tuples with the corresponding ID and
+        the timestamp when the file was marked as to delete.
+        The calling method is responsible for checking of the time limit
+        is already exceeded.
+
+        FIXME: The performance may break if there is a massive amount of files.
+
+        Returns:
+            List[Tuple(int, str)]: list of items (ID, timestamp) or None on error
+
+        """
+        sql = 'SELECT id, deleted_time FROM files WHERE deleted;'
+        curs = self.con.cursor()
+        try:
+            curs.execute(sql)
+            entries = curs.fetchall()
+            curs.close()
+            self.con.commit()
+        except Exception as e:
+            _logger.warning(f'Failed deleting files: {str(e)}')
+            curs.close()
+            self.con.rollback()
+            return None
+        return entries

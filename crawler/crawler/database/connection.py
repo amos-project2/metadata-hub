@@ -69,6 +69,7 @@ class DatabaseConnection:
         self._time = 0
         self._measure_time = measure_time
 
+
     @measure_time
     def update_status(self, crawlID: int, package: List[str]):
         """Updates a row in table crawls according to the tree walk progress.
