@@ -127,10 +127,16 @@ class DBThreadFiles(DBThread):
             except queue.Empty:
                 self._tw_state.lock()
                 if self._finish:
-                    self.db_thread_clean_up(close_database=False, finished=True)
+                    self.db_thread_clean_up(
+                        close_database=False,
+                        finished=self._tw_state.is_running()
+                    )
                 self._tw_state.release()
                 self.db_thread_periodic_task()
                 continue
-            self._do_work(command.data)
+            if command.command == communication.DATABASE_THREAD_FINISH:
+                self.db_thread_finish(None)
+            else:
+                self._do_work(command.data)
             self.db_thread_periodic_task()
         self._logger.info(f'Goodbye thread {self._name}.')
