@@ -1,5 +1,6 @@
 import {Page} from "../Page";
 import {ResultPresenter} from "../ResultPresenter/ResultPresenter";
+import {ResultPresenterOld} from "../ResultPresenter/ResultPresenterOld";
 
 export class GraphqlQueryEditor extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
@@ -7,7 +8,8 @@ export class GraphqlQueryEditor extends Page {
         this.title = "GraphQl Query Editor";
         this.cacheLevel = 3;
         this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
-        this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
+        //this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
+        this.resultPresenter = new ResultPresenterOld(this.graphQlFetcher);
     }
 
     content() {
@@ -31,12 +33,11 @@ export class GraphqlQueryEditor extends Page {
     onMount() {
         let thisdata = this;
 
-        this.resultPresenter.onMount();
+       // this.resultPresenter.onMount();
 
         $(".q-send-query-editor").submit(function (event) {
             event.preventDefault();
             thisdata.resultPresenter.generateResultAndInjectIntoDom($("#q_textInput").val());
-            //TODO to adapt to the new model
         });
 
     }

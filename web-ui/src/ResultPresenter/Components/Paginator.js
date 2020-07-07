@@ -81,7 +81,7 @@ export class Paginator {
 
 
         let previous = ` <li class="page-item"><a class="page-link page-previous pageId${this.id}" href="#!" data-page="${this.page - 1}">Previous</a></li>`;
-        let first = ` <li class="page-item"><a class="page-link page-first pageId${this.id}" href="#!" data-page="${this.page}">First</a></li>`;
+        let first = ` <li class="page-item"><a class="page-link page-first pageId${this.id}" href="#!" data-page="1">First</a></li>`;
         let last = `  <li class="page-item"><a class="page-link page-last pageId${this.id}" href="#!" data-page="${this.countAllPages}">Last</a></li>`;
         let next = ` <li class="page-item"><a class="page-link page-next pageId${this.id}" href="#!" data-page="${this.page + 1}">Next</a></li> `;
 
