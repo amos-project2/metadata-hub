@@ -162,17 +162,18 @@ export class FormQueryEditor extends Page {
 
         $(".q-send-query-form-editor").submit(function (event) {
             event.preventDefault();
-            thisdata.resultPresenter.generateResultAndInjectIntoDom(thisdata.buildAndGetGraphQlQuery());
-
+            let formGraphQL = thisdata.buildAndGetGraphQlQuery();
+            thisdata.resultPresenter.generateResultAndInjectIntoDom(formGraphQL.generateAndGetGraphQlCode());
+            thisdata.resultPresenter.updateState(formGraphQL);
         });
 
         $(".open-query").click(function () {
-            thisdata.graphQLIntrospectionModal.openModalWithContent(thisdata.buildAndGetGraphQlQuery());
+            thisdata.graphQLIntrospectionModal.openModalWithContent(thisdata.buildAndGetGraphQlQuery().generateAndGetGraphQlCode());
         });
 
         $(".send-to-graphiql").click(function () {
 
-            thisdata.parent.storage.query_inject = thisdata.buildAndGetGraphQlQuery();
+            thisdata.parent.storage.query_inject = thisdata.buildAndGetGraphQlQuery().generateAndGetGraphQlCode();
             thisdata.parent.storage.openedFromEditor = true;
             $("#nav-element-graphiql-console").trigger("click");
 
@@ -221,7 +222,7 @@ export class FormQueryEditor extends Page {
         formGraphQl.limit = limit;
         formGraphQl.showDeleted = showDeleted;
 
-        return formGraphQl.generateAndGetGraphQlCode();
+        return formGraphQl;//.generateAndGetGraphQlCode();
     }
 
 

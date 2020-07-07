@@ -45,7 +45,9 @@ export class HashQuery extends Page {
 
         $(".q-send-hash-editor").submit(function (event) {
             event.preventDefault();
-            thisdata.resultPresenter.generateResultAndInjectIntoDom(thisdata.getQuery());
+            let formGraphQl = thisdata.getQuery();
+            thisdata.resultPresenter.generateResultAndInjectIntoDom(formGraphQl.generateAndGetGraphQlCode());
+            thisdata.resultPresenter.updateState(formGraphQl)
         });
 
         //Necessary for the hash.function
@@ -72,7 +74,7 @@ export class HashQuery extends Page {
 
         let formGraphQl = new FormGraphQl();
         formGraphQl.fileHashes = `file_hashes: ["${$("#h-input").val()}"]`;
-        return formGraphQl.generateAndGetGraphQlCode();
+        return formGraphQl;
     }
 
 

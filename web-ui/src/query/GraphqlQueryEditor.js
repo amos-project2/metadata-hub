@@ -36,6 +36,7 @@ export class GraphqlQueryEditor extends Page {
         $(".q-send-query-editor").submit(function (event) {
             event.preventDefault();
             thisdata.resultPresenter.generateResultAndInjectIntoDom($("#q_textInput").val());
+            //TODO to adapt to the new model
         });
 
     }

@@ -89,4 +89,10 @@ export class ResultPresenter {
         });
     }
 
+    updateState(formGraphQL) {
+        let thisdata = this;
+        this.tableOutput.updateState(formGraphQL);
+    }
+
+
 }
