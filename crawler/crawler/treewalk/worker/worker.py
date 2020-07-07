@@ -49,6 +49,8 @@ def measure_exiftool(func):
 
 class Worker(multiprocessing.Process):
 
+    FINISH_TIMEOUT = 0.1
+
     def __init__(
         self,
         identifier: int,
@@ -64,7 +66,6 @@ class Worker(multiprocessing.Process):
         measure_time: bool
     ):
         super(Worker, self).__init__()
-        self._logger = logging.getLogger(f'Worker {identifier}')
         self._identifier = identifier
         self._input_data_queue = input_data_queue
         self._input_command_queue = input_command_queue
@@ -102,14 +103,13 @@ class Worker(multiprocessing.Process):
         """Log the execution times before exiting."""
         if not self._measure_time:
             return
-        self._logger.critical(
+        print(
             f'Worker {self._identifier} (TIME): '
             f'ExifTool={self._exiftool_time:.2f} '
         )
 
     def worker_clean_up(self) -> None:
         """Clean up method for cleaning up all used resources."""
-        self._logger.info(f'Worker {self._identifier}: cleaning up.')
         self._shutdown = True
         with self._lock:
             self._counter.value += 1
@@ -119,7 +119,6 @@ class Worker(multiprocessing.Process):
                     data=None
                 )
                 self._db_thread_input_queue_data.put(command)
-                self._logger.info(f'Worker {self._identifier}: finished as last.')
 
     def worker_stop(self) -> None:
         """Stop the worker.
@@ -131,7 +130,6 @@ class Worker(multiprocessing.Process):
         Worker.clear_queue(self._input_data_queue)
         with self._lock:
             self._counter.value += 1
-            print(f'worker {self._identifier} stopped {self._counter.value}')
             if self._counter.value == self._num_workers.value:
                 Worker.clear_queue(self._db_thread_input_queue_data)
 
@@ -144,7 +142,6 @@ class Worker(multiprocessing.Process):
 
     def run(self) -> None:
         """Run the worker process."""
-        self._logger.info(f'Hello Worker {self._identifier}.')
         while True:
             if self._shutdown:
                 break
@@ -159,6 +156,7 @@ class Worker(multiprocessing.Process):
             self._functions[command.command]()
         self.log_time()
         while True:
+            time.sleep(Worker.FINISH_TIMEOUT)
             if self._counter.value == self._num_workers.value:
                 break
 
@@ -190,9 +188,6 @@ class Worker(multiprocessing.Process):
             else:
                 return None
         except:
-            self._logger.error(
-                f'Worker {self._identifier}: Error executing ExifTool.'
-            )
             return None
         return metadata
 
@@ -228,7 +223,7 @@ class Worker(multiprocessing.Process):
             insert_values = utils.create_insert(self._tree_walk_id, result)
             # Check if result is valid
             if insert_values[0] == 0:
-                self._logger.warning('Can\'t insert element into database because validity check failed.')
+                # self._logger.warning('Can\'t insert element into database because validity check failed.')
                 continue
             # compute the hash256 and add it to the values string
             with open(f"{result['Directory']}/{result['FileName']}".replace("\'\'", "\'"), "rb") as file:
