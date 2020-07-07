@@ -71,7 +71,7 @@ export class Paginator {
         let page2 = `<li class="page-item"><a class="page-link pageId${this.id}" href="#!" data-page="${page_int}">${page_int}</a></li>`;
 
         page_int = this.page;
-        let page3 = `<li class="page-item"><a class="page-link pageId${this.id}" href="#!" data-page="${page_int}">${page_int}</a></li>`;
+        let page3 = `<li class="page-item active"><a class="page-link pageId${this.id}" href="#!" data-page="${page_int}">${page_int} <span class="sr-only">(current)</span></a></li>`;
 
         page_int = this.page + 1;
         let page4 = `<li class="page-item"><a class="page-link pageId${this.id}" href="#!" data-page="${page_int}">${page_int}</a></li>`;
