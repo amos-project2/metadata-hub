@@ -83,7 +83,8 @@ if __name__ == '__main__':
     # Joining them on shutdown
     thread_api.join()
     # thread_database_updater.join()
+    thread_db_metadata.join()
+    thread_db_files.join()
     thread_treewalk_manager.join()
     thread_treewalk_scheduler.join()
-    thread_db_files.join()
-    thread_db_metadata.join()
+
