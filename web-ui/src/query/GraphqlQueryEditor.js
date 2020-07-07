@@ -22,14 +22,17 @@ export class GraphqlQueryEditor extends Page {
                 <button type="submit" class="btn btn-primary">Send</button>
             </form>
             <br>
-            <div class="resultView3"></div>
+            <div class="resultView3">
+                ${this.resultPresenter.getHtml()}
+            </div>
         `;
     }
 
     onMount() {
-        $(".resultView3").html(this.resultPresenter.getHtml());
-
         let thisdata = this;
+
+        this.resultPresenter.onMount();
+
         $(".q-send-query-editor").submit(function (event) {
             event.preventDefault();
             thisdata.resultPresenter.generateResultAndInjectIntoDom($("#q_textInput").val());
