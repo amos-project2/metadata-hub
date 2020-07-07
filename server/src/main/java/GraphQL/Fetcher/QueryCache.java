@@ -1,27 +1,29 @@
 package GraphQL.Fetcher;
 
 import GraphQL.Model.File;
+import com.google.inject.Singleton;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+@Singleton
 public class QueryCache {
 
-    private static final ConcurrentHashMap<String, ArrayList<File>> cache = new ConcurrentHashMap<>();
-    private static final QueryCache queryCache = new QueryCache();
-    private static final Boolean activatedCacheClearing = queryCache.activateCacheClearing();
+    private final ConcurrentHashMap<String, ArrayList<File>> cache = new ConcurrentHashMap<>();
+//    private static final QueryCache queryCache = new QueryCache();
+//    private static final Boolean activatedCacheClearing = queryCache.activateCacheClearing();
 
-    private QueryCache() {
+    public QueryCache() {
+        Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(this::clearCache, 10, 10, TimeUnit.MINUTES);
     }
 
-    public static ConcurrentHashMap<String, ArrayList<File>> getCache(){
+    public ConcurrentHashMap<String, ArrayList<File>> getCache(){
         return cache;
     }
 
     private Boolean activateCacheClearing(){
-        Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(queryCache::clearCache, 10, 10, TimeUnit.MINUTES);
         return true;
     }
 

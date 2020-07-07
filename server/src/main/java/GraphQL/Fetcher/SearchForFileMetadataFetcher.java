@@ -30,10 +30,10 @@ public class SearchForFileMetadataFetcher implements DataFetcher
     private final Database database;
     private final ConcurrentHashMap<String, ArrayList<File>> queryCache;
 
-    public SearchForFileMetadataFetcher(Database database)
+    public SearchForFileMetadataFetcher(Database database, QueryCache queryCache)
     {
         this.database = database;
-        this.queryCache = QueryCache.getCache();
+        this.queryCache = queryCache.getCache();
     }
 
     @Override
