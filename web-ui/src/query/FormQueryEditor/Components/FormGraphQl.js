@@ -6,6 +6,8 @@ export class FormGraphQl {
      */
     constructor() {
 
+        this.fileHashes = "";
+
         this.limit = "";
         this.showDeleted = "";
         this.deleted = "";
@@ -33,6 +35,7 @@ export class FormGraphQl {
 
         //dont change the formatting here, cause this has a direct change to the formatting in the graphql-inspection-window
         let query_header = `
+   ${this.fileHashes}
    ${this.limit}
    ${this.deleted}
    ${this.startDate} ${this.endDate} ${this.startDateUpdated} ${this.endDateUpdated}

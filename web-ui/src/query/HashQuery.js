@@ -1,5 +1,6 @@
 import {Page} from "../Page";
 import {ResultPresenter} from "../ResultPresenter/ResultPresenter";
+import {FormGraphQl} from "./FormQueryEditor/Components/FormGraphQl";
 
 export class HashQuery extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
@@ -68,28 +69,10 @@ export class HashQuery extends Page {
     }
 
     getQuery() {
-        return `
-            query
-            {
-              searchForFileMetadata(file_hashes: ["${$("#h-input").val()}"])
-              {
-                id,
-                crawl_id,
-                dir_path,
-                name,
-                type,
-                creation_time,
-                access_time,
-                modification_time,
-                file_hash,
-                metadata
-                {
-                  name,
-                  value,
-                }
-              }
-            }
-        `;
+
+        let formGraphQl = new FormGraphQl();
+        formGraphQl.fileHashes = `file_hashes: ["${$("#h-input").val()}"]`;
+        return formGraphQl.generateAndGetGraphQlCode();
     }
 
 
