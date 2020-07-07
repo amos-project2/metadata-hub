@@ -56,17 +56,25 @@ export class ResultPresenter {
                     <div class="tab-content" id="myTabContent">
                       <div class="tab-pane fade " id="json${this.id}" role="tabpanel" aria-labelledby="json-tab">
 
+                            <br>
                             ${this.jsonOutput.getMainHtmlCode()}
 
 
                       </div>
                       <div class="tab-pane fade show active" id="table${this.id}" role="tabpanel" aria-labelledby="table-tab">
+
+                            <br>
                             ${this.tableOutput.getMainHtmlCode()}
+
                       </div>
                       <div class="tab-pane fade" id="export${this.id}" role="tabpanel" aria-labelledby="export-tab">
+
+                            <br>
                             ${this.exportOutput.getMainHtmlCode()}
+
                       </div>
                     </div>
+                    <br><br>
 
             </div>`;
 

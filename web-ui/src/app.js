@@ -5,7 +5,6 @@ import {GraphQlFetcher} from "./libs/Fetcher/GraphQlFetcher";
 import {RestAPIFetcher} from "./libs/Fetcher/RestAPIFetcher";
 import {Utilities} from "./Utilities/Utilities";
 import {Login} from "./login/Login";
-import {InputFieldMultiplier} from "./Utilities/InputFieldMultiplier";
 
 
 
