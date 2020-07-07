@@ -47,7 +47,7 @@ export class MetadataAutocompletion {
 
 
     // get the Datatype of a given tag from the Server
-    getDataType(tag) {
+    getDataType(tag, callback) {
 
         let thisdata = this;
         let datatype;
@@ -62,17 +62,36 @@ export class MetadataAutocompletion {
         }
 
         let query = getFileString();
+        let autocompletionClass = this;
         console.log("Query? : " + query);
+
+        // let dataTypePromise = new Promise(
+        //     function(resolve, reject){
+        //
+        //         this.restApiFetcherServer.fetchGet("metadata-autocomplete/datatype/?q=" + encodeURIComponent(getFileString()), function (event) {
+        //             console.log("First Datatype: " + event.data.toString());
+        //             datatype = event.data.toString();
+        //             resolve(datatype);
+        //         });
+        //     }
+        // )
+
         this.restApiFetcherServer.fetchGet("metadata-autocomplete/datatype/?q=" + encodeURIComponent(getFileString()), function (event) {
             console.log("First Datatype: " + event.data.toString());
             datatype = event.data.toString();
-            return datatype;
+            callback(datatype);
         });
 
         //This executes before Rest Call returns! so no useful value is returned
-        console.log("SECOND");
-        console.log("Returned Datatype: " + datatype);
-        return datatype;
+        // let dataType;
+        // dataTypePromise.then(
+        //     function(datatype){
+        //        dataType = datatype;
+        //     }
+        // )
+        // console.log("SECOND");
+        // console.log("Returned Datatype: " + datatype);
+        // return datatype;
 
     }
 
@@ -175,8 +194,8 @@ export class MetadataAutocompletion {
         function ddHidden(event) {
             if ($(this).val() == " ") {
                 $(this).val("");
-                $(this).trigger("focusout");
             }
+            $(this).trigger("focusout");
             // thisdata.reAddListener();
             thisdata.updateLists();
         }
