@@ -7,9 +7,11 @@ import logging
 import threading
 import multiprocessing
 from typing import Any
+import json
 
 
 # Local imports
+from crawler.crawler.treewalk.worker import utils
 from .db_thread import DBThread
 import crawler.communication as communication
 import crawler.crawler.database as database
@@ -73,19 +75,20 @@ class DBThreadFiles(DBThread):
                 except:
                     _logger.warning('Failed inserting single file again.')
 
+        # Tuple to pass to the metadata_thread (increase, decrease)
         # Initiate deletion of the old data
         toDelete = []
         directories = set([x[1] for x in data])
+        jsons = []
         try:
             # Determine which files need to be deleted
-            for dir in directories:
+            for dir in set([x[1] for x in data]):
                 file_ids = self._db_connection.check_directory(dir, [x[-2] for x in data])
                 if file_ids:
-                    toDelete.extend(file_ids)
+                    toDelete.extend([x[0] for x in file_ids])
+                    jsons.extend([x[1] for x in file_ids])
             # Delete the files
             if len(toDelete) > 0:
-                # TODO Create dictionary to pass to the metadata_thread
-                #self._db_connection.decrease_dynamic(toDelete)
                 # Delete the files
                 self._db_connection.delete_files(toDelete)
         except Exception as e:
@@ -93,11 +96,11 @@ class DBThreadFiles(DBThread):
             self._logger.warning(
                 'There was an error setting the deleted tags. Manual check necessary!'
             )
-        #TODO Create a dictionary for thread_metadata
-
+        metadata_list = utils.create_metadata_list([json.loads(j[5]) for j in data])
+        metadata_list2 = utils.create_metadata_list(jsons)
         # Pass the dictionary to thread_metadata
         command = communication.Command(
-            command=communication.DATABASE_THREAD_WORK, data=data
+            command=communication.DATABASE_THREAD_WORK, data=(metadata_list, metadata_list2)
         )
         communication.database_thread_metadata_input_data.put(command)
 

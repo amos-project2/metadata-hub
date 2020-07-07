@@ -101,7 +101,7 @@ class DatabaseConnectionTableFiles:
         self.con.close()
 
     @measure_time
-    def check_directory(self, path: str, current_hashes: List[str]) -> List[int]:
+    def check_directory(self, path: str, current_hashes: List[str]) -> Tuple[List[int], dict]:
         """checks the database for a given directory. Returns all the most recent ids.
 
         Args:
@@ -109,10 +109,11 @@ class DatabaseConnectionTableFiles:
             current_hashes (List[str]): list of all hashes from current files
         Returns:
             List(int): file ids that are supposed to be deleted
+            List(str): metadata saved in the database
         """
         files = Table('files')
         query = Query.from_(files) \
-            .select('id', 'crawl_id', 'dir_path', 'name', 'file_hash') \
+            .select('id', 'crawl_id', 'dir_path', 'name', 'file_hash', 'metadata') \
             .where(files.dir_path == Parameter('%s'))
         curs = self.con.cursor()
         query = curs.mogrify(str(query), (path,))
@@ -133,7 +134,7 @@ class DatabaseConnectionTableFiles:
             return []
         recent_crawl = max(id_set)
         # Make list with every file_id in that directory/crawl
-        file_ids = [x[0] for x in get if x[1] == recent_crawl and x[-1] in current_hashes]
+        file_ids = [(x[0],x[-1]) for x in get if x[1] == recent_crawl and x[-2] in current_hashes]
         return file_ids
 
     @measure_time
