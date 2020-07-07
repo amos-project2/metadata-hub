@@ -56,20 +56,25 @@ query
   searchForFileMetadata
   ${query_header}
   {
-    id,
-    crawl_id,
-    dir_path,
-    name,
-    type,
-    creation_time,
-    access_time,
-    modification_time,
-    file_hash,
-    deleted,
-    metadata
+    numberOfTotalFiles,
+    numberOfReturnedFiles,
+    files
     {
+      id,
+      crawl_id,
+      dir_path,
       name,
-      value,
+      type,
+      creation_time,
+      access_time,
+      modification_time,
+      file_hash,
+      deleted,
+      metadata
+      {
+        name,
+        value,
+      }
     }
   }
 }`;
