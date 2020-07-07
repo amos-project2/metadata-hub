@@ -12,11 +12,12 @@ import datetime
 
 
 # Local imports
-from . import utils
+from crawler.treewalk.worker import utils
 #from crawler.crawler.treewalk.worker import utils
 from .db_thread import DBThread
 import crawler.communication as communication
-import crawler.crawler.database as database
+import crawler.database as database
+# import crawler.crawler.database as database
 import crawler.treewalk as treewalk
 
 _logger = logging.getLogger(__name__)

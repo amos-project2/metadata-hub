@@ -10,7 +10,8 @@ from typing import Any
 # Local imports
 from .db_thread import DBThread
 import crawler.communication as communication
-import crawler.crawler.database as database
+import crawler.database as database
+#import crawler.crawler.database as database
 
 
 class DBThreadMetadata(DBThread):
