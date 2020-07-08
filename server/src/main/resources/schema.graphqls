@@ -42,7 +42,15 @@ type Query{
         numbers correspond to the metadata list indexes (metadata_attributes, metadata_values) starting with 0
         Unused filter options that are in the list but not in the statement just use "AND"
     selected_attributes: For all file metadata only the specified metadata attributes are returned.
+    sortBy: declare attributes of files table which the result gets sorted by.
+        When rows are equal on the first search option the second attribute gets used for sorting and so on.
+        If no sortBy_options are declared the result gets sorted in ascending order.
+    sortBy_options: Declare sort options for the different attributes declared in sortBy.
+        If sortBy_options are used the list has to be the same length as sortBy else all options get ignored.
     limitFetchingSize: Limits how many files will get fetched by the search.
+        (Notice: if limitFetchinSize is declared the result gets ordered by the file name if not otherwise specified in sortBy)
+    offset: declares how many rows of the query result are ignored
+        (Notice: if offset is declared the result gets ordered by the file name if not otherwise specified in sortBy)
     showDeleted: if true, the query also returns metadata info about deleted files
     """
     searchForFileMetadata(file_ids: [Int!], crawl_ids: [Int!], dir_path: String, dir_path_option: MetadataOption,
@@ -51,7 +59,9 @@ type Query{
         start_modification_time: String, end_modification_time: String, file_hashes: [String!],
         metadata_attributes: [String!], metadata_values:[String!], metadata_options: [MetadataOption!],
         metadata_filter_logic_options: FilterLogicOption, metadata_filter_logic: String,
-        selected_attributes: [String!], limitFetchingSize: Int, showDeleted: Boolean) : [File]
+        selected_attributes: [String!],
+        sortBy: [String!], sortBy_options: [SortByOption!], limitFetchingSize: Int, offset: Int,
+        showDeleted: Boolean) : ResultSet
 }
 
 """
@@ -94,6 +104,22 @@ enum FilterLogicOption{
     and
     or
     only_logic_string
+}
+
+enum SortByOption{
+    ASC
+    DESC
+}
+
+"""
+Type that gets returned by the searchForFileMetadata query
+numberOfTotalFiles: the amount of total files the query would return
+numberOfReturnedFiles: the amount of files that are acutally returned, can differ from numberOfTotalFiles when limitFetchingSize or offset is used in the query
+"""
+type ResultSet{
+    numberOfTotalFiles: Int
+    numberOfReturnedFiles: Int
+    files: [File]
 }
 
 type File{

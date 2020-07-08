@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FileTypeAutocompletionService
 {
     private final Database database;
-    private final ConcurrentHashMap<String, MetadataFileCache> cache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, MetadataInfoCache> cache = new ConcurrentHashMap<>();
 
 
     @Inject

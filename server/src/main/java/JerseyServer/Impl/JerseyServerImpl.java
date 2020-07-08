@@ -27,9 +27,9 @@ public class JerseyServerImpl implements HttpServer
 
     @Inject
     public JerseyServerImpl(GraphQL graphQl, Config config,
-							CrawlerUiProxyController c0, GraphQLController c1,
-							TestconsoleController c2, WebuiController c3,
-                            CrawlerAPIProxyController c4, MetadataAutocompletionController c5
+                            GraphQLController c0, TestConsoleController c1,
+                            WebUIController c2, CrawlerAPIProxyController c3,
+                            WebUIMetadataHelperController c4
     )
     {
         this.config = config;
@@ -43,7 +43,6 @@ public class JerseyServerImpl implements HttpServer
         resourceConfig.register(c2);
         resourceConfig.register(c3);
         resourceConfig.register(c4);
-        resourceConfig.register(c5);
 
         resourceConfig.register(ErrorHandler.class);
         this.server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, resourceConfig, false);

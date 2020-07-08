@@ -1,4 +1,4 @@
-export class ResultPresenter{
+export class ResultPresenterOld{
 
     static increaseCount() {
         this.count = this.getCount() + 1;
@@ -9,8 +9,8 @@ export class ResultPresenter{
     }
 
     constructor(graphQlFetcher) {
-        ResultPresenter.increaseCount();
-        this.id="ResultPresenter-"+ResultPresenter.getCount();
+        ResultPresenterOld.increaseCount();
+        this.id="ResultPresenterOld-"+ResultPresenterOld.getCount();
         this.pSelector=$("#"+this.id);
         this.graphQlFetcher=graphQlFetcher;
     }

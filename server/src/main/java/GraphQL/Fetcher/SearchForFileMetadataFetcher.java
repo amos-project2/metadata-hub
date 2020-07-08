@@ -6,8 +6,10 @@ import GraphQL.Model.File;
 import GraphQL.Model.GraphQLSchemaDefinition;
 import GraphQL.Model.Metadatum;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import graphql.GraphQLException;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +21,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SearchForFileMetadataFetcher implements DataFetcher
 {
@@ -26,10 +29,12 @@ public class SearchForFileMetadataFetcher implements DataFetcher
     private static final Logger log = LoggerFactory.getLogger(SearchForFileMetadataFetcher.class);
 
     private final Database database;
+    private final ConcurrentHashMap<String, ArrayList<File>> queryCache;
 
-    public SearchForFileMetadataFetcher(Database database)
+    public SearchForFileMetadataFetcher(Database database, QueryCache queryCache)
     {
         this.database = database;
+        this.queryCache = queryCache.getCache();
     }
 
     @Override
@@ -44,11 +49,62 @@ public class SearchForFileMetadataFetcher implements DataFetcher
 
         String sqlQuery = PreparedStatementCreator.buildSQLQuery(graphQLArguments);
         log.info("SQLQuery: " + sqlQuery);
-        return queryDatabase(sqlQuery, selected_attributes);
-    };
+
+        GraphQL.Model.ResultSet resultSet = queryResultSet(graphQLArguments, selected_attributes, sqlQuery);
+
+        return resultSet;
+    }
+
+    @NotNull
+    private GraphQL.Model.ResultSet queryResultSet(Map<String, Object> graphQLArguments, ArrayList<String> selected_attributes, String sqlQuery) throws SQLException, IOException {
+        GraphQL.Model.ResultSet resultSet;
+
+        List<File> returnFiles = null;
+        int numberOfTotalFiles = 0;
+        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_OFFSET)){
+
+            ArrayList<File> totalFiles = null;
+            String cashKey = QueryCache.createCashKey(sqlQuery, selected_attributes);
+            if(queryCache.containsKey(cashKey)){
+                log.info("Query Cache Hit");
+                totalFiles = queryCache.get(cashKey);
+            }else{
+                log.info("Query Cache Miss");
+                totalFiles = queryFilesFromDatabase(sqlQuery, selected_attributes);
+                queryCache.put(cashKey, totalFiles);
+            }
+
+            int offset = (int) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_OFFSET);
+            if(offset > totalFiles.size()){
+                offset = totalFiles.size();
+            }
+
+            int limit = 0;
+            if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE)){
+                limit = (int) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE);
+                if(offset + limit > totalFiles.size()){
+                    limit = totalFiles.size() - offset;
+                }
+            }else{
+                limit = totalFiles.size() - offset;
+            }
+
+            //list.subList() does not! copy!
+            numberOfTotalFiles = totalFiles.size();
+            returnFiles = totalFiles.subList(offset, offset + limit);
+        }else{
+            returnFiles = queryFilesFromDatabase(sqlQuery, selected_attributes);
+            numberOfTotalFiles = returnFiles.size();
+        }
+
+        resultSet = new GraphQL.Model.ResultSet(numberOfTotalFiles, returnFiles.size(), returnFiles);
+        return resultSet;
+    }
+
+    ;
 
     @SuppressWarnings("unchecked")
-    private List<File> queryDatabase(String sqlQuery, ArrayList<String> selected_attributes) throws SQLException, IOException
+    private ArrayList<File> queryFilesFromDatabase(String sqlQuery, ArrayList<String> selected_attributes) throws SQLException, IOException
     {
         //HikariDataSource dataSource = databaseProvider.getHikariDataSource();
 

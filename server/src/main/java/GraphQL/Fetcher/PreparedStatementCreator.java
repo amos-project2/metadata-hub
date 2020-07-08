@@ -2,6 +2,7 @@ package GraphQL.Fetcher;
 
 import Database.Model.DatabaseSchemaDefinition;
 import GraphQL.Model.GraphQLSchemaDefinition;
+import com.google.common.graph.Graph;
 import graphql.GraphQLException;
 
 import java.util.HashMap;
@@ -128,10 +129,51 @@ public class PreparedStatementCreator {
 
         stringBuilder.append(" TRUE");
 
-        //Only fetch a certain amount of rows
-        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE)) {
-            stringBuilder.append(" FETCH FIRST " + graphQLArguments.get(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE) + " ROWS ONLY");
+        //Order the result on different attributes depending on different sort options
+        //TODO: check if attributes are valid Database attributes?
+        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_SORT_BY_ATTRIBUTES)){
+            List<String> sortBy_attributes = (List<String>) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_SORT_BY_ATTRIBUTES);
+            stringBuilder.append(" ORDER BY ");
+
+            if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_SORT_BY_OPTIONS)){
+                List<String> sortBy_options = (List<String>) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_SORT_BY_OPTIONS);
+
+                if(sortBy_attributes.size() == sortBy_options.size()){
+                    for(int i = 0; i < (sortBy_attributes.size() - 1); i++){
+                        stringBuilder.append(sortBy_attributes.get(i) + " " + sortBy_options.get(i) + " , ");
+                    }
+                    stringBuilder.append(sortBy_attributes.get(sortBy_attributes.size() - 1) + " " + sortBy_options.get(sortBy_options.size() - 1) + " ");
+                    //sizes of attribute and option list differs, all options get ignored
+                } else {
+                    for(int i = 0; i < (sortBy_attributes.size() - 1); i++){
+                        stringBuilder.append(sortBy_attributes.get(i) + " , ");
+                    }
+                    stringBuilder.append(sortBy_attributes.get(sortBy_attributes.size() - 1) + " ");
+                }
+
+                // no sortBy_options declared
+            } else {
+                for(int i = 0; i < (sortBy_attributes.size() - 1); i++){
+                    stringBuilder.append(sortBy_attributes.get(i) + " , ");
+                }
+                stringBuilder.append(sortBy_attributes.get(sortBy_attributes.size() - 1) + " ");
+            }
+
+            // If limit or offset are used the result also needs to get sorted to be sure that one can iterate over the result set.
+            // otherwise postgreSQL doesn't secure a predictable result set
+        } else if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE) || graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_OFFSET)){
+            stringBuilder.append(" ORDER BY " + DatabaseSchemaDefinition.FILES_NAME + " ");
         }
+
+        //Only fetch a certain amount of rows
+        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE) && !(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_OFFSET))) {
+            stringBuilder.append(" LIMIT " + graphQLArguments.get(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE));
+        }
+
+//        //Ignores all rows of result till offset
+//        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_OFFSET)){
+//            stringBuilder.append(" OFFSET " + graphQLArguments.get(GraphQLSchemaDefinition.QUERY_OFFSET));
+//        }
 
         return stringBuilder.toString();
     }

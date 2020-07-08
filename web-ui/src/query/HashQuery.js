@@ -1,5 +1,6 @@
 import {Page} from "../Page";
-import {ResultPresenter} from "../buisnesslogic/ResultPresenter";
+import {ResultPresenter} from "../ResultPresenter/ResultPresenter";
+import {FormGraphQl} from "./FormQueryEditor/Components/FormGraphQl";
 
 export class HashQuery extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
@@ -31,19 +32,22 @@ export class HashQuery extends Page {
 
             </form>
             <br>
-            <div class="resultView2"></div>
+             <div class="resultView2">
+                ${this.resultPresenter.getHtml()}
+            </div>
         `;
     }
 
     onMount() {
-        $(".resultView2").html(this.resultPresenter.getHtml());
-
         let thisdata = this;
 
+        this.resultPresenter.onMount();
 
         $(".q-send-hash-editor").submit(function (event) {
             event.preventDefault();
-            thisdata.resultPresenter.generateResultAndInjectIntoDom(thisdata.getQuery());
+            let formGraphQl = thisdata.getQuery();
+            thisdata.resultPresenter.generateResultAndInjectIntoDom(formGraphQl.generateAndGetGraphQlCode());
+            thisdata.resultPresenter.updateState(formGraphQl)
         });
 
         //Necessary for the hash.function
@@ -67,28 +71,10 @@ export class HashQuery extends Page {
     }
 
     getQuery() {
-        return `
-            query
-            {
-              searchForFileMetadata(file_hashes: ["${$("#h-input").val()}"])
-              {
-                id,
-                crawl_id,
-                dir_path,
-                name,
-                type,
-                creation_time,
-                access_time,
-                modification_time,
-                file_hash,
-                metadata
-                {
-                  name,
-                  value,
-                }
-              }
-            }
-        `;
+
+        let formGraphQl = new FormGraphQl();
+        formGraphQl.fileHashes = `file_hashes: ["${$("#h-input").val()}"]`;
+        return formGraphQl;
     }
 
 

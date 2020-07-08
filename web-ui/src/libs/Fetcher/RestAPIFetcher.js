@@ -60,7 +60,11 @@ export class RestAPIFetcher {
             }
         })
             .then(function (json) {
-                callback(new FetchResult(FetchResult.SUCCESS(), "", json))
+                try {
+                    callback(new FetchResult(FetchResult.SUCCESS(), "", json))
+                } catch (e) {
+                    console.log(e);
+                }
             })
             .catch(function (err) {
                 if (err.message.includes("HTTP-ERROR: ")) {
