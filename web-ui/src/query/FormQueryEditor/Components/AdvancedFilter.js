@@ -220,7 +220,8 @@ export class AdvancedFilter {
                         $(elem).parent().find(".fg-metadata-value").prop('placeholder', "Value [Number]");
                         $(elem).parent().find(".fg-metadata-value").prop('type', 'number');
                     } else {
-                        console.log("no datatype")
+                        $(elem).parent().find(".fg-metadata-value").prop('placeholder', "Value");
+                        $(elem).parent().find(".fg-metadata-value").prop('type', 'number');
                     }
                 });
             }
