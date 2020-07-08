@@ -6,6 +6,7 @@ import GraphQL.Model.File;
 import GraphQL.Model.GraphQLSchemaDefinition;
 import GraphQL.Model.Metadatum;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import graphql.GraphQLException;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import org.jetbrains.annotations.NotNull;
@@ -63,21 +64,29 @@ public class SearchForFileMetadataFetcher implements DataFetcher
         if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_OFFSET)){
 
             ArrayList<File> totalFiles = null;
-            if(queryCache.containsKey(sqlQuery)){
+            String cashKey = QueryCache.createCashKey(sqlQuery, selected_attributes);
+            if(queryCache.containsKey(cashKey)){
                 log.info("Query Cache Hit");
-                totalFiles = queryCache.get(sqlQuery);
+                totalFiles = queryCache.get(cashKey);
             }else{
                 log.info("Query Cache Miss");
                 totalFiles = queryFilesFromDatabase(sqlQuery, selected_attributes);
-                queryCache.put(sqlQuery, totalFiles);
+                queryCache.put(cashKey, totalFiles);
             }
 
             int offset = (int) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_OFFSET);
+            if(offset > totalFiles.size()){
+                offset = totalFiles.size();
+            }
+
             int limit = 0;
             if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE)){
                 limit = (int) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE);
+                if(offset + limit > totalFiles.size()){
+                    limit = totalFiles.size() - offset;
+                }
             }else{
-                limit = totalFiles.size();
+                limit = totalFiles.size() - offset;
             }
 
             //list.subList() does not! copy!

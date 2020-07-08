@@ -4,6 +4,8 @@ import GraphQL.Model.File;
 import com.google.inject.Singleton;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -23,9 +25,15 @@ public class QueryCache {
         return cache;
     }
 
-    private Boolean activateCacheClearing(){
-        return true;
+    public static String createCashKey(String sqlQuery, List<String> selected_attributes){
+        Collections.sort(selected_attributes);
+        String key = sqlQuery;
+        for(String attribute: selected_attributes){
+           key += attribute;
+        }
+       return key;
     }
+
 
     private void clearCache(){
         cache.clear();
