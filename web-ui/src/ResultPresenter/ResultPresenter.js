@@ -19,7 +19,7 @@ export class ResultPresenter {
         this.graphQlFetcher = graphQlFetcher;
 
         this.jsonOutput = new JsonOutput();
-        this.tableOutput = new TableOutput();
+        this.tableOutput = new TableOutput(this);
         this.exportOutput = new ExportOutput();
 
     }
@@ -81,18 +81,43 @@ export class ResultPresenter {
     }
 
     generateResultAndInjectIntoDom(query) {
-        //this.pSelector = $("#" + this.id);//it seems i have to reattach also the beginning of the selector, otherwise it wouldnt work
-        let thisdata = this;
-        this.graphQlFetcher.fetchAdvanced(query, function (sucess, json, jsonString) {
-            thisdata.jsonOutput.updateText(jsonString);
-            //TODO to more
-        });
+        // //this.pSelector = $("#" + this.id);//it seems i have to reattach also the beginning of the selector, otherwise it wouldnt work
+        // let thisdata = this;
+        // this.graphQlFetcher.fetchAdvanced(query, function (sucess, json, jsonString) {
+        //     thisdata.jsonOutput.updateText(jsonString);
+        //     //TODO to more
+        // });
     }
 
     updateState(formGraphQL) {
         let thisdata = this;
-        this.tableOutput.updateState(formGraphQL);
+
+        thisdata.jsonOutput.updateText("wait for server-answer...");
+
+        //formGraphQL.setOffset(0);//TODO reactivate, after server is fixed
+        formGraphQL.setLimit(2);
+
+        this.tableOutput.reinitialize(formGraphQL);
+        this.sendToServerAndAdjust(formGraphQL);
     }
+
+
+    sendToServerAndAdjust(formGraphQL) {
+        let thisdata = this;
+        let query = formGraphQL.generateAndGetGraphQlCode();
+
+        this.graphQlFetcher.fetchAdvanced(query, function (sucess, json, jsonString) {
+            thisdata.jsonOutput.updateText(jsonString);
+            console.log(json);
+            thisdata.tableOutput.updateState(json);
+
+        });
+
+    }
+
+
+
+
 
 
 }

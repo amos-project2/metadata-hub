@@ -5,7 +5,8 @@ import {Paginator} from "./Paginator";
 export class TableOutput {
 
 
-    constructor() {
+    constructor(resultPresenter) {
+        this.resultPresenter = resultPresenter;
 
     }
 
@@ -24,12 +25,16 @@ export class TableOutput {
         //this.pSelector.find('.exampleXX').DataTable();
     }
 
-    updateState(formGraphQL) {
-        let thisdata=this
-        let paginator = new Paginator("tableOutput", 100, 1000, 1);
+    reinitialize(formGraphQL) {
+        let thisdata = this
+        let paginator = new Paginator("tableOutput", 2, 1000, 1);
         paginator.registerPageListener(function (elem) {
             thisdata.pSelector.find('.paginator-container').html(elem.getHtmlCode());
             elem.addListener();
+
+            //formGraphQL.setOffset(elem.startIndex);//TODO reactivate, after server is fixed
+            formGraphQL.setLimit(elem.countElementsPerPage);
+            thisdata.resultPresenter.sendToServerAndAdjust(formGraphQL);
 
         });
 
@@ -39,7 +44,8 @@ export class TableOutput {
 <div class="row" style="margin:5px;">
 <label class="col-form-label" > Show entries: </label>
     <div class="">
-            <select name="example_length"  class="custom-select custom-select-sm form-control form-control-sm" >
+            <select name="length"  class="custom-select custom-select-sm form-control form-control-sm myTableLength" >
+                <option value="2" selected>2</option>
                 <option value="10">10</option>
                 <option value="25">25</option>
                 <option value="50">50</option>
@@ -48,39 +54,9 @@ export class TableOutput {
     </div>
 
 </div>
+<div class="myTableMainContainer">
 
-<table class="exampleXX table table-striped table-bordered table-responsive" style="width:100%">
-    <thead>
-    <tr>
-        <th>First name</th>
-        <th>Last name</th>
-        <th>Position</th>
-        <th>Office</th>
-        <th>Start date</th>
-        <th>Salary</th>
-    </tr>
-    </thead>
-    <tr>
-        <td>Tiger Nixon</td>
-        <td>System Architect</td>
-        <td>Edinburgh</td>
-        <td>61</td>
-        <td>2011/04/25</td>
-        <td>$320,800</td>
-    </tr>
-
-
-    <tfoot>
-    <tr>
-        <th>First name</th>
-        <th>Last name</th>
-        <th>Position</th>
-        <th>Office</th>
-        <th>Start date</th>
-        <th>Salary</th>
-    </tr>
-    </tfoot>
-</table>
+</div>
 <div class="paginator-container">
     ${paginator.getHtmlCode()}
 </div>
@@ -90,11 +66,99 @@ export class TableOutput {
 
         paginator.addListener();
 
-        // this.pSelector.find('.exampleXX').DataTable( {
-        //     "processing": true,
-        //     "serverSide": true,
-        //     "ajax": "http://localhost:8080/api/datatableAdapter/"
-        // });
+        this.pSelector.find('.myTableLength').change(function () {
+            paginator.setElementsPerPage($(this).val());
+
+        })
+
+
+    }
+
+    updateState(json) {
+
+        let data = [];
+        let structure = [];//bitmap
+        let structureReverseMap = [];
+        let firstSeenCount = 0;
+
+        // console.log(json.data.searchForFileMetadata.files[0]);
+        // console.log(json.data.searchForFileMetadata.files[0].metadata[0]);
+        // alert(json.data.searchForFileMetadata.files[0].metadata[0]);
+        //alert(json.data.searchForFileMetadata.files[0].metadata[0].name);
+
+        let files = json.data.searchForFileMetadata.files;
+
+        files.forEach(file => {
+
+            let tmp = []
+
+            file.metadata.forEach(metadata => {
+                if (structure[metadata.name] === undefined) {
+                    structure[metadata.name] = firstSeenCount;
+                    firstSeenCount++;
+                }
+                tmp[metadata.name] = metadata.value;
+
+            })
+            data[file.id] = tmp;
+        })
+
+
+        for(var index in structure) {
+            structureReverseMap[structure[index]] = index;
+        }
+
+        // structure.forEach(value => {
+        //     console.log(value);
+        //     structureReverseMap[value] = index;
+        // })
+
+
+
+        let headerAndFooter = "";
+        let content=""
+        structureReverseMap.forEach(value => {
+            headerAndFooter += `<th>${value}</th>`;
+
+        })
+
+
+        let tmpContainer="";
+
+        data.forEach(value => {
+            content +="<tr>";
+
+            structureReverseMap.forEach(column => {
+                tmpContainer = value[column];
+                if(tmpContainer===undefined) tmpContainer="NULL";
+                content +=`<td>${tmpContainer}</td>`;
+
+            });
+
+            content +="</tr>";
+
+        })
+
+
+
+
+        let myTable = `
+        <table class="exampleXX table table-striped table-bordered table-responsive table-hover" style="width:100%">
+            <thead>
+            <tr>
+                ${headerAndFooter}
+            </tr>
+            </thead>
+                ${content}
+            <tfoot>
+            <tr>
+               ${headerAndFooter}
+            </tr>
+            </tfoot>
+        </table>
+        `;
+
+        this.pSelector.find('.myTableMainContainer').html(myTable);
 
     }
 

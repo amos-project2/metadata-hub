@@ -6,7 +6,7 @@ export class ExportOutput {
     }
 
     getMainHtmlCode() {
-        return `export-output`;
+        return `coming soon`;
     }
 
     onMount(pSelector) {

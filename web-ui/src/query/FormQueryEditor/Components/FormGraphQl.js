@@ -9,6 +9,7 @@ export class FormGraphQl {
         this.fileHashes = "";
 
         this.limit = "";
+        this.offset = "";
         this.showDeleted = "";
         this.deleted = "";
         this.startDate = "";
@@ -30,6 +31,22 @@ export class FormGraphQl {
         this.options_values = "";
     }
 
+    setLimit(limit) {
+        if (limit === null) {
+            this.limit = "";
+        } else {
+            this.limit = `limitFetchingSize: ${limit},\n  `;
+        }
+    }
+
+    setOffset(offset) {
+        if (offset === null) {
+            this.offset = "";
+        } else {
+            this.offset = `offset: ${offset},\n  `;
+        }
+    }
+
 
     generateAndGetGraphQlCode() {
 
@@ -37,6 +54,7 @@ export class FormGraphQl {
         let query_header = `
    ${this.fileHashes}
    ${this.limit}
+   ${this.offset}
    ${this.deleted}
    ${this.startDate} ${this.endDate} ${this.startDateUpdated} ${this.endDateUpdated}
    ${this.filetypes}
