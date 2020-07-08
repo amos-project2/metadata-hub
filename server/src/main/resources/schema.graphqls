@@ -117,6 +117,8 @@ numberOfTotalFiles: the amount of total files the query would return
 numberOfReturnedFiles: the amount of files that are acutally returned, can differ from numberOfTotalFiles when limitFetchingSize or offset is used in the query
 """
 type ResultSet{
+    fromIndex: Int
+    toIndex: Int
     numberOfTotalFiles: Int
     numberOfReturnedFiles: Int
     files: [File]

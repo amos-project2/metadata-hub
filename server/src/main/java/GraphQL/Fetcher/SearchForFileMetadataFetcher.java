@@ -29,12 +29,12 @@ public class SearchForFileMetadataFetcher implements DataFetcher
     private static final Logger log = LoggerFactory.getLogger(SearchForFileMetadataFetcher.class);
 
     private final Database database;
-    private final ConcurrentHashMap<String, ArrayList<File>> queryCache;
+    private final QueryCache queryCache;
 
     public SearchForFileMetadataFetcher(Database database, QueryCache queryCache)
     {
         this.database = database;
-        this.queryCache = queryCache.getCache();
+        this.queryCache = queryCache;
     }
 
     @Override
@@ -57,47 +57,56 @@ public class SearchForFileMetadataFetcher implements DataFetcher
 
     @NotNull
     private GraphQL.Model.ResultSet queryResultSet(Map<String, Object> graphQLArguments, ArrayList<String> selected_attributes, String sqlQuery) throws SQLException, IOException {
-        GraphQL.Model.ResultSet resultSet;
 
         List<File> returnFiles = null;
         int numberOfTotalFiles = 0;
+        int offset = 0;
+        int limit = 0;
+        GraphQL.Model.ResultSet resultSet = null;
+
+        //Offset is used as an argument, so the query cache gets used
         if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_OFFSET)){
+
+            offset = (int) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_OFFSET);
+            if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE)){
+                limit = (int) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE);
+            }
+            if(offset < 0 || limit < 0){
+                throw new GraphQLException("Offset or Limit can't be smaller than 0!");
+            }
 
             ArrayList<File> totalFiles = null;
             String cashKey = QueryCache.createCashKey(sqlQuery, selected_attributes);
-            if(queryCache.containsKey(cashKey)){
+
+            resultSet = QueryCache.getResultSetIfPresent(cashKey, offset, limit + offset);
+            if( resultSet != null){
                 log.info("Query Cache Hit");
-                totalFiles = queryCache.get(cashKey);
+                return resultSet;
             }else{
                 log.info("Query Cache Miss");
                 totalFiles = queryFilesFromDatabase(sqlQuery, selected_attributes);
-                queryCache.put(cashKey, totalFiles);
-            }
+                if(offset > totalFiles.size()){
+                    throw new GraphQLException("Offset exceeds the total amount of files of the ResultSet");
+                }
+                QueryCache.putIntoCache(cashKey, totalFiles, offset);
 
-            int offset = (int) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_OFFSET);
-            if(offset > totalFiles.size()){
-                offset = totalFiles.size();
-            }
-
-            int limit = 0;
-            if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE)){
-                limit = (int) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE);
-                if(offset + limit > totalFiles.size()){
+                if(limit == 0 || offset + limit > totalFiles.size()){
                     limit = totalFiles.size() - offset;
                 }
-            }else{
-                limit = totalFiles.size() - offset;
+                //list.subList() does not! copy!
+                numberOfTotalFiles = totalFiles.size();
+                returnFiles = totalFiles.subList(offset, offset + limit);
             }
 
-            //list.subList() does not! copy!
-            numberOfTotalFiles = totalFiles.size();
-            returnFiles = totalFiles.subList(offset, offset + limit);
+            //No offset specified so no caching is going on
         }else{
             returnFiles = queryFilesFromDatabase(sqlQuery, selected_attributes);
             numberOfTotalFiles = returnFiles.size();
+            offset = 0;
+            limit = numberOfTotalFiles;
         }
 
-        resultSet = new GraphQL.Model.ResultSet(numberOfTotalFiles, returnFiles.size(), returnFiles);
+        resultSet = new GraphQL.Model.ResultSet(offset, offset + limit, numberOfTotalFiles, returnFiles.size(), returnFiles);
         return resultSet;
     }
 
