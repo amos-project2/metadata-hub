@@ -156,8 +156,10 @@ export class TableOutput {
             data.push(tmp);
         });
 
-        let offsetLimit = formGraphQL.getOffset() + formGraphQL.getLimit();
-        this.pSelector.find('.myEntryCount').html(`<b>${formGraphQL.getOffset() + 1} - ${offsetLimit} [${currentFiles}] from ${totalFiles}</b> | Metadatacolumns: ${Object.keys(structure).length - 2}`);
+        let offsetLimit = formGraphQL.getOffset() + currentFiles;
+        let offsetFiles = formGraphQL.getOffset() + 1;
+        if(currentFiles===0) offsetFiles = 0;
+        this.pSelector.find('.myEntryCount').html(`<b>${offsetFiles} - ${offsetLimit} [${currentFiles}] from ${totalFiles}</b> | Metadatacolumns: ${Object.keys(structure).length - 2}`);
 
 
         for (var index in structure) {
