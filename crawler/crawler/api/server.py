@@ -174,12 +174,12 @@ def schedule_remove() -> flask.Response:
 
 @app.route('/shutdown', methods=['GET', 'POST'])
 def shutdown():
-    manager.shutdown()
-    # FIXME db_updater.shutdown()
     scheduler.shutdown()
+    manager.shutdown()
     func = flask.request.environ.get('werkzeug.server.shutdown')
     if func is None:
         # TODO handle error
+        print('ERROR')
         return None
     func()
     response = communication.Response(
