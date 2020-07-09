@@ -94,7 +94,7 @@ export class ResultPresenter {
 
         thisdata.jsonOutput.updateText("wait for server-answer...");
 
-        //formGraphQL.setOffset(0);//TODO reactivate, after server is fixed
+        formGraphQL.setOffset(0);
         formGraphQL.setLimit(2);
 
         this.tableOutput.reinitialize(formGraphQL);

@@ -32,7 +32,7 @@ export class TableOutput {
             thisdata.pSelector.find('.paginator-container').html(elem.getHtmlCode());
             elem.addListener();
 
-            //formGraphQL.setOffset(elem.startIndex);//TODO reactivate, after server is fixed
+            formGraphQL.setOffset(elem.startIndex);
             formGraphQL.setLimit(elem.countElementsPerPage);
             thisdata.resultPresenter.sendToServerAndAdjust(formGraphQL);
 
@@ -88,6 +88,9 @@ export class TableOutput {
 
         let files = json.data.searchForFileMetadata.files;
 
+        structure["id"] = firstSeenCount;
+        firstSeenCount++;
+
         files.forEach(file => {
 
             let tmp = []
@@ -100,7 +103,12 @@ export class TableOutput {
                 tmp[metadata.name] = metadata.value;
 
             })
-            data[file.id] = tmp;
+
+            tmp["id"] = file.id;
+
+
+            //"s"+file.id
+            data.push(tmp);
         })
 
 
