@@ -1,10 +1,9 @@
-"""Connection to database and perform query."""
+"""Database connection for the METADATA table."""
 
 # Python imports
+import os
 import json
 import logging
-import os
-from builtins import print
 from datetime import datetime
 from typing import List, Tuple, Dict
 
@@ -13,37 +12,16 @@ import psycopg2
 from pypika import Query, Table, Field, Parameter
 
 # Local imports
+from .base import measure_time
+from .base import DatabaseConnectionBase
 from crawler.services.config import Config
 import crawler.communication as communication
+
 
 _logger = logging.getLogger(__name__)
 
 
-def measure_time(func):
-    """Decorator for time measurement of DatabaseConnection objects.
-
-    This decorator is used for roughly estimate the time spent for database
-    operations. It can wrap arbitrary methods of DatabaseConnection objects.
-
-    Args:
-        func (function): function to wrap
-
-    """
-
-    def decorator(self, *args, **kwargs):
-        if self._measure_time:
-            start = datetime.now()
-            result = func(self, *args, **kwargs)
-            end = datetime.now()
-            self._time += (end - start).total_seconds()
-        else:
-            result = func(self, *args, **kwargs)
-        return result
-
-    return decorator
-
-
-class DatabaseConnectionTableMetadata:
+class DatabaseConnectionTableMetadata(DatabaseConnectionBase):
 
     def __init__(self, db_info: dict, measure_time: bool) -> None:
         """Initialize the connection to Postgres Database.
@@ -56,21 +34,11 @@ class DatabaseConnectionTableMetadata:
             VallueError: when creating the connection failed
 
         """
+        super(DatabaseConnectionTableMetadata, self).__init__(
+            db_info=db_info, measure_time=measure_time
+        )
 
-        try:
-            self.con = psycopg2.connect(
-                user=db_info['user'],
-                password=db_info['password'],
-                host=db_info['host'],
-                port=db_info['port'],
-                database=db_info['dbname']
-            )
-        except Exception as err:
-            raise ValueError(f'Files database initialization error: {err}')
-
-        self._time = 0
-        self._measure_time = measure_time
-
+    @measure_time
     def update_metadata(self, additions: dict) -> None:
         """Given a dictionary with key (file type) and values ((tag name, increments)) update the database
         accordingly
@@ -118,6 +86,7 @@ class DatabaseConnectionTableMetadata:
             self.con.rollback()
             raise
 
+    @measure_time
     def output_type(self, to_check: str):
         """Determine whether the output value of a file is a digit or a string
         Args:
@@ -131,6 +100,7 @@ class DatabaseConnectionTableMetadata:
         except:
             return 'str'
 
+    @measure_time
     def decrease_dynamic(self, ids: List[int]) -> None:
         """
         Decreases the tag values in the 'metadata' table by the tag values of the files present in ids

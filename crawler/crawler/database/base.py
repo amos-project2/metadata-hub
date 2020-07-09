@@ -1,4 +1,4 @@
-
+"""TODO"""
 
 # Python imports
 import psycopg2
@@ -67,3 +67,6 @@ class DatabaseConnectionBase:
 
         """
         return self._time
+
+    def close(self) -> None:
+        self.con.close()
