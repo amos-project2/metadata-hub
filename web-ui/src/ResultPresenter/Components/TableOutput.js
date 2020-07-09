@@ -53,10 +53,11 @@ export class TableOutput {
 
 
         let totalFiles = initJson.data.searchForFileMetadata.numberOfTotalFiles;
+        let currentFiles = initJson.data.searchForFileMetadata.numberOfReturnedFiles;
+
         this.lastTotalFiles = totalFiles;
         this.cleared = false;
 
-        alert("reinitialized +" + totalFiles);
 
         let paginator = new Paginator("tableOutput", 2, totalFiles, 1);
         paginator.registerPageListener(function (elem) {
@@ -90,7 +91,9 @@ export class TableOutput {
                 </div>
                 <div class="paginator-container">
                     ${paginator.getHtmlCode()}
-                </div>`
+                </div>
+                Entries: <span class="myEntryCount">load...</span>
+`
         );
 
         paginator.addListener();
@@ -103,12 +106,13 @@ export class TableOutput {
 
     }
 
-    updateState(formGraphQl, json) {
+    updateState(formGraphQL, json) {
 
         let totalFiles = json.data.searchForFileMetadata.numberOfTotalFiles;
         let currentFiles = json.data.searchForFileMetadata.numberOfReturnedFiles;
 
-        if (this.cleared || this.lastTotalFiles !== totalFiles) this.reinitialize(formGraphQl, json);
+        if (this.cleared || this.lastTotalFiles !== totalFiles) this.reinitialize(formGraphQL, json);
+
 
         let data = [];
         let structure = [];//bitmap
@@ -128,7 +132,7 @@ export class TableOutput {
         firstSeenCount++;
 
 
-        counter=formGraphQl.offset;
+        let counter = formGraphQL.getOffset();
         files.forEach(file => {
 
             let tmp = []
@@ -143,14 +147,17 @@ export class TableOutput {
             });
 
             counter++;
-            tmp["#"]=counter;
+            tmp["#"] = "<b>" + counter + "</b>";
 
             tmp["id"] = file.id;
 
 
             //"s"+file.id
             data.push(tmp);
-        })
+        });
+
+        let offsetLimit = formGraphQL.getOffset() + formGraphQL.getLimit();
+        this.pSelector.find('.myEntryCount').html(`<b>${formGraphQL.getOffset() + 1} - ${offsetLimit} [${currentFiles}] from ${totalFiles}</b> | Metadatacolumns: ${Object.keys(structure).length - 2}`);
 
 
         for (var index in structure) {

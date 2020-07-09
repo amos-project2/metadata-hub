@@ -160,7 +160,9 @@ export class Paginator {
                 <ul class="pagination">
                     ${tmp}
               </ul>
-            </nav>`;
+            </nav>
+
+`;
 
     }
 

@@ -6,6 +6,10 @@ export class FormGraphQl {
      */
     constructor() {
 
+        this.limitIntern = 0;
+        this.offsetIntern = 0;
+
+
         this.fileHashes = "";
 
         this.limit = "";
@@ -31,7 +35,16 @@ export class FormGraphQl {
         this.options_values = "";
     }
 
+    getLimit() {
+        return this.limitIntern;
+    }
+
+    getOffset() {
+        return this.offsetIntern;
+    }
+
     setLimit(limit) {
+        this.limitIntern = parseInt(limit, 10);
         if (limit === null) {
             this.limit = "";
         } else {
@@ -40,6 +53,7 @@ export class FormGraphQl {
     }
 
     setOffset(offset) {
+        this.offsetIntern = parseInt(offset, 10);
         if (offset === null) {
             this.offset = "";
         } else {
