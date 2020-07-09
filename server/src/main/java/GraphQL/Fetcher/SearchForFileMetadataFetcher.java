@@ -21,7 +21,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class SearchForFileMetadataFetcher implements DataFetcher
 {
@@ -48,7 +47,6 @@ public class SearchForFileMetadataFetcher implements DataFetcher
         final ArrayList<String> selected_attributes = dataFetchingEnvironment.getArgument(GraphQLSchemaDefinition.QUERY_SELECTED_ATTRIBUTES);
 
         String sqlQuery = PreparedStatementCreator.buildSQLQuery(graphQLArguments);
-        log.info("SQLQuery: " + sqlQuery);
 
         GraphQL.Model.ResultSet resultSet = queryResultSet(graphQLArguments, selected_attributes, sqlQuery);
 
@@ -61,13 +59,14 @@ public class SearchForFileMetadataFetcher implements DataFetcher
         List<File> returnFiles = null;
         int numberOfTotalFiles = 0;
         int offset = 0;
-        int limit = 0;
+        int toIndex = 0;
         GraphQL.Model.ResultSet resultSet = null;
 
         //Offset is used as an argument, so the query cache gets used
         if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_OFFSET)){
 
             offset = (int) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_OFFSET);
+            int limit = 0;
             if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE)){
                 limit = (int) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE);
             }
@@ -75,27 +74,32 @@ public class SearchForFileMetadataFetcher implements DataFetcher
                 throw new GraphQLException("Offset or Limit can't be smaller than 0!");
             }
 
-            ArrayList<File> totalFiles = null;
             String cashKey = QueryCache.createCashKey(sqlQuery, selected_attributes);
 
             resultSet = QueryCache.getResultSetIfPresent(cashKey, offset, limit + offset);
             if( resultSet != null){
                 log.info("Query Cache Hit");
+
                 return resultSet;
             }else{
                 log.info("Query Cache Miss");
-                totalFiles = queryFilesFromDatabase(sqlQuery, selected_attributes);
-                if(offset > totalFiles.size()){
-                    throw new GraphQLException("Offset exceeds the total amount of files of the ResultSet");
-                }
-                QueryCache.putIntoCache(cashKey, totalFiles, offset);
 
-                if(limit == 0 || offset + limit > totalFiles.size()){
-                    limit = totalFiles.size() - offset;
+                ArrayList<File> cacheFiles = null;
+                int limitForCaching = limit;
+                if(limitForCaching < QueryCache.getMaxLimit()){
+                    limitForCaching = QueryCache.getMaxLimit();
                 }
-                //list.subList() does not! copy!
-                numberOfTotalFiles = totalFiles.size();
-                returnFiles = totalFiles.subList(offset, offset + limit);
+                cacheFiles = queryFilesFromDatabase(sqlQuery, selected_attributes, offset, limitForCaching);
+
+                numberOfTotalFiles = getNumberOfTotalFiles(sqlQuery);
+                QueryCache.putIntoCache(cashKey, cacheFiles, numberOfTotalFiles, offset);
+
+                toIndex = offset + cacheFiles.size();
+                if(limit == 0){
+                    returnFiles = cacheFiles;
+                }else{
+                    returnFiles = cacheFiles.subList(0, limit);
+                }
             }
 
             //No offset specified so no caching is going on
@@ -103,19 +107,22 @@ public class SearchForFileMetadataFetcher implements DataFetcher
             returnFiles = queryFilesFromDatabase(sqlQuery, selected_attributes);
             numberOfTotalFiles = returnFiles.size();
             offset = 0;
-            limit = numberOfTotalFiles;
+            toIndex = offset + numberOfTotalFiles;
         }
 
-        resultSet = new GraphQL.Model.ResultSet(offset, offset + limit, numberOfTotalFiles, returnFiles.size(), returnFiles);
+        resultSet = new GraphQL.Model.ResultSet(offset, toIndex, numberOfTotalFiles, returnFiles.size(), returnFiles);
         return resultSet;
     }
 
-    ;
+    private ArrayList<File> queryFilesFromDatabase(String sqlQuery, ArrayList<String> selected_attributes, int offset, int limit) throws IOException, SQLException {
+        return queryFilesFromDatabase(sqlQuery + " OFFSET " + offset + " LIMIT " + limit, selected_attributes);
+    }
 
     @SuppressWarnings("unchecked")
     private ArrayList<File> queryFilesFromDatabase(String sqlQuery, ArrayList<String> selected_attributes) throws SQLException, IOException
     {
-        //HikariDataSource dataSource = databaseProvider.getHikariDataSource();
+        sqlQuery = "SELECT * " + sqlQuery;
+        log.info("SQLQuery: " + sqlQuery);
 
         try (Connection connection = database.getJDBCConnection();
              PreparedStatement preparedStatement = connection.prepareStatement
@@ -149,6 +156,30 @@ public class SearchForFileMetadataFetcher implements DataFetcher
                 return files;
             }
         }
+    }
+
+    private int getNumberOfTotalFiles(String sqlQuery){
+
+        int numberOfTotalFiles = 0;
+        String countQuery = sqlQuery;
+
+        if(sqlQuery.indexOf("ORDER") != -1){
+            countQuery = sqlQuery.substring(0, sqlQuery.indexOf("ORDER"));
+        }
+
+        try(Connection connection = database.getJDBCConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement
+            ("SELECT COUNT(*) " + countQuery)){
+            try(ResultSet rs = preparedStatement.executeQuery()){
+                rs.next();
+                numberOfTotalFiles = rs.getInt(1);
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return numberOfTotalFiles;
     }
 
     private void addSelectedAttributes(ArrayList<Metadatum> file_metadata, ArrayList<String> selected_attributes, Map<String, String> db_metadata)

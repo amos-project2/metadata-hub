@@ -29,28 +29,40 @@ public class QueryCache
         return cache;
     }
 
+    public static int getMaxLimit(){
+        return MAX_AMOUNT_OF_FILES_PER_QUERY;
+    }
+
     /**
      * Returns the fitting ResultSet if it is present in cache else returns null
      */
     public synchronized static ResultSet getResultSetIfPresent(String cacheKey, int fromIndex, int toIndex){
         if(isCacheHit(cacheKey, fromIndex, toIndex)){
             ResultSet resultSet = cache.get(cacheKey);
-            System.out.println(resultSet.toString());
+
+            //no limit is used and from offset on the resultSet is totally in the cache
+            if(fromIndex == toIndex){
+                toIndex = resultSet.getToIndex();
+            }
+            int relativeFromIndex = fromIndex - resultSet.getFromIndex();
+            int relativeToIndex = toIndex - resultSet.getFromIndex();
 
             return new ResultSet(fromIndex, toIndex, resultSet.getNumberOfTotalFiles(),
-                toIndex - fromIndex, resultSet.getFiles().subList(fromIndex - resultSet.getFromIndex(), toIndex - resultSet.getFromIndex()));
+                toIndex - fromIndex, resultSet.getFiles().subList(relativeFromIndex, relativeToIndex));
         }
         return null;
     }
 
-    public synchronized static boolean putIntoCache(String cacheKey, ArrayList<File> totalFiles, int fromIndex){
-        int toIndex = fromIndex + MAX_AMOUNT_OF_FILES_PER_QUERY;
-        if(totalFiles.size() <= (fromIndex + toIndex)){
-            toIndex = totalFiles.size();
+    public synchronized static boolean putIntoCache(String cacheKey, ArrayList<File> cacheFiles, int totalNumberOfFiles, int fromIndex){
+        //Only cache up to MAX_AMOUNT_OF_FILES_PER_QUERY
+        int relativeToIndex = MAX_AMOUNT_OF_FILES_PER_QUERY;
+        if(cacheFiles.size() < MAX_AMOUNT_OF_FILES_PER_QUERY){
+            relativeToIndex = cacheFiles.size();
         }
 
-        List<File> subList = totalFiles.subList(fromIndex, toIndex);
-        cache.put(cacheKey, new ResultSet(fromIndex, toIndex, totalFiles.size(), toIndex - fromIndex, subList));
+        List<File> subList = cacheFiles.subList(0, relativeToIndex);
+        int absoluteToIndex = fromIndex + relativeToIndex;
+        cache.put(cacheKey, new ResultSet(fromIndex, absoluteToIndex, totalNumberOfFiles, subList.size(), subList));
         return true;
     }
 
@@ -72,8 +84,14 @@ public class QueryCache
     }
 
     private static boolean isCacheHit(String cacheKey, int fromIndex, int toIndex){
+
        if(cache.containsKey(cacheKey)) {
            ResultSet resultSet = cache.get(cacheKey);
+           //toIndex == fromIndex singals that no limit was used,
+           // so if the whole resultSet isn't in the cache the database has to be queried
+           if(toIndex == fromIndex && resultSet.getNumberOfTotalFiles() != resultSet.getToIndex()){
+               return false;
+           }
            if (resultSet.getFromIndex() <= fromIndex && resultSet.getToIndex() >= toIndex) {
                return true;
            }
