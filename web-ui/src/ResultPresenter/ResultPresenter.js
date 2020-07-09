@@ -54,6 +54,7 @@ export class ResultPresenter {
                     </ul>
 
                     <div class="tab-content" id="myTabContent">
+
                       <div class="tab-pane fade " id="json${this.id}" role="tabpanel" aria-labelledby="json-tab">
 
                             <br>
@@ -93,12 +94,18 @@ export class ResultPresenter {
         let thisdata = this;
 
         thisdata.jsonOutput.updateText("wait for server-answer...");
+        thisdata.tableOutput.cleanHttml();
+        thisdata.tableOutput.waitForLoadHtml();
 
         formGraphQL.setOffset(0);
         formGraphQL.setLimit(2);
 
-        this.tableOutput.reinitialize(formGraphQL);
+        // this.tableOutput.reinitialize(formGraphQL);
         this.sendToServerAndAdjust(formGraphQL);
+    }
+
+    error(err) {
+        this.tableOutput.showError(err);
     }
 
 
@@ -107,17 +114,24 @@ export class ResultPresenter {
         let query = formGraphQL.generateAndGetGraphQlCode();
 
         this.graphQlFetcher.fetchAdvanced(query, function (sucess, json, jsonString) {
-            thisdata.jsonOutput.updateText(jsonString);
-            console.log(json);
-            thisdata.tableOutput.updateState(json);
+            if (sucess && json.data.searchForFileMetadata && ! json.error) {
+                thisdata.jsonOutput.updateText(jsonString);
+                thisdata.tableOutput.updateState(formGraphQL, json);
+            }else if (json === null) {
+
+                let err = {
+                    message: jsonString,
+                    info: "",
+                };
+                thisdata.error(err);
+            } else {
+                thisdata.error(json);
+            }
+
 
         });
 
     }
-
-
-
-
 
 
 }

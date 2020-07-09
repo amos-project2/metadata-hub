@@ -7,24 +7,30 @@ export class Paginator {
         this.id = id;
         this.countElementsPerPage = countElementsPerPage;
         this.countAllElements = countAllElements;
-        this.page = startPage;
+        this.page = -1;
 
         this.countAllPages = 0;
         this.startIndex = 0;
         this.endIndex = 0;
 
-        this.setPage(1);
+        this.setPage(startPage);
     }
 
 
     setPage(page) {
+        if (page > this.countAllPages) page = this.countAllPages;
         if (page < 1) page = 1;
+
+        if (this.page === page) return;
+
         this.page = page;
         this.adjustState();
     }
 
     setElementsPerPage(count) {
         if (count < 1) count = 1;
+        if (this.countElementsPerPage === count) return;
+
         this.countElementsPerPage = count;
         this.adjustState();
     }
@@ -44,11 +50,13 @@ export class Paginator {
     adjustState() {
 
         this.countAllPages = Math.ceil(this.countAllElements / this.countElementsPerPage);
+
+        //we need it here also, because the countAllPages can change
+        if (this.page > this.countAllPages) this.page = this.countAllPages;
+        if (this.page < 1) this.page = 1;
+
         this.startIndex = (this.page - 1) * this.countElementsPerPage;
         this.endIndex = (this.page * this.countElementsPerPage) - 1;
-
-
-        if (this.page > this.countAllPages) this.page = this.countAllPages;
 
 
         this.notifyListener();
@@ -135,7 +143,7 @@ export class Paginator {
             let thisdata = this;
 
             function gH(position) {
-                return thisdata.getPageHtml(1, this.page === position);
+                return thisdata.getPageHtml(position, thisdata.page === position);
             }
 
             if (this.countAllPages === 0) tmp = "";
