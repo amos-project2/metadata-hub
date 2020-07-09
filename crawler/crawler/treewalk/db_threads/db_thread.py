@@ -10,8 +10,7 @@ import multiprocessing
 from typing import Any
 
 # Local imports
-from .database_files import DatabaseConnectionTableFiles
-from .database_metadata import DatabaseConnectionTableMetadata
+import crawler.database as database
 import crawler.communication as communication
 import crawler.treewalk as treewalk
 
@@ -24,6 +23,8 @@ class DBThread(threading.Thread):
             measure_time: bool,
             input_data_queue: multiprocessing.Queue,
             input_command_queue: multiprocessing.Queue,
+            event_self: threading.Event,
+            event_manager: threading.Event,
             tw_state: treewalk.State,
             update_interval: int,
             is_files_thread: bool,
@@ -31,26 +32,32 @@ class DBThread(threading.Thread):
             name_logger: str
     ):
         super(DBThread, self).__init__()
-        self._name = name_thread
-        self._logger = logging.getLogger(name_logger)
-        self._update_interval = update_interval
-        self._input_data_queue = input_data_queue
-        self._input_command_queue = input_command_queue
-        self._tw_state = tw_state
-        self._command = None
-        self._last_time_periodic = time.time()
+        # TreeWalk auxiliary data
         self._finish = False
         self._shutdown = False
+        self._command = None
+        self._tw_state = tw_state
+        self._name = name_thread
+        self._last_time_periodic = time.time()
+        self._logger = logging.getLogger(name_logger)
+        self._update_interval = update_interval
+        # Communication data
+        self._input_data_queue = input_data_queue
+        self._input_command_queue = input_command_queue
+        self._event_self = event_self
+        self._event_manager = event_manager
+        # Database connection
         if is_files_thread:
-            self._db_connection = DatabaseConnectionTableFiles(
+            self._db_connection = database.DatabaseConnectionTableFiles(
                 db_info=db_info,
                 measure_time=measure_time
             )
         else:
-            self._db_connection = DatabaseConnectionTableMetadata(
+            self._db_connection = database.DatabaseConnectionTableMetadata(
                 db_info=db_info,
                 measure_time=measure_time
             )
+        # Callback functions for commands
         self._functions = {
             communication.DATABASE_THREAD_STOP: self.db_thread_stop,
             communication.DATABASE_THREAD_PAUSE: self.db_thread_pause,
@@ -95,6 +102,13 @@ class DBThread(threading.Thread):
 
         """
         self.db_thread_clean_up(close_database=False, finished=False)
+        self._logger.info(f'Thread {self._name} cleaned up.')
+        self._event_self.set()
+        self._logger.info(f'Thread {self._name} stopped & waiting for manager.')
+        self._event_manager.wait()
+        self._event_manager.clear()
+        self._logger.info(f'Thread {self._name} got signal from manager.')
+
 
     def db_thread_clean_up(self, close_database: bool, finished: bool) -> None:
         """Clean up the thread.
@@ -104,14 +118,12 @@ class DBThread(threading.Thread):
             finished (bool): finished (required for Files thread)
 
         """
-        self._logger.debug(f'Thread {self._name} cleaning up.')
         if close_database:
             self._db_connection.close()
         if finished:
             self._tw_state.set_finished()
         self._finish = False
         self._shutdown = False
-        DBThread.clear_queue(self._input_data_queue)
 
     def db_thread_sleep(self, data: Any) -> None:
         """Set the thread to sleep.
@@ -123,6 +135,7 @@ class DBThread(threading.Thread):
 
         """
         self._logger.info(f'{self._name} going to sleep.')
+        self._event_self.set()
         command = self._input_command_queue.get(block=True)
         self._command = command.command
         self._functions[self._command](command.data)
@@ -145,6 +158,7 @@ class DBThread(threading.Thread):
             data (Any): not required
 
         """
+        self._event_self.set()
         command = self._input_command_queue.get(block=True) # type: communication.Command
         self._command = command.command
         self._logger.debug(
@@ -164,11 +178,12 @@ class DBThread(threading.Thread):
     def db_thread_shutdown(self, data: Any) -> None:
         """Shutdown the thread.
 
+        Stop was called before, so there is no reason for further clean up.
+
         Args:
             data (Any): not required
 
         """
-        self.db_thread_clean_up(close_database=True, finished=False)
         self._shutdown = True
 
     def db_thread_finish(self, data: Any) -> None:

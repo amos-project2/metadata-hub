@@ -20,6 +20,7 @@ import crawler.database as database
 # import crawler.crawler.database as database
 import crawler.treewalk as treewalk
 
+
 _logger = logging.getLogger(__name__)
 
 
@@ -31,25 +32,23 @@ class DBThreadFiles(DBThread):
             measure_time: bool,
             input_data_queue: multiprocessing.Queue,
             input_command_queue: multiprocessing.Queue,
+            event_self: threading.Event,
+            event_manager: threading.Event,
             tw_state: treewalk.State,
-            update_interval: int,
-            is_files_thread: bool
+            update_interval: int
     ):
-        self._name = 'DBThreadFiles'
         super(DBThreadFiles, self).__init__(
             db_info=db_info,
             measure_time=measure_time,
             input_data_queue=input_data_queue,
             input_command_queue=input_command_queue,
+            event_self=event_self,
+            event_manager=event_manager,
             tw_state=tw_state,
             update_interval=update_interval,
-            is_files_thread=is_files_thread,
-            name_thread=self._name,
+            is_files_thread=True,
+            name_thread='DBThreadFiles',
             name_logger=__name__
-        )
-        self._db_connection = database.DatabaseConnectionTableFiles(
-            db_info=db_info,
-            measure_time=measure_time
         )
 
     # Methods to implement in child class
@@ -102,7 +101,8 @@ class DBThreadFiles(DBThread):
         metadata_list2 = utils.create_metadata_list(jsons)
         # Pass the dictionary to thread_metadata
         command = communication.Command(
-            command=communication.DATABASE_THREAD_WORK, data=(metadata_list, metadata_list2)
+            command=communication.DATABASE_THREAD_WORK,
+            data=(metadata_list, metadata_list2)
         )
         communication.database_thread_metadata_input_data.put(command)
 
@@ -119,6 +119,7 @@ class DBThreadFiles(DBThread):
         ]
         print(to_delete)
         num = self._db_connection.delete_files(ids=to_delete)
+
     # Override
 
     def _is_to_remove(
@@ -171,7 +172,7 @@ class DBThreadFiles(DBThread):
             try:
                 command = self._input_command_queue.get(block=False) # type: communication.Command
                 self._command = command.command
-                self._logger.debug(
+                self._logger.info(
                     f'DBThread {self._name} running command \'{self._command}\''
                 )
                 self._functions[self._command](command.data)
@@ -180,9 +181,15 @@ class DBThreadFiles(DBThread):
             except queue.Empty:
                 pass
             try:
+                # if self._command == communication.DATABASE_THREAD_STOP:
+                #     print("IASDHSIAD")
                 command = self._input_data_queue.get(block=False) # type: communication.Command
             except queue.Empty:
-                self._tw_state.lock()
+                # Directly access the lock to use the timeout to prevent
+                # deadlocks
+                lock = self._tw_state._lock.acquire(timeout=0.1)
+                if not lock:
+                    continue
                 if self._finish:
                     self.db_thread_clean_up(
                         close_database=False,

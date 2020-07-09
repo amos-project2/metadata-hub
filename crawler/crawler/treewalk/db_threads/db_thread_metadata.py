@@ -9,9 +9,8 @@ from typing import Any
 
 # Local imports
 from .db_thread import DBThread
-import crawler.communication as communication
 import crawler.database as database
-#import crawler.crawler.database as database
+import crawler.communication as communication
 
 
 class DBThreadMetadata(DBThread):
@@ -22,24 +21,22 @@ class DBThreadMetadata(DBThread):
             measure_time: bool,
             input_data_queue: multiprocessing.Queue,
             input_command_queue: multiprocessing.Queue,
-            update_interval: int,
-            is_files_thread: bool
+            event_self: threading.Event,
+            event_manager: threading.Event,
+            update_interval: int
     ):
-        self._name = 'DBThreadMetadata'
         super(DBThreadMetadata, self).__init__(
             db_info=db_info,
             measure_time=measure_time,
             input_data_queue=input_data_queue,
             input_command_queue=input_command_queue,
+            event_self=event_self,
+            event_manager=event_manager,
             tw_state=None,
             update_interval=update_interval,
-            is_files_thread=is_files_thread,
-            name_thread=self._name,
+            is_files_thread=False,
+            name_thread='DBThreadMetadata',
             name_logger=__name__
-        )
-        self._db_connection = database.DatabaseConnectionTableMetadata(
-            db_info=db_info,
-            measure_time=measure_time
         )
 
 
@@ -51,6 +48,7 @@ class DBThreadMetadata(DBThread):
         Args:
             data (Any): data from other thread
 
+        """
         """
         if len(data[1].keys()) > 0:
             # Combine both dictionaries (decrease is always a subset/equal to increase)
@@ -67,6 +65,7 @@ class DBThreadMetadata(DBThread):
                     del data[0][data_type]
         if data[0]:
             self._db_connection.update_metadata(data[0])
+        """
         logging.info(f'{self._name} doing work.')
 
 

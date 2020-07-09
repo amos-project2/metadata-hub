@@ -18,6 +18,9 @@ import crawler.treewalk.db_threads as db_threads
 import crawler.communication as communication
 
 
+_logger = logging.getLogger(__name__)
+
+
 if __name__ == '__main__':
     # Setting up
     try:
@@ -27,7 +30,7 @@ if __name__ == '__main__':
         exit(1)
     logging.basicConfig(
         level=environment.env.CRAWLER_LOGGING_LEVEL,
-        format='%(asctime)s %(levelname)s %(module)s - %(funcName)s : %(message)s',
+        format='%(asctime)s %(levelname)s | %(message)s',
         datefmt='%H:%M:%S %Y-%m-%d'
     )
     db_connection_data = dict(
@@ -43,13 +46,13 @@ if __name__ == '__main__':
     thread_treewalk_manager = manager.TreeWalkManager(
         db_info=db_connection_data,
         measure_time=measure_time,
-        state=tree_walk_state
+        state=tree_walk_state,
+        event_db_thread_files=communication.event_db_thread_files_self,
+        event_db_thread_files_manager=communication.event_db_thread_files_manager,
+        event_db_thread_metadata=communication.event_db_thread_metadata_self,
+        event_db_thread_metadata_manager=communication.event_db_thread_metadata_manager
     )
     thread_api = threading.Thread(target=api.start, args=(tree_walk_state,))
-    # thread_database_updater = db_updater.DatabaseUpdater(
-    #     db_info=db_connection_data,
-    #     measure_time=measure_time
-    # )
     thread_treewalk_scheduler = scheduler.TreeWalkScheduler(
         db_info=db_connection_data,
         measure_time=measure_time,
@@ -63,7 +66,8 @@ if __name__ == '__main__':
         input_command_queue=communication.database_thread_files_input_commands,
         tw_state=tree_walk_state,
         update_interval=environment.env.CRAWLER_DB_UPDATE_INTERVAL,
-        is_files_thread=True
+        event_self=communication.event_db_thread_files_self,
+        event_manager=communication.event_db_thread_files_manager
     )
     thread_db_metadata = db_threads.DBThreadMetadata(
         db_info=db_connection_data,
@@ -71,20 +75,26 @@ if __name__ == '__main__':
         input_data_queue=communication.database_thread_metadata_input_data,
         input_command_queue=communication.database_thread_metadata_input_commands,
         update_interval=environment.env.CRAWLER_DB_UPDATE_INTERVAL,
-        is_files_thread=False
+        event_self=communication.event_db_thread_metadata_self,
+        event_manager=communication.event_db_thread_metadata_manager
     )
     # Starting threads
     thread_api.start()
     thread_treewalk_manager.start()
-    # thread_database_updater.start()
     thread_treewalk_scheduler.start()
     thread_db_files.start()
     thread_db_metadata.start()
     # Joining them on shutdown
+
     thread_api.join()
-    # thread_database_updater.join()
+    _logger.info('MAIN: joined TWApi')
     thread_db_metadata.join()
+    _logger.info('MAIN: joined DBThreadMetadata')
     thread_db_files.join()
+    _logger.info('MAIN: joined DBThreadFiles')
     thread_treewalk_manager.join()
+    _logger.info('MAIN: joined TWManager')
     thread_treewalk_scheduler.join()
+    _logger.info('MAIN: joined TWScheduler')
+    exit(0)
 

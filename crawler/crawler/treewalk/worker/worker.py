@@ -25,88 +25,70 @@ from crawler.services.config import Config
 import crawler.communication as communication
 
 
-def measure_exiftool(func):
-    """Decorator for time measurement of the exiftool execution.
-
-    This decorator is used for roughly estimate the time spent for running
-    the ExifTool on the work packages.
-
-    Args:
-        func (function): function to wrap
-
-    """
-    def decorator(self, *args, **kwargs):
-        if self._measure_time:
-            start = datetime.now()
-            result = func(self, *args, **kwargs)
-            end = datetime.now()
-            self._exiftool_time += (end - start).total_seconds()
-        else:
-            result = func(self, *args, **kwargs)
-        return result
-    return decorator
-
-
 class Worker(multiprocessing.Process):
 
     FINISH_TIMEOUT = 0.1
 
     def __init__(
         self,
-        identifier: int,
-        input_data_queue: multiprocessing.Queue,
-        input_command_queue: multiprocessing.Queue,
+        # TreeWalk auxiliary data
         config: Config,
+        identifier: int,
         tree_walk_id: int,
+        measure_time: bool,
+        # Communication data
         lock: multiprocessing.Lock,
         counter: multiprocessing.Value,
         num_workers: multiprocessing.Value,
         work_packages_done: multiprocessing.Value,
+        input_data_queue: multiprocessing.Queue,
+        input_command_queue: multiprocessing.Queue,
         db_thread_input_queue_data: multiprocessing.Queue,
-        measure_time: bool
+        event_self: multiprocessing.Event,
+        event_manager: multiprocessing.Event
     ):
         super(Worker, self).__init__()
-        self._identifier = identifier
-        self._input_data_queue = input_data_queue
-        self._input_command_queue = input_command_queue
-        self._work_packages_done = work_packages_done
-        self._db_thread_input_queue_data = db_thread_input_queue_data
+        # TreeWalk auxiliary data
+        self._exec_time = 0
+        self._shutdown = False
         self._tw_config = config
+        self._identifier = identifier
         self._tree_walk_id = tree_walk_id
+        self._measure_time = measure_time
+        self._exiftool = self._tw_config.get_exiftool_executable()
+        # Communication data
         self._lock = lock
         self._counter = counter
-        self._measure_time = measure_time
-        self._shutdown = False
-        self._exiftool = self._tw_config.get_exiftool_executable()
         self._num_workers = num_workers
-        self._exiftool_time = 0
+        self._work_packages_done = work_packages_done
+        self._input_data_queue = input_data_queue
+        self._input_command_queue = input_command_queue
+        self._db_thread_input_queue_data = db_thread_input_queue_data
+        self._event_self = event_self
+        self._event_manager = event_manager
+        # Callback functions for commands
         self._functions = {
             communication.WORKER_STOP: self.worker_stop,
             communication.WORKER_PAUSE: self.worker_pause,
         }
 
-    @staticmethod
-    def clear_queue(my_queue) -> None:
-        """Completely empty a multiprocessing queue.
 
-        Args:
-            my_queue (multiprocessing.Queue): queue to clear
+    def increase_work_done(self) -> None:
+        """Increase the number of done work packages."""
+        with self._lock:
+            self._work_packages_done.value += 1
 
-        """
-        while True:
-            try:
-                my_queue.get(block=False)
-            except queue.Empty:
-                return
+
+    def msg(self, message: str):
+        print(f'Worker {self._identifier}: {message}')
+
 
     def log_time(self) -> None:
         """Log the execution times before exiting."""
         if not self._measure_time:
             return
-        print(
-            f'Worker {self._identifier} (TIME): '
-            f'ExifTool={self._exiftool_time:.2f} '
-        )
+        print(f'Worker {self._identifier} spent {self._exec_time:.2f}s executing.')
+
 
     def worker_clean_up(self) -> None:
         """Clean up method for cleaning up all used resources."""
@@ -120,6 +102,7 @@ class Worker(multiprocessing.Process):
                 )
                 self._db_thread_input_queue_data.put(command)
 
+
     def worker_stop(self) -> None:
         """Stop the worker.
 
@@ -127,18 +110,17 @@ class Worker(multiprocessing.Process):
         end up in a deadlock.
         """
         self._shutdown = True
-        Worker.clear_queue(self._input_data_queue)
-        with self._lock:
-            self._counter.value += 1
-            if self._counter.value == self._num_workers.value:
-                Worker.clear_queue(self._db_thread_input_queue_data)
+        self._event_self.set()
+
 
     def worker_pause(self) -> None:
         """TWManager should only call stop/continue here."""
+        self._event_self.set()
         command = self._input_command_queue.get(block=True) # type: communication.Command
         if command.command == communication.WORKER_STOP:
             self.worker_stop()
         # Otherwise, the command is unpause, so it's okay to just return here
+
 
     def run(self) -> None:
         """Run the worker process."""
@@ -154,18 +136,16 @@ class Worker(multiprocessing.Process):
                     pass
                 continue
             self._functions[command.command]()
-        self.log_time()
-        while True:
-            time.sleep(Worker.FINISH_TIMEOUT)
-            if self._counter.value == self._num_workers.value:
-                break
+        self.msg('About to exit. Waiting for manager.')
+        # in case the worker exited and stop is called
+        self._event_self.set()
+        self._event_manager.wait()
+        self.msg('Manager acknowledged exiting.')
+        self._event_manager.clear()
+        self._event_self.clear()
+        self._db_thread_input_queue_data.cancel_join_thread()
 
-    def increase_work_done(self) -> None:
-        """Increase the number of done work packages."""
-        with self._lock:
-            self._work_packages_done.value += 1
 
-    @measure_exiftool
     def run_exiftool(self, package: List[str]) -> dict:
         """Run the ExifTool on the package.
 
@@ -199,6 +179,8 @@ class Worker(multiprocessing.Process):
         evenly split across the worker processes.
 
         """
+
+
         try:
             package = self._input_data_queue.get(block=False) # type: List[str]
         except queue.Empty:
@@ -215,6 +197,7 @@ class Worker(multiprocessing.Process):
             self.increase_work_done()
             return
 
+
         # Create inserts
         inserts = []
         tag_values = []
@@ -223,6 +206,7 @@ class Worker(multiprocessing.Process):
             insert_values = utils.create_insert(self._tree_walk_id, result)
             # Check if result is valid
             if insert_values[0] == 0:
+                # FIXME
                 # self._logger.warning('Can\'t insert element into database because validity check failed.')
                 continue
             # compute the hash256 and add it to the values string
@@ -243,51 +227,3 @@ class Worker(multiprocessing.Process):
         self._db_thread_input_queue_data.put(command)
         self.increase_work_done()
 
-        # FIXME: These parts should be placed in the DB THREADS.
-        """
-
-        # insert into the database
-        try:
-            # Insert the result in a batched query
-            self._db_connection.insert_new_record_files(inserts)
-        except Exception as e:
-            print(e)
-            self._logger.warning(
-                'There was an error inserting the batched results, inserting individually.'
-            )
-            # Try to insert each command individually and print out the problematic result
-            for insert in inserts:
-                try:
-                    self._db_connection.insert_new_record_files([insert])
-                except:
-                    self._logger.warning('Failed inserting single file again.')
-
-        # Update the values in the 'metadata' table
-        try:
-            # Create a comprehensive dictionary of all updates to be made in the 'metadata' table
-            metadata_list = utils.create_metadata_list([json.loads(j[5]) for j in inserts])
-            # Put the new information into the database
-            self._db_connection.update_metadata(metadata_list)
-        except:
-            self._logger.warning("Error updating metadata")
-
-        # Check if there was a previous entry in the database
-        # if yes: Set the tag in the database to true
-        toDelete = []
-        directories = set([x[1] for x in inserts])
-        try:
-            for dir in directories:
-                file_ids = self._db_connection.check_directory(dir, [x[-2] for x in inserts])
-                if file_ids:
-                    toDelete.extend(file_ids)
-            if len(toDelete) > 0:
-                # Decrease the dynamic tags in 'metadata' table
-                self._db_connection.decrease_dynamic(toDelete)
-                # Delete the files
-                self._db_connection.delete_files(toDelete)
-        except Exception as e:
-            print(e)
-            self._logger.warning(
-                'There was an error setting the deleted tags. Manual check necessary!'
-            )
-        """
