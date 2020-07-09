@@ -120,7 +120,7 @@ def get_number_of_workers(cpu_level: int) -> int:
 
 
 def resize_work_packages(
-        work_packages: List[List[List[str]]],
+        work_packages: List[List[str]],
         num_workers: int
 ) -> List[List[List[str]]]:
     """Updates the single work packages accordingly to the number of new workers.
@@ -130,19 +130,14 @@ def resize_work_packages(
     again.
 
     Args:
-        work_packages (List[List[List[str]]]): single work packages
+        work_packages (List[List[str]]): single work packages
         num_workers (int): new number of workers
 
     """
     new_work_packages = [[] for _ in range(num_workers)]
-    flatten_work_packages = [
-        package
-        for worker_packages in work_packages
-        for package in worker_packages
-    ]
     index = 0
-    while flatten_work_packages:
-        package = flatten_work_packages.pop()
+    while work_packages:
+        package = work_packages.pop()
         new_work_packages[index].append(package)
         index = (index + 1) % num_workers
     return new_work_packages
