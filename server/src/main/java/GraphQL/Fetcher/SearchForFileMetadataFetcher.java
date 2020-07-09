@@ -98,6 +98,7 @@ public class SearchForFileMetadataFetcher implements DataFetcher
                 if(limit == 0){
                     returnFiles = cacheFiles;
                 }else{
+                    if(cacheFiles.size()<limit) limit = cacheFiles.size();
                     returnFiles = cacheFiles.subList(0, limit);
                 }
             }
