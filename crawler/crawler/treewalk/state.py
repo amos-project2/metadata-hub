@@ -21,27 +21,6 @@ class StateException(Exception):
     pass
 
 
-def synchronized_state(func):
-    """Decorator for synchronized state operations.
-
-    This decorator synchronizes state operations between multiple threads.
-
-    Args:
-        func (function): function to wrap
-
-    """
-
-    def decorator(self, *args, **kwargs):
-        # self._lock.acquire()
-        # try:
-        result = func(self, *args, **kwargs)
-        # finally:
-        #     self._lock.release()
-        return result
-
-    return decorator
-
-
 class State:
 
     # TreeWalk is ready
@@ -56,7 +35,12 @@ class State:
     # TreeWalk is preparing
     PREPARING = 'preparing'
 
+    # TreeWalk is finished
+    FINISHED = 'finished'
+
+    # Default value for no CPU restrictions
     MAX_CPU_LEVEL = -1
+
 
     def __init__(self):
         self._status = State.READY
@@ -66,15 +50,18 @@ class State:
         self._num_workers = -1
         self._progress = 0
         self._running_workers = 0
-        self._finished = False
 
-    def lock(self):
+
+    def lock(self) -> None:
+        """Lock the TreeWalk state."""
         self._lock.acquire()
 
-    def release(self):
+
+    def release(self) -> None:
+        """Release the TreeWalk state."""
         self._lock.release()
 
-    @synchronized_state
+
     def get_status(self) -> str:
         """Return the current state.
 
@@ -83,7 +70,7 @@ class State:
         """
         return self._status
 
-    @synchronized_state
+
     def get_config(self) -> Config:
         """Return the current configuration.
 
@@ -95,7 +82,17 @@ class State:
             return None
         return self._config.get_data()
 
-    @synchronized_state
+
+    def is_finished(self) -> bool:
+        """Return if the current state is finished.
+
+        Returns:
+            bool: True if state is finished, False otherwise
+
+        """
+        return self._status == State.FINISHED
+
+
     def is_running(self) -> bool:
         """Return if the current state is running.
 
@@ -106,24 +103,6 @@ class State:
         return self._status == State.RUNNING
 
 
-    @synchronized_state
-    def set_finished(self) -> bool:
-        """FIXME"""
-        self._finished = True
-
-    @synchronized_state
-    def get_finished(self, clear: bool = False) -> bool:
-        """FIXME"""
-        finished = self._finished
-        if clear:
-            self._finished = False
-        return finished
-
-
-
-
-
-    @synchronized_state
     def is_paused(self) -> bool:
         """Return if the current state is paused.
 
@@ -133,7 +112,7 @@ class State:
         """
         return self._status == State.PAUSED
 
-    @synchronized_state
+
     def is_ready(self) -> bool:
         """Return if the current state is ready.
 
@@ -143,18 +122,18 @@ class State:
         """
         return self._status == State.READY
 
-    def _is_ready(self) -> bool:
-        """Return if the current state is ready.
 
-        Does not synchronize the object.
+    def set_finished(self) -> None:
+        """Set the state to finished.
 
-        Returns:
-            bool: True if state is ready, False otherwise
+        This method directly modifies the state, so it must me ensured
+        that the state object is locked properly. This function should be
+        only called by the database thread responsible for the files table.
 
         """
-        return self._status == State.READY
+        self._status = State.FINISHED
 
-    @synchronized_state
+
     def set_running(self, config: Config) -> None:
         """Set the state to running.
 
@@ -172,7 +151,7 @@ class State:
         self._status = State.RUNNING
         self._config = config
 
-    @synchronized_state
+
     def set_paused(self) -> None:
         """Set the state to paused.
 
@@ -186,7 +165,7 @@ class State:
             )
         self._status = State.PAUSED
 
-    @synchronized_state
+
     def set_unpaused(self) -> None:
         """Set the state to running again.
 
@@ -200,7 +179,7 @@ class State:
             )
         self._status = State.RUNNING
 
-    @synchronized_state
+
     def set_preparing(self, config: Config) -> None:
         """Set the state to preparing again.
 
@@ -218,7 +197,7 @@ class State:
         self._status = State.PREPARING
         self._config = config
 
-    @synchronized_state
+
     def set_ready(self) -> None:
         """Set status to ready."""
         self._config = None
@@ -227,7 +206,6 @@ class State:
         self._running_workers = 0
 
 
-    @synchronized_state
     def set_cpu_level(self, cpu_level: int) -> None:
         """Set the cpu level.
 
@@ -243,7 +221,7 @@ class State:
         else:
             self._num_workers = treewalk.get_number_of_workers(self._cpu_level)
 
-    @synchronized_state
+
     def get_cpu_level(self) -> Tuple[int, int]:
         """Get the current CPU level and if it must be enforced.
 
@@ -253,7 +231,7 @@ class State:
         """
         return (self._cpu_level, self._num_workers)
 
-    @synchronized_state
+
     def set_progress(self, progress: float) -> None:
         """Set the progress of a running instance.
 
@@ -263,7 +241,7 @@ class State:
         """
         self._progress = progress
 
-    @synchronized_state
+
     def set_running_workers(self, num_workers: int) -> None:
         """Set the number of running worker processes.
 
@@ -273,7 +251,7 @@ class State:
         """
         self._running_workers = num_workers
 
-    @synchronized_state
+
     def info(self) -> communication.Response:
         """Return the current status.
 
@@ -281,7 +259,7 @@ class State:
             communication.Response: current info
 
         """
-        if self._is_ready():
+        if self.is_ready():
             data = {
                 'status': self._status,
                 'config': self._config,
