@@ -82,23 +82,11 @@ export class Paginator {
 
     getHtmlCode() {
 
-        let page_int = 0;
-
-        page_int = this.page - 2;
-        let page1 = `<li class="page-item"><a class="page-link pageId${this.id}" href="#!" data-page="${page_int}">${page_int}</a></li>`;
-
-        page_int = this.page - 1;
-        let page2 = `<li class="page-item"><a class="page-link pageId${this.id}" href="#!" data-page="${page_int}">${page_int}</a></li>`;
-
-        page_int = this.page;
-        let page3 = `<li class="page-item active"><a class="page-link pageId${this.id}" href="#!" data-page="${page_int}">${page_int} <span class="sr-only">(current)</span></a></li>`;
-
-        page_int = this.page + 1;
-        let page4 = `<li class="page-item"><a class="page-link pageId${this.id}" href="#!" data-page="${page_int}">${page_int}</a></li>`;
-
-        page_int = this.page + 2;
-        let page5 = `<li class="page-item"><a class="page-link pageId${this.id}" href="#!" data-page="${page_int}">${page_int}</a></li>`;
-
+        let page1 = this.getPageHtml(this.page - 2, false);
+        let page2 = this.getPageHtml(this.page - 1, false);
+        let page3 = this.getPageHtml(this.page, true);
+        let page4 = this.getPageHtml(this.page + 1, false);
+        let page5 = this.getPageHtml(this.page + 2, false);
 
         let previous = ` <li class="page-item"><a class="page-link page-previous pageId${this.id}" href="#!" data-page="${this.page - 1}">Previous</a></li>`;
         let first = ` <li class="page-item"><a class="page-link page-first pageId${this.id}" href="#!" data-page="1">First</a></li>`;
@@ -106,7 +94,6 @@ export class Paginator {
         let next = ` <li class="page-item"><a class="page-link page-next pageId${this.id}" href="#!" data-page="${this.page + 1}">Next</a></li> `;
 
         let tmp = "";
-
 
         if (this.page === 1) {
             page1 = "";
@@ -159,7 +146,6 @@ export class Paginator {
             if (this.countAllPages === 5) tmp = gH(1) + gH(2) + gh(3) + gh(4) + gH(5);
         }
 
-
         // language=HTML
         return `
             <nav aria-label="Pagination">
@@ -167,7 +153,6 @@ export class Paginator {
                     ${tmp}
               </ul>
             </nav>`;
-
 
     }
 
