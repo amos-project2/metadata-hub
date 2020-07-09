@@ -124,6 +124,8 @@ class TreeWalkScheduler(threading.Thread):
             intervals.append(self._current_interval.to_json())
             responses.respond_intervals(intervals)
 
+
+        _logger.info(f'TWScheduler: executing command {command.command}')
         functions = {
             communication.SCHEDULER_ADD_CONFIG: [add_config, self._update],
             communication.SCHEDULER_REMOVE_CONFIG: [remove_config, self._update],
@@ -146,10 +148,13 @@ class TreeWalkScheduler(threading.Thread):
         intervals = self._db_connection.get_intervals(as_json=False)
         new_interval = utils.get_present_interval(intervals)
         if new_interval == self._current_interval:
-            _logger.info(f'Current interval: {repr(self._current_interval)}')
+            _logger.info(
+                f'TWScheduler: current interval is {repr(self._current_interval)}'
+            )
         else:
             _logger.info(
-                f'Changed from interval {repr(self._current_interval)} '
+                f'TWScheduler: '
+                f'changed from interval {repr(self._current_interval)} '
                 f'to interval {repr(new_interval)}.'
             )
             if self._current_interval is not None:
@@ -161,6 +166,7 @@ class TreeWalkScheduler(threading.Thread):
                 self._tw_state.set_cpu_level(treewalk.State.MAX_CPU_LEVEL)
             self._current_interval = new_interval
 
+    # FIXME does forcing actually work here?
     def _dispatch(self, task: task_module.Task) -> None:
         """Dispatch the config to the manager.
 
@@ -172,7 +178,7 @@ class TreeWalkScheduler(threading.Thread):
             task (task_module.Task): task to dispatch
 
         """
-        _logger.info('TWS dispatching executio to TWM.')
+        _logger.info('TWScheduler: dispatching task to TWManager.')
         config = Config(task.config)
         response = manager.start(config)
         if not response.success:
@@ -184,7 +190,7 @@ class TreeWalkScheduler(threading.Thread):
         if task.interval <= 0:
             self._db_connection.remove(identifier=task.identifier)
         else:
-            print(
+            _logger.debug(
                 f'Set TS from {task.timestamp_next} to {timestamp_next_new} '
                 f'and pending from {task.pending} to {pending_new}.'
             )
@@ -196,11 +202,11 @@ class TreeWalkScheduler(threading.Thread):
 
     def run(self) -> None:
         """Run the scheduler thread."""
-        _logger.info('Hello TWScheduler.')
+        _logger.info('TWScheduler: Hello')
         self._intervals = self._db_connection.get_intervals(as_json=False)
         while True:
             try:
-                _logger.info('TWS waiting for command.')
+                _logger.info('TWScheduler: waiting for command.')
                 command = communication.scheduler_queue_input.get(
                     block=True,
                     timeout=self._update_interval
@@ -211,11 +217,10 @@ class TreeWalkScheduler(threading.Thread):
             except queue.Empty:
                 pass
             finally:
-                _logger.info('TWS updating schedule.')
+                _logger.info('TWScheduler: updating schedule.')
                 self._update()
             task = self._db_connection.get_next_task()
             if task is None:
                 continue
-            _logger.info('TWS retrieved a task to dispatch.')
             self._dispatch(task)
-        _logger.info('Goodbye TWScheduler.')
+        _logger.info('TWScheduler: Goodbye')
