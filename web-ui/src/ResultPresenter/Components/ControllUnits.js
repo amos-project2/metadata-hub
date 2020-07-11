@@ -35,6 +35,10 @@ export class ControllUnits {
                         <option value="100">100</option>
                     </select>
                 </div>
+                <div style="margin:5px; cursor: pointer" data-toggle="tooltip" data-placement="bottom" title="Please go to the Table-Tab. With clicking on the columns you can adjust the sorting">
+                    Sorting: <span class="badge badge-success mySorting"> Id (descending) </span>
+                </div>
+
             </div>
         `);
 
@@ -81,19 +85,24 @@ export class ControllUnits {
     }
 
     updateState(formGraphQL, json) {
-        //nothing
+        let sorting = formGraphQL.sortingIntern;
+        let scending = " (descending) ";
+        if(sorting.asc) {
+            scending = " (ascending) ";
+        }
+        this.pSelector.find(".mySorting").html(sorting.attribute+scending)
     }
 
 
     //Object.keys(structure).length - 2
-    updateEntryCounter(formGraphQL, json,  metadatacolums) {
+    updateEntryCounter(formGraphQL, json, metadatacolums) {
 
         let totalFiles = json.data.searchForFileMetadata.numberOfTotalFiles;
         let currentFiles = json.data.searchForFileMetadata.numberOfReturnedFiles;
 
         let offsetLimit = formGraphQL.getOffset() + currentFiles;
         let offsetFiles = formGraphQL.getOffset() + 1;
-        if(currentFiles===0) offsetFiles = 0;
+        if (currentFiles === 0) offsetFiles = 0;
         this.pSelector.find('.myEntryCount').html(`<b>${offsetFiles} - ${offsetLimit} [${currentFiles}] from ${totalFiles}</b> | Metadatacolumns: ${metadatacolums}`);
 
     }

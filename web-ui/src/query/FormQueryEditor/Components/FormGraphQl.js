@@ -9,6 +9,11 @@ export class FormGraphQl {
         this.limitIntern = 0;
         this.offsetIntern = 0;
 
+        this.sortingIntern = {
+            attribut: null,
+            asc: true
+        }
+
 
         this.fileHashes = "";
 
@@ -33,6 +38,9 @@ export class FormGraphQl {
         this.options_options = "";
         this.options_attributes = "";
         this.options_values = "";
+
+        this.sortAttribut = "";
+        this.sortOption = "";
     }
 
     getLimit() {
@@ -41,6 +49,26 @@ export class FormGraphQl {
 
     getOffset() {
         return this.offsetIntern;
+    }
+
+    // sortBy: [String!], sortBy_options: [SortByOption!]
+    setSorting(data) {
+        this.sortingIntern = data;
+        this.sortAttribut = data.attribute;
+
+        if (this.sortAttribut === "id") {
+            this.sortAttribut = `sortBy: ["id"]`;
+        } else {
+            this.sortAttribut = `sortBy: ["metadata ->> '${this.sortAttribut}'"]`;
+        }
+
+
+        if (data.asc) {
+            this.sortOption = "sortBy_options: [ASC]";
+        } else {
+            this.sortOption = "sortBy_options: [DESC]";
+        }
+
     }
 
     setLimit(limit) {
@@ -67,14 +95,14 @@ export class FormGraphQl {
         //dont change the formatting here, cause this has a direct change to the formatting in the graphql-inspection-window
         let query_header = `
    ${this.fileHashes}
-   ${this.limit}
-   ${this.offset}
+   ${this.limit} ${this.offset} ${this.sortAttribut} ${this.sortOption}
    ${this.deleted}
    ${this.startDate} ${this.endDate} ${this.startDateUpdated} ${this.endDateUpdated}
    ${this.filetypes}
    ${this.options_options} ${this.options_attributes} ${this.options_values}
    ${this.filterOption} ${this.filterCustomString}
    ${this.attributes}
+
         `;
 
         if (query_header.trim() === "") {

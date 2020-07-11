@@ -123,8 +123,17 @@ export class TableOutput {
 
         let headerAndFooter = "";
         let content = ""
+        let headElement = "";
+        let pointer = "";
         structureReverseMap.forEach(value => {
-            headerAndFooter += `<th>${value}</th>`;
+            if (value === "#") {
+                headElement = "";
+                pointer = "";
+            } else {
+                headElement = "head-element ";
+                pointer = "cursor: pointer;"
+            }
+            headerAndFooter += `<th class="${headElement}" style="${pointer}" data-value="${value}">${value}</th>`;
 
         })
 
@@ -172,6 +181,28 @@ export class TableOutput {
         }
 
 
+        this.registerListener(formGraphQL);
+
+
+    }
+
+    registerListener(formGraphQL) {
+
+        let thisdata = this;
+
+        this.pSelector.find(".head-element").click(function () {
+
+            let attribute = $(this).data("value");
+            let sorting = formGraphQL.sortingIntern;
+
+            if (sorting.asc && sorting.attribute===attribute) {
+                formGraphQL.setSorting({attribute: attribute, asc: false});
+            } else {
+                formGraphQL.setSorting({attribute: attribute, asc: true});
+            }
+
+            thisdata.resultPresenter.sendToServerAndAdjust(formGraphQL);
+        })
     }
 
 

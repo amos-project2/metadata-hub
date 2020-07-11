@@ -166,6 +166,8 @@ export class ResultPresenter {
 
         formGraphQL.setOffset(0);
         formGraphQL.setLimit(2);
+        formGraphQL.setSorting({attribute: "id", asc: true});
+
 
         // this.tableOutput.reinitialize(formGraphQL);
         this.sendToServerAndAdjust(formGraphQL);
