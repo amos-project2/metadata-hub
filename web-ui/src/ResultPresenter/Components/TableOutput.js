@@ -5,12 +5,9 @@ import {Paginator} from "./Paginator";
 export class TableOutput {
 
 
-    constructor(resultPresenter) {
+    constructor(resultPresenter, controllunits) {
         this.resultPresenter = resultPresenter;
-        this.initializeId = 0;
-        this.cleared = true;
-        this.lastTotalFiles = -1;
-
+        this.controllunits = controllunits;
     }
 
 
@@ -21,24 +18,19 @@ export class TableOutput {
             </div>`;
     }
 
-    cleanHttml() {
+    cleanUp() {
         this.pSelector.find('.myTableContainer').html("");
         this.cleared = true;
     }
 
-    waitForLoadHtml() {
-        this.pSelector.find('.myTableContainer').html(`
-        <div class="spinner-border text-primary" role="status">
-             <span class="sr-only">Loading...</span>
-        </div>`);
-    }
 
     showError(error) {
         this.pSelector.find('.myTableContainer').html(`
-            <div style="color=red">
-                <b>Error: ${error.message}</b><br><br>
-                Info: ${error.info}
-            </div>`);
+            `);
+    }
+
+    showNoResult() {
+
     }
 
 
@@ -48,61 +40,17 @@ export class TableOutput {
         //this.pSelector.find('.exampleXX').DataTable();
     }
 
-    reinitialize(formGraphQL, initJson) {
-        let thisdata = this;
 
-
-        let totalFiles = initJson.data.searchForFileMetadata.numberOfTotalFiles;
-        let currentFiles = initJson.data.searchForFileMetadata.numberOfReturnedFiles;
-
-        this.lastTotalFiles = totalFiles;
-        this.cleared = false;
-
-
-        let paginator = new Paginator("tableOutput", 2, totalFiles, 1);
-        paginator.registerPageListener(function (elem) {
-            thisdata.pSelector.find('.paginator-container').html(elem.getHtmlCode());
-            elem.addListener();
-
-            formGraphQL.setOffset(elem.startIndex);
-            formGraphQL.setLimit(elem.countElementsPerPage);
-            thisdata.resultPresenter.sendToServerAndAdjust(formGraphQL);
-
-        });
-
-
+    clearHtml() {
         //new installation
         this.pSelector.find('.myTableContainer').html(`
-                <div class="row" style="margin:5px;">
-                <label class="col-form-label" > Show entries: </label>
-                    <div class="">
-                            <select name="length"  class="custom-select custom-select-sm form-control form-control-sm myTableLength" >
-                                <option value="2" selected>2</option>
-                                <option value="10">10</option>
-                                <option value="25">25</option>
-                                <option value="50">50</option>
-                                <option value="100">100</option>
-                            </select>
-                    </div>
-
-                </div>
                 <div class="myTableMainContainer">
-
-                </div>
-                <div class="paginator-container">
-                    ${paginator.getHtmlCode()}
-                </div>
-                Entries: <span class="myEntryCount">load...</span>
-`
+                </div>`
         );
+    }
 
-        paginator.addListener();
-
-        this.pSelector.find('.myTableLength').change(function () {
-            paginator.setElementsPerPage($(this).val());
-
-        })
-
+    reinitialize(formGraphQL, initJson) {
+        this.clearHtml();
 
     }
 
@@ -111,7 +59,7 @@ export class TableOutput {
         let totalFiles = json.data.searchForFileMetadata.numberOfTotalFiles;
         let currentFiles = json.data.searchForFileMetadata.numberOfReturnedFiles;
 
-        if (this.cleared || this.lastTotalFiles !== totalFiles) this.reinitialize(formGraphQL, json);
+        // if (this.cleared || this.lastTotalFiles !== totalFiles) this.reinitialize(formGraphQL, json);
 
 
         let data = [];
@@ -156,11 +104,12 @@ export class TableOutput {
             data.push(tmp);
         });
 
-        let offsetLimit = formGraphQL.getOffset() + currentFiles;
-        let offsetFiles = formGraphQL.getOffset() + 1;
-        if(currentFiles===0) offsetFiles = 0;
-        this.pSelector.find('.myEntryCount').html(`<b>${offsetFiles} - ${offsetLimit} [${currentFiles}] from ${totalFiles}</b> | Metadatacolumns: ${Object.keys(structure).length - 2}`);
+        // let offsetLimit = formGraphQL.getOffset() + currentFiles;
+        // let offsetFiles = formGraphQL.getOffset() + 1;
+        // if(currentFiles===0) offsetFiles = 0;
+        // this.pSelector.find('.myEntryCount').html(`<b>${offsetFiles} - ${offsetLimit} [${currentFiles}] from ${totalFiles}</b> | Metadatacolumns: ${Object.keys(structure).length - 2}`);
 
+        this.controllunits.updateEntryCounter(formGraphQL, json, (Object.keys(structure).length - 2));
 
         for (var index in structure) {
             structureReverseMap[structure[index]] = index;
@@ -213,7 +162,15 @@ export class TableOutput {
         </table>
         `;
 
-        this.pSelector.find('.myTableMainContainer').html(myTable);
+
+        if (currentFiles === 0) {
+
+            let emptyText = `<span style="font-color: green">The Resultset is empty</span>`;
+            this.pSelector.find('.myTableMainContainer').html(emptyText);
+        } else {
+            this.pSelector.find('.myTableMainContainer').html(myTable);
+        }
+
 
     }
 
