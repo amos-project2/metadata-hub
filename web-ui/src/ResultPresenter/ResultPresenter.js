@@ -201,7 +201,7 @@ export class ResultPresenter {
         let messageContainer = this.pSelector.find(".message-container");
 
         messageContainer.html(`
-        <div style="color=red">
+        <div class="text-danger">
             <b>Error: ${error.message}</b><br><br>
             Info: ${error.info}
         </div>

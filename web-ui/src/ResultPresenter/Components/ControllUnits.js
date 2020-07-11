@@ -25,7 +25,7 @@ export class ControllUnits {
         // language=HTML
         this.showEntrySelector.html(`
             <div class="row" style="margin:5px;">
-                <label class="col-form-label"> Show entries: </label>
+                <label class="col-form-label">Show entries: </label>
                 <div class="">
                     <select name="length" class="custom-select custom-select-sm form-control form-control-sm myTableLength">
                         <option value="2" selected>2</option>

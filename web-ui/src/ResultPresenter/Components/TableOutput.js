@@ -165,7 +165,7 @@ export class TableOutput {
 
         if (currentFiles === 0) {
 
-            let emptyText = `<span style="font-color: green">The Resultset is empty</span>`;
+            let emptyText = `<span class="text-success font-weight-bold">The Resultset is empty</span>`;
             this.pSelector.find('.myTableMainContainer').html(emptyText);
         } else {
             this.pSelector.find('.myTableMainContainer').html(myTable);
