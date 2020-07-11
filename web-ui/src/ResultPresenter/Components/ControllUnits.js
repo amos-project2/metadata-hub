@@ -36,7 +36,7 @@ export class ControllUnits {
                     </select>
                 </div>
                 <div style="margin:5px; cursor: pointer" data-toggle="tooltip" data-placement="bottom" title="Please go to the Table-Tab. With clicking on the columns you can adjust the sorting">
-                    Sorting: <span class="badge badge-success mySorting"> Id (descending) </span>
+                    Sorting: <span class="badge badge-success mySorting"> dd (ascending) </span>
                 </div>
 
             </div>
