@@ -97,8 +97,8 @@ class DBThreadFiles(DBThread):
             self._logger.warning(
                 'There was an error setting the deleted tags. Manual check necessary!'
             )
-        metadata_list = utils.create_metadata_list([json.loads(j[5]) for j in data])
-        metadata_list2 = utils.create_metadata_list(jsons)
+        metadata_list = utils.create_metadata_increase([json.loads(j[5]) for j in data])
+        metadata_list2 = utils.create_metadata_decrease(jsons)
         # Pass the dictionary to thread_metadata
         command = communication.Command(
             command=communication.DATABASE_THREAD_WORK,
