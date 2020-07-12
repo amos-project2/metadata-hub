@@ -127,7 +127,6 @@ export class FormQueryEditor extends Page {
 
                 <button type="submit" class="btn btn-primary">Send</button>
                 <button type="button" class="btn btn-primary open-query">Open Query</button>
-                <button type="button" class="btn btn-primary send-to-graphiql">Send to GraphiQL</button>
                 <button type="button" class="btn btn-primary clear-all">Clear All</button>
             </form>
             <br>
@@ -172,14 +171,6 @@ export class FormQueryEditor extends Page {
         $(".open-query").click(function () {
             thisdata.graphQLIntrospectionModal.openModalWithContent(thisdata.buildAndGetGraphQlQuery().generateAndGetGraphQlCode());
         });
-
-        // $(".send-to-graphiql").click(function () {
-        //
-        //     thisdata.parent.storage.query_inject = thisdata.buildAndGetGraphQlQuery().generateAndGetGraphQlCode();
-        //     thisdata.parent.storage.openedFromEditor = true;
-        //     $("#nav-element-graphiql-console").trigger("click");
-        //
-        // });
 
 
         $(".clear-all").click(function () {
