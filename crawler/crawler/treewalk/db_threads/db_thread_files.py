@@ -1,24 +1,24 @@
-"""TODO"""
+"""Database thread that is working on the FILES table."""
 
 
 # Python imports
+import json
 import queue
 import logging
+import datetime
 import threading
 import multiprocessing
 from typing import Any
-import json
-import datetime
 
 
 # Local imports
-from crawler.treewalk.worker import utils
-#from crawler.crawler.treewalk.worker import utils
 from .db_thread import DBThread
-import crawler.communication as communication
+
+from crawler.treewalk.worker import utils
+
 import crawler.database as database
-# import crawler.crawler.database as database
 import crawler.treewalk as treewalk
+import crawler.communication as communication
 
 
 _logger = logging.getLogger(__name__)
@@ -75,7 +75,7 @@ class DBThreadFiles(DBThread):
                     self._db_connection.insert_new_record_files([insert])
                 except:
                     _logger.warning('Failed inserting single file again.')
-
+        logging.debug(f'{self._name} inserted new records.')
         # Tuple to pass to the metadata_thread (increase, decrease)
         # Initiate deletion of the old data
         toDelete = []
@@ -97,14 +97,19 @@ class DBThreadFiles(DBThread):
             self._logger.warning(
                 'There was an error setting the deleted tags. Manual check necessary!'
             )
+        logging.debug(f'{self._name} creating lists.')
         metadata_list = utils.create_metadata_list([json.loads(j[5]) for j in data])
         metadata_list2 = utils.create_metadata_list(jsons)
         # Pass the dictionary to thread_metadata
+
+        logging.debug(f'{self._name} creating command.')
         command = communication.Command(
             command=communication.DATABASE_THREAD_WORK,
             data=(metadata_list, metadata_list2)
         )
+        logging.debug(f'{self._name} putting command.')
         communication.database_thread_metadata_input_data.put(command)
+        logging.debug(f'{self._name} finished doing work.')
 
     def _do_periodic_task(self) -> None:
         """Deleting marked files from FILES table."""
@@ -117,7 +122,6 @@ class DBThreadFiles(DBThread):
             for (identifier, timestamp) in to_delete
             if self._is_to_remove(curr_time=curr_time, remove_time=timestamp)
         ]
-        print(to_delete)
         num = self._db_connection.delete_files(ids=to_delete)
 
     # Override
@@ -181,8 +185,6 @@ class DBThreadFiles(DBThread):
             except queue.Empty:
                 pass
             try:
-                # if self._command == communication.DATABASE_THREAD_STOP:
-                #     print("IASDHSIAD")
                 command = self._input_data_queue.get(block=False) # type: communication.Command
             except queue.Empty:
                 # Directly access the lock to use the timeout to prevent
@@ -198,6 +200,9 @@ class DBThreadFiles(DBThread):
                 self._tw_state.release()
                 self.db_thread_periodic_task()
                 continue
+            self._logger.debug(
+                f'DBThreadFiles {self._input_data_queue.qsize()} items to process.'
+            )
             if command.command == communication.DATABASE_THREAD_FINISH:
                 self.db_thread_finish(None)
             else:
