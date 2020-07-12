@@ -122,6 +122,7 @@ type ResultSet{
     numberOfTotalFiles: Int
     numberOfReturnedFiles: Int
     files: [File]
+    error: Error
 }
 
 type File{
@@ -155,4 +156,9 @@ type Crawl{
     finished_time: String
     update_time: String!
     analyzed_dirs_hash: String
+}
+
+type Error{
+    message: String
+    stack_trace: String
 }
