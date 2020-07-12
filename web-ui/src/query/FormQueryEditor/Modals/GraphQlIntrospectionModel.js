@@ -1,15 +1,28 @@
 export class GraphQlIntrospectionModel {
 
+    static increaseCount() {
+        this.count = this.getCount() + 1;
+        return this.count;
+    }
 
-    constructor() {
+    static getCount() {
+        return this.count || 0;
+    }
 
+
+    constructor(storage, isParentEditor) {
+        this.storage = storage;
+        this.isParentEditor = isParentEditor;
+
+        this.id = "inspection-window-" + GraphQlIntrospectionModel.increaseCount();
+        this.pSelector = $("#" + this.id);
     }
 
     //public
     getHtmlCode() {
         // language=HTML
         return `
-            <div class="modal fade" id="graphql-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal fade" id="${this.id}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -19,7 +32,7 @@ export class GraphQlIntrospectionModel {
                             </button>
                         </div>
                         <div class="modal-body">
-                            <pre id="graphql-code-content"></pre>
+                            <pre class="graphql-code-content"></pre>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary send-to-graphiql" data-dismiss="modal">Send to GraphiQL</button>
@@ -33,19 +46,33 @@ export class GraphQlIntrospectionModel {
 
     //public
     openModal() {
-        $('#graphql-modal').modal();
+        this.pSelector.modal();
     }
 
     //public
     getContentSelector() {
-        return $("#graphql-code-content");
+        return this.pSelector.find(".graphql-code-content");
     }
 
 
     //public
     openModalWithContent(content) {
+        console.log(this.getContentSelector().html());
         this.getContentSelector().text(content);
         this.openModal();
+    }
+
+
+    onMount() {
+
+        this.pSelector = $("#" + this.id);
+
+        this.pSelector.find(".send-to-graphiql").click(() => {
+            this.storage.query_inject = this.getContentSelector().text();
+            this.storage.openedFromEditor = this.isParentEditor;
+            $("#nav-element-graphiql-console").trigger("click");
+
+        });
     }
 
 }

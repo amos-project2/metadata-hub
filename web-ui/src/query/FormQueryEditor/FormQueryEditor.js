@@ -16,7 +16,7 @@ export class FormQueryEditor extends Page {
         this.cacheLevel = 3;
         this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
         this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
-        this.graphQLIntrospectionModal = new GraphQlIntrospectionModel()
+        this.graphQLIntrospectionModal = new GraphQlIntrospectionModel(this.parent.storage, true);
 
         this.metadatAutocompletion = new MetadataAutocompletion(
             this.parent.dependencies.restApiFetcherServer,
@@ -147,6 +147,8 @@ export class FormQueryEditor extends Page {
 
     onMount() {
 
+        this.graphQLIntrospectionModal.onMount();
+
         this.resultPresenter.onMount();
 
         this.dateRangeFilter.onMount();
@@ -171,13 +173,13 @@ export class FormQueryEditor extends Page {
             thisdata.graphQLIntrospectionModal.openModalWithContent(thisdata.buildAndGetGraphQlQuery().generateAndGetGraphQlCode());
         });
 
-        $(".send-to-graphiql").click(function () {
-
-            thisdata.parent.storage.query_inject = thisdata.buildAndGetGraphQlQuery().generateAndGetGraphQlCode();
-            thisdata.parent.storage.openedFromEditor = true;
-            $("#nav-element-graphiql-console").trigger("click");
-
-        });
+        // $(".send-to-graphiql").click(function () {
+        //
+        //     thisdata.parent.storage.query_inject = thisdata.buildAndGetGraphQlQuery().generateAndGetGraphQlCode();
+        //     thisdata.parent.storage.openedFromEditor = true;
+        //     $("#nav-element-graphiql-console").trigger("click");
+        //
+        // });
 
 
         $(".clear-all").click(function () {
