@@ -131,8 +131,9 @@ export class FormQueryEditor extends Page {
 
                 <!--     Controll-Buttons           -->
 
-                <button type="submit" class="btn btn-primary">Send</button>
-                <button type="button" class="btn btn-primary open-query">Open Query</button>
+                <button type="submit" class="btn btn-success">Send</button>
+                <button type="button" class="btn btn-primary open-query">Open Intermediate Query</button>
+                <button type="button" class="btn btn-success save-editor">Save Editor</button>
                 <button type="button" class="btn btn-danger modalClearCache">Clear Cache</button>
                 <button type="button" class="btn btn-primary clear-all">Clear All</button>
             </form>
@@ -178,6 +179,10 @@ export class FormQueryEditor extends Page {
 
         $(".open-query").click(function () {
             thisdata.graphQLIntrospectionModal.openModalWithContent(thisdata.buildAndGetGraphQlQuery().generateAndGetGraphQlCode());
+        });
+
+        $(".save-editor").click(function () {
+            alert("coming soon");// TODO
         });
 
 
