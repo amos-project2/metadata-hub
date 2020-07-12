@@ -10,7 +10,26 @@ export class About extends Page {
 
     content() {
         // language=HTML
-        return `about`;
+        return `
+            <div class="text-center">
+                <img src="logo.png" alt="Metadata-Hub" style="width:400px">
+            </div>
+
+            <p class="text-center">
+
+                <b>Version: 1.0.0</b><br><br>
+
+                <b><a href="https://github.com/amos-project2/metadata-hub/" target="_blank">Code at Github</a></b><br><br>
+
+                <b>Author:</b><br>
+                Benjamin Fischer<br>
+                Thomas Wolter<br>
+                Robin Kreuzer<br>
+                Ngoc Khang Nguyen<br>
+
+            </p>
+
+        `;
 
     }
 
