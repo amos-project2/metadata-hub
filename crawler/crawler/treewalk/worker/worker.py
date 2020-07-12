@@ -27,6 +27,7 @@ import crawler.communication as communication
 
 class Worker(multiprocessing.Process):
 
+    DEBUG = False
     FINISH_TIMEOUT = 0.1
 
     def __init__(
@@ -45,7 +46,8 @@ class Worker(multiprocessing.Process):
         input_command_queue: multiprocessing.Queue,
         db_thread_input_queue_data: multiprocessing.Queue,
         event_self: multiprocessing.Event,
-        event_manager: multiprocessing.Event
+        event_manager: multiprocessing.Event,
+        event_finished: multiprocessing.Event
     ):
         super(Worker, self).__init__()
         # TreeWalk auxiliary data
@@ -66,6 +68,7 @@ class Worker(multiprocessing.Process):
         self._db_thread_input_queue_data = db_thread_input_queue_data
         self._event_self = event_self
         self._event_manager = event_manager
+        self._event_finished = event_finished
         # Callback functions for commands
         self._functions = {
             communication.WORKER_STOP: self.worker_stop,
@@ -80,19 +83,14 @@ class Worker(multiprocessing.Process):
 
 
     def msg(self, message: str):
-        print(f'Worker {self._identifier}: {message}')
-
-
-    def log_time(self) -> None:
-        """Log the execution times before exiting."""
-        if not self._measure_time:
-            return
-        print(f'Worker {self._identifier} spent {self._exec_time:.2f}s executing.')
+        if Worker.DEBUG:
+            print(f'Worker {self._identifier}: {message}')
 
 
     def worker_clean_up(self) -> None:
         """Clean up method for cleaning up all used resources."""
         self._shutdown = True
+        self._event_finished.set()
         with self._lock:
             self._counter.value += 1
             if self._counter.value == self._num_workers.value:
@@ -101,6 +99,7 @@ class Worker(multiprocessing.Process):
                     data=None
                 )
                 self._db_thread_input_queue_data.put(command)
+                self.msg('Added finish item for DBThread.')
 
 
     def worker_stop(self) -> None:
@@ -143,7 +142,6 @@ class Worker(multiprocessing.Process):
         self.msg('Manager acknowledged exiting.')
         self._event_manager.clear()
         self._event_self.clear()
-        self._db_thread_input_queue_data.cancel_join_thread()
 
 
     def run_exiftool(self, package: List[str]) -> dict:
@@ -171,6 +169,7 @@ class Worker(multiprocessing.Process):
             return None
         return metadata
 
+
     def _do_work(self) -> None:
         """Process the work package.
 
@@ -179,14 +178,16 @@ class Worker(multiprocessing.Process):
         evenly split across the worker processes.
 
         """
-
-
+        self.msg(f'Queue size is {self._input_data_queue.qsize()}')
         try:
             package = self._input_data_queue.get(block=False) # type: List[str]
         except queue.Empty:
+            return
+        if package is None:
             self.worker_clean_up()
             return
-        # FIXME: If the package is already empty - do we still need this?
+        # FIXME: It might occur that empty work packages are created
+        # so check this here
         if not package:
             self.increase_work_done()
             return
@@ -196,8 +197,6 @@ class Worker(multiprocessing.Process):
             # TODO: Error logging
             self.increase_work_done()
             return
-
-
         # Create inserts
         inserts = []
         tag_values = []
@@ -219,11 +218,9 @@ class Worker(multiprocessing.Process):
             if insert_values[3] == 'NULL':
                 continue
             inserts.append(insert_values)
-
         # Assign the database work to the dedicated thread.
         command = communication.Command(
             command=communication.DATABASE_THREAD_WORK, data=inserts
         )
         self._db_thread_input_queue_data.put(command)
         self.increase_work_done()
-
