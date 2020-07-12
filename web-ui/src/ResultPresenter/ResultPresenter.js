@@ -13,13 +13,13 @@ export class ResultPresenter {
         return this.count || 0;
     }
 
-    constructor(graphQlFetcher) {
+    constructor(graphQlFetcher, graphQLIntrospectionModal) {
         ResultPresenter.increaseCount();
         this.id = "ResultPresenter-" + ResultPresenter.getCount();
         this.pSelector = $("#" + this.id);
         this.graphQlFetcher = graphQlFetcher;
 
-        this.controllUnits = new ControllUnits("result-presenter" + this.id, this);
+        this.controllUnits = new ControllUnits("result-presenter" + this.id, this, graphQLIntrospectionModal);
 
         this.jsonOutput = new JsonOutput();
         this.tableOutput = new TableOutput(this, this.controllUnits);

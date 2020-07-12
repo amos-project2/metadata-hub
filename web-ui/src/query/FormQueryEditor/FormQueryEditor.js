@@ -16,9 +16,9 @@ export class FormQueryEditor extends Page {
         this.title = "Form Query Editor";
         this.cacheLevel = 3;
         this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
-        this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
 
         this.graphQLIntrospectionModal = new GraphQlIntrospectionModel(this.parent.storage, true);
+        this.resultPresenter = new ResultPresenter(this.graphQlFetcher, this.graphQLIntrospectionModal);
         this.clearCacheModal = new ClearCacheModal();
         this.clearCacheSelector = ".modalClearCache";
 

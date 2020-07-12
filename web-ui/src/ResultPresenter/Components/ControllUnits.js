@@ -3,12 +3,13 @@ import {Paginator} from "./Paginator";
 export class ControllUnits {
 
 
-    constructor(htmlUniqueId, resultPresenter) {
+    constructor(htmlUniqueId, resultPresenter, graphQLIntrospectionModal) {
         this.pSelector = null;
         this.showEntrySelector = null;
         this.paginatorSelector = null;
 
 
+        this.graphQLIntrospectionModal = graphQLIntrospectionModal;
         this.resultPresenter = resultPresenter;
         this.id = "controll-units" + htmlUniqueId;
     }
@@ -36,7 +37,11 @@ export class ControllUnits {
                     </select>
                 </div>
                 <div style="margin:5px; cursor: pointer" class="for-hiding" data-toggle="tooltip" data-placement="bottom" title="Please go to the Table-Tab. With clicking on the columns you can adjust the sorting">
-                    Sorting: <span class="badge badge-success mySorting"> dd (ascending) </span>
+                    Sorting: <span class="badge badge-success mySorting"> id (ascending) </span>
+                </div>
+
+                <div style="margin:5px; cursor: pointer" class="for-hiding" data-toggle="tooltip" data-placement="bottom" title="Please go to the Table-Tab. With clicking on the columns you can adjust the sorting">
+                    <button type="button" class="btn btn-primary open-final-query btn-sm">Open Final Query</button>
                 </div>
 
             </div>
@@ -90,7 +95,12 @@ export class ControllUnits {
         if(sorting.asc) {
             scending = " (ascending) ";
         }
-        this.pSelector.find(".mySorting").html(sorting.attribute+scending)
+        this.pSelector.find(".mySorting").html(sorting.attribute+scending);
+
+        this.pSelector.find(".open-final-query").off(); // remove last listener
+        this.pSelector.find(".open-final-query").click(()=>{
+            this.graphQLIntrospectionModal.openModalWithContent(formGraphQL.generateAndGetGraphQlCode());
+        });
     }
 
 
