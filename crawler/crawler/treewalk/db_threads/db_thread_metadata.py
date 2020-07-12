@@ -41,31 +41,43 @@ class DBThreadMetadata(DBThread):
 
 
     # Methods to implement in child class
+    def _combine_dict(self, data: Any) -> dict:
+        combined = data[0]
+        all_type = {}
+        # Subtract each value in decrease
+        for data_type in data[1].keys():
+            if data_type in combined.keys():
+                for tag_type in data[1][data_type]:
+                    if tag_type in data[0][data_type].keys():
+                        combined[data_type][tag_type][0] = combined[data_type][tag_type][0] + data[1][data_type][tag_type][0]
+                    else:
+                        combined[data_type][tag_type] = data[1][data_type][tag_type]
+            else:
+                combined[data_type] = data[1][data_type]
+            # Add the values to the 'ALL'-type
+
+        for data_type in combined.keys():
+            for tag_type in combined[data_type]:
+                if tag_type in all_type.keys():
+                    all_type[tag_type][0] = all_type[tag_type][0] + combined[data_type][tag_type][0]
+                else:
+                    all_type[tag_type] = combined[data_type][tag_type]
+        combined['ALL'] = all_type
+        return combined
 
     def _do_work(self, data: Any):
         """Update METADATA table with result from other DB thread.
 
         Args:
             data (Any): data from other thread
+        """
+        combined = self._combine_dict(data)
+        print("combined finished")
+        print(combined)
+        print(combined['ALL'])
+        if combined:
+            self._db_connection.update_metadata(combined)
 
-        """
-        """
-        if len(data[1].keys()) > 0:
-            # Combine both dictionaries (decrease is always a subset/equal to increase)
-            for data_type in data[0].copy().keys():
-                increase = data[0][data_type]
-                decrease = data[1][data_type]
-                for tag in increase.copy().keys():
-                    # Subtract the decrease values from increase (if 0: remove as there is nothing to update)
-                    if increase[tag][0] - decrease[tag][0] != 0:
-                        data[0][data_type][tag] = increase[tag][0] - decrease[tag][0]
-                    else:
-                        del data[0][data_type][tag]
-                if not data[0][data_type]:
-                    del data[0][data_type]
-        if data[0]:
-            self._db_connection.update_metadata(data[0])
-        """
         logging.info(f'{self._name} doing work.')
 
 
