@@ -24,7 +24,7 @@ export class ControllUnits {
 
         // language=HTML
         this.showEntrySelector.html(`
-            <div class="row" style="margin:5px;">
+            <div class="row for-hiding" style="margin:5px;">
                 <label class="col-form-label">Show entries: </label>
                 <div class="">
                     <select name="length" class="custom-select custom-select-sm form-control form-control-sm myTableLength">
@@ -35,7 +35,7 @@ export class ControllUnits {
                         <option value="100">100</option>
                     </select>
                 </div>
-                <div style="margin:5px; cursor: pointer" data-toggle="tooltip" data-placement="bottom" title="Please go to the Table-Tab. With clicking on the columns you can adjust the sorting">
+                <div style="margin:5px; cursor: pointer" class="for-hiding" data-toggle="tooltip" data-placement="bottom" title="Please go to the Table-Tab. With clicking on the columns you can adjust the sorting">
                     Sorting: <span class="badge badge-success mySorting"> dd (ascending) </span>
                 </div>
 
@@ -44,7 +44,7 @@ export class ControllUnits {
 
 
         this.paginatorSelector.html(`
-            <div class="paginator-container">
+            <div class="paginator-container for-hiding">
                 ${paginatorHtmlCode}
             </div>
             Entries: <span class="myEntryCount">load...</span>
@@ -105,6 +105,10 @@ export class ControllUnits {
         if (currentFiles === 0) offsetFiles = 0;
         this.pSelector.find('.myEntryCount').html(`<b>${offsetFiles} - ${offsetLimit} [${currentFiles}] from ${totalFiles}</b> | Metadatacolumns: ${metadatacolums}`);
 
+    }
+
+    hidePaginatorAndSelectBox() {
+        $(".for-hiding").hide();
     }
 
 }

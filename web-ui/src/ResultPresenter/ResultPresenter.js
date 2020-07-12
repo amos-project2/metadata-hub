@@ -248,6 +248,10 @@ export class ResultPresenter {
         this.controllUnits.reinitialize(formGraphQL, json);
         this.tableOutput.reinitialize();
 
+        if (totalFiles < 3) {
+            this.controllUnits.hidePaginatorAndSelectBox()
+        }
+
     }
 
     //private
