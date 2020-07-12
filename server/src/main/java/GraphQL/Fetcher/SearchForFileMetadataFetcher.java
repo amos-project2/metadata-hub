@@ -1,7 +1,8 @@
 package GraphQL.Fetcher;
 
-import Database.Database;
+import Database.*;
 import Database.Model.DatabaseSchemaDefinition;
+import GraphQL.Model.Error;
 import GraphQL.Model.File;
 import GraphQL.Model.GraphQLSchemaDefinition;
 import GraphQL.Model.Metadatum;
@@ -10,10 +11,14 @@ import graphql.GraphQLException;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import org.jetbrains.annotations.NotNull;
+import org.jooq.meta.derby.sys.Sys;
+import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -38,23 +43,39 @@ public class SearchForFileMetadataFetcher implements DataFetcher
 
     @Override
     @SuppressWarnings({"rawtypes"})
-    public Object get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception
+    public Object get(DataFetchingEnvironment dataFetchingEnvironment)
     {
+        try{
+            Map<String, Object> graphQLArguments = dataFetchingEnvironment.getArguments();
+            log.info("graphQLArguments: " + graphQLArguments.toString());
 
-        Map<String, Object> graphQLArguments = dataFetchingEnvironment.getArguments();
-        log.info("graphQLArguments: " + graphQLArguments.toString());
+            final ArrayList<String> selected_attributes = dataFetchingEnvironment.getArgument(GraphQLSchemaDefinition.QUERY_SELECTED_ATTRIBUTES);
 
-        final ArrayList<String> selected_attributes = dataFetchingEnvironment.getArgument(GraphQLSchemaDefinition.QUERY_SELECTED_ATTRIBUTES);
+            String sqlQuery = PreparedStatementCreator.buildSQLQuery(graphQLArguments);
 
-        String sqlQuery = PreparedStatementCreator.buildSQLQuery(graphQLArguments);
+            //TODO rename (GraphQL.Model)ResultSet so it's less confusing as SQL ResultSet is used
+            return queryResultSet(graphQLArguments, selected_attributes, sqlQuery);
+        }catch (GraphQLException graphQLException){
 
-        GraphQL.Model.ResultSet resultSet = queryResultSet(graphQLArguments, selected_attributes, sqlQuery);
+            graphQLException.printStackTrace();
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+//            graphQLException.printStackTrace(pw);
 
-        return resultSet;
+            return new GraphQL.Model.ResultSet(new Error(graphQLException.getMessage(), sw.toString()));
+        }catch (Exception exception){
+
+            exception.printStackTrace();
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+//            exception.printStackTrace(pw);
+
+            return new GraphQL.Model.ResultSet(new Error("Uhh, unexpected error occurred! :(", sw.toString()));
+        }
     }
 
     @NotNull
-    private GraphQL.Model.ResultSet queryResultSet(Map<String, Object> graphQLArguments, ArrayList<String> selected_attributes, String sqlQuery) throws SQLException, IOException {
+    private GraphQL.Model.ResultSet queryResultSet(Map<String, Object> graphQLArguments, ArrayList<String> selected_attributes, String sqlQuery) throws SQLException, IOException, DatabaseException {
 
         List<File> returnFiles = null;
         int numberOfTotalFiles = 0;
@@ -98,7 +119,9 @@ public class SearchForFileMetadataFetcher implements DataFetcher
                 if(limit == 0){
                     returnFiles = cacheFiles;
                 }else{
-                    if(cacheFiles.size()<limit) limit = cacheFiles.size();
+                    if(limit > cacheFiles.size()){
+                        limit = cacheFiles.size();
+                    }
                     returnFiles = cacheFiles.subList(0, limit);
                 }
             }
@@ -115,51 +138,49 @@ public class SearchForFileMetadataFetcher implements DataFetcher
         return resultSet;
     }
 
-    private ArrayList<File> queryFilesFromDatabase(String sqlQuery, ArrayList<String> selected_attributes, int offset, int limit) throws IOException, SQLException {
+    private ArrayList<File> queryFilesFromDatabase(String sqlQuery, ArrayList<String> selected_attributes, int offset, int limit) throws IOException, SQLException, DatabaseException {
         return queryFilesFromDatabase(sqlQuery + " OFFSET " + offset + " LIMIT " + limit, selected_attributes);
     }
 
     @SuppressWarnings("unchecked")
-    private ArrayList<File> queryFilesFromDatabase(String sqlQuery, ArrayList<String> selected_attributes) throws SQLException, IOException
-    {
+    private ArrayList<File> queryFilesFromDatabase(String sqlQuery, ArrayList<String> selected_attributes) throws DatabaseException {
         sqlQuery = "SELECT * " + sqlQuery;
         log.info("SQLQuery: " + sqlQuery);
 
         try (Connection connection = database.getJDBCConnection();
              PreparedStatement preparedStatement = connection.prepareStatement
-                 (sqlQuery))
-        {
+                 (sqlQuery);
+             ResultSet rs = preparedStatement.executeQuery()) {
+            ArrayList<File> files = new ArrayList<>();
+            while (rs.next()) {
 
-            //log.info("PreparedStatement: " + preparedStatement);
-            try (ResultSet rs = preparedStatement.executeQuery())
-            {
-
-                ArrayList<File> files = new ArrayList<>();
-                while (rs.next())
-                {
-
-                    String jsonFileMetadata = rs.getString(DatabaseSchemaDefinition.FILES_METADATA);
-                    ArrayList<Metadatum> file_metadata = new ArrayList<>();
-                    Map<String, String> db_metadata = new ObjectMapper().readValue(jsonFileMetadata, Map.class);
-                    addSelectedAttributes(file_metadata, selected_attributes, db_metadata);
+                String jsonFileMetadata = rs.getString(DatabaseSchemaDefinition.FILES_METADATA);
+                ArrayList<Metadatum> file_metadata = new ArrayList<>();
+                Map<String, String> db_metadata = new ObjectMapper().readValue(jsonFileMetadata, Map.class);
+                addSelectedAttributes(file_metadata, selected_attributes, db_metadata);
 
 
-                    files.add(
-                        new File(rs.getString(DatabaseSchemaDefinition.FILES_ID), rs.getString(DatabaseSchemaDefinition.FILES_CRAWL_ID),
-                            rs.getString(DatabaseSchemaDefinition.FILES_DIR_PATH), rs.getString(DatabaseSchemaDefinition.FILES_NAME), rs.getString(DatabaseSchemaDefinition.FILES_TYPE),
-                            rs.getString(DatabaseSchemaDefinition.FILES_SIZE), file_metadata, rs.getString(DatabaseSchemaDefinition.FILES_CREATION_TIME),
-                            rs.getString(DatabaseSchemaDefinition.FILES_MODIFICATION_TIME), rs.getString(DatabaseSchemaDefinition.FILES_ACCESS_TIME),
-                            rs.getString(DatabaseSchemaDefinition.FILES_FILE_HASH), rs.getBoolean(DatabaseSchemaDefinition.FILES_DELETED))
-                    );
+                files.add(
+                    new File(rs.getString(DatabaseSchemaDefinition.FILES_ID), rs.getString(DatabaseSchemaDefinition.FILES_CRAWL_ID),
+                        rs.getString(DatabaseSchemaDefinition.FILES_DIR_PATH), rs.getString(DatabaseSchemaDefinition.FILES_NAME), rs.getString(DatabaseSchemaDefinition.FILES_TYPE),
+                        rs.getString(DatabaseSchemaDefinition.FILES_SIZE), file_metadata, rs.getString(DatabaseSchemaDefinition.FILES_CREATION_TIME),
+                        rs.getString(DatabaseSchemaDefinition.FILES_MODIFICATION_TIME), rs.getString(DatabaseSchemaDefinition.FILES_ACCESS_TIME),
+                        rs.getString(DatabaseSchemaDefinition.FILES_FILE_HASH), rs.getBoolean(DatabaseSchemaDefinition.FILES_DELETED))
+                );
 
-                }
-
-                return files;
             }
-        }
-    }
 
-    private int getNumberOfTotalFiles(String sqlQuery){
+            return files;
+        }catch (DatabaseException databaseException){
+            throw new GraphQLException(databaseException.getMessage(), databaseException);
+        }catch (PSQLException psqlException){
+            throw new GraphQLException(psqlException.getMessage(), psqlException);
+        }catch (SQLException | IOException exception){
+            throw new GraphQLException("Error while querying the database!" , exception);
+        }
+}
+
+    private int getNumberOfTotalFiles(String sqlQuery) throws DatabaseException {
 
         int numberOfTotalFiles = 0;
         String countQuery = sqlQuery;
@@ -169,16 +190,16 @@ public class SearchForFileMetadataFetcher implements DataFetcher
         }
 
         try(Connection connection = database.getJDBCConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement
-            ("SELECT COUNT(*) " + countQuery)){
-            try(ResultSet rs = preparedStatement.executeQuery()){
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) " + countQuery);
+            ResultSet rs = preparedStatement.executeQuery()) {
+
                 rs.next();
                 numberOfTotalFiles = rs.getInt(1);
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+
+        }catch (SQLException sqlException){
+            throw new GraphQLException("Error while querying the database!" , sqlException);
+        }catch (DatabaseException dbException){
+            throw new GraphQLException(dbException.getMessage(), dbException);
         }
         return numberOfTotalFiles;
     }

@@ -1,6 +1,6 @@
 package Start;
 
-import Database.Database;
+import Database.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Injector;
 import graphql.ExecutionResult;
@@ -31,8 +31,7 @@ public class RuntimeTests
         this.injector=dependenciesContainer.getInjector();
     }
 
-    public void databaseTest() throws SQLException
-    {
+    public void databaseTest() throws SQLException, DatabaseException {
 //        DatabaseProvider databaseProvider = registry.getDatabaseProvider();
         Database database =injector.getInstance(Database.class);
         try

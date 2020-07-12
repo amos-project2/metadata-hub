@@ -2,7 +2,6 @@ package GraphQL.Fetcher;
 
 import Database.Model.DatabaseSchemaDefinition;
 import GraphQL.Model.GraphQLSchemaDefinition;
-import com.google.common.graph.Graph;
 import graphql.GraphQLException;
 
 import java.util.HashMap;
@@ -266,7 +265,11 @@ public class PreparedStatementCreator {
                 }
             }
         }
-        stringBuilder.append(buildMetadataFilterLogic(graphQLArguments, metadata_filters));
+        try{
+            stringBuilder.append(buildMetadataFilterLogic(graphQLArguments, metadata_filters));
+        }catch (Exception exception){
+            throw new GraphQLException("Couldn't build metadata filter logic! The entered filter string is faulty!", exception);
+        }
     }
 
     /**
@@ -325,8 +328,6 @@ public class PreparedStatementCreator {
                 metadatafilterBuilder.append(filter.getValue() + logicalOperator);
             }
         }
-
-
 
         return metadatafilterBuilder.toString();
     }
