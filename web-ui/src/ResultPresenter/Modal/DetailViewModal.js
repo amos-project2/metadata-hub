@@ -93,7 +93,7 @@ export class DetailViewModal {
 
         // language=HTML
         return `
-                    <div class="row" style="margin-bottom: 8px; word-wrap: break-word;">
+                    <div class="row detail-view-element" style="margin-bottom: 8px; word-wrap: break-word;">
                         <div class="col-sm-6"">
                            ${name}
                         </div>
