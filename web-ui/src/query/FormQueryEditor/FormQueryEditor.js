@@ -8,6 +8,7 @@ import {FormGraphQl} from "./Components/FormGraphQl";
 import {FiletypeFilter} from "./Components/FiletypeFilter";
 import {AttributSelector} from "./Components/AttributSelector";
 import {DateRangeFilter} from "./Components/DateRangeFilter";
+import {ClearCacheModal} from "./autocompletion/Modals/ClearCacheModal";
 
 export class FormQueryEditor extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
@@ -16,7 +17,10 @@ export class FormQueryEditor extends Page {
         this.cacheLevel = 3;
         this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
         this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
+
         this.graphQLIntrospectionModal = new GraphQlIntrospectionModel(this.parent.storage, true);
+        this.clearCacheModal = new ClearCacheModal();
+        this.clearCacheSelector = ".modalClearCache";
 
         this.metadatAutocompletion = new MetadataAutocompletion(
             this.parent.dependencies.restApiFetcherServer,
@@ -25,7 +29,6 @@ export class FormQueryEditor extends Page {
             ".fg-metadata-attribute",
             ".attribut-element-input",
             ".modalOpenerSelector",
-            ".modalClearCache"
         );
 
         this.dateRangeFilter = new DateRangeFilter();
@@ -127,6 +130,7 @@ export class FormQueryEditor extends Page {
 
                 <button type="submit" class="btn btn-primary">Send</button>
                 <button type="button" class="btn btn-primary open-query">Open Query</button>
+                <button type="button" class="btn btn-danger modalClearCache">Clear Cache</button>
                 <button type="button" class="btn btn-primary clear-all">Clear All</button>
             </form>
             <br>
@@ -138,7 +142,7 @@ export class FormQueryEditor extends Page {
             ${this.graphQLIntrospectionModal.getHtmlCode()}
 
             ${this.metadatAutocompletion.getSuggestionViewer().getStaticModalHtml()}
-            ${this.metadatAutocompletion.getStaticModalHtmlClearCache()}
+            ${this.clearCacheModal.getHtmlCode()}
 
             `;
 
@@ -147,6 +151,7 @@ export class FormQueryEditor extends Page {
     onMount() {
 
         this.graphQLIntrospectionModal.onMount();
+        this.clearCacheModalOpenerAndRequest();
 
         this.resultPresenter.onMount();
 
@@ -217,6 +222,15 @@ export class FormQueryEditor extends Page {
 
         return formGraphQl;//.generateAndGetGraphQlCode();
     }
+
+    clearCacheModalOpenerAndRequest() {
+        let thisdata = this;
+        $(this.clearCacheSelector).click(function () {
+            thisdata.clearCacheModal.openModal();
+            thisdata.restApiFetcherServer.fetchGet(`metadata-autocomplete/clear-cache/`, function (event) {});
+        });
+    }
+
 
 
     onUnMount() {

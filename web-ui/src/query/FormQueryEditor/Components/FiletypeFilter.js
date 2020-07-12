@@ -22,8 +22,7 @@ export class FiletypeFilter {
 
                 </div>
                 <div class="form-row justify-content-md-center">
-                    <button type="button" class="btn btn-primary modalOpenerSelector mr-3">Open Metadata-Attribut-Selector</button>
-                    <button type="button" class="btn btn-danger modalClearCache mr-3">Clear Autocompletion Cache</button>
+                    <button type="button" class="btn btn-primary modalOpenerSelector">Open Metadata-Attribut-Selector</button>
                 </div>
               `;
     }
