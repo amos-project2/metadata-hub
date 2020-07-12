@@ -10,14 +10,15 @@ import {CrawlerIntervals} from "./crawler/CrawlerIntervals";
 import {ErrorPage} from "./ErrorPage";
 import {Logout} from "./logout/Logout";
 
-import {QueryStore} from "./query/FormQueryEditor/FileTypeCategories/QueryStore";
+import {QueryStore} from "./query/FormQueryEditor/QueryStore/QueryStore";
+import {FileTypeCategories} from "./query/FormQueryEditor/FileTypeCategories/FileTypeCategories";
 
 import {
     enable as enableDarkMode,
     disable as disableDarkMode,
     auto as followSystemColorScheme,
 } from 'darkreader';
-import {FileTypeCategories} from "./query/FormQueryEditor/FileTypeCategories/FileTypeCategories";
+
 
 
 class NavElement {

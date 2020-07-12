@@ -1,11 +1,10 @@
 import {Page} from "../../../Page";
-import {FileTypeCategoriesService} from "./FileTypeCategoriesService";
+import {StoreService} from "./StoreService";
 
-
-export class FileTypeCategories extends Page {
+export class QueryStore extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         super(parent, identifier, mountpoint, titleSelector);
-        this.title = "File Type Categories";
+        this.title = "Query Store";
         this.cacheLevel = 3;
         //use 0 for no caching (the dom for this page will be deleted and onMound/onUnMount is called each enter and leaving the page here)
         //use 3 for complete caching(the dome for this page stay after leaving
@@ -19,7 +18,7 @@ export class FileTypeCategories extends Page {
         //you can here also set the caching_behavour and much more
         //take a look in class Page
 
-        this.fileTypeCategoriesService = new FileTypeCategoriesService();
+        this.StoreService = new StoreService();
 
     }
 
