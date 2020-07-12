@@ -1,8 +1,17 @@
+"""Helper module of the TreeWalk.
+
+Provides functions for work package creation, clearing queues, etc.
+"""
+
+
 # Python imports
 import os
+import queue
 import psutil
 import random
-from typing import List, Tuple
+import multiprocessing
+from typing import List, Tuple, Any
+
 
 def workSize(pathInput: str) -> List[str]:
     """Creates a hash table based on the total amount of files per directory.
@@ -101,7 +110,17 @@ def create_work_packages(
     return result
 
 
-def split_package(lst, length):
+def split_package(lst: list, length: int):
+    """Split package in 'equal' lengths.
+
+    Args:
+        lst (list): list to split
+        length (int): length of items
+
+    Yields:
+        List[str]: package
+
+    """
     for index in range(0, len(lst), length):
         yield lst[index:index + length]
 
@@ -141,3 +160,35 @@ def resize_work_packages(
         new_work_packages[index].append(package)
         index = (index + 1) % num_workers
     return new_work_packages
+
+
+def clear_queue_poison_pill(
+        q: multiprocessing.Queue, poison_pill: Any = None
+) -> None:
+    """Clear a queue with given poison pill.
+
+    Args:
+        q (multiprocessing.Queue): the queue to clear
+        poison_pill (Any, optional): poison pill. Defaults to None.
+
+    """
+    while True:
+        item = q.get(block=True)
+        if item is poison_pill:
+            break
+
+
+def clear_queue_unsafe(q: multiprocessing.Queue) -> None:
+    """Unsafely clearing a queue.
+
+    Unsafe because the background writer is not ensured to be finished yet.
+
+    Args:
+        q (multiprocessing.Queue): queue to clear
+
+    """
+    while True:
+        try:
+            q.get(block=False)
+        except queue.Empty:
+            return
