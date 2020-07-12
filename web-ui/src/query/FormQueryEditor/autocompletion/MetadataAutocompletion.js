@@ -16,6 +16,8 @@ export class MetadataAutocompletion {
     constructor(restApiFetcherServer, graphQlFetcher, fileTypesSelector,
                 currentFilterListSelector, currentMetadataListSelector, suggestionWindowOpenerSelector,
     ) {
+        this.advancedFilter = null;
+        this.attributSelector = null;
         this.restApiFetcherServer = restApiFetcherServer;
         this.graphQlFetcher = graphQlFetcher;
         this.fileTypesSelector = fileTypesSelector;
@@ -28,6 +30,14 @@ export class MetadataAutocompletion {
         this.filter = [];
         this.metadata = [];
 
+    }
+
+    addAdvancedFilter(advancedFilter) {
+        this.advancedFilter = advancedFilter;
+    }
+
+    addAttributSelector(attributSelector) {
+        this.attributSelector = attributSelector;
     }
 
     getSuggestionViewer() {

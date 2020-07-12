@@ -87,14 +87,18 @@ export class SuggestionViewer {
             $(".suggestion-container").append(htmlTable);
             $(".adder-block").show(1000);
 
-            $(".filter-adder").not(".listenerAdded").click(function () {
-                let lastElement = $(".fg-metadata-attribute").last();
+            let refParent = thisdata.metadataAutocompletion;
 
-                lastElement.addClass("autocompleteDeactivated");
-                lastElement.val($(this).data("adderto"));
-                lastElement.trigger("focusin");
-                lastElement.trigger("focusout");
-                lastElement.removeClass("autocompleteDeactivated");
+
+            $(".filter-adder").not(".listenerAdded").click(function () {
+                refParent.advancedFilter.inputMultiplierAdvancedFilterRows.addInputValue($(this).data("adderto"), "autocompleteDeactivated");
+                // let lastElement = $(".fg-metadata-attribute").last();
+                //
+                // lastElement.addClass("autocompleteDeactivated");
+                // lastElement.val($(this).data("adderto"));
+                // lastElement.trigger("focusin");
+                // lastElement.trigger("focusout");
+                // lastElement.removeClass("autocompleteDeactivated");
 
                 let jqThis = $(this);
                 jqThis.parent().find(".filter-adder-message").show();
@@ -110,27 +114,32 @@ export class SuggestionViewer {
 
             $(".metadata-adder").not(".listenerAdded").change(function () {
 
-                let lastElement
+               // let lastElement
+
+
 
                 if ($(this).is(':checked')) {
-                    lastElement = $(".attribut-element-input").last();
-                    lastElement.val($(this).data("adderto"));
-                    lastElement.addClass("autocompleteDeactivated");
-                    lastElement.trigger("focusin");
-                    lastElement.trigger("focusout");
-                    lastElement.removeClass("autocompleteDeactivated");
+                    refParent.attributSelector.inputMultiplierAttributSelector.addInputValue($(this).data("adderto"), "autocompleteDeactivated");
+                    // lastElement = $(".attribut-element-input").last();
+                    // lastElement.val($(this).data("adderto"));
+                    // lastElement.addClass("autocompleteDeactivated");
+                    // lastElement.trigger("focusin");
+                    // lastElement.trigger("focusout");
+                    // lastElement.removeClass("autocompleteDeactivated");
                 } else {
-                    let jqThis = $(this);
-                    $(".attribut-element-input").each(function () {
-                        if ($(this).val().toLowerCase().trim() === jqThis.data("adderto").toLowerCase().trim()) {
-                            $(this).val("");
-                            lastElement = $(this);
-                            lastElement.addClass("autocompleteDeactivated");
-                            lastElement.trigger("focusin");
-                            lastElement.trigger("focusout");
-                            lastElement.removeClass("autocompleteDeactivated");
-                        }
-                    });
+                    //let jqThis = $(this);
+                    refParent.attributSelector.inputMultiplierAttributSelector.deleteInputValue($(this).data("adderto"), "autocompleteDeactivated");
+
+                    // $(".attribut-element-input").each(function () {
+                    //     if ($(this).val().toLowerCase().trim() === jqThis.data("adderto").toLowerCase().trim()) {
+                    //         $(this).val("");
+                    //         lastElement = $(this);
+                    //         lastElement.addClass("autocompleteDeactivated");
+                    //         lastElement.trigger("focusin");
+                    //         lastElement.trigger("focusout");
+                    //         lastElement.removeClass("autocompleteDeactivated");
+                    //     }
+                    // });
                 }
 
 
