@@ -18,6 +18,8 @@ import {
     disable as disableDarkMode,
     auto as followSystemColorScheme,
 } from 'darkreader';
+import {About} from "./about/About";
+import {License} from "./about/License";
 
 
 
@@ -192,6 +194,11 @@ export class Template {
         this.addNavGroup(3, "About", n => {
             n.addOneNavElement(new NavElement(3, "about1", "about1", t => {return new Page(t)}));
             n.addOneNavElement(new NavElement(3, "about1", "about2", t => {return new Page(t)}));
+        });
+
+        this.addNavGroup(0, "About", n => {
+            n.addOneNavElement(new NavElement(0, "About", "about", t => {return new About(t)}));
+            n.addOneNavElement(new NavElement(0, "License", "license", t => {return new License(t)}));
         });
 
 
