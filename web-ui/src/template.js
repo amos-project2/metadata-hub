@@ -161,7 +161,7 @@ export class Template {
         });
 
 
-        this.addNavGroup(1, "GraphiQL", n => {
+        this.addNavGroup(1, "GraphQL", n => {
             n.addOneNavElement(new NavElement(1, "GraphiQL-Console", "graphiql-console", t => {return new GraphiqlConsole(t)}));
             n.addOneNavElement(new NavElement(1, "GraphQL-Query", "graphql-query", t => {return new GraphqlQueryEditor(t)}));
         });
