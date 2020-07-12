@@ -1,6 +1,6 @@
 package GraphQL.Fetcher;
 
-import Database.Database;
+import Database.*;
 import Database.Model.DatabaseSchemaDefinition;
 import GraphQL.Model.File;
 import GraphQL.Model.GraphQLSchemaDefinition;
@@ -54,7 +54,7 @@ public class SearchForFileMetadataFetcher implements DataFetcher
     }
 
     @NotNull
-    private GraphQL.Model.ResultSet queryResultSet(Map<String, Object> graphQLArguments, ArrayList<String> selected_attributes, String sqlQuery) throws SQLException, IOException {
+    private GraphQL.Model.ResultSet queryResultSet(Map<String, Object> graphQLArguments, ArrayList<String> selected_attributes, String sqlQuery) throws SQLException, IOException, DatabaseException {
 
         List<File> returnFiles = null;
         int numberOfTotalFiles = 0;
@@ -98,7 +98,9 @@ public class SearchForFileMetadataFetcher implements DataFetcher
                 if(limit == 0){
                     returnFiles = cacheFiles;
                 }else{
-                    if(cacheFiles.size()<limit) limit = cacheFiles.size();
+                    if(limit > cacheFiles.size()){
+                        limit = cacheFiles.size();
+                    }
                     returnFiles = cacheFiles.subList(0, limit);
                 }
             }
@@ -115,13 +117,12 @@ public class SearchForFileMetadataFetcher implements DataFetcher
         return resultSet;
     }
 
-    private ArrayList<File> queryFilesFromDatabase(String sqlQuery, ArrayList<String> selected_attributes, int offset, int limit) throws IOException, SQLException {
+    private ArrayList<File> queryFilesFromDatabase(String sqlQuery, ArrayList<String> selected_attributes, int offset, int limit) throws IOException, SQLException, DatabaseException {
         return queryFilesFromDatabase(sqlQuery + " OFFSET " + offset + " LIMIT " + limit, selected_attributes);
     }
 
     @SuppressWarnings("unchecked")
-    private ArrayList<File> queryFilesFromDatabase(String sqlQuery, ArrayList<String> selected_attributes) throws SQLException, IOException
-    {
+    private ArrayList<File> queryFilesFromDatabase(String sqlQuery, ArrayList<String> selected_attributes) throws SQLException, IOException, DatabaseException {
         sqlQuery = "SELECT * " + sqlQuery;
         log.info("SQLQuery: " + sqlQuery);
 
@@ -159,7 +160,7 @@ public class SearchForFileMetadataFetcher implements DataFetcher
         }
     }
 
-    private int getNumberOfTotalFiles(String sqlQuery){
+    private int getNumberOfTotalFiles(String sqlQuery) throws DatabaseException, SQLException {
 
         int numberOfTotalFiles = 0;
         String countQuery = sqlQuery;
@@ -170,15 +171,13 @@ public class SearchForFileMetadataFetcher implements DataFetcher
 
         try(Connection connection = database.getJDBCConnection();
         PreparedStatement preparedStatement = connection.prepareStatement
-            ("SELECT COUNT(*) " + countQuery)){
-            try(ResultSet rs = preparedStatement.executeQuery()){
+            ("SELECT COUNT(*) " + countQuery)) {
+            try (ResultSet rs = preparedStatement.executeQuery()) {
                 rs.next();
                 numberOfTotalFiles = rs.getInt(1);
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
         }
         return numberOfTotalFiles;
     }

@@ -1,6 +1,7 @@
 package HttpController;
 
 import Config.Config;
+import Database.DatabaseException;
 import MetadataAutocompletion.FileTypeAutocompletionService;
 import MetadataAutocompletion.MetadataInfoService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -111,8 +112,7 @@ public class WebUIMetadataHelperController
     @GET
     @Produces("application/json")
     @Path("/filetype-suggestions")
-    public String getFileTypeSuggestions(@QueryParam("q") String query) throws JsonProcessingException, SQLException
-    {
+    public String getFileTypeSuggestions(@QueryParam("q") String query) throws JsonProcessingException, SQLException, DatabaseException {
         log.info("File Type Suggestions Query :" + query);
 
         String[] split = query.split("\\$XXX\\$");

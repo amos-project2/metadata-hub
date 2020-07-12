@@ -2,6 +2,7 @@ package Database.Impl;
 
 import Config.Config;
 import Database.Database;
+import Database.DatabaseException;
 import Database.DatabaseService;
 import com.google.inject.Inject;
 import com.zaxxer.hikari.HikariConfig;
@@ -47,13 +48,16 @@ public class DatabaseImpl implements Database, DatabaseService
 
     }
 
-    public void start()
-    {
-        if (this.isStarted) throw new RuntimeException("already started");
-        this.isStarted = true;
+    public void start() throws DatabaseException {
+        try {
+            if (this.isStarted) throw new RuntimeException("already started");
 
-        hikariDataSource = new HikariDataSource(hikariConfig);
-        dslContext = DSL.using(hikariDataSource, SQLDialect.POSTGRES);
+            hikariDataSource = new HikariDataSource(hikariConfig);
+            dslContext = DSL.using(hikariDataSource, SQLDialect.POSTGRES);
+            this.isStarted = true;
+        }catch (Exception exception){
+            throw new DatabaseException("Couldn't establish connection to database!", exception);
+        }
     }
 
     public void shutdown()
@@ -66,8 +70,10 @@ public class DatabaseImpl implements Database, DatabaseService
     }
 
     @Override
-    public Connection getJDBCConnection() throws SQLException
-    {
+    public Connection getJDBCConnection() throws SQLException, DatabaseException {
+        if(!this.isStarted){
+            start();
+        }
         return this.hikariDataSource.getConnection();
     }
 

@@ -1,5 +1,6 @@
 package Start;
 
+import Database.DatabaseException;
 import Database.DatabaseService;
 import JerseyServer.HttpServer;
 import com.google.inject.Inject;
@@ -13,9 +14,12 @@ public class ApplicationService
     @Inject HttpServer jerseyServer;
 
 
-    public void startAll()
-    {
-        this.database.start();
+    public void startAll() throws DatabaseException {
+        try{
+            this.database.start();
+        } catch (Exception exception){
+            exception.printStackTrace();
+        }
         this.jerseyServer.start();
     }
 
