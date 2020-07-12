@@ -9,6 +9,7 @@ import {FiletypeFilter} from "./Components/FiletypeFilter";
 import {AttributSelector} from "./Components/AttributSelector";
 import {DateRangeFilter} from "./Components/DateRangeFilter";
 import {ClearCacheModal} from "./autocompletion/Modals/ClearCacheModal";
+import {FileTypeCategoriesService} from "./FileTypeCategories/FileTypeCategoriesService";
 
 export class QueryEditor extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
@@ -21,6 +22,8 @@ export class QueryEditor extends Page {
         this.resultPresenter = new ResultPresenter(this.graphQlFetcher, this.graphQLIntrospectionModal);
         this.clearCacheModal = new ClearCacheModal();
         this.clearCacheSelector = ".modalClearCache";
+
+        this.fileTypeCategoriesService = new FileTypeCategoriesService();
 
         this.metadatAutocompletion = new MetadataAutocompletion(
             this.parent.dependencies.restApiFetcherServer,
@@ -144,6 +147,7 @@ export class QueryEditor extends Page {
 
 
             ${this.graphQLIntrospectionModal.getHtmlCode()}
+            ${this.fileTypeCategoriesService.getModalHtml()}
 
             ${this.metadatAutocompletion.getSuggestionViewer().getStaticModalHtml()}
             ${this.clearCacheModal.getHtmlCode()}

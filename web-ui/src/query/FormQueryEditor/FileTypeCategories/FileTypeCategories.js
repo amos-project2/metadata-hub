@@ -1,7 +1,8 @@
 import {Page} from "../../../Page";
-import {StoreService} from "./StoreService";
+import {FileTypeCategoriesService} from "./FileTypeCategoriesService";
 
-export class QueryStore extends Page {
+
+export class FileTypeCategories extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         super(parent, identifier, mountpoint, titleSelector);
         this.title = "Query-Store";
@@ -18,7 +19,7 @@ export class QueryStore extends Page {
         //you can here also set the caching_behavour and much more
         //take a look in class Page
 
-        this.StoreService = new StoreService();
+        this.fileTypeCategoriesService = new FileTypeCategoriesService();
 
     }
 
