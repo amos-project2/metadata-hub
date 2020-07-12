@@ -10,6 +10,8 @@ import {CrawlerIntervals} from "./crawler/CrawlerIntervals";
 import {ErrorPage} from "./ErrorPage";
 import {Logout} from "./logout/Logout";
 
+import {QueryStore} from "./query/FormQueryEditor/QueryStore/QueryStore";
+
 import {
     enable as enableDarkMode,
     disable as disableDarkMode,
@@ -145,6 +147,7 @@ export class Template {
 
         this.addNavGroup(1, "Query-Editor", n => {
             n.addOneNavElement(new NavElement(1, "Query-Editor", "query-editor", t => {return new QueryEditor(t)}));
+            n.addOneNavElement(new NavElement(1, "Query-Store", "query-store", t => {return new QueryStore(t)}));
         });
 
 
