@@ -25,9 +25,9 @@ export class ControllUnits {
 
         // language=HTML
         this.showEntrySelector.html(`
-            <div class="row for-hiding" style="margin:5px;">
-                <label class="col-form-label">Show entries: </label>
-                <div class="">
+            <div class="row" style="margin:5px;">
+                <label class="col-form-label for-hiding">Show entries: </label>
+                <div class="for-hiding">
                     <select name="length" class="custom-select custom-select-sm form-control form-control-sm myTableLength">
                         <option value="2" selected>2</option>
                         <option value="10">10</option>
@@ -36,11 +36,11 @@ export class ControllUnits {
                         <option value="100">100</option>
                     </select>
                 </div>
-                <div style="margin:5px; cursor: pointer" class="for-hiding" data-toggle="tooltip" data-placement="bottom" title="Please go to the Table-Tab. With clicking on the columns you can adjust the sorting">
+                <div style="margin:5px;" class="for-hiding" data-toggle="tooltip-vis" data-placement="top" title="Please go to the Table-Tab. With clicking on the columns you can adjust the sorting">
                     Sorting: <span class="badge badge-success mySorting"> id (ascending) </span>
                 </div>
 
-                <div style="margin:5px; cursor: pointer" class="for-hiding" data-toggle="tooltip" data-placement="bottom" title="Please go to the Table-Tab. With clicking on the columns you can adjust the sorting">
+                <div style=" margin:2px; cursor: pointer" data-toggle="tooltip-vis" data-placement="top" title="It shows the final query, with pagination-informations included">
                     <button type="button" class="btn btn-primary open-final-query btn-sm">Open Final Query</button>
                 </div>
 
@@ -54,6 +54,10 @@ export class ControllUnits {
             </div>
             Entries: <span class="myEntryCount">load...</span>
         `);
+
+        $(function () {
+            $('[data-toggle="tooltip-vis"]').tooltip()
+        })
 
     }
 
