@@ -159,11 +159,13 @@ class TreeWalkScheduler(threading.Thread):
             )
             if self._current_interval is not None:
                 self._current_interval.deactivate()
+            self._tw_state.lock()
             if new_interval is not None:
                 new_interval.activate()
                 self._tw_state.set_cpu_level(new_interval._cpu_level)
             else:
                 self._tw_state.set_cpu_level(treewalk.State.MAX_CPU_LEVEL)
+            self._tw_state.release()
             self._current_interval = new_interval
 
     # FIXME does forcing actually work here?
