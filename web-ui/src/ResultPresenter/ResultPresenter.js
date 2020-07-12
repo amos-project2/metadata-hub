@@ -2,6 +2,7 @@ import {JsonOutput} from "./Components/JsonOutput";
 import {TableOutput} from "./Components/TableOutput";
 import {ExportOutput} from "./Components/ExportOutput";
 import {ControllUnits} from "./Components/ControllUnits";
+import {DetailViewModal} from "./Modal/DetailViewModal";
 
 export class ResultPresenter {
 
@@ -20,10 +21,13 @@ export class ResultPresenter {
         this.graphQlFetcher = graphQlFetcher;
 
         this.controllUnits = new ControllUnits("result-presenter" + this.id, this, graphQLIntrospectionModal);
+        this.viewModal = new DetailViewModal();
 
         this.jsonOutput = new JsonOutput();
-        this.tableOutput = new TableOutput(this, this.controllUnits);
+        this.tableOutput = new TableOutput(this, this.controllUnits, this.viewModal);
         this.exportOutput = new ExportOutput();
+
+
 
         this.cleared = true;
         this.lastTotalFiles = -1;
@@ -31,6 +35,8 @@ export class ResultPresenter {
     }
 
     onMount() {
+
+        this.viewModal.onMount();
 
         this.pSelector = $("#" + this.id);
 

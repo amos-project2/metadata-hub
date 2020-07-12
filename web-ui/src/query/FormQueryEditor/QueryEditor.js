@@ -148,6 +148,7 @@ export class QueryEditor extends Page {
 
             ${this.graphQLIntrospectionModal.getHtmlCode()}
             ${this.fileTypeCategoriesService.getModalHtml()}
+            ${this.resultPresenter.viewModal.getHtmlCode()}
 
             ${this.metadatAutocompletion.getSuggestionViewer().getStaticModalHtml()}
             ${this.clearCacheModal.getHtmlCode()}

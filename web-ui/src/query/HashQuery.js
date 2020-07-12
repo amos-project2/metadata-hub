@@ -42,6 +42,7 @@ export class HashQuery extends Page {
             </div>
 
             ${this.graphQLIntrospectionModal.getHtmlCode()}
+            ${this.resultPresenter.viewModal.getHtmlCode()}
         `;
     }
 
