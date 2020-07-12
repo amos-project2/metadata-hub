@@ -1,6 +1,9 @@
 """The TreeWalkManager manages the worker processes.
 
 TODO: Add description
+
+# It can be that the worker already fininshed and was reseted by pause for example, so use timeout here
+
 """
 
 
@@ -17,6 +20,8 @@ from typing import Tuple, Any
 from datetime import datetime
 
 # Local imports
+from .worker_control import WorkerControl
+
 import crawler.treewalk as treewalk
 import crawler.database as database
 import crawler.communication as communication
@@ -76,13 +81,14 @@ class TreeWalkManager(threading.Thread):
         }
         self._shutdown = False
 
-    # FIXME acknowledge workers to stop
+
     def _reset(self) -> None:
         """Reset the TreeWalkManager."""
         self._roots = []
         self._workers = []
         self._num_workers.value = 0
         self._worker_counter.value = 0
+        self._work_packages_done.value = 0
         self._work_packages = []
         self._work_packages_split = []
         self._tree_walk_id = -1
@@ -93,10 +99,12 @@ class TreeWalkManager(threading.Thread):
         self._config = None
         self._treewalk_db_threads_sleep()
 
+
     def _update_progress(self) -> None:
         """Update the progress value."""
         progress = self._work_packages_done.value / self._work_packages_total
         self._state.set_progress(progress * 100.0)
+
 
     def _log_execution_time(self) -> None:
         """Log the execution time of the crawl.
@@ -109,9 +117,10 @@ class TreeWalkManager(threading.Thread):
         time_end = datetime.now()
         str_manager = f'TWManager (TIME): Database={self._db_connection.get_time():.2f}s'
         logging.critical(
-            f'TWManager (Time): Database={self._db_connection.get_time():.2f}s '
-            f'Total= {str(datetime.now() - self._time_start):.2f}s'
+            f'TWManager: exection took '
+            f'{(datetime.now() - self._time_start).total_seconds():.2f} seconds.'
         )
+
 
     def _update_workers(self, num_workers: int, reduce: bool) -> None:
         """Update the workers due to maximum resource consumption.
@@ -121,26 +130,27 @@ class TreeWalkManager(threading.Thread):
             reduce (bool): if True reduce, otherwise increase
 
         """
-        # FIXME DO NOT USE YET
         _logger.info('TWManager: updating number of workers.')
         self._treewalk_pause(None)
-        _logger.info('TWManager: stopped successfully.')
+        self._state.lock()
+        _logger.info('TWManager: stopped current workers successfully.')
         work_packages = []
         for worker_control in self._workers:
-            try:
-                item = worker_control.data_queue.get(block=False)
-                work_packages.append(item)
-            except queue.Empty:
+            if worker_control.event_finished.is_set():
                 continue
-        _logger.info('TWManager: got all remaining work packages.')
+            while True:
+                item = worker_control.data_queue.get(block=True)
+                if item is None:
+                    break
+                work_packages.append(item)
+        _logger.info(f'TWManager: got all remaining {len(work_packages)} packages.')
         work_packages = treewalk.resize_work_packages(
             work_packages=work_packages,
             num_workers=num_workers
         )
-        print(len(work_packages))
-        _logger.info('TWManager: shuffled new work packages.')
-        self._num_workers.value = num_workers
-        self._state.set_running_workers(num_workers)
+        _logger.info(f'TWManager: shuffled new work packages ({len(work_packages)}).')
+        for work_package in work_packages:
+            _logger.info(f'TWManager: size for worker ({len(work_package)}).')
         if reduce:
             diff = self._num_workers.value - num_workers
             command = communication.Command(
@@ -157,13 +167,16 @@ class TreeWalkManager(threading.Thread):
                     pass
                 worker_control.me.close()
             _logger.info(f'TWManager: stopped {diff} workers.')
-            print(len(self._workers))
             for worker_control in self._workers:
-                print("ABC")
                 new_work_packages = work_packages.pop()
                 while new_work_packages:
                     item = new_work_packages.pop()
                     worker_control.data_queue.put(item)
+                worker_control.data_queue.put(None)
+            self._num_workers.value = num_workers
+            self._state.set_running_workers(num_workers)
+            _logger.info(f'TWManager: reassigned work to {num_workers} workers.')
+            self._state.release()
             self._treewalk_unpause(None)
         else:
             diff = num_workers - self._num_workers.value
@@ -173,18 +186,26 @@ class TreeWalkManager(threading.Thread):
                 while new_work_packages:
                     item = new_work_packages.pop()
                     worker_control.data_queue.put(item)
+                worker_control.data_queue.put(None)
+            _logger.info(
+                f'TWManager: reassigned work to {curr_workers} existing workers.'
+            )
+            self._num_workers.value = num_workers
+            self._state.set_running_workers(num_workers)
+            self._state.release()
             self._treewalk_unpause(None)
             for id_worker in range(diff):
-                identifier = diff + curr_workers
+                identifier = curr_workers + id_worker + 1
                 input_data_queue = multiprocessing.Queue()
                 new_work_packages = work_packages.pop()
                 while new_work_packages:
                     item = new_work_packages.pop()
-                    input.data_queue.put(item)
+                    input_data_queue.put(item)
+                input_data_queue.put(None)
                 input_command_queue = multiprocessing.Queue()
-                event_self, event_manager = communication.get_worker_events()
+                event_self, event_manager, event_finished = communication.get_worker_events()
                 worker = treewalk.Worker(
-                    identifier=id_worker,
+                    identifier=identifier,
                     input_data_queue=input_data_queue,
                     input_command_queue=input_command_queue,
                     config=self._config,
@@ -196,7 +217,8 @@ class TreeWalkManager(threading.Thread):
                     db_thread_input_queue_data=communication.database_thread_files_input_data,
                     measure_time=self._measure_time,
                     event_self=event_self,
-                    event_manager=event_manager
+                    event_manager=event_manager,
+                    event_finished=event_finished
                 )
                 worker_control = WorkerControl(
                     identifier=identifier,
@@ -204,14 +226,22 @@ class TreeWalkManager(threading.Thread):
                     input_data_queue=input_data_queue,
                     input_command_queue=input_command_queue,
                     event_self=event_self,
-                    event_manager=event_manager
+                    event_manager=event_manager,
+                    event_finished=event_finished
                 )
                 worker.start()
                 self._workers.append(worker_control)
-                _logger.info(f'TWManager: added {diff} workers.')
+            _logger.info(f'TWManager: added {diff} workers.')
+
 
 
     def exec(self, command: communication.Command) -> None:
+        """Wrapper method for executing a TreeWalk command.
+
+        Args:
+            command (communication.Command): command to execute
+
+        """
         _logger.info(f'TWManager: running command {command.command}')
         try:
             func = self._functions[command.command]
@@ -223,7 +253,7 @@ class TreeWalkManager(threading.Thread):
 
 
     def check_and_update_worker(self) -> None:
-        # FIXME
+        """Check if number of workers should be updated."""
         max_cpu_level, max_num_workers = self._state.get_cpu_level()
         workers_by_config = treewalk.get_number_of_workers(
             self._config.get_cpu_level()
@@ -247,14 +277,11 @@ class TreeWalkManager(threading.Thread):
         # Set the database threads to sleep at startup
         self._treewalk_db_threads_sleep()
         while True:
-            check = False
+            if self._state.is_finished():
+                self._treewalk_finish()
             if self._state.is_running():
                 self.check_and_update_worker()
                 self._update_progress()
-                self._state.lock()
-                if self._state.is_finished():
-                    self._treewalk_finish()
-                self._state.release()
                 try:
                     command = communication.manager_queue_input.get(
                         block=True, timeout=1
@@ -317,6 +344,11 @@ class TreeWalkManager(threading.Thread):
         )
         for worker_control in self._workers:
             worker_control.event_manager.set()
+        for worker_control in self._workers:
+            worker_control.me.terminate()
+            while worker_control.me.is_alive():
+                pass
+            worker_control.me.close()
         self._log_execution_time()
         self._reset()
 
@@ -336,8 +368,8 @@ class TreeWalkManager(threading.Thread):
         )
         communication.database_thread_files_input_commands.put(command)
         communication.database_thread_metadata_input_commands.put(command)
-        _logger.info('TWManager: terminated')
         self._shutdown = True
+        _logger.info('TWManager: terminated')
         return communication.Response(
             success=True,
             message=communication.MANAGER_OK,
@@ -372,11 +404,10 @@ class TreeWalkManager(threading.Thread):
         command = communication.Command(
             command=communication.WORKER_STOP, data=None
         )
-
         for worker_control in self._workers:
             worker_control.command_queue.put(command)
         for worker_control in self._workers:
-            worker_control.event_self.wait(timeout=1) # It can be that the worker already fininshed and was reseted by pause for example, so use timeout here
+            worker_control.event_self.wait(timeout=1)
             worker_control.event_self.clear()
         _logger.info('TWManager (stop): started to stop workers.')
         command = communication.Command(
@@ -390,9 +421,10 @@ class TreeWalkManager(threading.Thread):
         self._event_db_thread_metadata.clear()
         _logger.info('TWManager (stop): all workers and threads stopped.')
         for worker_control in self._workers:
-            clear_queue(worker_control.data_queue)
+            if not worker_control.event_finished.is_set():
+                treewalk.clear_queue(worker_control.data_queue)
+        treewalk.clear_queue_unsafe(communication.database_thread_files_input_data)
         _logger.info('TWManager (stop): cleared data queues.')
-        clear_queue(communication.database_thread_files_input_data)
         for worker_control in self._workers:
             worker_control.event_manager.set()
         for worker_control in self._workers:
@@ -400,7 +432,7 @@ class TreeWalkManager(threading.Thread):
             while worker_control.me.is_alive():
                 pass
             worker_control.me.close()
-        clear_queue(communication.database_thread_files_input_data)
+        treewalk.clear_queue_unsafe(communication.database_thread_files_input_data)
         _logger.info(f'TWManager (stop): Terminated all workers.')
         self._event_db_thread_files_manager.set()
         self._event_db_thread_metadata_manager.set()
@@ -421,16 +453,18 @@ class TreeWalkManager(threading.Thread):
             communication.Response: response object
 
         """
+        response = communication.Response(
+            success=False,
+            message='',
+            command=communication.MANAGER_UNPAUSE
+        )
         self._state.lock()
         try:
             self._state.set_unpaused()
         except treewalk.StateException as err:
+            response.message=f'Attempted to continue. {str(err)}'
             self._state.release()
-            return communication.Response(
-                success=False,
-                message=f'Attempted to continue. {str(err)}',
-                command=communication.MANAGER_UNPAUSE
-            )
+            return response
         command = communication.Command(
             command=communication.WORKER_UNPAUSE, data=None
         )
@@ -446,12 +480,10 @@ class TreeWalkManager(threading.Thread):
             tree_walk_id=self._tree_walk_id,
             status=communication.CRAWL_STATUS_RUNNING
         )
+        response.success = True
+        response.message = communication.MANAGER_OK
         self._state.release()
-        return communication.Response(
-            success=True,
-            message=communication.MANAGER_OK,
-            command=communication.MANAGER_UNPAUSE
-        )
+        return response
 
 
     def _treewalk_pause(self, data: Any) -> communication.Response:
@@ -461,18 +493,25 @@ class TreeWalkManager(threading.Thread):
             communication.Response: response object
 
         """
-        print("HIU")
+        response = communication.Response(
+            success=False,
+            message='',
+            command=communication.MANAGER_PAUSE
+        )
         self._state.lock()
-        print("HUHU")
+        if self._state.is_finished():
+            response.message = (
+                'TreeWalk finished in the meantime. Execution will be finished.'
+            )
+            self._treewalk_finish()
+            self._state.release()
+            return response
         try:
             self._state.set_paused()
         except treewalk.StateException as err:
+            response.message=f'Attempted to pause: {str(err)}'
             self._state.release()
-            return communication.Response(
-                success=False,
-                message=f'Attempted to pause. {str(err)}',
-                command=communication.MANAGER_PAUSE
-            )
+            return response
         command = communication.Command(
             command=communication.WORKER_PAUSE, data=None
         )
@@ -495,12 +534,10 @@ class TreeWalkManager(threading.Thread):
             tree_walk_id=self._tree_walk_id,
             status=communication.CRAWL_STATUS_PAUSED
         )
+        response.success = True
+        response.message = communication.MANAGER_OK
         self._state.release()
-        return communication.Response(
-            success=True,
-            message=communication.MANAGER_OK,
-            command=communication.MANAGER_PAUSE
-        )
+        return response
 
 
     def _treewalk_start(self, config: Config) -> communication.Response:
@@ -550,29 +587,25 @@ class TreeWalkManager(threading.Thread):
             )
             return (db_id, number_of_workers, work_packages)
 
+        response = communication.Response(
+            success=False,
+            message='',
+            command=communication.MANAGER_START
+        )
         self._state.lock()
         if self._state.is_finished():
             self._treewalk_finish()
+            response.message = 'TreeWalk finished in the meantime. Cleaned up.'
             self._state.release()
-            return communication.Response(
-                success=False,
-                message='TreeWalk finished in the meantime. Cleaned up.',
-                command=communication.MANAGER_START
-            )
+            return response
         if self._state.is_paused():
+            response.message = 'Attempted to start when TreeWalk was paused.'
             self._state.release()
-            return communication.Response(
-                success=False,
-                message='Attempted to start when TreeWalk was paused.',
-                command=communication.MANAGER_START
-            )
+            return response
         if self._state.is_running():
+            response.message='Attempted to start when TreeWalk is running.'
             self._state.release()
-            return communication.Response(
-                success=False,
-                message='Attempted to start when TreeWalk is running.',
-                command=communication.MANAGER_START
-            )
+            return response
 
         self._state.set_preparing(config)
         # Prepare the data
@@ -583,8 +616,9 @@ class TreeWalkManager(threading.Thread):
             input_data_queue = multiprocessing.Queue()
             for package in work_packages[id_worker]:
                 input_data_queue.put(package)
+            input_data_queue.put(None)
             input_command_queue = multiprocessing.Queue()
-            event_self, event_manager = communication.get_worker_events()
+            event_self, event_manager, event_finished = communication.get_worker_events()
             worker = treewalk.Worker(
                 identifier=id_worker,
                 input_data_queue=input_data_queue,
@@ -598,7 +632,8 @@ class TreeWalkManager(threading.Thread):
                 db_thread_input_queue_data=communication.database_thread_files_input_data,
                 measure_time=self._measure_time,
                 event_self=event_self,
-                event_manager=event_manager
+                event_manager=event_manager,
+                event_finished=event_finished
             )
             worker_control = WorkerControl(
                 identifier=id_worker,
@@ -606,9 +641,11 @@ class TreeWalkManager(threading.Thread):
                 input_data_queue=input_data_queue,
                 input_command_queue=input_command_queue,
                 event_self=event_self,
-                event_manager=event_manager
+                event_manager=event_manager,
+                event_finished=event_finished
             )
             self._workers.append(worker_control)
+        self._time_start = datetime.now()
         self._treewalk_db_threads_wakeup()
         for worker_control in self._workers:
             worker_control.me.start()
@@ -628,30 +665,3 @@ class TreeWalkManager(threading.Thread):
             message=communication.MANAGER_OK,
             command=communication.MANAGER_START
         )
-
-
-class WorkerControl:
-
-    def __init__(
-        self,
-        identifier: int,
-        worker: multiprocessing.Process,
-        input_data_queue: multiprocessing.Queue,
-        input_command_queue: multiprocessing.Queue,
-        event_self: multiprocessing.Event,
-        event_manager: multiprocessing.Event
-    ):
-        self.identifier = identifier
-        self.me = worker
-        self.data_queue = input_data_queue
-        self.command_queue = input_command_queue
-        self.event_self = event_self
-        self.event_manager = event_manager
-
-
-def clear_queue(q: multiprocessing.Queue):
-    while True:
-        try:
-            q.get(block=False)
-        except queue.Empty:
-            return
