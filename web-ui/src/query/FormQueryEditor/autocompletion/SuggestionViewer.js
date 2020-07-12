@@ -94,6 +94,7 @@ export class SuggestionViewer {
                 lastElement.val($(this).data("adderto"));
                 lastElement.trigger("focusin");
                 lastElement.trigger("focusout");
+                lastElement.removeClass("autocompleteDeactivated");
 
                 let jqThis = $(this);
                 jqThis.parent().find(".filter-adder-message").show();
@@ -102,7 +103,7 @@ export class SuggestionViewer {
                 setTimeout(function () {
                     jqThis.parent().find(".filter-adder-message").hide(600);
                     jqThis.show(600);
-                    lastElement.removeClass("autocompleteDeactivated");
+                    // lastElement.removeClass("autocompleteDeactivated");
                 }, 1000)
 
             });

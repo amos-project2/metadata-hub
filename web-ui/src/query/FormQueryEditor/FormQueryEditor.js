@@ -179,8 +179,25 @@ export class FormQueryEditor extends Page {
 
 
         $(".clear-all").click(function () {
-            thisdata.clearCache();
-            thisdata.reload();
+            // thisdata.clearCache();
+            // thisdata.reload();
+
+            thisdata.advancedFilter.inputMultiplierAdvancedFilterRows.addInputValueOnlyOnce("bla 1", "autocompleteDeactivated");
+            thisdata.advancedFilter.inputMultiplierAdvancedFilterRows.addInputValueOnlyOnce("bla 2", "autocompleteDeactivated");
+            thisdata.advancedFilter.inputMultiplierAdvancedFilterRows.addInputValueOnlyOnce("bla 1", "autocompleteDeactivated");
+            thisdata.advancedFilter.inputMultiplierAdvancedFilterRows.addInputValueOnlyOnce("bla 3", "autocompleteDeactivated");
+            thisdata.advancedFilter.inputMultiplierAdvancedFilterRows.addInputValueOnlyOnce("bla 4", "autocompleteDeactivated");
+            thisdata.advancedFilter.inputMultiplierAdvancedFilterRows.addInputValueOnlyOnce("bla 5", "autocompleteDeactivated");
+            thisdata.advancedFilter.inputMultiplierAdvancedFilterRows.addInputValueOnlyOnce("bla 6", "autocompleteDeactivated");
+            thisdata.advancedFilter.inputMultiplierAdvancedFilterRows.addInputValueOnlyOnce("bla 7", "autocompleteDeactivated");
+            thisdata.advancedFilter.inputMultiplierAdvancedFilterRows.addInputValueOnlyOnce("bla 7", "autocompleteDeactivated");
+            thisdata.advancedFilter.inputMultiplierAdvancedFilterRows.addInputValueOnlyOnce("bla 7", "autocompleteDeactivated");
+
+
+            thisdata.advancedFilter.inputMultiplierAdvancedFilterRows.deleteInputValue("bla 7", "autocompleteDeactivated")
+            thisdata.advancedFilter.inputMultiplierAdvancedFilterRows.deleteInputValue("bla 1", "autocompleteDeactivated")
+            thisdata.advancedFilter.inputMultiplierAdvancedFilterRows.deleteInputValue("bla 5", "autocompleteDeactivated")
+
         });
 
     }
