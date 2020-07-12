@@ -10,10 +10,10 @@ import {AttributSelector} from "./Components/AttributSelector";
 import {DateRangeFilter} from "./Components/DateRangeFilter";
 import {ClearCacheModal} from "./autocompletion/Modals/ClearCacheModal";
 
-export class FormQueryEditor extends Page {
+export class QueryEditor extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         super(parent, identifier, mountpoint, titleSelector);
-        this.title = "Form Query Editor";
+        this.title = "Query Editor";
         this.cacheLevel = 3;
         this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
 

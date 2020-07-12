@@ -1,7 +1,7 @@
 import {Page} from "./Page";
 import {Testname} from "./status/Testname";
 import {GraphiqlConsole} from "./graphiql/Graphiql-console";
-import {FormQueryEditor} from "./query/FormQueryEditor/FormQueryEditor";
+import {QueryEditor} from "./query/FormQueryEditor/QueryEditor";
 import {GraphqlQueryEditor} from "./query/GraphqlQueryEditor";
 import {HashQuery} from "./query/HashQuery";
 import {CrawlerController} from "./crawler/CrawlerController";
@@ -143,15 +143,19 @@ export class Template {
         });
 
 
-        this.addNavGroup(1, "Query", n => {
-            n.addOneNavElement(new NavElement(1, "Form-Query", "form-query", t => {return new FormQueryEditor(t)}));
-            n.addOneNavElement(new NavElement(1, "Hash Query", "hash-query", t => {return new HashQuery(t)}));
-            n.addOneNavElement(new NavElement(1, "GraphQL-Query", "graphql-query", t => {return new GraphqlQueryEditor(t)}));
-
+        this.addNavGroup(1, "Query-Editor", n => {
+            n.addOneNavElement(new NavElement(1, "Query-Editor", "query-editor", t => {return new QueryEditor(t)}));
         });
+
+
+        this.addNavGroup(1, "Hash-Query", n => {
+            n.addOneNavElement(new NavElement(1, "Hash Query", "hash-query", t => {return new HashQuery(t)}));
+        });
+
 
         this.addNavGroup(1, "GraphiQL", n => {
             n.addOneNavElement(new NavElement(1, "GraphiQL-Console", "graphiql-console", t => {return new GraphiqlConsole(t)}));
+            n.addOneNavElement(new NavElement(1, "GraphQL-Query", "graphql-query", t => {return new GraphqlQueryEditor(t)}));
         });
 
         this.addNavGroup(2, "Crawler", n => {
