@@ -1,6 +1,7 @@
 import {Page} from "../Page";
 import {ResultPresenter} from "../ResultPresenter/ResultPresenter";
 import {FormGraphQl} from "./FormQueryEditor/Components/FormGraphQl";
+import {GraphQlIntrospectionModel} from "./FormQueryEditor/Modals/GraphQlIntrospectionModel";
 
 export class HashQuery extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
@@ -8,7 +9,10 @@ export class HashQuery extends Page {
         this.title = "Hash Query";
         this.cacheLevel = 3;
         this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
-        this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
+
+        this.graphQLIntrospectionModal = new GraphQlIntrospectionModel(this.parent.storage, false);
+        this.resultPresenter = new ResultPresenter(this.graphQlFetcher, this.graphQLIntrospectionModal);
+
     }
 
     content() {
@@ -28,25 +32,29 @@ export class HashQuery extends Page {
                 </div>
 
                 <br>
-                <button type="submit" class="btn btn-primary">Send</button>
+                <button type="submit" class="btn btn-success">Send</button>
+                <button type="button" class="btn btn-primary open-hashquery">Open Intermediate Query</button>
 
             </form>
             <br>
              <div class="resultView2">
                 ${this.resultPresenter.getHtml()}
             </div>
+
+            ${this.graphQLIntrospectionModal.getHtmlCode()}
         `;
     }
 
     onMount() {
         let thisdata = this;
 
+        this.graphQLIntrospectionModal.onMount();
         this.resultPresenter.onMount();
 
         $(".q-send-hash-editor").submit(function (event) {
             event.preventDefault();
             let formGraphQl = thisdata.getQuery();
-            thisdata.resultPresenter.generateResultAndInjectIntoDom(formGraphQl.generateAndGetGraphQlCode());
+            //thisdata.resultPresenter.generateResultAndInjectIntoDom(formGraphQl.generateAndGetGraphQlCode());
             thisdata.resultPresenter.updateState(formGraphQl)
         });
 
@@ -66,6 +74,10 @@ export class HashQuery extends Page {
             };
 
             reader.readAsArrayBuffer(file);
+        });
+
+        $(".open-hashquery").click(function () {
+            thisdata.graphQLIntrospectionModal.openModalWithContent(thisdata.getQuery().generateAndGetGraphQlCode());
         });
 
     }
