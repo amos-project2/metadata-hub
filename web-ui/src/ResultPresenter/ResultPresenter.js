@@ -268,7 +268,7 @@ export class ResultPresenter {
         this.preLoad();
 
         this.graphQlFetcher.fetchAdvanced(query, function (sucess, json, jsonString) {
-            if (sucess && json.data.searchForFileMetadata && !json.error) {
+            if (sucess && json.data.searchForFileMetadata && !json.error && !json.data.searchForFileMetadata.error) {
                 thisdata.updateInternalState(formGraphQL, json);
                 // thisdata.jsonOutput.updateText(jsonString);
                 // thisdata.tableOutput.updateState(formGraphQL, json);
@@ -279,7 +279,17 @@ export class ResultPresenter {
                     info: "",
                 };
                 thisdata.updateError(err);
-            } else {
+            } else if(json.error) {
+                let err = {
+                    message: json.error,
+                    info: "",
+                };
+                thisdata.updateError(json);
+            }else{
+                let err = {
+                    message: json.data.searchForFileMetadata.error.message,
+                    info: json.data.searchForFileMetadata.stack_trace,
+                };
                 thisdata.updateError(json);
             }
 
