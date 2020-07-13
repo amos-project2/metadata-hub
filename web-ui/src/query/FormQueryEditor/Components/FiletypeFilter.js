@@ -58,7 +58,7 @@ export class FiletypeFilter {
         let thisdata = this;
         let emptyFunction = function () {};
 
-        let appendingHtmlCode = `<div class="form-group col-md-4 fg-filetype-element"><input type="text" class="form-control filetype-element-input"></div>`;
+        let appendingHtmlCode = `<div class="form-group col-md-4 fg-filetype-element"><input type="text" class="form-control filetype-element-input save-element" data-name="t1" data-multiplier="true"></div>`;
 
         let focusOutFunction = function () {
             thisdata.metadatAutocompletion.updateLists();

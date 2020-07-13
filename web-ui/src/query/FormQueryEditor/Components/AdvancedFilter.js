@@ -23,7 +23,7 @@ export class AdvancedFilter {
                 <div class="form-row justify-content-md-center">
                     <div class="form-group col-md-2">
                     <label for="fg-filter-connector-options">Filter Connector<a class="pover-filter-connector" style="cursor:pointer; color: #007bff;">[?]</a></label>
-                        <select class="custom-select fg-filter-connector-options" id="fg-filter-connector-options">
+                        <select class="custom-select fg-filter-connector-options save-element" data-name="f1" id="fg-filter-connector-options">
                                 <option value="all-and" selected>ALL AND</option>
                                 <option value="all-or">ALL OR</option>
                                 <option value="custom-only">Custom Only</option>
@@ -48,7 +48,7 @@ export class AdvancedFilter {
                  <div class="form-row fq-custom-filter-connector-row" style="display:none">
                     <div class="form-group col-md-12">
                         <label for="fq-custom-filter-connector">Custom Filter<a class="pover" title="Custom Filter" data-content="Here you can type in your own bool-expression: Example ((f1 AND f2) OR (f3 AND NOT f0)) AND f5">[?]</a></label>
-                        <input type="text" class="form-control" id="fq-custom-filter-connector" value="">
+                        <input type="text" class="form-control save-element" data-name="f2" id="fq-custom-filter-connector" value="">
                     </div>
                 </div>
 
@@ -65,7 +65,7 @@ export class AdvancedFilter {
             <div class="form-row">
                 <div class="input-group mb-3">
                     <div class="input-group-prepend">
-                        <select class="custom-select fg-filter-function">
+                        <select class="custom-select fg-filter-function save-element" data-name="f3" data-multiplier="true">
                             <option selected value="included">Pattern included</option>
                             <option value="excluded">Pattern excluded</option>
                             <option value="equal">Equal</option>
@@ -73,12 +73,9 @@ export class AdvancedFilter {
                             <option value="bigger">Greather Than</option>
                             <option value="smaller">Lower Than</option>
                         </select>
-                        <div class="input-group-text" style="display:none;">
-                            <input type="checkbox" checked class="fg-include-exclude">
-                        </div>
                     </div>
-                    <input type="text" class="form-control fg-metadata-attribute" placeholder="Metadata-Attribute">
-                    <input type="text" class="form-control fg-metadata-value" placeholder="Value">
+                    <input type="text" class="form-control fg-metadata-attribute save-element" data-name="f4" data-multiplier="true" placeholder="Metadata-Attribute">
+                    <input type="text" class="form-control fg-metadata-value save-element" data-name="f5" data-multiplier="true" placeholder="Value">
                     <div class="input-group-append function-name-appender" style="display:none;">
                         <span class="input-group-text font-weight-bold function-name-appender-value" style="color:#ff0000;">f1</span>
                     </div>
