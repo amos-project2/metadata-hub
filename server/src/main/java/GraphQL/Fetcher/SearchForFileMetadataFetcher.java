@@ -60,7 +60,7 @@ public class SearchForFileMetadataFetcher implements DataFetcher
             graphQLException.printStackTrace();
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
-//            graphQLException.printStackTrace(pw);
+            graphQLException.printStackTrace(pw);
 
             return new GraphQL.Model.ResultSet(new Error(graphQLException.getMessage(), sw.toString()));
         }catch (Exception exception){
@@ -68,7 +68,7 @@ public class SearchForFileMetadataFetcher implements DataFetcher
             exception.printStackTrace();
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
-//            exception.printStackTrace(pw);
+            exception.printStackTrace(pw);
 
             return new GraphQL.Model.ResultSet(new Error("Uhh, unexpected error occurred! :(", sw.toString()));
         }
