@@ -4,6 +4,13 @@ The worker process is implemented as a process instead of a thread because
 of the Python GIL that prevents threads from parallel execution.
 Running the exiftool and hashing files is a CPU-bounded task, thus processes
 are required for speeding up the execution time.
+
+The workers is running as long as there are work packages to process in the
+data queue or it is retrieving a command from the manager. The last item in the
+data queue is None, signalling that the work is done. Upon finishing execution,
+the worker processes communicate with each other who finished last. This worker
+puts a special item into the data queue of the DB thread that signals that the
+extracting work is done.
 """
 
 # Python imports
@@ -82,7 +89,15 @@ class Worker(multiprocessing.Process):
             self._work_packages_done.value += 1
 
 
-    def msg(self, message: str):
+    def msg(self, message: str) -> None:
+        """Print a debug message to the console.
+
+        TODO: should be replaced with proper logging.
+
+        Args:
+            message (str): message to display
+
+        """
         if Worker.DEBUG:
             print(f'Worker {self._identifier}: {message}')
 
@@ -194,7 +209,7 @@ class Worker(multiprocessing.Process):
         # Run the exiftool
         metadata = self.run_exiftool(package)
         if metadata is None:
-            # TODO: Error logging
+            self.msg('An error occured while running the ExifTool.')
             self.increase_work_done()
             return
         # Create inserts
@@ -205,8 +220,9 @@ class Worker(multiprocessing.Process):
             insert_values = utils.create_insert(self._tree_walk_id, result)
             # Check if result is valid
             if insert_values[0] == 0:
-                # FIXME
-                # self._logger.warning('Can\'t insert element into database because validity check failed.')
+                self.msg(
+                    'Can\'t insert element into DB because validity check failed.'
+                )
                 continue
             # compute the hash256 and add it to the values string
             with open(f"{result['Directory']}/{result['FileName']}".replace("\'\'", "\'"), "rb") as file:

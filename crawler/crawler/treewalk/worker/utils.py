@@ -1,16 +1,24 @@
+"""Helper functions for the worker."""
 
+
+# Python imports
 import json
 from typing import Dict, Tuple
 
+
 def create_metadata_list(exif_output: json) -> Dict:
-    """Creates an easy to process dictionary for updating the 'metadata' table in the database
+    """Creates an easy to process dictionary for updating the 'metadata' table.
+
+    Loop over every tag for each file in the ExifTool output and add them to
+    the dictionary.
 
     Args:
         exif_output (json): The output from the ExifTool output.
+
     Returns:
         Dict: key: file type | value: Dict: key: tag value: count
+
     """
-    # Loop over every tag for each file in the ExifTool output and add them to the dictionary
     tag_values = {}
     for single_output in exif_output:
         fileType = single_output['FileType']
@@ -27,12 +35,15 @@ def create_metadata_list(exif_output: json) -> Dict:
     return tag_values
 
 
-def output_type(to_check: str):
-    """Determine whether the output value of a file is a digit or a string
+def output_type(to_check: str) -> str:
+    """Determine whether the output value of a file is a digit or a string.
+
     Args:
         to_check (str): The string variant of the value
+
     Returns:
-        float representation if conversion is possible, string otherwise
+        str: 'dig' if conversion was successful, 'str' otherwise
+
     """
     try:
         checked = float(to_check)
@@ -52,11 +63,11 @@ def create_insert(crawl_id: int, exif: json) -> Tuple[str]:
         str: string with the extracted values
 
     """
-    # Make validity check (if any of these are missing, the element can't be inserted into the database)
+    # Make validity check (if any of these are missing,
+    # the element can't be inserted into the database)
     for element in ['Directory', 'FileName']:
         if element not in exif:
             return (0,)
-
     # Create tuple for values
     insert_values = (crawl_id,)
 
@@ -73,7 +84,9 @@ def create_insert(crawl_id: int, exif: json) -> Tuple[str]:
         except:
             insert_values += (None,)
     try:
-        # TODO better fix than dumping the json in the worker (after extracting the single file tags)
+        # TODO
+        # better fix than dumping the json in the worker
+        # (after extracting the single file tags)
         insert_values += (json.dumps(exif),)
     except:
         insert_values += ('NULL',)
