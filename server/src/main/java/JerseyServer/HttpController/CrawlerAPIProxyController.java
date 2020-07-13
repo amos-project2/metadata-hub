@@ -1,4 +1,4 @@
-package HttpController;
+package JerseyServer.HttpController;
 
 import Config.Config;
 import com.google.inject.Inject;
@@ -12,7 +12,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.*;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Map;
 
 /**
  *

@@ -1,4 +1,4 @@
-package HttpController;
+package JerseyServer.HttpController;
 
 import Database.Database;
 import com.google.inject.Inject;
