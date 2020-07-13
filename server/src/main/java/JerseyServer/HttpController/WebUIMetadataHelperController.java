@@ -1,10 +1,10 @@
-package HttpController;
+package JerseyServer.HttpController;
 
 import Config.Config;
 import GraphQL.Fetcher.QueryCache;
 import Database.DatabaseException;
-import MetadataAutocompletion.FileTypeAutocompletionService;
-import MetadataAutocompletion.MetadataInfoService;
+import QueryServices.MetadataAutocompletion.FileTypeAutocompletionService;
+import QueryServices.MetadataAutocompletion.MetadataInfoService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;

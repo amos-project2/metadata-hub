@@ -1,4 +1,4 @@
-package MetadataAutocompletion;
+package QueryServices.MetadataAutocompletion;
 
 import Database.Database;
 import Database.Model.MetadataInfo;

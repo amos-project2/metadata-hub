@@ -1,4 +1,4 @@
-package HttpController;
+package JerseyServer.HttpController;
 
 import Config.Config;
 import Utilities.ClassPathFileLoader;

@@ -1,4 +1,4 @@
-package HttpController;
+package JerseyServer.HttpController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
