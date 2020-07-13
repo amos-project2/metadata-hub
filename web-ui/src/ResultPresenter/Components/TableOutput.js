@@ -74,6 +74,9 @@ export class TableOutput {
         //alert(json.data.searchForFileMetadata.files[0].metadata[0].name);
 
         let files = json.data.searchForFileMetadata.files;
+        if (!files) {
+            files = [];
+        }
 
         structure["#"] = firstSeenCount;
         firstSeenCount++;
