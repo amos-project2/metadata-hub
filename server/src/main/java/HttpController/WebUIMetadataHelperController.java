@@ -1,6 +1,7 @@
 package HttpController;
 
 import Config.Config;
+import GraphQL.Fetcher.QueryCache;
 import Database.DatabaseException;
 import MetadataAutocompletion.FileTypeAutocompletionService;
 import MetadataAutocompletion.MetadataInfoService;
@@ -30,15 +31,18 @@ public class WebUIMetadataHelperController
     private final Config config;
     private final MetadataInfoService metadataInfoService;
     private final FileTypeAutocompletionService fileTypeAutocompletionService;
+    private final QueryCache queryCache;
 
     @Inject
     public WebUIMetadataHelperController(Config config,
                                          MetadataInfoService metadataInfoService,
-                                         FileTypeAutocompletionService fileTypeAutocompletionService)
+                                         FileTypeAutocompletionService fileTypeAutocompletionService,
+                                         QueryCache queryCache)
     {
         this.config = config;
         this.metadataInfoService = metadataInfoService;
         this.fileTypeAutocompletionService = fileTypeAutocompletionService;
+        this.queryCache = queryCache;
     }
 
     @GET
@@ -128,6 +132,8 @@ public class WebUIMetadataHelperController
     }
 
 
+
+    //TODO maybe move to a own controller, because its not anymore still autocompletion related
     @GET
     @Produces("application/json")
     @Path("/clear-cache")
@@ -135,6 +141,7 @@ public class WebUIMetadataHelperController
     {
         log.info("clear-cache");
         this.metadataInfoService.cleanCache();
+        this.queryCache.clearCache();
         return "";
     }
 

@@ -2,6 +2,7 @@ import {JsonOutput} from "./Components/JsonOutput";
 import {TableOutput} from "./Components/TableOutput";
 import {ExportOutput} from "./Components/ExportOutput";
 import {ControllUnits} from "./Components/ControllUnits";
+import {DetailViewModal} from "./Modal/DetailViewModal";
 
 export class ResultPresenter {
 
@@ -13,17 +14,20 @@ export class ResultPresenter {
         return this.count || 0;
     }
 
-    constructor(graphQlFetcher) {
+    constructor(graphQlFetcher, graphQLIntrospectionModal) {
         ResultPresenter.increaseCount();
         this.id = "ResultPresenter-" + ResultPresenter.getCount();
         this.pSelector = $("#" + this.id);
         this.graphQlFetcher = graphQlFetcher;
 
-        this.controllUnits = new ControllUnits("result-presenter" + this.id, this);
+        this.controllUnits = new ControllUnits("result-presenter" + this.id, this, graphQLIntrospectionModal);
+        this.viewModal = new DetailViewModal(this.graphQlFetcher);
 
         this.jsonOutput = new JsonOutput();
-        this.tableOutput = new TableOutput(this, this.controllUnits);
+        this.tableOutput = new TableOutput(this, this.controllUnits, this.viewModal);
         this.exportOutput = new ExportOutput();
+
+
 
         this.cleared = true;
         this.lastTotalFiles = -1;
@@ -31,6 +35,8 @@ export class ResultPresenter {
     }
 
     onMount() {
+
+        this.viewModal.onMount();
 
         this.pSelector = $("#" + this.id);
 
@@ -248,6 +254,10 @@ export class ResultPresenter {
         this.controllUnits.reinitialize(formGraphQL, json);
         this.tableOutput.reinitialize();
 
+        if (totalFiles < 3) {
+            this.controllUnits.hidePaginatorAndSelectBox()
+        }
+
     }
 
     //private
@@ -258,7 +268,7 @@ export class ResultPresenter {
         this.preLoad();
 
         this.graphQlFetcher.fetchAdvanced(query, function (sucess, json, jsonString) {
-            if (sucess && json.data.searchForFileMetadata && !json.error) {
+            if (sucess && json.data.searchForFileMetadata && !json.error && !json.data.searchForFileMetadata.error) {
                 thisdata.updateInternalState(formGraphQL, json);
                 // thisdata.jsonOutput.updateText(jsonString);
                 // thisdata.tableOutput.updateState(formGraphQL, json);
@@ -269,7 +279,17 @@ export class ResultPresenter {
                     info: "",
                 };
                 thisdata.updateError(err);
-            } else {
+            } else if(json.error) {
+                let err = {
+                    message: json.error,
+                    info: "",
+                };
+                thisdata.updateError(json);
+            }else{
+                let err = {
+                    message: json.data.searchForFileMetadata.error.message,
+                    info: json.data.searchForFileMetadata.stack_trace,
+                };
                 thisdata.updateError(json);
             }
 

@@ -119,10 +119,6 @@ export class Page {
             html: true
         });
 
-        $(function () {
-            $('[data-toggle="tooltip"]').tooltip()
-        })
-
 
     }
 

@@ -19,8 +19,8 @@ export class ClearCacheModal {
                             </button>
                         </div>
                         <div class="modal-body">
-                            The Autocompletion-Cache is cleared automatically after each 60min. Now you forced to clear it.<br><br>
-                            It was succesfully cleared.
+                            Different Caches (Autocompletion, Query-Cache, ...) are cleared automatically after a certain amount of time.<br> Now you forced to clear it.<br><br>
+                            <span class="text-success font-weight-bold">It was succesfully cleared.</span>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>

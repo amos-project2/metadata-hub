@@ -100,7 +100,7 @@ public class QueryCache
     }
 
 
-    private void clearCache()
+    public void clearCache()
     {
         cache.clear();
     }

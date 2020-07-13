@@ -8,6 +8,7 @@ import graphql.GraphQL;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
@@ -29,7 +30,8 @@ public class JerseyServerImpl implements HttpServer
     public JerseyServerImpl(GraphQL graphQl, Config config,
                             GraphQLController c0, TestConsoleController c1,
                             WebUIController c2, CrawlerAPIProxyController c3,
-                            WebUIMetadataHelperController c4
+                            WebUIMetadataHelperController c4, ExportController c5,
+                            QueryEditorStorageController c6
     )
     {
         this.config = config;
@@ -43,6 +45,8 @@ public class JerseyServerImpl implements HttpServer
         resourceConfig.register(c2);
         resourceConfig.register(c3);
         resourceConfig.register(c4);
+        resourceConfig.register(c5);
+        resourceConfig.register(c6);
 
         resourceConfig.register(ErrorHandler.class);
         this.server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, resourceConfig, false);

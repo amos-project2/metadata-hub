@@ -8,15 +8,22 @@ import {FormGraphQl} from "./Components/FormGraphQl";
 import {FiletypeFilter} from "./Components/FiletypeFilter";
 import {AttributSelector} from "./Components/AttributSelector";
 import {DateRangeFilter} from "./Components/DateRangeFilter";
+import {ClearCacheModal} from "./autocompletion/Modals/ClearCacheModal";
+import {FileTypeCategoriesService} from "./FileTypeCategories/FileTypeCategoriesService";
 
-export class FormQueryEditor extends Page {
+export class QueryEditor extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         super(parent, identifier, mountpoint, titleSelector);
-        this.title = "Form Query Editor";
+        this.title = "Query Editor";
         this.cacheLevel = 3;
         this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
-        this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
-        this.graphQLIntrospectionModal = new GraphQlIntrospectionModel()
+
+        this.graphQLIntrospectionModal = new GraphQlIntrospectionModel(this.parent.storage, true);
+        this.resultPresenter = new ResultPresenter(this.graphQlFetcher, this.graphQLIntrospectionModal);
+        this.clearCacheModal = new ClearCacheModal();
+        this.clearCacheSelector = ".modalClearCache";
+
+        this.fileTypeCategoriesService = new FileTypeCategoriesService();
 
         this.metadatAutocompletion = new MetadataAutocompletion(
             this.parent.dependencies.restApiFetcherServer,
@@ -25,13 +32,15 @@ export class FormQueryEditor extends Page {
             ".fg-metadata-attribute",
             ".attribut-element-input",
             ".modalOpenerSelector",
-            ".modalClearCache"
         );
 
         this.dateRangeFilter = new DateRangeFilter();
         this.filetypeFilter = new FiletypeFilter(this.metadatAutocompletion);
         this.advancedFilter = new AdvancedFilter(this.metadatAutocompletion);
         this.attributSelector = new AttributSelector(this.metadatAutocompletion);
+
+        this.metadatAutocompletion.addAdvancedFilter(this.advancedFilter);
+        this.metadatAutocompletion.addAttributSelector(this.attributSelector);
 
     }
 
@@ -102,10 +111,10 @@ export class FormQueryEditor extends Page {
                     </div>
                 </div>
 
-                <div class="form-row">
+                <div class="form-row" style="display: none;">
                     <div class="form-group col-md-12">
                         <label for="fq-limit">Limit <a class="pover" title="Limit" data-content="The max output limit.<br>Empty means no limit.">[?]</a></label>
-                        <input type="text"  class="form-control" id="fq-limit" value="3">
+                        <input type="text"  class="form-control" id="fq-limit" value="2">
                     </div>
                 </div>
 
@@ -125,9 +134,10 @@ export class FormQueryEditor extends Page {
 
                 <!--     Controll-Buttons           -->
 
-                <button type="submit" class="btn btn-primary">Send</button>
-                <button type="button" class="btn btn-primary open-query">Open Query</button>
-                <button type="button" class="btn btn-primary send-to-graphiql">Send to GraphiQL</button>
+                <button type="submit" class="btn btn-success">Send</button>
+                <button type="button" class="btn btn-primary open-query">Open Intermediate Query</button>
+                <button type="button" class="btn btn-success save-editor">Save Editor</button>
+                <button type="button" class="btn btn-danger modalClearCache">Clear Cache</button>
                 <button type="button" class="btn btn-primary clear-all">Clear All</button>
             </form>
             <br>
@@ -137,15 +147,20 @@ export class FormQueryEditor extends Page {
 
 
             ${this.graphQLIntrospectionModal.getHtmlCode()}
+            ${this.fileTypeCategoriesService.getModalHtml()}
+            ${this.resultPresenter.viewModal.getHtmlCode()}
 
             ${this.metadatAutocompletion.getSuggestionViewer().getStaticModalHtml()}
-            ${this.metadatAutocompletion.getStaticModalHtmlClearCache()}
+            ${this.clearCacheModal.getHtmlCode()}
 
             `;
 
     }
 
     onMount() {
+
+        this.graphQLIntrospectionModal.onMount();
+        this.clearCacheModalOpenerAndRequest();
 
         this.resultPresenter.onMount();
 
@@ -171,12 +186,8 @@ export class FormQueryEditor extends Page {
             thisdata.graphQLIntrospectionModal.openModalWithContent(thisdata.buildAndGetGraphQlQuery().generateAndGetGraphQlCode());
         });
 
-        $(".send-to-graphiql").click(function () {
-
-            thisdata.parent.storage.query_inject = thisdata.buildAndGetGraphQlQuery().generateAndGetGraphQlCode();
-            thisdata.parent.storage.openedFromEditor = true;
-            $("#nav-element-graphiql-console").trigger("click");
-
+        $(".save-editor").click(function () {
+            alert("coming soon");// TODO
         });
 
 
@@ -224,6 +235,15 @@ export class FormQueryEditor extends Page {
 
         return formGraphQl;//.generateAndGetGraphQlCode();
     }
+
+    clearCacheModalOpenerAndRequest() {
+        let thisdata = this;
+        $(this.clearCacheSelector).click(function () {
+            thisdata.clearCacheModal.openModal();
+            thisdata.restApiFetcherServer.fetchGet(`metadata-autocomplete/clear-cache/`, function (event) {});
+        });
+    }
+
 
 
     onUnMount() {

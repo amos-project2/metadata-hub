@@ -15,21 +15,29 @@ export class MetadataAutocompletion {
 
     constructor(restApiFetcherServer, graphQlFetcher, fileTypesSelector,
                 currentFilterListSelector, currentMetadataListSelector, suggestionWindowOpenerSelector,
-                clearCacheSelector) {
+    ) {
+        this.advancedFilter = null;
+        this.attributSelector = null;
         this.restApiFetcherServer = restApiFetcherServer;
         this.graphQlFetcher = graphQlFetcher;
         this.fileTypesSelector = fileTypesSelector;
         this.currentFilterListSelector = currentFilterListSelector;
         this.currentMetadataListSelector = currentMetadataListSelector;
-        this.clearCacheSelector = clearCacheSelector;
 
-        this.clearCacheModal = new ClearCacheModal();
         this.suggestionViewer = new SuggestionViewer(this, restApiFetcherServer, suggestionWindowOpenerSelector);
 
         this.fileTypes = [];
         this.filter = [];
         this.metadata = [];
 
+    }
+
+    addAdvancedFilter(advancedFilter) {
+        this.advancedFilter = advancedFilter;
+    }
+
+    addAttributSelector(attributSelector) {
+        this.attributSelector = attributSelector;
     }
 
     getSuggestionViewer() {
@@ -41,7 +49,6 @@ export class MetadataAutocompletion {
 
         let thisdata = this;
         this.suggestionViewer.addListener();
-        this.clearCacheModalOpenerAndRequest();
         this.reAddListener();
     }
 
@@ -210,21 +217,5 @@ export class MetadataAutocompletion {
         // );
 
     }
-
-    clearCacheModalOpenerAndRequest() {
-        let thisdata = this;
-        $(this.clearCacheSelector).click(function () {
-            thisdata.clearCacheModal.openModal();
-            thisdata.restApiFetcherServer.fetchGet(`metadata-autocomplete/clear-cache/`, function (event) {});
-        });
-    }
-
-
-    //public
-    //delegate
-    getStaticModalHtmlClearCache() {
-        return this.clearCacheModal.getHtmlCode();
-    }
-
 
 }

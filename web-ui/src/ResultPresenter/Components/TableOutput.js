@@ -5,9 +5,10 @@ import {Paginator} from "./Paginator";
 export class TableOutput {
 
 
-    constructor(resultPresenter, controllunits) {
+    constructor(resultPresenter, controllunits, viewModal) {
         this.resultPresenter = resultPresenter;
         this.controllunits = controllunits;
+        this.viewModal = viewModal;
     }
 
 
@@ -73,6 +74,9 @@ export class TableOutput {
         //alert(json.data.searchForFileMetadata.files[0].metadata[0].name);
 
         let files = json.data.searchForFileMetadata.files;
+        if (!files) {
+            files = [];
+        }
 
         structure["#"] = firstSeenCount;
         firstSeenCount++;
@@ -141,12 +145,12 @@ export class TableOutput {
         let tmpContainer = "";
 
         data.forEach(value => {
-            content += "<tr>";
+            content += `<tr class="rel" data-rid="${value["id"]}" style="cursor: pointer">`;
 
             structureReverseMap.forEach(column => {
                 tmpContainer = value[column];
                 if (tmpContainer === undefined) tmpContainer = "NULL";
-                content += `<td>${tmpContainer}</td>`;
+                content += `<td class="detail-view-element">${tmpContainer}</td>`;
 
             });
 
@@ -181,12 +185,12 @@ export class TableOutput {
         }
 
 
-        this.registerListener(formGraphQL);
+        this.registerListener(formGraphQL, structureReverseMap);
 
 
     }
 
-    registerListener(formGraphQL) {
+    registerListener(formGraphQL, structureReverseMap) {
 
         let thisdata = this;
 
@@ -195,14 +199,33 @@ export class TableOutput {
             let attribute = $(this).data("value");
             let sorting = formGraphQL.sortingIntern;
 
-            if (sorting.asc && sorting.attribute===attribute) {
+            if (sorting.asc && sorting.attribute === attribute) {
                 formGraphQL.setSorting({attribute: attribute, asc: false});
             } else {
                 formGraphQL.setSorting({attribute: attribute, asc: true});
             }
 
             thisdata.resultPresenter.sendToServerAndAdjust(formGraphQL);
-        })
+        });
+
+        this.pSelector.find(".rel").click(function () {
+            let rowId = $(this).data("rid");
+            let jqData = $(this).find("td");
+
+            let dataArray = [];
+
+            let counter = -1;
+            jqData.each(function () {
+                counter++;
+                dataArray.push({
+                    key: structureReverseMap[counter],
+                    data: $(this).html()
+                });
+            });
+            thisdata.viewModal.openModalWithData(rowId, dataArray);
+        });
+
+
     }
 
 
