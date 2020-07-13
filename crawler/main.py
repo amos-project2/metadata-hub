@@ -85,7 +85,6 @@ if __name__ == '__main__':
     thread_db_files.start()
     thread_db_metadata.start()
     # Joining them on shutdown
-
     thread_api.join()
     _logger.info('MAIN: joined TWApi')
     thread_db_metadata.join()
@@ -96,5 +95,3 @@ if __name__ == '__main__':
     _logger.info('MAIN: joined TWManager')
     thread_treewalk_scheduler.join()
     _logger.info('MAIN: joined TWScheduler')
-    exit(0)
-
