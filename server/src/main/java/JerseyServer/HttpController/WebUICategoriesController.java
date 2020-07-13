@@ -7,15 +7,23 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @Singleton
 @Path("/api/categoryService/")
 public class WebUICategoriesController {
 
+
+    private static final Logger log = LoggerFactory.getLogger(WebUICategoriesController.class);
 
     private final Config config;
     private final FileCategoryService categoryService;
@@ -30,56 +38,66 @@ public class WebUICategoriesController {
     @GET
     @Produces("application/json")
     @Path("/")
-    public String getAllCategories() throws JsonProcessingException, DatabaseException, SQLException {
+    public String getAllCategories() throws IOException, DatabaseException, SQLException {
 
-        List<String> categories = categoryService.getAllCategories();
+        Map<String, List<String>> categories = categoryService.getAllCategories();
 
         String jsonCategories = new ObjectMapper().writeValueAsString(categories);
 
+        log.info("getAllCategories: " + jsonCategories);
         return jsonCategories;
     }
-
-    @GET
-    @Produces("application/json")
-    @Path("/")
-    public String getFileTypesOfCategory(@QueryParam("category") String category) throws JsonProcessingException{
-
-        List<String> fileTypes = categoryService.getFileTypesOfCategory(category);
-
-        String jsonCategories = new ObjectMapper().writeValueAsString(fileTypes);
-
-        return jsonCategories;
-    }
-
 
     @POST
-    @Path("/admin/")
-    public void createCategory(@QueryParam("category") String category,
-                                     @QueryParam("file_types") List<String> file_types){
-        categoryService.createCategory(category, file_types);
+    @Path("/admin/{category}")
+    public boolean createCategory(@PathParam("category") String category,
+                                     @QueryParam("file_types") String file_types) throws DatabaseException, SQLException {
+
+        List<String> fileTypesList = createList(file_types);
+        categoryService.createCategory(category, fileTypesList);
+        log.info("CreateCategory: " + category + " + " + file_types);
+        return true;
     }
 
     @DELETE
-    @Path("/admin/")
-    public void deleteCategory(@QueryParam("category") String category){
+    @Path("/admin/{category}")
+    public boolean deleteCategory(@PathParam("category") String category) throws DatabaseException, SQLException {
         categoryService.deleteCategory(category);
+        log.info("DeleteCategory: " + category);
+        return true;
     }
 
     @PUT
     @Path("/admin/")
-    public void renameCategory(@QueryParam("oldName") String oldName, @QueryParam("newName") String newName){
+    public boolean renameCategory(@QueryParam("oldName") String oldName, @QueryParam("newName") String newName) throws DatabaseException, SQLException {
         categoryService.renameCategory(oldName, newName);
+        log.info("RenameCategory: " + oldName + " to " + newName);
+        return true;
     }
 
     @PUT
-    @Path("/admin/")
-    public void addTypeToCategory(@QueryParam("category") String category, @QueryParam("file_type") String file_type){
+    @Path("/admin/{category}/{file_type}")
+    public boolean addTypeToCategory(@PathParam("category") String category, @QueryParam("file_type") String file_type){
         categoryService.addTypeToCategory(category, file_type);
+        return true;
     }
 
     @DELETE
-    @Path("/admin/")
-    public void deleteTypeFromCategory(@QueryParam("category") String category, @QueryParam("file_type") String file_type){
+    @Path("/admin/{category}/{file_type}")
+    public boolean deleteTypeFromCategory(@PathParam("category") String category, @PathParam("file_type") String file_type){
         categoryService.deleteTypeFromCategory(category, file_type);
+        return true;
+    }
+
+    private List<String> createList(String data)
+    {
+        return createList(data, false);
+    }
+
+    private List<String> createList(String data, boolean bigX)
+    {
+        String x = "x";
+        if (bigX) x = "X";
+        return (data.equals("")) ? new ArrayList<>() : Arrays.asList(data.split("\\$" + x + "\\$"));
     }
 }
