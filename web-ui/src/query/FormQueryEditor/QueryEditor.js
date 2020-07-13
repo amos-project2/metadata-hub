@@ -10,6 +10,7 @@ import {AttributSelector} from "./Components/AttributSelector";
 import {DateRangeFilter} from "./Components/DateRangeFilter";
 import {ClearCacheModal} from "./autocompletion/Modals/ClearCacheModal";
 import {FileTypeCategoriesService} from "./FileTypeCategories/FileTypeCategoriesService";
+import {StoreService} from "./QueryStore/StoreService";
 
 export class QueryEditor extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
@@ -42,6 +43,8 @@ export class QueryEditor extends Page {
         this.metadatAutocompletion.addAdvancedFilter(this.advancedFilter);
         this.metadatAutocompletion.addAttributSelector(this.attributSelector);
 
+        this.storeService = new StoreService(this);
+
     }
 
 
@@ -58,11 +61,11 @@ export class QueryEditor extends Page {
 
                     <div class="form-group col-md-6">
                         <label for="fq-query-Name">Query-Name <a class="pover" title="Query-Name" data-content="The Name, which is saved with the query here into the database to find it later again.">[?]</a></label>
-                        <input type="text" class="form-control" id="fq-query-Name" value="searchForFileMetadata">
+                        <input type="text" class="form-control save-element" data-name="g1" id="fq-query-Name" value="searchForFileMetadata">
                     </div>
                     <div class="form-group col-md-6">
                         <label for="fq-owner">Owner <a class="pover" title="Owner" data-content="The Owner, which is saved with the query here into the database.">[?]</a></label>
-                        <input type="text" class="form-control" id="fq-owner" value="${localStorage.getItem("username")}" disabled>
+                        <input type="text" class="form-control save-author" data-name="g2" id="fq-owner" value="${localStorage.getItem("username")}" disabled>
                     </div>
                 </div>
 
@@ -119,7 +122,7 @@ export class QueryEditor extends Page {
                 </div>
 
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="fq-showDeleted">
+                    <input class="form-check-input save-element" data-name="g3" type="checkbox" value="" id="fq-showDeleted">
                     <label class="form-check-label" for="fq-showDeleted">
                         Show deleted files
                         <a class="pover" title="Show deleted files" data-content="If checked deleted files that are still in the database are also shown.">[?]</a>
@@ -177,6 +180,7 @@ export class QueryEditor extends Page {
 
         $(".q-send-query-form-editor").submit(function (event) {
             event.preventDefault();
+            thisdata.storeService.saveEditor();
             let formGraphQL = thisdata.buildAndGetGraphQlQuery();
             thisdata.resultPresenter.generateResultAndInjectIntoDom(formGraphQL.generateAndGetGraphQlCode());
             thisdata.resultPresenter.updateState(formGraphQL);
@@ -187,7 +191,8 @@ export class QueryEditor extends Page {
         });
 
         $(".save-editor").click(function () {
-            alert("coming soon");// TODO
+            thisdata.storeService.saveEditor();
+            //TODO open Save-Confirm-Modal
         });
 
 
