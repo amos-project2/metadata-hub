@@ -1,3 +1,5 @@
+import {FormGraphQl} from "../../query/FormQueryEditor/Components/FormGraphQl";
+
 export class ExportOutput {
 
     static increaseCount() {
@@ -12,6 +14,7 @@ export class ExportOutput {
     constructor() {
         this.id = "export-" + ExportOutput.increaseCount();
         this.pSelector = null;
+        this.lastformGraphQL = null;
     }
 
     getMainHtmlCode() {
@@ -20,7 +23,7 @@ export class ExportOutput {
             <hr>
             <div id="${this.id}">
                 <br>
-                <div class="mx-auto" style="width: 290px;">
+                <div class="mx-auto init-area" style="width: 290px;">
                     <div class="form-check mb-4">
                         <input class="form-check-input" type="checkbox" value="" id="meta-all${this.id}">
                         <label class="form-check-label" for="meta-all${this.id}">
@@ -40,16 +43,50 @@ export class ExportOutput {
                         </label>
                     </div>
                     <div class="col text-center mb-4">
-                        <button type="button" class="btn btn-success download-button ">Download</button>
+                        <button type="button" class="btn btn-primary download-button ">Download Init</button>
                     </div>
                 </div>
+                 <div class="mx-auto start-area" style="width: 290px; display: none">
+
+                        <form action="http://localhost:8080/api/export/download" method="post" target="_blank">
+                        <div style="display:none">
+                        <input type="text" name="query-included" class="tquery-included">
+                        <textarea name="query" class="tquery"></textarea>
+
+                        </div>
+
+                         <div class="col text-center mb-4">
+                            <button type="button" class="btn btn-danger download-button-abbort download-button-abbort-start">Abbort</button>
+                        </div>
+                         <div class="col text-center mb-4">
+                            <button type="submit" class="btn btn-success download-button-start download-button-abbort-start">Download Start</button>
+                        </div>
+
+                        </form>
+                   </div>
                 <br>
             </div>
             <hr>`;
     }
 
+    reinitialize(formGraphQL) {
+        this.lastformGraphQL = formGraphQL;
+        this.pSelector.find(".start-area").hide(1000);
+        this.pSelector.find(".init-area").show(1000);
+    }
+
+    updateState(formGraphQL, json) {
+        this.pSelector.find(".start-area").hide(1000);
+        this.pSelector.find(".init-area").show(1000);
+    }
+
     onMount(pSelectorParent) {
         this.pSelector = $("#" + this.id);
+
+        this.pSelector.find(".download-button-abbort-start").click(() => {
+            this.pSelector.find(".start-area").hide(1000);
+            this.pSelector.find(".init-area").show(1000);
+        });
 
         this.pSelector.find(".download-button").click(() => {
 
@@ -61,7 +98,38 @@ export class ExportOutput {
             if (paginationNo) paginationNo = true; else paginationNo = false;
             if (queryInclude) queryInclude = true; else queryInclude = false;
 
-            alert(metaAll + paginationNo + queryInclude);
+            // alert(metaAll + paginationNo + queryInclude);
+
+            // let formGraphQL = [...this.lastformGraphQL]; //shallow-copy , its not nested, so its ok
+            let formGraphQL = Object.assign(new FormGraphQl(), this.lastformGraphQL); //shallow-copy , its not nested, so its ok
+
+            if (metaAll) {
+                formGraphQL.attributes = "";
+            }
+            if (paginationNo) {
+                formGraphQL.setLimit(null);
+                formGraphQL.setOffset(null);
+            }
+
+            let query = formGraphQL.generateAndGetGraphQlCode();
+            console.log(query);
+
+            //TODO insert into hidden fields
+
+            this.pSelector.find(".tquery-included").val(queryInclude);
+            this.pSelector.find(".tquery").text(query);
+
+            this.pSelector.find(".start-area").show(1000);
+            this.pSelector.find(".init-area").hide(1000);
+
+            // let body = "blub";
+            //
+            // var downloading = browser.downloads.download({
+            //     url : "http://localhost:8080/api/export/download",
+            //     filename : 'query-editor-output.json',
+            //     method: "POST",
+            //     body: body
+            // });
 
         });
 

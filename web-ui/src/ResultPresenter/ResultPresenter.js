@@ -196,6 +196,7 @@ export class ResultPresenter {
         this.controllUnits.updateState(formGraphQL, json)
         this.jsonOutput.updateText(JSON.stringify(json, undefined, 2));
         this.tableOutput.updateState(formGraphQL, json);
+        this.exportOutput.updateState(formGraphQL, json);
 
         this.showTabs();
 
@@ -254,6 +255,7 @@ export class ResultPresenter {
 
         this.controllUnits.reinitialize(formGraphQL, json);
         this.tableOutput.reinitialize();
+        this.exportOutput.reinitialize(formGraphQL);
 
         if (totalFiles < 3) {
             this.controllUnits.hidePaginatorAndSelectBox()

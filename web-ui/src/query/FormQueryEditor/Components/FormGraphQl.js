@@ -6,8 +6,8 @@ export class FormGraphQl {
      */
     constructor() {
 
-        this.limitIntern = 0;
-        this.offsetIntern = 0;
+        this.limitIntern = -1;
+        this.offsetIntern = -1;
 
         this.sortingIntern = {
             attribut: null,
@@ -74,19 +74,23 @@ export class FormGraphQl {
     }
 
     setLimit(limit) {
-        this.limitIntern = parseInt(limit, 10);
+
         if (limit === null) {
+            this.limitIntern = -1;
             this.limit = "";
         } else {
+            this.limitIntern = parseInt(limit, 10);
             this.limit = `limitFetchingSize: ${limit},\n  `;
         }
     }
 
     setOffset(offset) {
-        this.offsetIntern = parseInt(offset, 10);
+
         if (offset === null) {
+            this.offsetIntern = -1;
             this.offset = "";
         } else {
+            this.offsetIntern = parseInt(offset, 10);
             this.offset = `offset: ${offset},\n  `;
         }
     }
@@ -98,6 +102,8 @@ export class FormGraphQl {
             this.id = `file_ids: [${id}],\n  `;
         }
     }
+
+
 
 
     generateAndGetGraphQlCode() {
