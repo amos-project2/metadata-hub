@@ -10,6 +10,7 @@ import {AttributSelector} from "./Components/AttributSelector";
 import {DateRangeFilter} from "./Components/DateRangeFilter";
 import {ClearCacheModal} from "./autocompletion/Modals/ClearCacheModal";
 import {FileTypeCategoriesService} from "./FileTypeCategories/FileTypeCategoriesService";
+import {StoreService} from "./QueryStore/StoreService";
 
 export class QueryEditor extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
@@ -41,6 +42,8 @@ export class QueryEditor extends Page {
 
         this.metadatAutocompletion.addAdvancedFilter(this.advancedFilter);
         this.metadatAutocompletion.addAttributSelector(this.attributSelector);
+
+        this.storeService = new StoreService(this);
 
     }
 
@@ -177,6 +180,7 @@ export class QueryEditor extends Page {
 
         $(".q-send-query-form-editor").submit(function (event) {
             event.preventDefault();
+            thisdata.storeService.saveEditor();
             let formGraphQL = thisdata.buildAndGetGraphQlQuery();
             thisdata.resultPresenter.generateResultAndInjectIntoDom(formGraphQL.generateAndGetGraphQlCode());
             thisdata.resultPresenter.updateState(formGraphQL);
@@ -187,7 +191,8 @@ export class QueryEditor extends Page {
         });
 
         $(".save-editor").click(function () {
-            alert("coming soon");// TODO
+            thisdata.storeService.saveEditor();
+            //TODO open Save-Confirm-Modal
         });
 
 
