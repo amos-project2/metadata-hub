@@ -2,9 +2,20 @@ import {FormGraphQl} from "../../query/FormQueryEditor/Components/FormGraphQl";
 
 export class DetailViewModal {
 
+    static increaseCount() {
+        this.count = this.getCount() + 1;
+        return this.count;
+    }
+
+    static getCount() {
+        return this.count || 0;
+    }
+
 
     constructor(graphQlFetcher) {
         this.graphQlFetcher = graphQlFetcher;
+        this.id = "detail-view-modal-" + DetailViewModal.increaseCount();
+        this.pSelector = $("#" + this.id);
 
     }
 
@@ -12,7 +23,7 @@ export class DetailViewModal {
     getHtmlCode() {
         // language=HTML
         return `
-            <div class="modal fade" id="detail-view-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal fade" id="${this.id}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -40,25 +51,28 @@ export class DetailViewModal {
 
     //public
     openModal() {
-        $('#detail-view-modal').modal();
+        this.pSelector.modal();
     }
 
     getContentSelector() {
-        return $(".detail-view-html");
+        return this.pSelector.find(".detail-view-html");
     }
 
     getLoadFullDataset() {
-        return $(".load-full-dataset");
+        return this.pSelector.find(".load-full-dataset");
     }
 
     onMount() {
         let thisdata = this;
-        $(".closedetailview").click(function () {
-            $(".detail-view-html").html();
-            $(".detail-view-html2").html();
+
+        this.pSelector = $("#" + this.id);
+
+        this.pSelector.find(".closedetailview").click(function () {
+            this.pSelector.find(".detail-view-html").html();
+            this.pSelector.find(".detail-view-html2").html();
         });
 
-        $(".load-full-dataset").click(function () {
+        this.pSelector.find(".load-full-dataset").click(function () {
             $(this).hide(1000);
             thisdata.loadFullDataset();
         });
@@ -70,12 +84,12 @@ export class DetailViewModal {
 
         console.log(data);
 
-        $(".detail-view-html").hide();
-        $(".detail-view-data").html(id);
-        $(".detail-view-html2").html("");
-        $(".detail-view-html").html("");
-        $(".detail-view-html2").hide();
-        $(".load-full-dataset").show();
+        this.pSelector.find(".detail-view-html").hide();
+        this.pSelector.find(".detail-view-data").html(id);
+        this.pSelector.find(".detail-view-html2").html("");
+        this.pSelector.find(".detail-view-html").html("");
+        this.pSelector.find(".detail-view-html2").hide();
+        this.pSelector.find(".load-full-dataset").show();
 
         let htmlCode = ``;
 
@@ -83,9 +97,9 @@ export class DetailViewModal {
             htmlCode += this.generateTableViewElement(value.key, value.data);
         })
 
-        $(".detail-view-html").html(htmlCode);
-        setTimeout(function () {
-            $(".detail-view-html").show(1000);
+        this.pSelector.find(".detail-view-html").html(htmlCode);
+        setTimeout(() => {
+            this.pSelector.find(".detail-view-html").show(1000);
         }, 200);
 
 
@@ -94,8 +108,8 @@ export class DetailViewModal {
 
     loadFullDataset() {
         let thisdata = this;
-        $(".detail-view-html").hide(1000);
-        let rowId = $(".detail-view-data").html();
+        this.pSelector.find(".detail-view-html").hide(1000);
+        let rowId = this.pSelector.find(".detail-view-data").html();
 
         let formGraphQl = new FormGraphQl();
         formGraphQl.setId(rowId);
@@ -126,12 +140,12 @@ export class DetailViewModal {
                     })
                 });
 
-                let viewHtml2=$(".detail-view-html2")
+                let viewHtml2 = thisdata.pSelector.find(".detail-view-html2")
                 viewHtml2.html(htmlCode);
                 viewHtml2.show(1000);
             } else {
-                $(".detail-view-html2").html(`There was an error while fetching the detailed data`);
-                $(".detail-view-html2").show(1000);
+                this.pSelector.find(".detail-view-html2").html(`There was an error while fetching the detailed data`);
+                this.pSelector.find(".detail-view-html2").show(1000);
             }
 
         });
