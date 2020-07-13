@@ -58,7 +58,7 @@ export class DetailViewModal {
             $(".detail-view-html2").html();
         });
 
-        $(".load-full-dataset").click(function() {
+        $(".load-full-dataset").click(function () {
             $(this).hide(1000);
             thisdata.loadFullDataset();
         });
@@ -70,11 +70,12 @@ export class DetailViewModal {
 
         console.log(data);
 
+        $(".detail-view-html").hide();
         $(".detail-view-data").html(id);
-        $(".detail-view-html2").html();
-        $(".detail-view-html").html();
-        $(".detail-view-html").show();
-        $(".load-full-dataset").show(1000);
+        $(".detail-view-html2").html("");
+        $(".detail-view-html").html("");
+        $(".detail-view-html2").hide();
+        $(".load-full-dataset").show();
 
         let htmlCode = ``;
 
@@ -83,11 +84,16 @@ export class DetailViewModal {
         })
 
         $(".detail-view-html").html(htmlCode);
+        setTimeout(function () {
+            $(".detail-view-html").show(1000);
+        }, 200);
+
 
         this.openModal();
     }
 
     loadFullDataset() {
+        let thisdata = this;
         $(".detail-view-html").hide(1000);
         let rowId = $(".detail-view-data").html();
 
@@ -96,9 +102,39 @@ export class DetailViewModal {
 
         let query = formGraphQl.generateAndGetGraphQlCode();
         this.graphQlFetcher.fetchAdvanced(query, function (sucess, json, jsonString) {
-            alert(jsonString);
-        });
 
+            if (sucess) {
+
+                let files = json.data.searchForFileMetadata.files;
+                let keysOfFiles = Object.keys(files);
+
+                let htmlCode = ``;
+
+                files.forEach(file => {
+
+                    let keysOfFile = Object.keys(file);
+
+                    keysOfFile.forEach(value => {
+                        if (value !== "metadata") {
+                            htmlCode += thisdata.generateTableViewElement(value, file[value]);
+                        }
+                    })
+                    htmlCode += "<br><hr><br>";
+
+                    file.metadata.forEach(value => {
+                        htmlCode += thisdata.generateTableViewElement(value.name, value.value);
+                    })
+                });
+
+                let viewHtml2=$(".detail-view-html2")
+                viewHtml2.html(htmlCode);
+                viewHtml2.show(1000);
+            } else {
+                $(".detail-view-html2").html(`There was an error while fetching the detailed data`);
+                $(".detail-view-html2").show(1000);
+            }
+
+        });
 
 
     }
@@ -120,8 +156,6 @@ export class DetailViewModal {
 
 
     }
-
-
 
 
 }
