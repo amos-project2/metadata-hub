@@ -168,7 +168,6 @@ class TreeWalkScheduler(threading.Thread):
             self._tw_state.release()
             self._current_interval = new_interval
 
-    # FIXME does forcing actually work here?
     def _dispatch(self, task: task_module.Task) -> None:
         """Dispatch the config to the manager.
 
