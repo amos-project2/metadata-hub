@@ -422,7 +422,7 @@ class TreeWalkManager(threading.Thread):
         _logger.info('TWManager (stop): all workers and threads stopped.')
         for worker_control in self._workers:
             if not worker_control.event_finished.is_set():
-                treewalk.clear_queue(worker_control.data_queue)
+                treewalk.clear_queue_poison_pill(worker_control.data_queue)
         treewalk.clear_queue_unsafe(communication.database_thread_files_input_data)
         _logger.info('TWManager (stop): cleared data queues.')
         for worker_control in self._workers:
@@ -603,9 +603,18 @@ class TreeWalkManager(threading.Thread):
             self._state.release()
             return response
         if self._state.is_running():
-            response.message='Attempted to start when TreeWalk is running.'
-            self._state.release()
-            return response
+            if config.get_force_update():
+                self._state.release()
+                self._treewalk_stop()
+                _logger.info(
+                    'TWManager: stopped current execution due to force update.'
+                )
+                self._state.lock()
+            else:
+                _logger.info('TWManager: attempted to start when TW is running.')
+                response.message='Attempted to start when TreeWalk is running.'
+                self._state.release()
+                return response
 
         self._state.set_preparing(config)
         # Prepare the data
