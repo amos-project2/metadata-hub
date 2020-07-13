@@ -13,6 +13,7 @@ import psycopg2
 from pypika import Query, Table, Field, Parameter
 
 # Local imports
+from crawler.treewalk.worker import utils
 from crawler.services.config import Config
 import crawler.communication as communication
 
@@ -216,7 +217,7 @@ class DatabaseConnection:
         """
         files = Table('files')
         query = Query.from_(files) \
-            .select('id', 'crawl_id', 'dir_path', 'name', 'file_hash') \
+            .select('id', 'crawl_id', 'dir_path', 'name', 'file_hash', 'metadata') \
             .where(files.dir_path == Parameter('%s'))
         curs = self.con.cursor()
         query = curs.mogrify(str(query), (path,))
@@ -224,6 +225,8 @@ class DatabaseConnection:
             curs.execute(query)
             get = curs.fetchall()
         except:
+            curs.close()
+            self.con.rollback()
             return []
         curs.close()
         self.con.commit()
@@ -235,7 +238,7 @@ class DatabaseConnection:
             return []
         recent_crawl = max(id_set)
         # Make list with every file_id in that directory/crawl
-        file_ids = [x[0] for x in get if x[1] == recent_crawl and x[-1] in current_hashes]
+        file_ids = [(x[0],x[-1]) for x in get if x[1] == recent_crawl and x[-2] in current_hashes]
         return file_ids
 
     @measure_time
@@ -346,6 +349,7 @@ class DatabaseConnection:
         files = Table('files')
         query = Query.from_(files) \
                 .select(files.id) \
+                .select(files.metadata) \
                 .where(files.crawl_id != crawlId) \
                 .where(files.deleted == False)
         curs = self.con.cursor()
@@ -359,9 +363,9 @@ class DatabaseConnection:
         try:
             curs.execute(query)
             entries = curs.fetchall()
-            self.set_deleted(entries)
+            self.set_deleted([x[0] for x in entries])
             if len(entries) > 0:
-                self.decrease_dynamic([x[0] for x in entries])
+                self.decrease_dynamic([x[1] for x in entries])
             curs.close()
             self.con.commit()
         except Exception as e:
@@ -431,60 +435,54 @@ class DatabaseConnection:
         except:
             return 'str'
 
-    def decrease_dynamic(self, ids: List[int]) -> None:
+    def decrease_dynamic(self, jsons: json) -> None:
         """
         Decreases the tag values in the 'metadata' table by the tag values of the files present in ids
         Args:
             ids (List[int]): file ids that metadata is gathered about
         """
-
-        def create_metadata(metadata_delete: List[str]) -> Dict:
-            # Loop over every tag in the json and sum them up in a dictionary
-            metadata_dict = {}
-            try:
-                for entry in metadata_delete:
-                    if entry[1] not in metadata_dict.keys():
-                        metadata_dict[entry[1]] = {}
-                    for file_result in entry[0]:
-                        if file_result not in metadata_dict[entry[1]]:
-                            metadata_dict[entry[1]][file_result] = [0, self.output_type(entry[0][file_result])]
-                        metadata_dict[entry[1]][file_result][0] += 1
-            except Exception as e:
-                raise
-            return metadata_dict
-
-        # Query for requesting all the information from the previous entries (Needed to reconstruct the tags used by
-        # each file)
-        query = 'SELECT "metadata", "type" FROM "files" WHERE "id" IN %s'
-        curs = self.con.cursor()
-        query = curs.mogrify(query, (tuple(ids),))
-        try:
-            curs.execute(query)
-            entries = curs.fetchall()
-            # Create a dictionary structure for further processing
-            metadata = create_metadata(entries)
-            # Create a tuple with every relevant file type (For fetching the corresponding metadata)
-            relevant_file_types = tuple(set([x[1] for x in entries]))
-            # Query for obtaining the old data from the 'metadata' table (Must be decreased by the previous values)
-            query = 'SELECT * FROM "metadata" WHERE "file_type" in %s'
-            query = curs.mogrify(query, (relevant_file_types,))
-            curs.execute(query)
-            entries = curs.fetchall()
-            # Go over every value in the old data and update it with new values
-            for file_type in entries:
-                to_update = file_type[1]
-                merger = metadata[file_type[0]]
-                for key in merger.keys():
-                    to_update[key][0] = int(file_type[1][key][0]) - merger[key][0]
-                query = 'UPDATE metadata SET "tags" = %s WHERE "file_type" = %s;'
-                query = curs.mogrify(query, (json.dumps(to_update), file_type[0]))
-                curs.execute(query)
-            curs.close()
-            self.con.commit()
-
-        except:
-            _logger.warning("Error decreasing the values of the metadata table!")
-            # TODO Make sure the main method knows a reevaluate method should be called
-            curs.close()
-            self.con.rollback()
-            raise
+        test = utils.create_metadata_decrease(jsons)
+        # Pass the dictionary to thread_metadata
+        command = communication.Command(
+            command=communication.DATABASE_THREAD_WORK,
+            data=({}, test)
+        )
+        print(({}, test))
+        communication.database_thread_metadata_input_data.put(command)
+        # # Query for requesting all the information from the previous entries (Needed to reconstruct the tags used by
+        # # each file)
+        # query = 'SELECT "metadata", "type" FROM "files" WHERE "id" IN %s'
+        # curs = self.con.cursor()
+        # query = curs.mogrify(query, (tuple(ids),))
+        # try:
+        #     curs.execute(query)
+        #     entries = curs.fetchall()
+        #     # Create a dictionary structure for further processing
+        #     metadata = create_metadata(entries)
+        #     # Create a tuple with every relevant file type (For fetching the corresponding metadata)
+        #     relevant_file_types = tuple(set([x[1] for x in entries]))
+        #     # Query for obtaining the old data from the 'metadata' table (Must be decreased by the previous values)
+        #     query = 'SELECT * FROM "metadata" WHERE "file_type" in %s'
+        #     query = curs.mogrify(query, (relevant_file_types,))
+        #     curs.execute(query)
+        #     entries = curs.fetchall()
+        #     print(entries)
+        #     # Go over every value in the old data and update it with new values
+        #     for file_type in entries:
+        #         to_update = file_type[1]
+        #         merger = metadata[file_type[0]]
+        #         for key in merger.keys():
+        #             to_update[key][0] = int(file_type[1][key][0]) - merger[key][0]
+        #         query = 'UPDATE metadata SET "tags" = %s WHERE "file_type" = %s;'
+        #         print(query)
+        #         query = curs.mogrify(query, (json.dumps(to_update), file_type[0]))
+        #         curs.execute(query)
+        #     curs.close()
+        #     self.con.commit()
+        #
+        # except:
+        #     _logger.warning("Error decreasing the values of the metadata table!")
+        #     # TODO Make sure the main method knows a reevaluate method should be called
+        #     curs.close()
+        #     self.con.rollback()
+        #     raise

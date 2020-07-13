@@ -44,7 +44,7 @@ class DBThreadMetadata(DBThread):
     def _combine_dict(self, data: Any) -> dict:
         combined = data[0]
         all_type = {}
-        # Subtract each value in decrease
+        # Subtract each value in decrease for each individual file typ
         for data_type in data[1].keys():
             if data_type in combined.keys():
                 for tag_type in data[1][data_type]:
@@ -54,14 +54,13 @@ class DBThreadMetadata(DBThread):
                         combined[data_type][tag_type] = data[1][data_type][tag_type]
             else:
                 combined[data_type] = data[1][data_type]
-            # Add the values to the 'ALL'-type
-
+        # Add the values to the 'ALL'-type
         for data_type in combined.keys():
-            for tag_type in combined[data_type]:
+            for tag_type in combined[data_type].keys():
                 if tag_type in all_type.keys():
                     all_type[tag_type][0] = all_type[tag_type][0] + combined[data_type][tag_type][0]
                 else:
-                    all_type[tag_type] = combined[data_type][tag_type]
+                    all_type[tag_type] = combined[data_type][tag_type].copy()
         combined['ALL'] = all_type
         return combined
 
@@ -72,9 +71,6 @@ class DBThreadMetadata(DBThread):
             data (Any): data from other thread
         """
         combined = self._combine_dict(data)
-        print("combined finished")
-        print(combined)
-        print(combined['ALL'])
         if combined:
             self._db_connection.update_metadata(combined)
 

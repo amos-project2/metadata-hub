@@ -98,8 +98,8 @@ class DBThreadFiles(DBThread):
                 'There was an error setting the deleted tags. Manual check necessary!'
             )
         logging.debug(f'{self._name} creating lists.')
-        metadata_list = utils.create_metadata_list([json.loads(j[5]) for j in data])
-        metadata_list2 = utils.create_metadata_list(jsons)
+        metadata_list = utils.create_metadata_increase([json.loads(j[5]) for j in data])
+        metadata_list2 = utils.create_metadata_decrease(jsons)
         # Pass the dictionary to thread_metadata
 
         logging.debug(f'{self._name} creating command.')

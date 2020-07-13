@@ -20,7 +20,7 @@ from typing import Tuple, Any
 from datetime import datetime
 
 # Local imports
-from .worker_control import WorkerControl
+from crawler.crawler.treewalk.manager.worker_control import WorkerControl
 
 import crawler.treewalk as treewalk
 import crawler.database as database
@@ -345,10 +345,11 @@ class TreeWalkManager(threading.Thread):
         for worker_control in self._workers:
             worker_control.event_manager.set()
         for worker_control in self._workers:
-            worker_control.me.terminate()
-            while worker_control.me.is_alive():
-                pass
-            worker_control.me.close()
+            # worker_control.me.terminate()
+            # while worker_control.me.is_alive():
+            #     pass
+            # # worker_control.me.close()
+            worker_control.me.join()
         self._log_execution_time()
         self._reset()
 
@@ -428,10 +429,11 @@ class TreeWalkManager(threading.Thread):
         for worker_control in self._workers:
             worker_control.event_manager.set()
         for worker_control in self._workers:
-            worker_control.me.terminate()
-            while worker_control.me.is_alive():
-                pass
-            worker_control.me.close()
+            # worker_control.me.terminate()
+            # while worker_control.me.is_alive():
+            #     pass
+            # worker_control.me.close()
+            worker_control.me.join()
         treewalk.clear_queue_unsafe(communication.database_thread_files_input_data)
         _logger.info(f'TWManager (stop): Terminated all workers.')
         self._event_db_thread_files_manager.set()
