@@ -8,6 +8,11 @@ if [ -z "$branch" ]; then
     exit 1
 fi
 
+if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+    echo "Not deploying pull request to DockerHub. Done."
+    exit 0
+fi
+
 if [ $branch != "master" ] && [ $branch != "develop" ]; then
     # Do not push any feature branches or hotfixes to DockerHub
     echo "Not pushing branch '$branch' to DockerHub. Done."
