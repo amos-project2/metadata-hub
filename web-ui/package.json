@@ -36,6 +36,8 @@
         "bootswatch": "^4.5.0",
         "crypto-js": "^4.0.0",
         "darkreader": "^4.9.10",
+        "datatables.net": "^1.10.21",
+        "datatables.net-bs4": "^1.10.21",
         "daterangepicker": "^3.1.0",
         "graphiql": "^0.17.2",
         "graphql": "^14.0.0",

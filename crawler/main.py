@@ -1,7 +1,8 @@
-"""Run the crawler."""
+"""Run the TreeWalk."""
 
 
 # Python imports
+import time
 import logging
 import threading
 from sys import exit
@@ -13,12 +14,8 @@ import crawler.treewalk as treewalk
 import crawler.services.environment as environment
 import crawler.treewalk.manager as manager
 import crawler.treewalk.scheduler as scheduler
-import crawler.treewalk.db_updater as db_updater
 import crawler.treewalk.db_threads as db_threads
 import crawler.communication as communication
-
-
-_logger = logging.getLogger(__name__)
 
 
 if __name__ == '__main__':
@@ -80,18 +77,19 @@ if __name__ == '__main__':
     )
     # Starting threads
     thread_api.start()
+    time.sleep(0.1)
     thread_treewalk_manager.start()
     thread_treewalk_scheduler.start()
     thread_db_files.start()
     thread_db_metadata.start()
     # Joining them on shutdown
     thread_api.join()
-    _logger.info('MAIN: joined TWApi')
+    logging.info('MAIN: joined TWApi')
     thread_db_metadata.join()
-    _logger.info('MAIN: joined DBThreadMetadata')
+    logging.info('MAIN: joined DBThreadMetadata')
     thread_db_files.join()
-    _logger.info('MAIN: joined DBThreadFiles')
+    logging.info('MAIN: joined DBThreadFiles')
     thread_treewalk_manager.join()
-    _logger.info('MAIN: joined TWManager')
+    logging.info('MAIN: joined TWManager')
     thread_treewalk_scheduler.join()
-    _logger.info('MAIN: joined TWScheduler')
+    logging.info('MAIN: joined TWScheduler')

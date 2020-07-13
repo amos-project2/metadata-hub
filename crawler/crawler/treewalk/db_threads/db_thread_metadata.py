@@ -35,8 +35,7 @@ class DBThreadMetadata(DBThread):
             tw_state=None,
             update_interval=update_interval,
             is_files_thread=False,
-            name_thread='DBThreadMetadata',
-            name_logger=__name__
+            name_thread='DBThreadMetadata'
         )
 
 
@@ -69,6 +68,26 @@ class DBThreadMetadata(DBThread):
 
         Args:
             data (Any): data from other thread
+
+        """
+        logging.info(f'{self._name}: doing work.')
+
+        """
+        if len(data[1].keys()) > 0:
+            # Combine both dictionaries (decrease is always a subset/equal to increase)
+            for data_type in data[0].copy().keys():
+                increase = data[0][data_type]
+                decrease = data[1][data_type]
+                for tag in increase.copy().keys():
+                    # Subtract the decrease values from increase (if 0: remove as there is nothing to update)
+                    if increase[tag][0] - decrease[tag][0] != 0:
+                        data[0][data_type][tag] = increase[tag][0] - decrease[tag][0]
+                    else:
+                        del data[0][data_type][tag]
+                if not data[0][data_type]:
+                    del data[0][data_type]
+        if data[0]:
+            self._db_connection.update_metadata(data[0])
         """
         combined = self._combine_dict(data)
         if combined:
@@ -79,19 +98,19 @@ class DBThreadMetadata(DBThread):
 
     def _do_periodic_task(self) -> None:
         """Periodic task for the METADATA table."""
-        logging.info(f'{self._name} doing periodic task.')
+        logging.info(f'{self._name}: doing periodic task.')
 
     # Override
 
     def run(self) -> None:
         """Run the thread."""
-        self._logger.info(f'Hello thread {self._name}.')
+        logging.info(f'{self._name}: Hello thread.')
         while True:
             try:
                 command = self._input_command_queue.get(block=False)
                 self._command = command.command
-                self._logger.debug(
-                    f'DBThread {self._name} running command \'{self._command}\''
+                logging.debug(
+                    f'{self._name}: running command \'{self._command}\''
                 )
                 self._functions[self._command](command.data)
                 if self._shutdown:
@@ -107,5 +126,4 @@ class DBThreadMetadata(DBThread):
                 continue
             self._do_work(command.data)
             self.db_thread_periodic_task()
-        self._logger.info(f'Goodbye thread {self._name}.')
-
+        logging.info(f'{self._name}: Goodbye thread.')

@@ -1,4 +1,7 @@
-"""TODO"""
+"""Base module for database threads.
+
+
+"""
 
 
 # Python imports
@@ -8,6 +11,7 @@ import logging
 import threading
 import multiprocessing
 from typing import Any
+
 
 # Local imports
 import crawler.database as database
@@ -28,8 +32,7 @@ class DBThread(threading.Thread):
             tw_state: treewalk.State,
             update_interval: int,
             is_files_thread: bool,
-            name_thread: str,
-            name_logger: str
+            name_thread: str
     ):
         super(DBThread, self).__init__()
         # TreeWalk auxiliary data
@@ -39,7 +42,6 @@ class DBThread(threading.Thread):
         self._tw_state = tw_state
         self._name = name_thread
         self._last_time_periodic = time.time()
-        self._logger = logging.getLogger(name_logger)
         self._update_interval = update_interval
         # Communication data
         self._input_data_queue = input_data_queue
@@ -102,12 +104,12 @@ class DBThread(threading.Thread):
 
         """
         self.db_thread_clean_up(close_database=False, finished=False)
-        self._logger.info(f'Thread {self._name} cleaned up.')
+        logging.info(f'Thread {self._name} cleaned up.')
         self._event_self.set()
-        self._logger.info(f'Thread {self._name} stopped & waiting for manager.')
+        logging.info(f'Thread {self._name} stopped & waiting for manager.')
         self._event_manager.wait()
         self._event_manager.clear()
-        self._logger.info(f'Thread {self._name} got signal from manager.')
+        logging.info(f'Thread {self._name} got signal from manager.')
 
 
     def db_thread_clean_up(self, close_database: bool, finished: bool) -> None:
@@ -134,7 +136,7 @@ class DBThread(threading.Thread):
             data (Any): not required
 
         """
-        self._logger.info(f'{self._name} going to sleep.')
+        logging.info(f'{self._name} going to sleep.')
         self._event_self.set()
         command = self._input_command_queue.get(block=True)
         self._command = command.command
@@ -147,7 +149,7 @@ class DBThread(threading.Thread):
             data (Any): not required
 
         """
-        self._logger.info(f'{self._name} waking up.')
+        logging.info(f'{self._name} waking up.')
 
     def db_thread_pause(self, data: Any) -> None:
         """Pause the thread.
@@ -161,7 +163,7 @@ class DBThread(threading.Thread):
         self._event_self.set()
         command = self._input_command_queue.get(block=True) # type: communication.Command
         self._command = command.command
-        self._logger.debug(
+        logging.debug(
             f'DBThread {self._name} running command \'{self._command}\' (paused).'
         )
         self._functions[self._command](command.data)
@@ -173,7 +175,7 @@ class DBThread(threading.Thread):
             data (Any): not required
 
         """
-        self._logger.info(f'{self._name} continuing.')
+        logging.info(f'{self._name} continuing.')
 
     def db_thread_shutdown(self, data: Any) -> None:
         """Shutdown the thread.

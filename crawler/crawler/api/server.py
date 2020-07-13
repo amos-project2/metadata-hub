@@ -20,7 +20,6 @@ from . import defaults
 import crawler.treewalk as treewalk
 import crawler.treewalk.manager as manager
 import crawler.treewalk.scheduler as scheduler
-import crawler.treewalk.db_updater as db_updater
 import crawler.services.config as config_service
 import crawler.services.intervals as interval_pkg
 import crawler.services.environment as environment
@@ -178,8 +177,7 @@ def shutdown():
     manager.shutdown()
     func = flask.request.environ.get('werkzeug.server.shutdown')
     if func is None:
-        # TODO handle error
-        print('ERROR')
+        logging.critical('TWApi: Unable to shutdown Flask server!')
         return None
     func()
     response = communication.Response(
@@ -260,6 +258,12 @@ def intervals_list() -> flask.Response:
 
 @app.route('/', methods=['GET'])
 def home():
+    """API endpoint for connectivity check.
+
+    Returns:
+        flask.Response: REST reponse
+
+    """
     resp = flask.Response(
         status=defaults.STATUS_OK,
         mimetype=defaults.MIMETYPE_JSON

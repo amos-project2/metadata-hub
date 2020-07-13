@@ -1,6 +1,6 @@
 package MetadataAutocompletion;
 
-import Database.Database;
+import Database.*;
 import com.google.inject.Inject;
 
 import java.sql.Connection;
@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FileTypeAutocompletionService
 {
     private final Database database;
-    private final ConcurrentHashMap<String, MetadataFileCache> cache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, MetadataInfoCache> cache = new ConcurrentHashMap<>();
 
 
     @Inject
@@ -30,8 +30,7 @@ public class FileTypeAutocompletionService
     /**
      * The List excludeFileTypes must contain lower-cased-elements
      */
-    public List<String> getFileTypes(List<String> excludeFileTypes, String search, int count) throws SQLException
-    {
+    public List<String> getFileTypes(List<String> excludeFileTypes, String search, int count) throws SQLException, DatabaseException {
 
         ArrayList<String> ret = new ArrayList<String>();
         String file_type;
@@ -60,16 +59,14 @@ public class FileTypeAutocompletionService
 
     }
 
-    public List<String> getAllFileTypes() throws SQLException
-    {
+    public List<String> getAllFileTypes() throws SQLException, DatabaseException {
         return this.getFileTypes(-1, 0);
     }
 
     /**
      * Limit -1 -> ALL
      */
-    public List<String> getFileTypes(long limit, long offset) throws SQLException
-    {
+    public List<String> getFileTypes(long limit, long offset) throws SQLException, DatabaseException {
         ArrayList<String> ret = new ArrayList<String>();
         try (Connection con = database.gC())
         {

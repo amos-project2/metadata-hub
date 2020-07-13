@@ -21,15 +21,22 @@ public class MetadataInfo implements Comparable<MetadataInfo>
     @Override
     public int compareTo(@NotNull MetadataInfo other)
     {
-        return this.occurrence.compareTo(other.getOccurrence());
+        return other.getOccurrence().compareTo(this.getOccurrence());
+    }
+
+    @Override
+    public String toString() {
+       return "MetaInfo| Attribute: " + attribute + " Occurrence: " + occurrence.toString();
     }
 
     public MetadataInfo merge(MetadataInfo other)
     {
-        this.occurrence += other.getOccurrence(); //merge occurrence
+        this.occurrence += other.getOccurrence();
 
-        //TODO merge valueType
-
+        //TODO test if we ever have this problem
+        if(this.valueDatatype != other.valueDatatype){
+            throw new RuntimeException("Ohhh there are actually differing DataTypes for the same metadata attributes of different files types :O");
+        }
 
         return this;
     }
