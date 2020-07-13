@@ -21,9 +21,6 @@ import crawler.treewalk as treewalk
 import crawler.communication as communication
 
 
-_logger = logging.getLogger(__name__)
-
-
 class DBThreadFiles(DBThread):
 
     def __init__(
@@ -47,8 +44,7 @@ class DBThreadFiles(DBThread):
             tw_state=tw_state,
             update_interval=update_interval,
             is_files_thread=True,
-            name_thread='DBThreadFiles',
-            name_logger=__name__
+            name_thread='DBThreadFiles'
         )
 
     # Methods to implement in child class
@@ -67,14 +63,17 @@ class DBThreadFiles(DBThread):
             self._db_connection.insert_new_record_files(data)
         except:
             # Try to insert each file's results individually
-            _logger.warning(
-                'There was an error inserting the batched results, attempting to insert each file individually.'
+            logging.warning(
+                f'{self._name}: There was an error inserting the batched '
+                'results, attempting to insert each file individually.'
             )
             for insert in data:
                 try:
                     self._db_connection.insert_new_record_files([insert])
                 except:
-                    _logger.warning('Failed inserting single file again.')
+                    logging.warning(
+                        f'{self._name}: Failed inserting single file again.'
+                    )
         logging.debug(f'{self._name} inserted new records.')
         # Tuple to pass to the metadata_thread (increase, decrease)
         # Initiate deletion of the old data
@@ -94,26 +93,27 @@ class DBThreadFiles(DBThread):
                 self._db_connection.delete_files(toDelete)
         except Exception as e:
             print(e)
-            self._logger.warning(
-                'There was an error setting the deleted tags. Manual check necessary!'
+            logging.warning(
+                f'{self._name}: there was an error setting the deleted tags. '
+                'Manual check necessary!'
             )
-        logging.debug(f'{self._name} creating lists.')
+        logging.debug(f'{self._name}: creating lists.')
         metadata_list = utils.create_metadata_list([json.loads(j[5]) for j in data])
         metadata_list2 = utils.create_metadata_list(jsons)
         # Pass the dictionary to thread_metadata
 
-        logging.debug(f'{self._name} creating command.')
+        logging.debug(f'{self._name}: creating command.')
         command = communication.Command(
             command=communication.DATABASE_THREAD_WORK,
             data=(metadata_list, metadata_list2)
         )
-        logging.debug(f'{self._name} putting command.')
+        logging.debug(f'{self._name}: putting command.')
         communication.database_thread_metadata_input_data.put(command)
-        logging.debug(f'{self._name} finished doing work.')
+        logging.debug(f'{self._name}: finished doing work.')
 
     def _do_periodic_task(self) -> None:
         """Deleting marked files from FILES table."""
-        logging.info(f'{self._name} doing periodic task.')
+        logging.info(f'{self._name}: doing periodic task.')
         # Search for ids that are set to be deleted
         curr_time = datetime.datetime.now()
         to_delete = self._db_connection.get_ids_to_delete()
@@ -171,13 +171,13 @@ class DBThreadFiles(DBThread):
 
     def run(self) -> None:
         """Run the thread."""
-        self._logger.info(f'Hello thread {self._name}.')
+        logging.info(f'{self._name}: Hello thread.')
         while True:
             try:
                 command = self._input_command_queue.get(block=False) # type: communication.Command
                 self._command = command.command
-                self._logger.info(
-                    f'DBThread {self._name} running command \'{self._command}\''
+                logging.info(
+                    f'{self._name}: running command \'{self._command}\''
                 )
                 self._functions[self._command](command.data)
                 if self._shutdown:
@@ -200,12 +200,12 @@ class DBThreadFiles(DBThread):
                 self._tw_state.release()
                 self.db_thread_periodic_task()
                 continue
-            self._logger.debug(
-                f'DBThreadFiles {self._input_data_queue.qsize()} items to process.'
+            logging.debug(
+                f'{self.name}: {self._input_data_queue.qsize()} items to process.'
             )
             if command.command == communication.DATABASE_THREAD_FINISH:
                 self.db_thread_finish(None)
             else:
                 self._do_work(command.data)
             self.db_thread_periodic_task()
-        self._logger.info(f'Goodbye thread {self._name}.')
+        logging.info(f'{self._name}: Goodbye!')
