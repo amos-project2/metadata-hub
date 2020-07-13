@@ -15,6 +15,8 @@ export class FormGraphQl {
         }
 
 
+        this.id = "";
+
         this.fileHashes = "";
 
         this.limit = "";
@@ -89,12 +91,20 @@ export class FormGraphQl {
         }
     }
 
+    setId(id) {
+        if (id === null) {
+            this.id = "";
+        } else {
+            this.id = `file_ids: [${id}],\n  `;
+        }
+    }
+
 
     generateAndGetGraphQlCode() {
 
         //dont change the formatting here, cause this has a direct change to the formatting in the graphql-inspection-window
         let query_header = `
-   ${this.fileHashes}
+   ${this.fileHashes} ${this.id}
    ${this.limit} ${this.offset} ${this.sortAttribut} ${this.sortOption}
    ${this.deleted}
    ${this.startDate} ${this.endDate} ${this.startDateUpdated} ${this.endDateUpdated}

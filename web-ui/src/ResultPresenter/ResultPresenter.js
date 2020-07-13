@@ -21,7 +21,7 @@ export class ResultPresenter {
         this.graphQlFetcher = graphQlFetcher;
 
         this.controllUnits = new ControllUnits("result-presenter" + this.id, this, graphQLIntrospectionModal);
-        this.viewModal = new DetailViewModal();
+        this.viewModal = new DetailViewModal(this.graphQlFetcher);
 
         this.jsonOutput = new JsonOutput();
         this.tableOutput = new TableOutput(this, this.controllUnits, this.viewModal);

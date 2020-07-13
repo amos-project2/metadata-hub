@@ -1,7 +1,10 @@
+import {FormGraphQl} from "../../query/FormQueryEditor/Components/FormGraphQl";
+
 export class DetailViewModal {
 
 
-    constructor() {
+    constructor(graphQlFetcher) {
+        this.graphQlFetcher = graphQlFetcher;
 
     }
 
@@ -69,6 +72,8 @@ export class DetailViewModal {
 
         $(".detail-view-data").html(id);
         $(".detail-view-html2").html();
+        $(".detail-view-html").html();
+        $(".detail-view-html").show();
         $(".load-full-dataset").show(1000);
 
         let htmlCode = ``;
@@ -83,9 +88,18 @@ export class DetailViewModal {
     }
 
     loadFullDataset() {
-        $(".detail-view-data").hide(1000);
+        $(".detail-view-html").hide(1000);
         let rowId = $(".detail-view-data").html();
-        //TODO
+
+        let formGraphQl = new FormGraphQl();
+        formGraphQl.setId(rowId);
+
+        let query = formGraphQl.generateAndGetGraphQlCode();
+        this.graphQlFetcher.fetchAdvanced(query, function (sucess, json, jsonString) {
+            alert(jsonString);
+        });
+
+
 
     }
 
