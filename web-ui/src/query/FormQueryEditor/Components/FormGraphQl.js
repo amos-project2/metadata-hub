@@ -131,6 +131,11 @@ query
   {
     numberOfTotalFiles,
     numberOfReturnedFiles,
+    error
+    {
+      message
+      stack_trace
+    },
     files
     {
       id,

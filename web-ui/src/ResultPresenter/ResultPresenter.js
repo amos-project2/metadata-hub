@@ -28,7 +28,6 @@ export class ResultPresenter {
         this.exportOutput = new ExportOutput();
 
 
-
         this.cleared = true;
         this.lastTotalFiles = -1;
 
@@ -211,8 +210,10 @@ export class ResultPresenter {
         messageContainer.html(`
         <div class="text-danger">
             <b>Error: ${error.message}</b><br><br>
-            Info: ${error.info}
+            <b>Info:</b>
+            <pre style="color: orangered">${error.info}</pre>
         </div>
+        <br><br>
         `);
 
         messageContainer.stop(true).show(1000);
@@ -268,29 +269,18 @@ export class ResultPresenter {
         this.preLoad();
 
         this.graphQlFetcher.fetchAdvanced(query, function (sucess, json, jsonString) {
-            if (sucess && json.data.searchForFileMetadata && !json.error && !json.data.searchForFileMetadata.error) {
+            if (sucess && json && !json.errors && json.data.searchForFileMetadata && !json.data.searchForFileMetadata.error) {
                 thisdata.updateInternalState(formGraphQL, json);
-                // thisdata.jsonOutput.updateText(jsonString);
-                // thisdata.tableOutput.updateState(formGraphQL, json);
             } else if (json === null) {
-
-                let err = {
-                    message: jsonString,
-                    info: "",
-                };
-                thisdata.updateError(err);
-            } else if(json.error) {
-                let err = {
-                    message: json.error,
-                    info: "",
-                };
-                thisdata.updateError(json);
-            }else{
+                thisdata.updateError({message: "The ressource/Server is not avialable" , info: jsonString});
+            } else if (json.errors) {
+                thisdata.updateError({message: "An Error while parsing the Query is occured. Please dont use unescapted quotation marks, for example.", info: JSON.stringify(json, undefined, 2)});
+            } else {
                 let err = {
                     message: json.data.searchForFileMetadata.error.message,
-                    info: json.data.searchForFileMetadata.stack_trace,
+                    info: json.data.searchForFileMetadata.error.stack_trace,
                 };
-                thisdata.updateError(json);
+                thisdata.updateError(err);
             }
 
             thisdata.postLoad();
