@@ -77,15 +77,13 @@ public class DatabaseImpl implements Database, DatabaseService
         }
 
         try {
-            Connection connection = this.hikariDataSource.getConnection();
-
+            return this.hikariDataSource.getConnection();
             //If connection was closed, it can get established again.
         }catch (SQLTransientConnectionException exception){
             this.isStarted = false;
             start();
+            return this.hikariDataSource.getConnection();
         }
-
-        return this.hikariDataSource.getConnection();
     }
 
 
