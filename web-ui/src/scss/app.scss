@@ -2,6 +2,8 @@
 @import "template";
 @import "graphiQlAdjustments";
 @import "crawler/config.scss";
+@import "~datatables.net-bs4";
+
 
 .active_sidebar {
     background-color: #dae0e5 !important
@@ -10,3 +12,13 @@
 .hide_active{
     display:none;
 }
+
+
+.head-element:hover {
+    color: green;
+}
+
+.detail-view-element:hover {
+    color: green;
+}
+

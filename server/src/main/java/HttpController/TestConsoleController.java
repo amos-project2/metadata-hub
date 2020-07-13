@@ -13,13 +13,13 @@ import java.io.IOException;
 
 @Singleton
 @Path("/")
-public class TestconsoleController
+public class TestConsoleController
 {
     private final Config config;
     private final ClassPathFileLoader classPathFileLoader;
 
     @Inject
-    public TestconsoleController(Config config, ClassPathFileLoader classPathFileLoader)
+    public TestConsoleController(Config config, ClassPathFileLoader classPathFileLoader)
     {
         this.config = config;
         this.classPathFileLoader = classPathFileLoader;

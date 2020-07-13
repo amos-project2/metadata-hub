@@ -38,7 +38,7 @@ export class Login {
         if (userType === "admin") {
             if (this.config.queryConstructorEnabled) {
                 scope.push(1);
-                startpage = "form-query";
+                startpage = "query-editor";
             }
             if (this.config.crawlerEnabled) {
                 scope.push(2);
@@ -47,7 +47,7 @@ export class Login {
         } else {
             if (this.config.queryConstructorEnabled) {
                 scope.push(1);
-                startpage = "form-query";
+                startpage = "query-editor";
             }
         }
         return {scope, startpage};

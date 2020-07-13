@@ -6,10 +6,13 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import graphql.GraphQLError;
+import graphql.GraphQLException;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @Singleton
@@ -29,19 +32,18 @@ public class GraphQLController
     @Produces("application/json")
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/graphql")
-    public String graphQLEndpointJsonInput(String jsonData) throws IOException
-    {
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, String> map = mapper.readValue(jsonData, Map.class);
+    public String graphQLEndpointJsonInput(String jsonData) throws IOException {
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, String> map = mapper.readValue(jsonData, Map.class);
 
-        String query = map.get("query");
-        String variables = map.get("variables");
+            String query = map.get("query");
+            String variables = map.get("variables");
 
-        //its ok, doing that so, cause the compilzer optimze the second allocation away
-        query = query == null ? "" : query;
-        variables = variables == null ? "" : variables;
+            //its ok, doing that so, cause the compilzer optimze the second allocation away
+            query = query == null ? "" : query;
+            variables = variables == null ? "" : variables;
 
-        return this.graphQlEndpoint(query, variables);
+            return this.graphQlEndpoint(query, variables);
     }
 
     @POST
@@ -69,6 +71,7 @@ public class GraphQLController
     private String graphQlEndpoint(String query, String variables) throws JsonProcessingException
     {
         ExecutionResult execute;
+        ObjectMapper mapper = new ObjectMapper();
 
         if (variables != null)
         {
@@ -79,8 +82,8 @@ public class GraphQLController
             execute = this.graphQl.execute(query);
         }
 
-        String json = new ObjectMapper().writeValueAsString(execute.toSpecification());
-        //List<GraphQLError> errors = execute.getErrors();
+        String json = mapper.writeValueAsString(execute.toSpecification());
+//        List<GraphQLError> errors = execute.getErrors();
         return json;
     }
 

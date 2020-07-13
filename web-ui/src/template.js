@@ -1,7 +1,7 @@
 import {Page} from "./Page";
 import {Testname} from "./status/Testname";
 import {GraphiqlConsole} from "./graphiql/Graphiql-console";
-import {FormQueryEditor} from "./query/FormQueryEditor";
+import {QueryEditor} from "./query/FormQueryEditor/QueryEditor";
 import {GraphqlQueryEditor} from "./query/GraphqlQueryEditor";
 import {HashQuery} from "./query/HashQuery";
 import {CrawlerController} from "./crawler/CrawlerController";
@@ -10,11 +10,17 @@ import {CrawlerIntervals} from "./crawler/CrawlerIntervals";
 import {ErrorPage} from "./ErrorPage";
 import {Logout} from "./logout/Logout";
 
+import {QueryStore} from "./query/FormQueryEditor/QueryStore/QueryStore";
+import {FileTypeCategories} from "./query/FormQueryEditor/FileTypeCategories/FileTypeCategories";
+
 import {
     enable as enableDarkMode,
     disable as disableDarkMode,
     auto as followSystemColorScheme,
 } from 'darkreader';
+import {About} from "./about/About";
+import {License} from "./about/License";
+
 
 
 class NavElement {
@@ -143,15 +149,21 @@ export class Template {
         });
 
 
-        this.addNavGroup(1, "Query", n => {
-            n.addOneNavElement(new NavElement(1, "Form-Query", "form-query", t => {return new FormQueryEditor(t)}));
-            n.addOneNavElement(new NavElement(1, "Hash Query", "hash-query", t => {return new HashQuery(t)}));
-            n.addOneNavElement(new NavElement(1, "GraphQL-Query", "graphql-query", t => {return new GraphqlQueryEditor(t)}));
-
+        this.addNavGroup(1, "Query-Editor", n => {
+            n.addOneNavElement(new NavElement(1, "Query-Editor", "query-editor", t => {return new QueryEditor(t)}));
+            n.addOneNavElement(new NavElement(1, "Query-Store", "query-store", t => {return new QueryStore(t)}));
+            n.addOneNavElement(new NavElement(1, "File-Type-Categories", "file-type-categories", t => {return new FileTypeCategories(t)}));
         });
 
-        this.addNavGroup(1, "GraphiQL", n => {
+
+        this.addNavGroup(1, "Hash-Query", n => {
+            n.addOneNavElement(new NavElement(1, "Hash Query", "hash-query", t => {return new HashQuery(t)}));
+        });
+
+
+        this.addNavGroup(1, "GraphQL", n => {
             n.addOneNavElement(new NavElement(1, "GraphiQL-Console", "graphiql-console", t => {return new GraphiqlConsole(t)}));
+            n.addOneNavElement(new NavElement(1, "GraphQL-Query", "graphql-query", t => {return new GraphqlQueryEditor(t)}));
         });
 
         this.addNavGroup(2, "Crawler", n => {
@@ -182,6 +194,11 @@ export class Template {
         this.addNavGroup(3, "About", n => {
             n.addOneNavElement(new NavElement(3, "about1", "about1", t => {return new Page(t)}));
             n.addOneNavElement(new NavElement(3, "about1", "about2", t => {return new Page(t)}));
+        });
+
+        this.addNavGroup(0, "About", n => {
+            n.addOneNavElement(new NavElement(0, "About", "about", t => {return new About(t)}));
+            n.addOneNavElement(new NavElement(0, "License", "license", t => {return new License(t)}));
         });
 
 
