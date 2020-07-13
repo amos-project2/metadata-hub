@@ -35,7 +35,6 @@ import crawler.communication as communication
 class Worker(multiprocessing.Process):
 
     DEBUG = False
-    FINISH_TIMEOUT = 0.1
 
     def __init__(
         self,
@@ -172,7 +171,7 @@ class Worker(multiprocessing.Process):
         try:
             process = subprocess.Popen(
                 [f'{self._exiftool}', '-n', '-json', *package],
-                stdout=subprocess.PIPE
+                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
             )
             # FIXME better solution?
             output = str(process.stdout.read(), 'utf-8')
@@ -213,6 +212,7 @@ class Worker(multiprocessing.Process):
             self.increase_work_done()
             return
         # Create inserts
+        self.msg(f'Read {len(metadata)} files.')
         inserts = []
         tag_values = []
         for result in metadata:
