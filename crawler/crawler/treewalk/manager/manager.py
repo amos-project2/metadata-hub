@@ -20,8 +20,8 @@ from typing import Tuple, Any
 from datetime import datetime
 
 # Local imports
-from crawler.crawler.treewalk.manager.worker_control import WorkerControl
-
+#from crawler.crawler.treewalk.manager.worker_control import WorkerControl
+from .worker_control import WorkerControl
 import crawler.treewalk as treewalk
 import crawler.database as database
 import crawler.communication as communication
