@@ -1,11 +1,17 @@
 package QueryServices;
 
 import Database.Database;
+import Database.Model.DatabaseSchemaDefinition;
 import QueryServices.MetadataAutocompletion.MetadataInfoCache;
 import com.google.inject.Inject;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
+import Database.DatabaseException;
 
 public class FileCategoryService {
 
@@ -16,8 +22,22 @@ public class FileCategoryService {
         this.database = database;
     }
 
-    public List<String> getAllCategories(){
-       return null;
+    public List<String> getAllCategories() throws DatabaseException, SQLException {
+
+        try(Connection connection = database.getJDBCConnection()){
+            PreparedStatement statement = connection.prepareStatement("SELECT file_category FROM file_categories");
+            ResultSet resultSet = statement.executeQuery();
+
+            List<String> categories = new ArrayList<>();
+            while (resultSet.next()){
+                categories.add(resultSet.getString(DatabaseSchemaDefinition.FILE_CATEGORIES_FILE_CATEGORY));
+            }
+
+            return categories;
+        } catch (DatabaseException|SQLException exception) {
+            exception.printStackTrace();
+            throw exception;
+        }
     }
 
     public List<String> getFileTypesOfCategory(String category){
