@@ -147,7 +147,7 @@ export class TableOutput {
             structureReverseMap.forEach(column => {
                 tmpContainer = value[column];
                 if (tmpContainer === undefined) tmpContainer = "NULL";
-                content += `<td>${tmpContainer}</td>`;
+                content += `<td class="detail-view-element">${tmpContainer}</td>`;
 
             });
 
