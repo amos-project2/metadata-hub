@@ -8,16 +8,12 @@ working queue so the tree walk can process the request.
 
 
 # Python imports
-import logging
 from typing import Tuple
 
 
 # Local imports
 from crawler.services.config import Config
 import crawler.communication as communication
-
-
-_logger = logging.getLogger(__name__)
 
 
 def start(config: Config) -> communication.Response:

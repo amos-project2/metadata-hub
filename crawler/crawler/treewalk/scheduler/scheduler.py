@@ -24,9 +24,6 @@ from crawler.services.intervals import TimeInterval
 import crawler.communication as communication
 
 
-_logger = logging.getLogger(__name__)
-
-
 class TreeWalkScheduler(threading.Thread):
 
     def __init__(
@@ -125,7 +122,7 @@ class TreeWalkScheduler(threading.Thread):
             responses.respond_intervals(intervals)
 
 
-        _logger.info(f'TWScheduler: executing command {command.command}')
+        logging.info(f'TWScheduler: executing command {command.command}')
         functions = {
             communication.SCHEDULER_ADD_CONFIG: [add_config, self._update],
             communication.SCHEDULER_REMOVE_CONFIG: [remove_config, self._update],
@@ -148,11 +145,11 @@ class TreeWalkScheduler(threading.Thread):
         intervals = self._db_connection.get_intervals(as_json=False)
         new_interval = utils.get_present_interval(intervals)
         if new_interval == self._current_interval:
-            _logger.info(
+            logging.info(
                 f'TWScheduler: current interval is {repr(self._current_interval)}'
             )
         else:
-            _logger.info(
+            logging.info(
                 f'TWScheduler: '
                 f'changed from interval {repr(self._current_interval)} '
                 f'to interval {repr(new_interval)}.'
@@ -179,7 +176,7 @@ class TreeWalkScheduler(threading.Thread):
             task (task_module.Task): task to dispatch
 
         """
-        _logger.info('TWScheduler: dispatching task to TWManager.')
+        logging.info('TWScheduler: dispatching task to TWManager.')
         config = Config(task.config)
         response = manager.start(config)
         if not response.success:
@@ -191,7 +188,7 @@ class TreeWalkScheduler(threading.Thread):
         if task.interval <= 0:
             self._db_connection.remove(identifier=task.identifier)
         else:
-            _logger.debug(
+            logging.debug(
                 f'Set TS from {task.timestamp_next} to {timestamp_next_new} '
                 f'and pending from {task.pending} to {pending_new}.'
             )
@@ -203,11 +200,11 @@ class TreeWalkScheduler(threading.Thread):
 
     def run(self) -> None:
         """Run the scheduler thread."""
-        _logger.info('TWScheduler: Hello')
+        logging.info('TWScheduler: Hello')
         self._intervals = self._db_connection.get_intervals(as_json=False)
         while True:
             try:
-                _logger.info('TWScheduler: waiting for command.')
+                logging.info('TWScheduler: waiting for command.')
                 command = communication.scheduler_queue_input.get(
                     block=True,
                     timeout=self._update_interval
@@ -218,10 +215,10 @@ class TreeWalkScheduler(threading.Thread):
             except queue.Empty:
                 pass
             finally:
-                _logger.info('TWScheduler: updating schedule.')
+                logging.info('TWScheduler: updating schedule.')
                 self._update()
             task = self._db_connection.get_next_task()
             if task is None:
                 continue
             self._dispatch(task)
-        _logger.info('TWScheduler: Goodbye')
+        logging.info('TWScheduler: Goodbye')

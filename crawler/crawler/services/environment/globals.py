@@ -1,3 +1,6 @@
+"""Globally accessible environment settings."""
+
+
 class Env:
     # Database to connect to
     DATABASE_NAME = None
