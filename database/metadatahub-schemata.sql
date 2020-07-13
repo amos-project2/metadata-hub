@@ -126,6 +126,18 @@ CREATE TABLE public.metadata (
 ALTER TABLE public.metadata OWNER TO metadatahub;
 
 --
+-- Name: file_categories; Type: TABLE; Schema: public; Owner: metadatahub
+--
+
+CREATE TABLE public.file_categories (
+                                        file_category text NOT NULL,
+                                        file_types jsonb
+);
+
+
+ALTER TABLE public.file_categories OWNER TO metadatahub;
+
+--
 -- Name: schedule; Type: TABLE; Schema: public; Owner: metadatahub
 --
 
@@ -223,6 +235,13 @@ ALTER TABLE ONLY public.files
 
 ALTER TABLE ONLY public.metadata
     ADD CONSTRAINT metadata_pkey PRIMARY KEY (file_type);
+
+--
+-- Name: file_categories file_categories_pkey; Type: CONSTRAINT; Schema: public; Owner: metadatahub
+--
+
+ALTER TABLE ONLY public.file_categories
+    ADD CONSTRAINT file_categories_pkey PRIMARY KEY (file_category);
 
 
 --
