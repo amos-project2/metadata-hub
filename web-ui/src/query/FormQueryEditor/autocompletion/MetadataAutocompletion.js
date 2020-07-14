@@ -70,15 +70,24 @@ export class MetadataAutocompletion {
 
         let query = getFileString();
         let autocompletionClass = this;
-        console.log("Query? : " + query);
 
         this.restApiFetcherServer.fetchGet("metadata-autocomplete/datatype/?q=" + encodeURIComponent(getFileString()), function (event) {
-            console.log("First Datatype: " + event.data.toString());
             datatype = event.data.toString();
             callback(datatype);
         });
     }
 
+
+    // get all the file categories and their corresponding file types from the server
+    getAllFileCategories(callback) {
+
+        let autocompletionClass = this;
+
+        this.restApiFetcherServer.fetchGet("categoryService/", function (event) {
+            let fileCategories = event.data;
+            callback(fileCategories);
+        });
+    }
 
     //private
     updateLists() {
