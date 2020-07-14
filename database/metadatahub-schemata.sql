@@ -164,6 +164,47 @@ CREATE SEQUENCE public.files_id_seq
 ALTER TABLE public.files_id_seq OWNER TO metadatahub;
 
 
+
+-- TOC entry 214 (class 1259 OID 18303)
+-- Name: stored_editor_queries; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.stored_editor_queries (
+                                              id bigint NOT NULL,
+                                              author text,
+                                              create_time timestamp with time zone NOT NULL,
+                                              data jsonb
+);
+
+
+ALTER TABLE public.stored_editor_queries OWNER TO postgres;
+
+--
+-- TOC entry 213 (class 1259 OID 18301)
+-- Name: stored_editor_queries_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.stored_editor_queries_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.stored_editor_queries_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3084 (class 0 OID 0)
+-- Dependencies: 213
+-- Name: stored_editor_queries_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.stored_editor_queries_id_seq OWNED BY public.stored_editor_queries.id;
+
+
+
+
 --
 -- Name: time_intervals; Type: TABLE; Schema: public; Owner: metadatahub
 --
@@ -250,6 +291,23 @@ ALTER TABLE ONLY public.file_categories
 
 ALTER TABLE ONLY public.schedule
     ADD CONSTRAINT schedule_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2927 (class 2604 OID 18306)
+-- Name: stored_editor_queries id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.stored_editor_queries ALTER COLUMN id SET DEFAULT nextval('public.stored_editor_queries_id_seq'::regclass);
+
+
+--
+-- TOC entry 2943 (class 2606 OID 18311)
+-- Name: stored_editor_queries stored_editor_queries_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.stored_editor_queries
+    ADD CONSTRAINT stored_editor_queries_pkey PRIMARY KEY (id);
 
 
 --
