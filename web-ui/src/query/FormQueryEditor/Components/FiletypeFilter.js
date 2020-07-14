@@ -60,6 +60,21 @@ export class FiletypeFilter {
               `;
     }
 
+    getFileTypesHtmlCode(){
+        return `
+
+        <!--     file-types                  -->
+        <div class="fg-filetype-container form-row">
+
+            ${this.inputMultiplierFiletypeFilter.getFirstElement()}
+
+        </div>
+
+            `;
+    }
+
+
+
 
     onMount() {
         let thisdata = this;
