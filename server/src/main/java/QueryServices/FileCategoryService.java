@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import Database.DatabaseException;
+import org.jetbrains.annotations.NotNull;
 
 public class FileCategoryService {
 
@@ -50,13 +51,11 @@ public class FileCategoryService {
     public void createCategory(String category, List<String> fileTypes) throws DatabaseException, SQLException {
 
         try(Connection connection = database.getJDBCConnection()){
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO file_categories VALUES (?, to_jsonb(?::json))");
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO file_categories VALUES (?, ?::jsonb)");
 
             statement.setString(1, category);
-            String fileTypesString = fileTypes.stream()
-                .map(fileType -> "\""+ fileType +"\"")
-                .collect(Collectors.joining(",","[","]"));
-            statement.setString(2, fileTypesString);
+            String fileTypesJsonString = createJsonString(fileTypes);
+            statement.setString(2, fileTypesJsonString);
             statement.executeUpdate();
 
         } catch (DatabaseException|SQLException exception) {
@@ -83,6 +82,7 @@ public class FileCategoryService {
 
         try(Connection connection = database.getJDBCConnection()){
             PreparedStatement statement = connection.prepareStatement("UPDATE file_categories SET file_category = ? WHERE file_category = ?");
+
             statement.setString(1, newName);
             statement.setString(2, oldName);
             statement.executeUpdate();
@@ -93,14 +93,41 @@ public class FileCategoryService {
         }
     }
 
-    public void addTypeToCategory(String category, String type){
+    public void addTypesToCategory(String category, List<String> file_types) throws DatabaseException, SQLException {
 
+        try(Connection connection = database.getJDBCConnection()){
+            PreparedStatement statement = connection.prepareStatement("UPDATE file_categories SET file_types = COALESCE(file_types, '[]'::jsonb) || ?::jsonb WHERE file_category = ?");
+
+            String fileTypesJsonString = createJsonString(file_types);
+            statement.setString(1, fileTypesJsonString);
+            statement.setString(2, category);
+            statement.executeUpdate();
+
+        } catch (DatabaseException|SQLException exception) {
+            exception.printStackTrace();
+            throw exception;
+        }
     }
 
-    public void deleteTypeFromCategory(String category, String type){
+    public void deleteTypeFromCategory(String category, String file_type) throws DatabaseException, SQLException {
 
+        try(Connection connection = database.getJDBCConnection()){
+            PreparedStatement statement = connection.prepareStatement("UPDATE file_categories SET file_types = file_types - ? WHERE file_category = ?");
+
+            statement.setString(1, file_type);
+            statement.setString(2, category);
+            statement.executeUpdate();
+
+        } catch (DatabaseException|SQLException exception) {
+            exception.printStackTrace();
+            throw exception;
+        }
     }
 
-
-
+    @NotNull
+    private String createJsonString(List<String> fileTypes) {
+        return fileTypes.stream()
+            .map(fileType -> "\""+ fileType +"\"")
+            .collect(Collectors.joining(",","[","]"));
+    }
 }

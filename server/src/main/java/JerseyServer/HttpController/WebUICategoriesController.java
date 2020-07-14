@@ -76,15 +76,18 @@ public class WebUICategoriesController {
     }
 
     @PUT
-    @Path("/admin/{category}/{file_type}")
-    public boolean addTypeToCategory(@PathParam("category") String category, @QueryParam("file_type") String file_type){
-        categoryService.addTypeToCategory(category, file_type);
+    @Path("/admin/{category}/{file_types}")
+    public boolean addTypesToCategory(@PathParam("category") String category, @PathParam("file_types") String file_types) throws DatabaseException, SQLException {
+        log.info("addTypesToCategory: category= " + category + " file_types= " + file_types);
+        List<String> fileTypesList = createList(file_types);
+        categoryService.addTypesToCategory(category, fileTypesList);
         return true;
     }
 
     @DELETE
     @Path("/admin/{category}/{file_type}")
-    public boolean deleteTypeFromCategory(@PathParam("category") String category, @PathParam("file_type") String file_type){
+    public boolean deleteTypeFromCategory(@PathParam("category") String category, @PathParam("file_type") String file_type) throws DatabaseException, SQLException {
+        log.info("deleteTypeFromCategory: category= " + category + " file_type= " + file_type);
         categoryService.deleteTypeFromCategory(category, file_type);
         return true;
     }
