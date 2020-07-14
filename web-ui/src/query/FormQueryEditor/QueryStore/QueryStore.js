@@ -1,6 +1,8 @@
 import {Page} from "../../../Page";
 import {StoreService} from "./StoreService";
 
+import * as moment from 'moment';
+
 export class QueryStore extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         super(parent, identifier, mountpoint, titleSelector);
@@ -41,11 +43,14 @@ export class QueryStore extends Page {
 
             data.forEach(value => {
                 // language=HTML
+
+
+                let dateString = moment(new Date(value.create_time)).format('YYYY-MM-DD HH:MM');
                 $(".storage-container").append(`
 
                     <div class="row mb-3 detail-view-element my-storage-row-${value.id}">
                         <div class="col font-weight-bold">${value.author}</div>
-                        <div class="col">${value.create_time}</div>
+                        <div class="col">${dateString}</div>
                         <div class="col"><button type="button" class="btn btn-sm btn-success restore-storage-element" data-id="${value.id}">Restore</button></div>
                         <div class="col"><button type="button" class="btn btn-sm btn-danger delete-storage-element" data-id="${value.id}">Delete</button></div>
                     </div>
@@ -60,7 +65,6 @@ export class QueryStore extends Page {
             });
 
             $(".delete-storage-element").click(function () {
-                alert($(this).data("id"));
                 thisdata.storeService.deleteQuery($(this).data("id"));
                 $(".my-storage-row-" + $(this).data("id")).stop(true).hide(2000);
             });

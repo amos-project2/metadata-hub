@@ -23,7 +23,7 @@ public class QueryEditorStorageService
     {
         try (Connection connection = database.getJDBCConnection())
         {
-            PreparedStatement statement = connection.prepareStatement("SELECT id, author, create_time FROM stored_editor_queries");
+            PreparedStatement statement = connection.prepareStatement("SELECT id, author, create_time FROM stored_editor_queries Order by id DESC ");
             ResultSet resultSet = statement.executeQuery();
 
             ArrayList<StoredQueryMetadata> storedQueriesMetadata = new ArrayList<>();
