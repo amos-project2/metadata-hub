@@ -1,14 +1,21 @@
 package JerseyServer.HttpController;
 
-import Database.Database;
+import Database.DatabaseException;
+import QueryServices.StoreService.QueryEditorStorageService;
+import QueryServices.StoreService.StoredQuery;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+
 
 
 @Singleton
@@ -17,27 +24,59 @@ public class QueryEditorStorageController
 {
 
     private static final Logger log = LoggerFactory.getLogger(QueryEditorStorageController.class);
-    private final Database database;
+    private final QueryEditorStorageService queryEditorStorageService;
 
 
     @Inject
-    public QueryEditorStorageController(Database database)
+    public QueryEditorStorageController(QueryEditorStorageService queryEditorStorageService)
     {
-
-        this.database = database;
+        this.queryEditorStorageService = queryEditorStorageService;
     }
 
-
-    //TODO add methods
 
     @GET
     @Produces("application/json")
-    @Path("/stub-method")
-    public String clearCache()
+    @Path("/get-all-stored-queries-metadata")
+    public List<Map<String, String>> getAllStoredQueriesMetadata() throws DatabaseException, IOException, SQLException
     {
-        return "";
+        return this.queryEditorStorageService.getAllStoredQueriesMetadata();
     }
 
+    @GET
+    @Produces("application/json")
+    @Path("/get-all-stored-queries-metadata")
+    public StoredQuery getStoredQuery(@QueryParam("id") long id) throws DatabaseException, IOException, SQLException
+    {
+        return this.queryEditorStorageService.getStoredQuery(id);
+    }
 
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/store-query")
+    public void storeQuery(String jsonData) throws DatabaseException, IOException, SQLException
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, String> map = mapper.readValue(jsonData, Map.class);
+
+        String author = map.get("author");
+        String data = map.get("data");
+
+        this.queryEditorStorageService.storeQuery(author, data);
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Path("/delete-query")
+    public void deleteQuery(@FormParam("id") long id) throws DatabaseException, IOException, SQLException
+    {
+        this.queryEditorStorageService.deleteQuery(id);
+    }
+
+    @POST
+    @Path("/delete-all-query")
+    public void deleteAllQuery() throws DatabaseException, IOException, SQLException
+    {
+        this.queryEditorStorageService.deleteAllQuery();
+    }
 
 }
