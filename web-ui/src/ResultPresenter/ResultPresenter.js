@@ -3,6 +3,7 @@ import {TableOutput} from "./Components/TableOutput";
 import {ExportOutput} from "./Components/ExportOutput";
 import {ControllUnits} from "./Components/ControllUnits";
 import {DetailViewModal} from "./Modal/DetailViewModal";
+import {DownloadSucessModal} from "./Modal/DownloadSucessModal";
 
 export class ResultPresenter {
 
@@ -20,12 +21,15 @@ export class ResultPresenter {
         this.pSelector = $("#" + this.id);
         this.graphQlFetcher = graphQlFetcher;
 
+        this.downloadSuccessModal = new DownloadSucessModal(this.id);
+
         this.controllUnits = new ControllUnits("result-presenter" + this.id, this, graphQLIntrospectionModal);
         this.viewModal = new DetailViewModal(this.graphQlFetcher);
 
         this.jsonOutput = new JsonOutput();
         this.tableOutput = new TableOutput(this, this.controllUnits, this.viewModal);
-        this.exportOutput = new ExportOutput();
+        this.exportOutput = new ExportOutput(this.downloadSuccessModal);
+
 
 
         this.cleared = true;
@@ -51,6 +55,7 @@ export class ResultPresenter {
 
         // language=HTML
         return `
+            ${this.downloadSuccessModal.getHtmlCode()}
             <div id="${this.id}">
                 <h4>Result:</h4>
 

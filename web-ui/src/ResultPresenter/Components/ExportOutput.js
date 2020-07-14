@@ -11,7 +11,8 @@ export class ExportOutput {
         return this.count || 0;
     }
 
-    constructor() {
+    constructor(downloadSuccessModal) {
+        this.downloadSuccessModal = downloadSuccessModal;
         this.id = "export-" + ExportOutput.increaseCount();
         this.pSelector = null;
         this.lastformGraphQL = null;
@@ -88,6 +89,10 @@ export class ExportOutput {
             this.pSelector.find(".init-area").show(1000);
         });
 
+        this.pSelector.find(".download-button-start").click(() => {
+            this.downloadSuccessModal.openModal();
+        });
+
         this.pSelector.find(".download-button").click(() => {
 
             let metaAll = this.pSelector.find(`#meta-all${this.id}`).prop('checked');
@@ -112,9 +117,7 @@ export class ExportOutput {
             }
 
             let query = formGraphQL.generateAndGetGraphQlCode();
-            console.log(query);
 
-            //TODO insert into hidden fields
 
             this.pSelector.find(".tquery-included").val(queryInclude);
             this.pSelector.find(".tquery").text(query);
