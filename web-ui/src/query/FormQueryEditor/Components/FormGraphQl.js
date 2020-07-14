@@ -21,7 +21,6 @@ export class FormGraphQl {
 
         this.limit = "";
         this.offset = "";
-        this.showDeleted = "";
         this.deleted = "";
         this.startDate = "";
         this.endDate = "";
@@ -110,14 +109,33 @@ export class FormGraphQl {
 
         //dont change the formatting here, cause this has a direct change to the formatting in the graphql-inspection-window
         let query_header = `
-   ${this.fileHashes} ${this.id}
-   ${this.limit} ${this.offset} ${this.sortAttribut} ${this.sortOption}
-   ${this.deleted}
-   ${this.startDate} ${this.endDate} ${this.startDateUpdated} ${this.endDateUpdated}
-   ${this.filetypes}
-   ${this.options_options} ${this.options_attributes} ${this.options_values}
-   ${this.filterOption} ${this.filterCustomString}
-   ${this.attributes}
+    ${this.id}
+
+    ${this.fileHashes}
+
+    ${this.limit}
+    ${this.offset}
+
+    ${this.sortAttribut}
+    ${this.sortOption}
+
+    ${this.deleted}
+
+    ${this.startDate}
+    ${this.endDate}
+    ${this.startDateUpdated}
+    ${this.endDateUpdated}
+
+    ${this.filetypes}
+
+    ${this.options_options}
+    ${this.options_attributes}
+    ${this.options_values}
+
+    ${this.filterOption}
+    ${this.filterCustomString}
+
+    ${this.attributes}
 
         `;
 
@@ -125,7 +143,7 @@ export class FormGraphQl {
             query_header = "";
         } else {
             query_header = `(
-            ${query_header}
+               ${query_header}
   )`
         }
 
@@ -163,7 +181,8 @@ query
   }
 }`;
 //END dont do a change
-
+        //query = query.replace(/(?:(?:\r\n|\r|\n)\s*){2}/gm, "");
+        query = query.replace(/(^[ \t]*\n)/gm, "");
         return query;
     }
 

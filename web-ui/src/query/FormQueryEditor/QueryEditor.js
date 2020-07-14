@@ -237,7 +237,7 @@ export class QueryEditor extends Page {
         if (showDeleted) {deleted = `showDeleted: true,\n  `;}
 
         formGraphQl.limit = limit;
-        formGraphQl.showDeleted = showDeleted;
+        formGraphQl.deleted = deleted;
 
         return formGraphQl;//.generateAndGetGraphQlCode();
     }
