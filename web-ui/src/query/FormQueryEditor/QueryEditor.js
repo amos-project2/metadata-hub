@@ -152,6 +152,7 @@ export class QueryEditor extends Page {
             ${this.graphQLIntrospectionModal.getHtmlCode()}
             ${this.fileTypeCategoriesService.getModalHtml()}
             ${this.resultPresenter.viewModal.getHtmlCode()}
+            ${this.storeService.getSaveModal().getHtmlCode()}
 
             ${this.metadatAutocompletion.getSuggestionViewer().getStaticModalHtml()}
             ${this.clearCacheModal.getHtmlCode()}
@@ -191,8 +192,8 @@ export class QueryEditor extends Page {
         });
 
         $(".save-editor").click(function () {
-            thisdata.storeService.saveEditor();
-            //TODO open Save-Confirm-Modal
+            let back = thisdata.storeService.saveEditor();
+            thisdata.storeService.getSaveModal().openModalWithState(back);
         });
 
 

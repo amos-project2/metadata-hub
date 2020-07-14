@@ -1,8 +1,11 @@
+import {SaveModal} from "./Modals/SaveModal";
+
 export class StoreService {
 
     constructor(queryEditor) {
         this.queryEditor = queryEditor;
         this.lastSavedData = null;
+        this.saveModal = new SaveModal();
     }
 
     saveEditor() {
@@ -49,6 +52,10 @@ export class StoreService {
 
     restoreEditor() {
 
+    }
+
+    getSaveModal() {
+        return this.saveModal;
     }
 
 }
