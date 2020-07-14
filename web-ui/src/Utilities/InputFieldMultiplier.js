@@ -126,6 +126,18 @@ export class InputFieldMultiplier {
 
     }
 
+    deleteAllInputValues(addHtmlClassWhileDeleting){
+        $(this.fieldSelector).each(function () {
+            let lastField = $(this);
+
+            lastField.addClass(addHtmlClassWhileDeleting);
+            lastField.val("");
+            lastField.trigger("focusin");
+            lastField.trigger("focusout");
+            lastField.removeClass(addHtmlClassWhileDeleting);
+        });
+    }
+
 
 
 }

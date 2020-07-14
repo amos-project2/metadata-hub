@@ -16,6 +16,9 @@ export class FiletypeFilter {
                     <button type="button" id="file-category-button" class="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#file-categories-modal">
                         Select File Category
                     </button>
+                    <button type="button" id="delete-types-button" class="btn btn-danger" ">
+                        Delete all File Types
+                    </button>
                 </div>
 
                 <!-- file-categories-modal -->
@@ -91,6 +94,11 @@ export class FiletypeFilter {
 
             });
         });
+
+        //Delete all file types
+        $("#delete-types-button").click(function () {
+            thisdata.inputMultiplierFiletypeFilter.deleteAllInputValues("autocompleteDeactivated");
+        })
     }
 
     generateGraphQlCodeAndSetTo(formGraphQL) {
