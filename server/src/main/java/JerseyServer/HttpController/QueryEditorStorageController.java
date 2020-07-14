@@ -56,10 +56,14 @@ public class QueryEditorStorageController
     public void storeQuery(String jsonData) throws DatabaseException, IOException, SQLException
     {
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, String> map = mapper.readValue(jsonData, Map.class);
+        Map<String, Object> map = mapper.readValue(jsonData, Map.class);
 
-        String author = map.get("author");
-        String data = map.get("data");
+        String author = (String)map.get("author");
+//        String data = map.get("data");
+        System.out.println(map.get("data"));
+
+        ObjectMapper mapper2 = new ObjectMapper();
+        String data = mapper2.writeValueAsString(map.get("data"));
 
         this.queryEditorStorageService.storeQuery(author, data);
     }

@@ -27,7 +27,7 @@ export class RestAPIFetcher {
     fetchJson(path, jsonData, callback) {
         let promise = fetch(this.urlBuilder(path), {
             method: "POST",
-            body: JSON.stringify(data),
+            body: JSON.stringify(jsonData),
             headers: {
                 "Content-Type": "application/json"
             }
@@ -81,7 +81,7 @@ export class RestAPIFetcher {
 }
 
 //its used by the callback function in the fetchers
-class FetchResult {
+export class FetchResult {
 
     static SUCCESS() {return 1;} //const
     static NETWORK_ERROR() {return 2;}//const

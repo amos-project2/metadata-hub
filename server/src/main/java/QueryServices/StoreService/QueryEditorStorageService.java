@@ -27,7 +27,7 @@ public class QueryEditorStorageService
             ResultSet resultSet = statement.executeQuery();
 
             ArrayList<StoredQueryMetadata> storedQueriesMetadata = new ArrayList<>();
-            while(resultSet.next())
+            while (resultSet.next())
             {
                 String author = resultSet.getString("author");
                 Timestamp create_time = resultSet.getTimestamp("create_time");
@@ -63,7 +63,7 @@ public class QueryEditorStorageService
     {
         try (Connection connection = database.getJDBCConnection())
         {
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO stored_editor_queries VALUES (?, ?, ?::jsonb)");
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO stored_editor_queries (author, create_time, data) VALUES (?, ?, ?::jsonb)");
 
             statement.setString(1, author);
             statement.setTimestamp(2, new Timestamp(System.currentTimeMillis()));

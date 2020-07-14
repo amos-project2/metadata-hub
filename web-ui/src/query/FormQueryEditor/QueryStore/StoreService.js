@@ -1,4 +1,5 @@
 import {SaveModal} from "./Modals/SaveModal";
+import {FetchResult} from "../../../libs/Fetcher/RestAPIFetcher";
 
 export class StoreService {
 
@@ -45,10 +46,13 @@ export class StoreService {
         let sendData = {author: author, data: data};
         console.log(sendData);
 
-        this.restApiFetcherServer.fetchJson("saveenginge",sendData, function (event) {
-            console.log(event.data);
-            console.log("hey");
-        });
+
+        this.storeQuery(sendData);
+
+        // this.restApiFetcherServer.fetchJson("saveenginge", sendData, function (event) {
+        //     console.log(event.data);
+        //     console.log("hey");
+        // });
 
         return true;
 
@@ -61,5 +65,57 @@ export class StoreService {
     getSaveModal() {
         return this.saveModal;
     }
+
+
+    //server-api-methods
+
+    //private
+    //higher-order-function/method
+    helperMethod(successFunc, errorFunc, completeCallback) {
+
+        return function (event) {
+            if (event.status === FetchResult.SUCCESS()) {
+                if (successFunc) successFunc(event.data());
+            } else {
+                if (errorFunc) errorFunc(event.status)
+            }
+            if (completeCallback) completeCallback(event);
+        }
+    }
+
+
+    getAllStoredQueriesMetadata(successFunc, errorFunc, completeCallback) {
+
+        this.restApiFetcherServer.fetchGet("query-storage/get-all-stored-queries-metadata/", this.helperMethod(successFunc, errorFunc, completeCallback));
+
+    }
+
+    getStoredQuery(id, successFunc, errorFunc, completeCallback) {
+
+        this.restApiFetcherServer.fetchGet("query-storage/get-stored-queries-metadata/?id=" + id, this.helperMethod(successFunc, errorFunc, completeCallback));
+
+    }
+
+    storeQuery(jsonData, successFunc, errorFunc, completeCallback) {
+
+        this.restApiFetcherServer.fetchJson("query-storage/store-query/", jsonData, this.helperMethod(successFunc, errorFunc, completeCallback));
+
+    }
+
+    deleteQuery(id, successFunc, errorFunc, completeCallback) {
+
+        let formData = new FormData();
+        formData.append("id", id);
+        this.restApiFetcherServer.fetchPost("query-storage/delete-query", formData, this.helperMethod(successFunc, errorFunc, completeCallback));
+
+    }
+
+    deleteAllQuery(successFunc, errorFunc, completeCallback) {
+
+        let formData = new FormData();
+        this.restApiFetcherServer.fetchPost("query-storage/delete-all-query", formData, this.helperMethod(successFunc, errorFunc, completeCallback));
+    }
+
+    //end server-api-methods
 
 }
