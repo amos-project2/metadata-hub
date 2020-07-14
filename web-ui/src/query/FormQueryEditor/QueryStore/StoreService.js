@@ -2,8 +2,9 @@ import {SaveModal} from "./Modals/SaveModal";
 
 export class StoreService {
 
-    constructor(queryEditor) {
+    constructor(queryEditor, restApiFetcherServer) {
         this.queryEditor = queryEditor;
+        this.restApiFetcherServer = restApiFetcherServer;
         this.lastSavedData = null;
         this.saveModal = new SaveModal();
     }
@@ -44,7 +45,10 @@ export class StoreService {
         let sendData = {author: author, data: data};
         console.log(sendData);
 
-        //TODO send
+        this.restApiFetcherServer.fetchJson("saveenginge",sendData, function (event) {
+            console.log(event.data);
+            console.log("hey");
+        });
 
         return true;
 
