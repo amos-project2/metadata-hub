@@ -1,5 +1,8 @@
 import {Page} from "../../../Page";
 import {FileTypeCategoriesService} from "./FileTypeCategoriesService";
+import {MetadataAutocompletion} from "../autocompletion/MetadataAutocompletion";
+import {FiletypeFilter} from "../Components/FiletypeFilter";
+import {InputFieldMultiplier} from "../../../Utilities/InputFieldMultiplier";
 
 
 export class FileTypeCategories extends Page {
@@ -20,24 +23,105 @@ export class FileTypeCategories extends Page {
         //take a look in class Page
 
         this.fileTypeCategoriesService = new FileTypeCategoriesService();
+        this.inputMultiplierFiletypeFilter = this.inputMultiplierFiletypeFilterBuilder();
+        this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
 
+        this.metadatAutocompletion = new MetadataAutocompletion(
+            this.parent.dependencies.restApiFetcherServer,
+            this.graphQlFetcher,
+            ".filetype-element-input",
+            ".fg-metadata-attribute",
+            ".attribut-element-input",
+            ".modalOpenerSelector",
+        );
+
+        this.filetypeFilter = new FiletypeFilter(this.metadatAutocompletion);
     }
 
     content() {
-        return `nothing rigth now`;
-        //here you can return back the html content which should be shown
+        return `
+                <!--     file-category-selector       -->
+                <div class="form-group col-md-6">
+                    <button type="button" id="file-category-button" class="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#file-categories-modal">
+                        Select File Category
+                    </button>
+                    <button type="button" id="delete-types-button" class="btn btn-danger" ">
+                        Delete all File Types
+                    </button>
+                </div>
+
+                <!-- file-categories-modal -->
+                <div class="modal fade" id="file-categories-modal" tabindex="-1" role="dialog" aria-labelledby="file-categories-label" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="file-categories-label">
+                                    File Categories
+                                </h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body" id="file-categories-modal-body">
+                            No Categories available :(
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+        <!--     filetypes            -->
+        ${this.filetypeFilter.getFileTypesHtmlCode()}
+
+        <div class="form-row">
+            <div class="col-md-12">
+                <hr>
+            </div>
+        </div>
+        `;
     }
 
     onMount() {
+        let thisdata = this;
 
-        //its called at caching-level=3 once, and never again (except you call the clearCache-method)
-        //its called at caching-level=0 each time you enter the page and before onLoad-method is called
+        this.filetypeFilter.onMount();
+        this.metadatAutocompletion.addListener();
 
-        //here you can register event-listener
-        //for example: $(".hallo").click(function() {alert("asdf");});
-        //which alerts asdf each time you click on any html element with the class hallo
+        //Activate File Category Modal Pop-Up Window
+        $("#file-category-button").click(function () {
+            thisdata.metadatAutocompletion.getAllFileCategories(function (fileCategoryMap) {
 
-        //$("#hallo") this here would select not classes but one html-elemnt with id=hallo
+                console.log(fileCategoryMap);
+
+                if(fileCategoryMap == undefined){
+                    return;
+                }
+
+                $("#file-categories-modal-body").html("Click on a file category to choose multiple file types for the query editor.<br/><br/>")
+
+                Object.keys(fileCategoryMap).forEach( key => {
+                    $("#file-categories-modal-body").append("<button type=\"button\" class=\"btn btn-primary\" id='button-"+ key + "' data-dismiss=\"modal\"> File Category: " + key + "</button> <br/>");
+                    $("#file-categories-modal-body").append("File Types: " + "<br\>" + fileCategoryMap[key] + "<br/><br/>");
+
+                    //add file types of file category into the query editor
+                    $("#button-"+key).click(function () {
+                        let file_types = fileCategoryMap[key];
+                        for(var file_type_index in file_types){
+                            thisdata.inputMultiplierFiletypeFilter.addInputValueOnlyOnce(file_types[file_type_index],
+                                "autocompleteDeactivated");
+                        }
+                    })
+                });
+
+            });
+        });
+
+        //Delete all file types
+        $("#delete-types-button").click(function () {
+            thisdata.inputMultiplierFiletypeFilter.deleteAllInputValues("autocompleteDeactivated");
+        })
     }
 
     onUnMount() {
@@ -67,6 +151,27 @@ export class FileTypeCategories extends Page {
 
     onUnLoad() {
         //this method is called on each unload of the page-section here
+    }
+
+    inputMultiplierFiletypeFilterBuilder() {
+
+        let thisdata = this;
+        let emptyFunction = function () {};
+
+        let appendingHtmlCode = `<div class="form-group col-md-4 fg-filetype-element"><input type="text" class="form-control filetype-element-input save-element" data-name="t1" data-multiplier="true"></div>`;
+
+        let focusOutFunction = function () {
+            thisdata.metadatAutocompletion.updateLists();
+        }
+
+        let focusInIfEmptyFieldFunction = function () {
+            thisdata.metadatAutocompletion.reAddListener();
+        };
+
+
+        return new InputFieldMultiplier(".fg-filetype-container", ".filetype-element-input", appendingHtmlCode, emptyFunction,
+            focusOutFunction, focusInIfEmptyFieldFunction, emptyFunction);
+
     }
 
 }
