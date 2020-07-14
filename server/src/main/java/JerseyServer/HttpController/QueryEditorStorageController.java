@@ -3,6 +3,7 @@ package JerseyServer.HttpController;
 import Database.DatabaseException;
 import QueryServices.StoreService.QueryEditorStorageService;
 import QueryServices.StoreService.StoredQuery;
+import QueryServices.StoreService.StoredQueryMetadata;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -13,13 +14,12 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 
 
-
 @Singleton
-@Path("/api/exportGraphQL/")
+@Path("/api/query-storage/")
 public class QueryEditorStorageController
 {
 
@@ -37,14 +37,14 @@ public class QueryEditorStorageController
     @GET
     @Produces("application/json")
     @Path("/get-all-stored-queries-metadata")
-    public List<Map<String, String>> getAllStoredQueriesMetadata() throws DatabaseException, IOException, SQLException
+    public ArrayList<StoredQueryMetadata> getAllStoredQueriesMetadata() throws DatabaseException, IOException, SQLException
     {
         return this.queryEditorStorageService.getAllStoredQueriesMetadata();
     }
 
     @GET
     @Produces("application/json")
-    @Path("/get-all-stored-queries-metadata")
+    @Path("/get-stored-queries-metadata")
     public StoredQuery getStoredQuery(@QueryParam("id") long id) throws DatabaseException, IOException, SQLException
     {
         return this.queryEditorStorageService.getStoredQuery(id);

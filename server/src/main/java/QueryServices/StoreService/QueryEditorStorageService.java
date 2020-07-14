@@ -19,7 +19,7 @@ public class QueryEditorStorageService
         this.database = database;
     }
 
-    public List<Map<String, String>> getAllStoredQueriesMetadata() throws DatabaseException, SQLException, IOException
+    public ArrayList<StoredQueryMetadata> getAllStoredQueriesMetadata() throws DatabaseException, SQLException, IOException
     {
         try (Connection connection = database.getJDBCConnection())
         {
@@ -33,9 +33,10 @@ public class QueryEditorStorageService
                 Timestamp create_time = resultSet.getTimestamp("create_time");
                 storedQueriesMetadata.add(new StoredQueryMetadata(author, create_time));
             }
+
+            return storedQueriesMetadata;
         }
 
-        return getAllStoredQueriesMetadata();
     }
 
     public StoredQuery getStoredQuery(long id) throws SQLException, IOException, DatabaseException
