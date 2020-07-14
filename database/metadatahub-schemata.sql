@@ -177,7 +177,7 @@ CREATE TABLE public.stored_editor_queries (
 );
 
 
-ALTER TABLE public.stored_editor_queries OWNER TO postgres;
+ALTER TABLE public.stored_editor_queries OWNER TO metadatahub;
 
 --
 -- TOC entry 213 (class 1259 OID 18301)
@@ -192,7 +192,7 @@ CREATE SEQUENCE public.stored_editor_queries_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.stored_editor_queries_id_seq OWNER TO postgres;
+ALTER TABLE public.stored_editor_queries_id_seq OWNER TO metadatahub;
 
 --
 -- TOC entry 3084 (class 0 OID 0)
