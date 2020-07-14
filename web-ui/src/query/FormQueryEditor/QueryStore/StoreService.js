@@ -3,8 +3,9 @@ import {FetchResult} from "../../../libs/Fetcher/RestAPIFetcher";
 
 export class StoreService {
 
-    constructor(queryEditor, restApiFetcherServer) {
+    constructor(queryEditor, queryStore, restApiFetcherServer) {
         this.queryEditor = queryEditor;
+        this.queryStore = queryStore;
         this.restApiFetcherServer = restApiFetcherServer;
         this.lastSavedData = null;
         this.saveModal = new SaveModal();

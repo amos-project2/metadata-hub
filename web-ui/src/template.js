@@ -20,6 +20,7 @@ import {
 } from 'darkreader';
 import {About} from "./about/About";
 import {License} from "./about/License";
+import {StoreService} from "./query/FormQueryEditor/QueryStore/StoreService";
 
 
 
@@ -150,8 +151,16 @@ export class Template {
 
 
         this.addNavGroup(1, "Query-Editor", n => {
-            n.addOneNavElement(new NavElement(1, "Query-Editor", "query-editor", t => {return new QueryEditor(t)}));
-            n.addOneNavElement(new NavElement(1, "Query-Store", "query-store", t => {return new QueryStore(t)}));
+
+            let queryEditor = new QueryEditor(this);
+            let queryStore = new QueryStore(this);
+            let storeService = new StoreService(queryEditor, this.queryStore, this.dependencies.restApiFetcherServer);
+
+            queryEditor.setStoreService(storeService);
+            queryStore.setStoreService(storeService);
+
+            n.addOneNavElement(new NavElement(1, "Query-Editor", "query-editor", t => {return queryEditor}));
+            n.addOneNavElement(new NavElement(1, "Query-Store", "query-store", t => {return queryStore}));
             n.addOneNavElement(new NavElement(1, "File-Type-Categories", "file-type-categories", t => {return new FileTypeCategories(t)}));
         });
 

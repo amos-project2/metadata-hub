@@ -6,20 +6,12 @@ export class QueryStore extends Page {
         super(parent, identifier, mountpoint, titleSelector);
         this.title = "Query Store";
         this.cacheLevel = 3;
-        //use 0 for no caching (the dom for this page will be deleted and onMound/onUnMount is called each enter and leaving the page here)
-        //use 3 for complete caching(the dome for this page stay after leaving
-        //     (its only hidden, be careful, of using html-classes/ids in more areas of the whole webpage, that they dont overlap))
-        //     onMount is only called at the first time, unOnLoad-never (except if you use the delete-cache-method)
-        //     i think using 3 here is a good idea, so the user can work on a formular go to other page and go back to work on
-        //     the dynamic stuff in the page is handled by javascript, timers who reload parts for page in a specific way for specific page-components
+        this.storeService = null;
 
+    }
 
-        //here you set the title-attribut
-        //you can here also set the caching_behavour and much more
-        //take a look in class Page
-
-        this.StoreService = new StoreService();
-
+    setStoreService(storeService) {
+        this.storeService=storeService
     }
 
     content() {

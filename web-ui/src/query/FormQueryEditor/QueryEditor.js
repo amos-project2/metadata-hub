@@ -43,8 +43,12 @@ export class QueryEditor extends Page {
         this.metadatAutocompletion.addAdvancedFilter(this.advancedFilter);
         this.metadatAutocompletion.addAttributSelector(this.attributSelector);
 
-        this.storeService = new StoreService(this, this.parent.dependencies.restApiFetcherServer);
+        this.storeService = null;//new StoreService(this, this.parent.dependencies.restApiFetcherServer);
 
+    }
+
+    setStoreService(storeService) {
+        this.storeService=storeService
     }
 
 
