@@ -76,7 +76,7 @@ export class StoreService {
 
         return function (event) {
             if (event.status === FetchResult.SUCCESS()) {
-                if (successFunc) successFunc(event.data());
+                if (successFunc) successFunc(event.data);
             } else {
                 if (errorFunc) errorFunc(event.status)
             }

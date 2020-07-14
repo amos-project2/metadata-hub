@@ -3,10 +3,10 @@ package JerseyServer.HttpController;
 import Database.DatabaseException;
 import QueryServices.StoreService.QueryEditorStorageService;
 import QueryServices.StoreService.StoredQuery;
-import QueryServices.StoreService.StoredQueryMetadata;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +14,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Map;
 
 
@@ -37,9 +36,11 @@ public class QueryEditorStorageController
     @GET
     @Produces("application/json")
     @Path("/get-all-stored-queries-metadata")
-    public ArrayList<StoredQueryMetadata> getAllStoredQueriesMetadata() throws DatabaseException, IOException, SQLException
+    public String getAllStoredQueriesMetadata() throws DatabaseException, IOException, SQLException
     {
-        return this.queryEditorStorageService.getAllStoredQueriesMetadata();
+        ObjectMapper mapper = new ObjectMapper();
+        String data = mapper.writeValueAsString(this.queryEditorStorageService.getAllStoredQueriesMetadata());
+        return data;
     }
 
     @GET
@@ -58,7 +59,7 @@ public class QueryEditorStorageController
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> map = mapper.readValue(jsonData, Map.class);
 
-        String author = (String)map.get("author");
+        String author = (String) map.get("author");
 //        String data = map.get("data");
         System.out.println(map.get("data"));
 

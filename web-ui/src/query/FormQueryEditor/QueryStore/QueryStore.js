@@ -11,53 +11,81 @@ export class QueryStore extends Page {
     }
 
     setStoreService(storeService) {
-        this.storeService=storeService
+        this.storeService = storeService
     }
 
     content() {
-        return `nothing rigth now`;
-        //here you can return back the html content which should be shown
+        // language=HTML
+        return `
+            <div class="storage-load-container" style="display: none">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+            <div class="storage-container container pt-4" style="display:none"></div>`;
     }
 
     onMount() {
 
-        //its called at caching-level=3 once, and never again (except you call the clearCache-method)
-        //its called at caching-level=0 each time you enter the page and before onLoad-method is called
 
-        //here you can register event-listener
-        //for example: $(".hallo").click(function() {alert("asdf");});
-        //which alerts asdf each time you click on any html element with the class hallo
-
-        //$("#hallo") this here would select not classes but one html-elemnt with id=hallo
     }
 
-    onUnMount() {
 
-        //its called at caching-level=3 never(except you call the clearCache-method)
-        //its called at caching-level=0 each time you leave the page and after onUnLoad-method is called
+    loadContent() {
+        $(".storage-container").html("");
+        $(".storage-container").stop(true).hide();
+        $(".storage-load-container").stop(true).show();
+        this.storeService.getAllStoredQueriesMetadata((data) => {
 
-        //often you dont need that method, not in both cases i mentioned here
+            $(".storage-load-container").stop(true).delay(1000).hide(1000);
+
+            data.forEach(value => {
+                // language=HTML
+                $(".storage-container").append(`
+
+                    <div class="row mb-3 detail-view-element my-storage-row-${value.id}">
+                        <div class="col font-weight-bold">${value.author}</div>
+                        <div class="col">${value.create_time}</div>
+                        <div class="col"><button type="button" class="btn btn-sm btn-success restore-storage-element" data-id="${value.id}">Restore</button></div>
+                        <div class="col"><button type="button" class="btn btn-sm btn-danger delete-storage-element" data-id="${value.id}">Delete</button></div>
+                    </div>
+
+                `);
+                console.log(value);
+            });
+
+            let thisdata = this;
+            $(".restore-storage-element").click(function () {
+                thisdata.storeService.restoreEditor($(this).data("id"));
+            });
+
+            $(".delete-storage-element").click(function () {
+                alert($(this).data("id"));
+                thisdata.storeService.deleteQuery($(this).data("id"));
+                $(".my-storage-row-" + $(this).data("id")).stop(true).hide(2000);
+            });
+
+
+
+            $(".storage-container").stop(true).delay(300).fadeIn(2000);
+
+        }, () => {
+            $(".storage-container").html("There was an error, while loading the content");
+            $(".storage-container").stop(true).show(100);
+        })
+
+
+
     }
 
-    onRegister() {
-        //this method is called at the time (and only one time) the whole webapplication is started
-        //often you dont need that method
-    }
-
-    onFirstLoad() {
-        //this method is called on the first-load, while onLoad is called on each load
-
-        //note:
-        //this method could be interessting, if caching-level is 0 and you want to have to run any only one time
-        //and not on each onMount-Time (at caching-level=0)
-    }
 
     onLoad() {
-        //this method is called on each load of the page-section here
+        this.loadContent();
     }
 
     onUnLoad() {
-        //this method is called on each unload of the page-section here
+        $(".storage-container").html("");//remove dome-elements
+        $(".storage-container").stop(true).hide();
     }
 
 }

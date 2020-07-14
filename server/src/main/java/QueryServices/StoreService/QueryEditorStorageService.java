@@ -23,15 +23,16 @@ public class QueryEditorStorageService
     {
         try (Connection connection = database.getJDBCConnection())
         {
-            PreparedStatement statement = connection.prepareStatement("SELECT author, create_time FROM stored_editor_queries");
+            PreparedStatement statement = connection.prepareStatement("SELECT id, author, create_time FROM stored_editor_queries");
             ResultSet resultSet = statement.executeQuery();
 
             ArrayList<StoredQueryMetadata> storedQueriesMetadata = new ArrayList<>();
             while (resultSet.next())
             {
+                long id = resultSet.getLong("id");
                 String author = resultSet.getString("author");
                 Timestamp create_time = resultSet.getTimestamp("create_time");
-                storedQueriesMetadata.add(new StoredQueryMetadata(author, create_time));
+                storedQueriesMetadata.add(new StoredQueryMetadata(id, author, create_time));
             }
 
             return storedQueriesMetadata;
@@ -49,11 +50,12 @@ public class QueryEditorStorageService
 
             if (!resultSet.next()) return null;
 
+            long id_db = resultSet.getLong("id");
             String author = resultSet.getString("author");
             Timestamp create_time = resultSet.getTimestamp("create_time");
             String data = resultSet.getString("data");
 
-            StoredQueryMetadata storedQueryMetadata = new StoredQueryMetadata(author, create_time);
+            StoredQueryMetadata storedQueryMetadata = new StoredQueryMetadata(id_db, author, create_time);
             return new StoredQuery(storedQueryMetadata, data);
 
         }

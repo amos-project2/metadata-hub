@@ -8,7 +8,7 @@ export class RestAPIFetcher {
     fetchPost(path, formData, callback) {
         let promise = fetch(this.urlBuilder(path), {
             method: "post",
-            body: formData
+            body: new URLSearchParams(formData)
         });
 
         this.fetchToResult(promise, callback);
