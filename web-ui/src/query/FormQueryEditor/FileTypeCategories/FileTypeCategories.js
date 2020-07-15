@@ -32,26 +32,30 @@ export class FileTypeCategories extends Page {
         return `
                 </br>
                 <!--     file-category-selector       -->
-                <div class="form-group col-md-6">
-                    <button type="button" id="file-category-button2" class="btn btn-primary mr-3"" data-toggle="modal" data-target="#file-categories-modal2">
+                <div class="form-group col-md-12 ">
+                <div class="form-row justify-content-md-center">
+                    <button type="button" id="file-category-button2" class="btn btn-primary mr-3" data-toggle="modal" data-target="#file-categories-modal2">
                         All File Categories
                     </button>
+                </div>
                     </br>
-                    </br>
+
 
                     <!-- file-category-manipulation-buttons -->
-                    <button type="button" id="create-category-button" class="btn btn-primary">
+                    <div class="form-row justify-content-md-center">
+                    <button type="button" id="create-category-button" class="btn btn-primary mr-3">
                         Create File Category
                     </button>
-                    <button type="button" id="update-category-button" class="btn btn-primary">
+                    <button type="button" id="update-category-button" class="btn btn-primary mr-3">
                         Update File Category
                     </button>
-                    <button type="button" id="delete-category-button" class="btn btn-danger">
+                    <button type="button" id="delete-category-button" class="btn btn-danger mr-3">
                         Delete File Category
                     </button>
+                    </div>
 
                     </br>
-                    </br>
+
 
 
                      <div class="form-group">
@@ -87,14 +91,16 @@ export class FileTypeCategories extends Page {
         <!--     filetypes            -->
          <div class="form-row">
             <div class="col-md-12">
-                <div class="form-group col-md-6">
+                <div class="form-group col-md-12">
 
-                    <button type="button" id="delete-types-button2" class="btn btn-danger" ">
+                    <div class="form-row justify-content-md-center">
+                    <button type="button" id="delete-types-button2" class="btn btn-danger justify-content-md-center">
                         Clear File Types
                     </button>
+                    </div>
 
                     </br>
-                    </br>
+
 
                     File Types
                     <a class="pover" title="Filetypes" data-content="Here it is possible to select file types which can be added to a file category">[?]</a>
