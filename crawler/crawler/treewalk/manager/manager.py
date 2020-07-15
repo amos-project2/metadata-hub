@@ -257,33 +257,45 @@ class TreeWalkManager(threading.Thread):
         self._num_workers.value = num_workers
 
 
+    def check_and_update_worker(self) -> None:
+        """Check if number of workers should be updated."""
+        try:
+            max_cpu_level, max_num_workers = self._state.get_cpu_level()
+        except treewalk.StateException:
+            # No update of the number of workers is required
+            return
+        workers_by_config = treewalk.get_number_of_workers(
+            self._config.get_cpu_level()
+        )
+        reduce = (max_cpu_level > 0) and (max_num_workers < self._num_workers.value)
+        increase = (max_cpu_level < 0) and (workers_by_config > self._num_workers.value)
+        self._worker_lock.acquire()
+        if reduce:
+            self._update_workers(num_workers=max_num_workers, reduce=True)
+        if increase:
+            self._update_workers(num_workers=workers_by_config, reduce=False)
+        self._worker_lock.release()
+
+
     def run(self) -> None:
         """Run method of TreeWalk manager."""
         shutdown = False
         while True:
             check = False
             if self._state.is_running():
-                max_cpu_level, max_num_workers = self._state.get_cpu_level()
-                workers_by_config = treewalk.get_number_of_workers(
-                    self._config.get_cpu_level()
-                )
-                reduce = (max_cpu_level > 0) and (max_num_workers < self._num_workers.value)
-                increase = (max_cpu_level < 0) and (workers_by_config > self._num_workers.value)
-                self._worker_lock.acquire()
-                if reduce:
-                    self._update_workers(num_workers=max_num_workers, reduce=True)
-                if increase:
-                    self._update_workers(num_workers=workers_by_config, reduce=False)
-                self._worker_lock.release()
+                self.check_and_update_worker()
                 try:
                     command = communication.manager_queue_input.get(False)
                     check = True
                 except queue.Empty:
                     done = self._work()
                     if done:
-                        # Delete files that are persisted in the database, but have been deleted in the file system
+                        # Delete files that are persisted in the database,
+                        # but have been deleted in the file system
                         # Remove the data from the database
-                        self._db_connection.delete_lost(self._tree_walk_id, self._roots)
+                        self._db_connection.delete_lost(
+                            self._tree_walk_id, self._roots
+                        )
                         self._log_execution_time()
                         self._reset()
             else:
