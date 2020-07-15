@@ -43,6 +43,15 @@ class TreeWalkManager(threading.Thread):
         self._db_connection = None # type: database.DatabaseConnection
         self._time_start = 0
         self._config = None # type: Config
+        self._functions = {
+            communication.MANAGER_PAUSE: self._treewalk_pause,
+            communication.MANAGER_SHUTDOWN: self._treewalk_shutdown,
+            communication.MANAGER_START: self._treewalk_start,
+            communication.MANAGER_STOP: self._treewalk_stop,
+            communication.MANAGER_UNPAUSE: self._treewalk_unpause
+        }
+        self._shutdown = False
+
 
     def _reset(self) -> None:
         """Reset the TreeWalkManager."""
@@ -277,6 +286,23 @@ class TreeWalkManager(threading.Thread):
         self._worker_lock.release()
 
 
+    def exec(self, command: communication.Command) -> None:
+        """Wrapper method for executing a TreeWalk command.
+
+        Args:
+            command (communication.Command): command to execute
+
+        """
+        logging.info(f'TWManager: running command {command.command}')
+        try:
+            func = self._functions[command.command]
+        except KeyError:
+            logging.error(f'TWManager: recevied unknown command {command.command}')
+            return
+        response = func(command.data)
+        communication.manager_queue_output.put(response)
+
+
     def run(self) -> None:
         """Run method of TreeWalk manager."""
         shutdown = False
@@ -302,32 +328,32 @@ class TreeWalkManager(threading.Thread):
                 command = communication.manager_queue_input.get()
                 check = True
             if check:
-                if command.command == communication.MANAGER_PAUSE:
-                    response = self._treewalk_pause()
-                elif command.command == communication.MANAGER_SHUTDOWN:
-                    response = self._treewalk_stop()
-                    shutdown = True
-                elif command.command == communication.MANAGER_START:
-                    self._time_start = datetime.now()
-                    response = self._treewalk_start(command.data)
-                elif command.command == communication.MANAGER_STOP:
-                    response = self._treewalk_stop()
-                elif command.command == communication.MANAGER_UNPAUSE:
-                    response = self._treewalk_unpause()
-                else:
-                    logging.error(f'Received unknown command {command}')
-                # Log the message and put the result to the output queue
-                if response.success:
-                    logging.info(f'{response.command}: {response.message}')
-                else:
-                    logging.warning(f'{response.command}: {response.message}')
-                communication.manager_queue_output.put(response)
+                self.exec(command)
                 if shutdown:
                     break
         logging.info('Shutting TreeWalk down. Bye.')
 
-    def _treewalk_stop(self) -> communication.Response:
+
+    def _treewalk_shutdown(self, data: Any) -> communication.Response:
+        """Shutdown the TreeWalk.
+
+        Args:
+            data (Any): ignored, but required due to callback signature
+
+        Returns:
+            communication.Response: response object
+
+        """
+        response = self._treewalk_stop()
+        self._shutdown = True
+        return response
+
+
+    def _treewalk_stop(self, data: Any) -> communication.Response:
         """Stop the current execution of the TreeWalk.
+
+        Args:
+            data (Any): ignored, but required due to callback signature
 
         Returns:
             communication.Response: response object
@@ -356,8 +382,12 @@ class TreeWalkManager(threading.Thread):
             command=communication.MANAGER_STOP
         )
 
-    def _treewalk_unpause(self) -> communication.Response:
+
+    def _treewalk_unpause(self, data: Any) -> communication.Response:
         """Continue the paused execution.
+
+        Args:
+            data (Any): ignored, but required due to callback signature
 
         Returns:
             communication.Response: response object
@@ -386,8 +416,11 @@ class TreeWalkManager(threading.Thread):
             command=communication.MANAGER_UNPAUSE
         )
 
-    def _treewalk_pause(self) -> communication.Response:
+    def _treewalk_pause(self, data: Any) -> communication.Response:
         """Pause the current execution of the TreeWalk.
+
+        Args:
+            data (Any): ignored, but required due to callback signature
 
         Returns:
             communication.Response: response object
@@ -415,6 +448,7 @@ class TreeWalkManager(threading.Thread):
             message=message,
             command=communication.MANAGER_PAUSE
         )
+
 
     def _treewalk_start(self, config: Config) -> communication.Response:
         """Start the TreeWalk with given configuration.
