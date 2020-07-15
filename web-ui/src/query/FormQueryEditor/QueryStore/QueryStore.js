@@ -10,6 +10,15 @@ export class QueryStore extends Page {
         this.cacheLevel = 3;
         this.storeService = null;
 
+        this.author = localStorage.getItem("username");
+        this.isAdmin = localStorage.getItem('logged_in') === "admin";
+
+        this.notAdminExtension = "";
+        if (!this.isAdmin) {
+            this.notAdminExtension = "display:none";
+        }
+
+
     }
 
     setStoreService(storeService) {
@@ -19,16 +28,40 @@ export class QueryStore extends Page {
     content() {
         // language=HTML
         return `
+
+             <div class="row mb-3 ml-3">
+
+                      <div class="form-group row">
+                        <label for="author-filter" class="col-sm-4 col-form-label">Author-Filter</label>
+                        <div class="col-sm-8">
+                        <input type="text" class="form-control" id="author-filter" value="${this.author}">
+                        </div>
+                    </div>
+
+
+                </div>
+
+
             <div class="storage-load-container" style="display: none">
                 <div class="spinner-border text-primary" role="status">
                     <span class="sr-only">Loading...</span>
                 </div>
             </div>
-            <div class="storage-container container pt-4" style="display:none"></div>`;
+            <div class="storage-container container pt-4 pb-4" style="display:none"></div>
+
+<div class="col pb-4"><button type="button" class="btn btn-sm btn-danger delete-all" style="${this.notAdminExtension}">Delete All</button></div>
+
+`;
+
+
     }
 
     onMount() {
-
+        $(".delete-all").click(() => {
+            this.storeService.deleteAllQuery(function () {}, function () {}, () => {
+                this.loadContent();
+            });
+        })
 
     }
 
@@ -41,18 +74,29 @@ export class QueryStore extends Page {
 
             $(".storage-load-container").stop(true).delay(1000).hide(1000);
 
+            if (data.length === 0) {
+                $(".storage-container").html("There arent any Query-Editor-Views saved yet.");
+                $(".storage-container").stop(true).show(1000);
+            }
+
             data.forEach(value => {
                 // language=HTML
 
 
                 let dateString = moment(new Date(value.create_time)).format('YYYY-MM-DD HH:MM');
+
+                let hiddenElement = this.notAdminExtension;
+                if (this.author.trim() === value.author.trim()) {
+                    hiddenElement = "";
+                }
+
                 $(".storage-container").append(`
 
                     <div class="row mb-3 detail-view-element my-storage-row-${value.id}">
                         <div class="col font-weight-bold">${value.author}</div>
                         <div class="col">${dateString}</div>
                         <div class="col"><button type="button" class="btn btn-sm btn-success restore-storage-element" data-id="${value.id}">Restore</button></div>
-                        <div class="col"><button type="button" class="btn btn-sm btn-danger delete-storage-element" data-id="${value.id}">Delete</button></div>
+                        <div class="col"><button type="button" class="btn btn-sm btn-danger delete-storage-element" data-id="${value.id}" style="${hiddenElement}">Delete</button></div>
                     </div>
 
                 `);
@@ -70,14 +114,12 @@ export class QueryStore extends Page {
             });
 
 
-
             $(".storage-container").stop(true).delay(300).fadeIn(2000);
 
         }, () => {
             $(".storage-container").html("There was an error, while loading the content");
-            $(".storage-container").stop(true).show(100);
+            $(".storage-container").stop(true).show(1000);
         })
-
 
 
     }
