@@ -12,14 +12,23 @@ export class FiletypeFilter {
 
         return `
                 <!--     file-category-selector       -->
-                <div class="form-group col-md-6">
-                    <button type="button" id="file-category-button" class="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#file-categories-modal">
+
+                 <div class="form-row justify-content-md-center">
+                  <button type="button" id="file-category-button" class="btn btn-primary mr-3" data-toggle="modal" data-target="#file-categories-modal">
                         Select File Category
-                    </button>
-                    <button type="button" id="delete-types-button" class="btn btn-danger" ">
+                  </button>
+                   <button type="button" id="delete-types-button" class="btn btn-danger" ">
                         Delete all File Types
                     </button>
-                </div>
+                     </div>
+<!--                <div class="form-group col-md-6">-->
+<!--                    <button type="button" id="file-category-button" class="btn btn-primary " data-toggle="modal" data-target="#file-categories-modal">-->
+<!--                        Select File Category-->
+<!--                    </button>-->
+<!--                    <button type="button" id="delete-types-button" class="btn btn-danger" ">-->
+<!--                        Delete all File Types-->
+<!--                    </button>-->
+<!--                </div>-->
 
                 <!-- file-categories-modal -->
                 <div class="modal fade" id="file-categories-modal" tabindex="-1" role="dialog" aria-labelledby="file-categories-label" aria-hidden="true">
@@ -60,7 +69,7 @@ export class FiletypeFilter {
               `;
     }
 
-    getFileTypesHtmlCode(){
+    getFileTypesHtmlCode() {
         return `
 
         <!--     file-types                  -->
@@ -74,8 +83,6 @@ export class FiletypeFilter {
     }
 
 
-
-
     onMount() {
         let thisdata = this;
 
@@ -87,20 +94,20 @@ export class FiletypeFilter {
 
                 console.log(fileCategoryMap);
 
-                if(fileCategoryMap == undefined){
+                if (fileCategoryMap == undefined) {
                     return;
                 }
 
                 $("#file-categories-modal-body").html("Click on a file category to choose multiple file types for the query editor.<br/><br/>")
 
-                Object.keys(fileCategoryMap).forEach( key => {
-                    $("#file-categories-modal-body").append("<button type=\"button\" class=\"btn btn-primary\" id='button-"+ key + "' data-dismiss=\"modal\"> File Category: " + key + "</button> <br/>");
+                Object.keys(fileCategoryMap).forEach(key => {
+                    $("#file-categories-modal-body").append("<button type=\"button\" class=\"btn btn-primary\" id='button-" + key + "' data-dismiss=\"modal\"> File Category: " + key + "</button> <br/>");
                     $("#file-categories-modal-body").append("File Types: " + "<br\>" + fileCategoryMap[key] + "<br/><br/>");
 
                     //add file types of file category into the query editor
-                    $("#button-"+key).click(function () {
+                    $("#button-" + key).click(function () {
                         let file_types = fileCategoryMap[key];
-                        for(var file_type_index in file_types){
+                        for (var file_type_index in file_types) {
                             thisdata.inputMultiplierFiletypeFilter.addInputValueOnlyOnce(file_types[file_type_index],
                                 "autocompleteDeactivated");
                         }
