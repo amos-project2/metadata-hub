@@ -65,7 +65,7 @@ export class QueryEditor extends Page {
 
                     <div class="form-group col-md-6">
                         <label for="fq-query-Name">Query-Name <a class="pover" title="Query-Name" data-content="The Name, which is saved with the query here into the database to find it later again.">[?]</a></label>
-                        <input type="text" class="form-control save-element" data-name="g1" id="fq-query-Name" value="searchForFileMetadata">
+                        <input type="text" class="form-control save-element save-title" data-name="g1" id="fq-query-Name" value="searchForFileMetadata">
                     </div>
                     <div class="form-group col-md-6">
                         <label for="fq-owner">Owner <a class="pover" title="Owner" data-content="The Owner, which is saved with the query here into the database.">[?]</a></label>

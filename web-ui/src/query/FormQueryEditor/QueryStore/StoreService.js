@@ -18,6 +18,7 @@ export class StoreService {
         //let multiplierList={}
 
         let author = $(".save-author").val();
+        let title = $(".save-title").val();
 
         $(".save-element").each(function () {
 
@@ -44,7 +45,7 @@ export class StoreService {
         }
 
         this.lastSavedData = data;
-        let sendData = {author: author, data: data};
+        let sendData = {author: author, title: title, data: data};
         console.log(sendData);
 
 

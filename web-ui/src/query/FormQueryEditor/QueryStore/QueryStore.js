@@ -61,8 +61,25 @@ export class QueryStore extends Page {
             this.storeService.deleteAllQuery(function () {}, function () {}, () => {
                 this.loadContent();
             });
-        })
+        });
 
+        $("#author-filter").on('input propertychange', function () {
+            if ($(this).val().trim() === "") {
+                $(".storage-row").stop(true).show(1000);
+                return;
+            }
+
+            let theVal = $(this).val();
+
+            $(".storage-row").each(function () {
+                if ($(this).data("author").trim().toLowerCase() === theVal.trim().toLowerCase()) {
+                    $(this).stop(true).show(1000);
+                } else {
+                    $(this).stop(true).hide(1000);
+                }
+            });
+
+        });
     }
 
 
@@ -92,8 +109,9 @@ export class QueryStore extends Page {
 
                 $(".storage-container").append(`
 
-                    <div class="row mb-3 detail-view-element my-storage-row-${value.id}">
+                    <div class="storage-row row mb-3 detail-view-element my-storage-row-${value.id}" data-author="${value.author}">
                         <div class="col font-weight-bold">${value.author}</div>
+                        <div class="col">${value.title}</div>
                         <div class="col">${dateString}</div>
                         <div class="col"><button type="button" class="btn btn-sm btn-success restore-storage-element" data-id="${value.id}">Restore</button></div>
                         <div class="col"><button type="button" class="btn btn-sm btn-danger delete-storage-element" data-id="${value.id}" style="${hiddenElement}">Delete</button></div>
@@ -115,6 +133,10 @@ export class QueryStore extends Page {
 
 
             $(".storage-container").stop(true).delay(300).fadeIn(2000);
+            setTimeout(function () {
+                $("#author-filter").trigger("propertychange");
+            }, 1000);
+
 
         }, () => {
             $(".storage-container").html("There was an error, while loading the content");

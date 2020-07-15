@@ -172,6 +172,7 @@ ALTER TABLE public.files_id_seq OWNER TO metadatahub;
 CREATE TABLE public.stored_editor_queries (
                                               id bigint NOT NULL,
                                               author text,
+                                              title text,
                                               create_time timestamp with time zone NOT NULL,
                                               data jsonb
 );

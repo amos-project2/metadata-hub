@@ -10,5 +10,6 @@ public class StoredQueryMetadata
 {
     @Getter public final long id;
     @Getter public final String author;
+    @Getter public final String title;
     @Getter public final Timestamp create_time;
 }

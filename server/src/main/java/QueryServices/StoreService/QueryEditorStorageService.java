@@ -23,7 +23,7 @@ public class QueryEditorStorageService
     {
         try (Connection connection = database.getJDBCConnection())
         {
-            PreparedStatement statement = connection.prepareStatement("SELECT id, author, create_time FROM stored_editor_queries Order by id DESC ");
+            PreparedStatement statement = connection.prepareStatement("SELECT id, title, author, create_time FROM stored_editor_queries Order by id DESC ");
             ResultSet resultSet = statement.executeQuery();
 
             ArrayList<StoredQueryMetadata> storedQueriesMetadata = new ArrayList<>();
@@ -31,8 +31,9 @@ public class QueryEditorStorageService
             {
                 long id = resultSet.getLong("id");
                 String author = resultSet.getString("author");
+                String title = resultSet.getString("title");
                 Timestamp create_time = resultSet.getTimestamp("create_time");
-                storedQueriesMetadata.add(new StoredQueryMetadata(id, author, create_time));
+                storedQueriesMetadata.add(new StoredQueryMetadata(id, author, title, create_time));
             }
 
             return storedQueriesMetadata;
@@ -52,24 +53,26 @@ public class QueryEditorStorageService
 
             long id_db = resultSet.getLong("id");
             String author = resultSet.getString("author");
+            String title = resultSet.getString("title");
             Timestamp create_time = resultSet.getTimestamp("create_time");
             String data = resultSet.getString("data");
 
-            StoredQueryMetadata storedQueryMetadata = new StoredQueryMetadata(id_db, author, create_time);
+            StoredQueryMetadata storedQueryMetadata = new StoredQueryMetadata(id_db, author, title, create_time);
             return new StoredQuery(storedQueryMetadata, data);
 
         }
     }
 
-    public void storeQuery(String author, String data) throws DatabaseException, SQLException, IOException
+    public void storeQuery(String author, String title, String data) throws DatabaseException, SQLException, IOException
     {
         try (Connection connection = database.getJDBCConnection())
         {
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO stored_editor_queries (author, create_time, data) VALUES (?, ?, ?::jsonb)");
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO stored_editor_queries (author, create_time, data, title) VALUES (?, ?, ?::jsonb, ?)");
 
             statement.setString(1, author);
             statement.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
             statement.setString(3, data);
+            statement.setString(4, title);
             statement.executeUpdate();
         }
     }

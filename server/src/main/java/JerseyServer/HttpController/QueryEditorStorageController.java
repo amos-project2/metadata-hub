@@ -60,13 +60,14 @@ public class QueryEditorStorageController
         Map<String, Object> map = mapper.readValue(jsonData, Map.class);
 
         String author = (String) map.get("author");
+        String title = (String) map.get("title");
 //        String data = map.get("data");
         System.out.println(map.get("data"));
 
         ObjectMapper mapper2 = new ObjectMapper();
         String data = mapper2.writeValueAsString(map.get("data"));
 
-        this.queryEditorStorageService.storeQuery(author, data);
+        this.queryEditorStorageService.storeQuery(author, title, data);
     }
 
     @POST
