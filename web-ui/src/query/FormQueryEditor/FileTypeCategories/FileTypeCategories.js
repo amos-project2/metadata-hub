@@ -40,18 +40,32 @@ export class FileTypeCategories extends Page {
 
     content() {
         return `
+                </br>
                 <!--     file-category-selector       -->
                 <div class="form-group col-md-6">
-                    <button type="button" id="file-category-button" class="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#file-categories-modal">
-                        Select File Category
+                    <button type="button" id="file-category-button" class="btn btn-primary mr-3"" data-toggle="modal" data-target="#file-categories-modal">
+                        All File Categories
                     </button>
                     </br>
+                    </br>
+
+                    <!-- file-category-manipulation-buttons -->
                     <button type="button" id="create-category-button" class="btn btn-primary">
                         Create File Category
                     </button>
+                    <button type="button" id="delete-category-button" class="btn btn-danger">
+                        Delete File Category
+                    </button>
+
+                    </br>
+                    </br>
+
+
                      <div class="form-group">
-                        <input type="text" class="form-control" id="createCategoryForm" aria-describedby="createCategoryHelp" placeholder="Enter File Category Name">
-                        <small id="createCategoryHelp" class="form-text text-muted">Create File Category with following File Types</small>
+                            File Category
+                            <a class="pover" title="File Categories" data-content="Enter a name for the creation or deletion of a File Category. When creating a File Category the File Types below are used.">[?]</a>
+                        <input type="text" class="form-control" id="createCategoryForm" aria-describedby="createCategoryHelp" placeholder="File Category Name">
+                        <small id="createCategoryHelp" class="form-text text-muted">Enter a File Category Name</small>
                      </div>
                 </div>
 
@@ -77,13 +91,26 @@ export class FileTypeCategories extends Page {
                     </div>
                 </div>
 
+        <!--     filetypes            -->
+         <div class="form-row">
+            <div class="col-md-12">
+                <div class="form-group col-md-6">
+
                     <button type="button" id="delete-types-button" class="btn btn-danger" ">
                         Clear File Types
                     </button>
+
                     </br>
                     </br>
-        <!--     filetypes            -->
-        ${this.filetypeFilter.getFileTypesHtmlCode()}
+
+                    File Types
+                    <a class="pover" title="Filetypes" data-content="Here it is possible to select file types which can be added to a file category">[?]</a>
+
+                    ${this.filetypeFilter.getFileTypesHtmlCode()}
+
+                </div>
+            </div>
+         </div>
 
         <div class="form-row">
             <div class="col-md-12">
@@ -119,6 +146,7 @@ export class FileTypeCategories extends Page {
                     //add file types of file category into the query editor
                     $("#button-"+key).click(function () {
                         let file_types = fileCategoryMap[key];
+                        $("#createCategoryForm").val(key);
                         for(var file_type_index in file_types){
                             thisdata.inputMultiplierFiletypeFilter.addInputValueOnlyOnce(file_types[file_type_index],
                                 "autocompleteDeactivated");
@@ -135,9 +163,27 @@ export class FileTypeCategories extends Page {
             });
         });
 
+        //Create a new File Category
         $("#create-category-button").click(function(){
             let category = $("#createCategoryForm").val();
-            thisdata.fileTypeCategoriesService.createCategory(category, function(success){
+            let fileTypes = [];
+
+            thisdata.inputMultiplierFiletypeFilter.each(function (fileTypeField) {
+                console.log($(fileTypeField).val())
+               fileTypes.push($(fileTypeField).val());
+            });
+
+            //send ajax call
+            thisdata.fileTypeCategoriesService.createCategory(category, fileTypes, function(success){
+                console.log(success);
+            });
+        });
+
+        //Delete File Category in Form
+        $("#delete-category-button").click(function(){
+            let category = $("#createCategoryForm").val();
+            //send ajax call
+            thisdata.fileTypeCategoriesService.deleteCategory(category, function(success){
                 console.log(success);
             });
         });

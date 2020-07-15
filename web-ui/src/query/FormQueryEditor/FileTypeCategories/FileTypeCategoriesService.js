@@ -26,7 +26,7 @@ export class FileTypeCategoriesService {
     }
 
     // get all the file categories and their corresponding file types from the server
-    createCategory(category, callback) {
+    createCategory(category, fileTypesList, callback) {
         this.updateLists();
 
         let thisdata = this;
@@ -34,7 +34,7 @@ export class FileTypeCategoriesService {
         function getFileString() {
 
             let resultString = "";
-            thisdata.fileTypes.forEach(element => {
+            fileTypesList.forEach(element => {
                 resultString += element + "$x$";
             });
             console.log(resultString);
@@ -53,6 +53,7 @@ export class FileTypeCategoriesService {
         let thisdata = this;
         this.restApiFetcherServer.restDelete("categoryService/admin/" + category, function (event) {
             let success = event.data;
+            console.log("deleteCategory: " + success);
             callback(success);
         });
 

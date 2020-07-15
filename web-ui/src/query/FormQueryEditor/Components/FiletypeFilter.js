@@ -18,7 +18,7 @@ export class FiletypeFilter {
                         Select File Category
                   </button>
                    <button type="button" id="delete-types-button" class="btn btn-danger" ">
-                        Delete all File Types
+                        Clear selected File Types
                     </button>
                      </div>
 <!--                <div class="form-group col-md-6">-->
