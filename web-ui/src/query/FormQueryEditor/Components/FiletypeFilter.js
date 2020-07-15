@@ -21,14 +21,6 @@ export class FiletypeFilter {
                         Clear selected File Types
                     </button>
                      </div>
-<!--                <div class="form-group col-md-6">-->
-<!--                    <button type="button" id="file-category-button" class="btn btn-primary " data-toggle="modal" data-target="#file-categories-modal">-->
-<!--                        Select File Category-->
-<!--                    </button>-->
-<!--                    <button type="button" id="delete-types-button" class="btn btn-danger" ">-->
-<!--                        Delete all File Types-->
-<!--                    </button>-->
-<!--                </div>-->
 
                 <!-- file-categories-modal -->
                 <div class="modal fade" id="file-categories-modal" tabindex="-1" role="dialog" aria-labelledby="file-categories-label" aria-hidden="true">

@@ -10,17 +10,7 @@ export class FileTypeCategories extends Page {
         super(parent, identifier, mountpoint, titleSelector);
         this.title = "File Type Categories";
         this.cacheLevel = 3;
-        //use 0 for no caching (the dom for this page will be deleted and onMound/onUnMount is called each enter and leaving the page here)
-        //use 3 for complete caching(the dome for this page stay after leaving
-        //     (its only hidden, be careful, of using html-classes/ids in more areas of the whole webpage, that they dont overlap))
-        //     onMount is only called at the first time, unOnLoad-never (except if you use the delete-cache-method)
-        //     i think using 3 here is a good idea, so the user can work on a formular go to other page and go back to work on
-        //     the dynamic stuff in the page is handled by javascript, timers who reload parts for page in a specific way for specific page-components
 
-
-        //here you set the title-attribut
-        //you can here also set the caching_behavour and much more
-        //take a look in class Page
 
         this.fileTypeCategoriesService = new FileTypeCategoriesService(this.parent.dependencies.restApiFetcherServer);
         this.inputMultiplierFiletypeFilter = this.inputMultiplierFiletypeFilterBuilder();
@@ -29,13 +19,13 @@ export class FileTypeCategories extends Page {
         this.metadatAutocompletion = new MetadataAutocompletion(
             this.parent.dependencies.restApiFetcherServer,
             this.graphQlFetcher,
-            ".filetype-element-input",
-            ".fg-metadata-attribute",
-            ".attribut-element-input",
-            ".modalOpenerSelector",
+            ".filetype-element-input2",
+            ".null",
+            ".null",
+            ".null",
         );
 
-        this.filetypeFilter = new FiletypeFilter(this.metadatAutocompletion);
+        //this.filetypeFilter = new FiletypeFilter(this.metadatAutocompletion);
     }
 
     content() {
@@ -43,7 +33,7 @@ export class FileTypeCategories extends Page {
                 </br>
                 <!--     file-category-selector       -->
                 <div class="form-group col-md-6">
-                    <button type="button" id="file-category-button" class="btn btn-primary mr-3"" data-toggle="modal" data-target="#file-categories-modal">
+                    <button type="button" id="file-category-button2" class="btn btn-primary mr-3"" data-toggle="modal" data-target="#file-categories-modal2">
                         All File Categories
                     </button>
                     </br>
@@ -72,8 +62,8 @@ export class FileTypeCategories extends Page {
                      </div>
                 </div>
 
-                <!-- file-categories-modal -->
-                <div class="modal fade" id="file-categories-modal" tabindex="-1" role="dialog" aria-labelledby="file-categories-label" aria-hidden="true">
+                <!-- file-categories-modal2 -->
+                <div class="modal fade" id="file-categories-modal2" tabindex="-1" role="dialog" aria-labelledby="file-categories-label" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -84,7 +74,7 @@ export class FileTypeCategories extends Page {
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
-                            <div class="modal-body" id="file-categories-modal-body">
+                            <div class="modal-body" id="file-categories-modal2-body">
                             No Categories available :(
                             </div>
                             <div class="modal-footer">
@@ -99,7 +89,7 @@ export class FileTypeCategories extends Page {
             <div class="col-md-12">
                 <div class="form-group col-md-6">
 
-                    <button type="button" id="delete-types-button" class="btn btn-danger" ">
+                    <button type="button" id="delete-types-button2" class="btn btn-danger" ">
                         Clear File Types
                     </button>
 
@@ -109,7 +99,14 @@ export class FileTypeCategories extends Page {
                     File Types
                     <a class="pover" title="Filetypes" data-content="Here it is possible to select file types which can be added to a file category">[?]</a>
 
-                    ${this.filetypeFilter.getFileTypesHtmlCode()}
+
+                      <div class="fg-filetype-container2 form-row">
+
+                         ${this.inputMultiplierFiletypeFilter.getFirstElement()}
+
+                        </div>
+
+
 
                 </div>
             </div>
@@ -126,11 +123,15 @@ export class FileTypeCategories extends Page {
     onMount() {
         let thisdata = this;
 
-        this.filetypeFilter.onMount();
+        //this.filetypeFilter.onMount();
+
         this.metadatAutocompletion.addListener();
+        this.inputMultiplierFiletypeFilter.listenerAdd();
+
+
 
         //Activate File Category Modal Pop-Up Window
-        $("#file-category-button").click(function () {
+        $("#file-category-button2").click(function () {
             thisdata.fileTypeCategoriesService.getAllFileCategories(function (fileCategoryMap) {
 
                 console.log(fileCategoryMap);
@@ -139,12 +140,12 @@ export class FileTypeCategories extends Page {
                     return;
                 }
 
-                $("#file-categories-modal-body").html("Click on a file category to choose multiple file types for the query editor.<br/><br/>")
+                $("#file-categories-modal2-body").html("Click on a file category to choose multiple file types for the query editor.<br/><br/>")
 
                 Object.keys(fileCategoryMap).forEach( key => {
-                    $("#file-categories-modal-body").append("<button type=\"button\" class=\"btn btn-primary\" id='button-"+ key + "' data-dismiss=\"modal\"> File Category: " + key + "</button>" +
+                    $("#file-categories-modal2-body").append("<button type=\"button\" class=\"btn btn-primary\" id='button-"+ key + "' data-dismiss=\"modal\"> File Category: " + key + "</button>" +
                         "<button type=\"button\" id=\"delete" + key + "\" class=\"btn btn-danger\" data-dismiss=\"modal\"> delete </button> <br/>");
-                    $("#file-categories-modal-body").append("File Types: " + "<br\>" + fileCategoryMap[key] + "<br/><br/>");
+                    $("#file-categories-modal2-body").append("File Types: " + "<br\>" + fileCategoryMap[key] + "<br/><br/>");
 
                     //add file types of file category into the query editor
                     $("#button-"+key).click(function () {
@@ -209,57 +210,39 @@ export class FileTypeCategories extends Page {
         });
 
         //Delete all file types
-        $("#delete-types-button").click(function () {
+        $("#delete-types-button2").click(function () {
             thisdata.inputMultiplierFiletypeFilter.deleteAllInputValues("autocompleteDeactivated");
         })
     }
 
-    onUnMount() {
-
-        //its called at caching-level=3 never(except you call the clearCache-method)
-        //its called at caching-level=0 each time you leave the page and after onUnLoad-method is called
-
-        //often you dont need that method, not in both cases i mentioned here
-    }
-
-    onRegister() {
-        //this method is called at the time (and only one time) the whole webapplication is started
-        //often you dont need that method
-    }
-
-    onFirstLoad() {
-        //this method is called on the first-load, while onLoad is called on each load
-
-        //note:
-        //this method could be interessting, if caching-level is 0 and you want to have to run any only one time
-        //and not on each onMount-Time (at caching-level=0)
-    }
 
     onLoad() {
         //this method is called on each load of the page-section here
     }
 
-    onUnLoad() {
-        //this method is called on each unload of the page-section here
-    }
+
 
     inputMultiplierFiletypeFilterBuilder() {
+
+
 
         let thisdata = this;
         let emptyFunction = function () {};
 
-        let appendingHtmlCode = `<div class="form-group col-md-4 fg-filetype-element"><input type="text" class="form-control filetype-element-input save-element" data-name="t1" data-multiplier="true"></div>`;
+        let appendingHtmlCode = `<div class="form-group col-md-4 fg-filetype-element2"><input type="text" class="form-control filetype-element-input2"></div>`;
 
         let focusOutFunction = function () {
-            thisdata.fileTypeCategoriesService.updateLists();
+           // thisdata.fileTypeCategoriesService.updateLists();
+            thisdata.metadatAutocompletion.updateLists();
         }
 
         let focusInIfEmptyFieldFunction = function () {
-            thisdata.fileTypeCategoriesService.reAddListener();
+            //thisdata.fileTypeCategoriesService.reAddListener();
+            thisdata.metadatAutocompletion.reAddListener();
         };
 
 
-        return new InputFieldMultiplier(".fg-filetype-container", ".filetype-element-input", appendingHtmlCode, emptyFunction,
+        return new InputFieldMultiplier(".fg-filetype-container2", ".filetype-element-input2", appendingHtmlCode, emptyFunction,
             focusOutFunction, focusInIfEmptyFieldFunction, emptyFunction);
 
     }
