@@ -5,69 +5,97 @@
 </p>
 
 This is the official Docker image of the Metadata-Hub application.
-It is used to crawl large amount of data and extract meta information about it.
-This information can be queried using a web interface that provides a GraphQL interface.
+Metadata-Hub intelligently crawls large file systems in order to provide a platform-independent retrieval, storage, and query mechanism for metadata,
+allowing end-user applications to conduct efficient data analyses on large
+file systems.
+
 
 ## Overview
 
-The image consists of three major components
+The image consists of three major components:
 
-- **Crawler**<br>
-   Python backend that crawls the data and inserts it into the database.
-   Uses multiple worker processes to speed up the tree traversal.
-   Provides a REST API for configuring/controlling the crawler.
+- **TreeWalk**<br>
+   * Python backend that traverses the filesystem and stores the data in the database
+   * Uses multiple worker processes and dedicated database threads to speed up execution time
+   * Provides a REST API for controlling the TreeWalk
 - **Database**<br>
-  PostgreSQL database that stores the metadata.
-  It also stores information about executions of the tree walk.
+   * PostgreSQL database that persists the metadata.
+   * Stores information about TreeWalk executions and query suggestions
 - **Server**<br>
-  Java server that provides the Web/GraphQL interface.
-  This component enables the user to query the metadata using the GraphQL
-  query language.
+   * Java server that provides the Web and GraphQL interface
+   * Enables the user to query the collected data
+   * Provides an interface for the admin to configure the TreeWalk
 
 All these three services run inside the image as standalone processess.
 
 ## Usage
 
-First, pull the image from DockerHub.
-The ```latest``` version is the latest stable version that is updated once a week.
-The ```dev``` version is the current status of development.
+This guide is written based on a working Docker setup on Linux.
+If you want to use the Software on Windows, please follow the procedure but
+modify the commands according to your setup.
+
+#### Pulling thze image
+
+In the first step, pull the image from DockerHub.
+The ```latest``` version is the latest stable version that is updated on each release.
+The ```dev``` version is the currently developed version and may still contain
+errors.
+Execute the following command in order to pull the latest stable image.
 
 ```bash
-docker pull amosproject2/metadatahub:latest
+$ docker pull amosproject2/metadatahub:latest
 ```
 
-In order to mount the database storage, a volume is required.
-Mounting an arbitrary directory will lead to a failure during the PostgreSQL startup.
+#### Persisting the database
+
+If you want to persist the database on your machine, a Docker volume is required.
+Mounting an arbitrary directory will lead to a failure during the PostgreSQL
+startup. Here is an example that shows how to create a local volume using
+the Docker CLI. For more information, please have a look at the
+[official documentation](https://docs.docker.com/storage/volumes/).
 
 ```bash
  docker volume create --name metadatahub-database -d local
 ```
 
-You can then run the image according to this schema:
+#### Running Metadata-Hub
+
+The image can be started according to the following command:
 
 ```bash
 docker run \
-    -p {HOST_SERVER_PORT}:8080 \
-    -p {HOST_CRAWLER_PORT}:9000 \
-    -v {DATA}:/filesystem \
-    -v metadatahub-database:/var/lib/postgresql/12/main \
+    -p {ui-port}:8080 \
+    -p {treewalk-port}:9000 \
+    -p {database-port}:5432 \
+    -v {data}:/filesystem \
+    -v {volume-name}:/var/lib/postgresql/12/main \
     amosproject2/metadatahub
 ```
 
-The following values have to be specified by the user:
+* ``ui-port``<br>
+  The port that publishes the web interface on the *host* machine.
 
-* ``HOST_SERVER_PORT``<br>
-  The port that publishes the *server* with the graphical user interface for data querying on the *host* machine.
+* ``treewalk-port``<br>
+  The port that publishes the TreeWalk API on the *host* machine.
+  Setting this port is only required when you directly want to access the
+  TreeWalk API and can be omitted.
 
-* ``HOST_CRAWLER_PORT``<br>
-  The port that publishes the API of the *crawler* on the *host* machine.
+* ``database-port``<br>
+  The port that publishes the database instance on the *host* machine.
+  Setting this port is only required when you directly want to access the
+  database and can be omitted.
 
-* ``DATA``<br>
+* ``data``<br>
   This directory will be mounted inside the container and therefore is
-  accessible for the crawler.
+  accessible for the TreeWalk.
 
-The ports *8080* and *9000* must not change thus they are required for internal
-communication.
+* ``volume-name``<br>
+  The name of the volume that should be used to persist the database on the
+  host machine over multiple runs. In the example from above, the volume name
+  would be set to ``metadatahub-database``
+
+The internal ports ``8080``, ``9000`` and ``5432`` must **not** change because
+they are required for internal communication.
 Of course, multiple directories can be mounted inside the container,
 simply provide each directory with the corresponding ``-v`` flag.
 
@@ -75,24 +103,28 @@ This example starts a container with access to the ``/home/data`` directory.
 
 ```bash
 docker run \
-    -p 9999:8080 \
-    -p 9998:9000 \
-    -v metadatahub-database:/var/lib/postgresql/12/main \
+    -p 8080:8080 \
     -v /home/data:/filesystem  \
+    -v metadatahub-database:/var/lib/postgresql/12/main \
     amosproject2/metadatahub
 ```
 
-If you want to connect to the PostgreSQL database directly, provide an
-additional ``-p 9997:5432``. This will publish the running PostgreSQL instance
-on your host machine. Please refer to the
+Please refer to the
 [Usage Guide](https://github.com/amos-project2/metadata-hub/wiki/Usage)
-for a demo of how to use the application.
+for a demo of how to use the application. Make sure to provide the filepaths
+relative to mounted directory inside the container.
 
-In order to inspect a running container, start a shell session using *bash* inside the container:
+#### Inspecting a container
+
+In order to inspect a container with the ID ``container-id``,
+start a bash session inside the container.
 
 ```bash
-docker exec -it {CONTAINER_ID} /bin/bash
+docker exec -it {container-id} /bin/bash
 ```
+
+The log files for further investigation are directly located in the
+``/metadatahub`` root directory.
 
 If you encounter any errors, please refer to the
 [FAQ](https://github.com/amos-project2/metadata-hub/wiki/FAQ) section.

@@ -186,3 +186,104 @@ For the sake of simplicity, all these endpoints support ``GET`` and ``POST`` req
     Shutdown the crawler completely.
     This will force a possible running execution of the TreeWalk to end and exit the TreeWalk process.
 
+
+### Evaluations
+
+In this section, time measurements / benchmarkings of the TreeWalk are discussed.
+*TW* is a abbreviation for *TreeWalk*.
+
+#### sprint-10-release vs. separate-database-threads
+
+We shortly evaluated two versions of the implementation of the TreeWalk in order
+to decide which one to include in the final release of the product.
+
+* **sprint-10-release**<br>
+  In this version, TWWorkers (separate processes) run the ExifTool,
+  file hashing and database operations. When running, the TWManager dispatches
+  a work package to each TWWorker and waits for all TWWorkers to finish before
+  continuing with the next one.
+
+
+* **seperate-database-threads**<br>
+  In this version, TWWorker (separate processes) run only the ExifTool and
+  file hashing. The database operations are dispatched to dedicated database
+  threads. Before running, the TWManager dispatches all work packages to the TWWorker
+
+Based on this behaviour, we thought the version *seperate-database-threads*
+would lead to an performance improvement because the database operations
+don't block the TWWorker anymore, reducing waiting time due to the database
+table locking.
+Unfortunately, the opposite happened.
+We ran some test scenarios and already noticed a huge difference on small
+datasets.
+
+Technical setup:
+* OS: Ubuntu 20.04
+* Python: 3.8
+* The PostgreSQL instance was running in a Docker container.
+* Both the database storage and test directory were located at an external
+  USB drive with sequential read ~150 MB/s and write ~40 MB/s measured by the
+  Gnome Disk benchmarking utility in idle state
+* CPU: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz
+* RAM: 2x 8GB DDR4 2400 MT/s
+* General system load (background applications, etc.) were set to a minimum
+
+
+The first measurement crawled the directory ``reference_tree``
+(1441 files, ~601 MB).
+
+* Worker: number of TWWorker
+* Package-Size: max. number of files in one work package
+* Run: for each worker/package-size combination, 5 executions were ran
+
+After the 5 subsequent runs of one configuration & version, the database was
+deleted and restarted.
+Here are the results with *v12* being the *seperate-database-threads* version
+and *v10* the *sprint-10-release*.
+
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker1PackageSize10.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker1PackageSize250.png)
+
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker1PackageSize250.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker1PackageSize250.png)
+
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker4PackageSize10.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker1PackageSize250.png)
+
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker4PackageSize250.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker1PackageSize250.png)
+
+It shows that the *sprint-10-release* version outperforms the
+*separate-database-threads* version.
+There could be several explanations for this:
+
+* The database operations aren't really bottlenecking the executions of the
+  TWWorker. Of course, this heavily depends on where the database is located
+  and *how fast* it operates.
+* Additional IPC overhead in the *separate-database-threads* is higher than
+  expected. In this version, multiple queues were added to enable the TWWorker
+  to exchange data with the database threads.
+* Synchronization overhead. This was actually the reason to improve the
+  *sprint-10-release* version, but the more complex design of
+  *separate-database-threads* also requires some additional more syncing between
+  the different processes, threads, etc. It mainly should be relevant for
+  actions controlling the TreeWalk, such as pausing, stopping, etc. but possible
+  bugs and a poor implementation could interfere here.
+* In the *separate-database-threads* version, it could be possible that the
+  TWWorker produce to much work for the database threads to handle. This would
+  lead to the situation in which database operations run *sequentially* again,
+  but with the additional IPC & syncing overhead.
+
+
+Another one-run example also shows the difference between these versions.
+It was run on a dataset with .mp4 files, 4687 in total with a size of ~9GB.
+The technical setup was the same.
+
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker4PackageSize100DatasetPart9GB.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker4PackageSize100DatasetPart9GB.png)
+
+In this example, the version *sprint-10-release* is also faster in execution.
+Based on this observation, we just ran this version on a larger dataset.
+The dataset ``Dataset`` consists of 1.177.441 files with a total size of ~35GB.
+It was located at an other external drive.
+
+
+The execution took about 2 hours and 32 minutes, where 1 hour and 21 minutes were spent in running the ExifTool (roughly).
+The problem that occured was investigated with **iotop** were read access
+decreased to ~2-5 MB/s during the measurement for most of the time.
+This would also explain the huge difference in the execution time of ~3-4 minutes for a 9GB dataset.
