@@ -46,9 +46,11 @@ public class QueryEditorStorageController
     @GET
     @Produces("application/json")
     @Path("/get-stored-queries-metadata")
-    public StoredQuery getStoredQuery(@QueryParam("id") long id) throws DatabaseException, IOException, SQLException
+    public String getStoredQuery(@QueryParam("id") long id) throws DatabaseException, IOException, SQLException
     {
-        return this.queryEditorStorageService.getStoredQuery(id);
+        ObjectMapper mapper = new ObjectMapper();
+        String data = mapper.writeValueAsString(this.queryEditorStorageService.getStoredQuery(id));
+        return data;
     }
 
     @POST

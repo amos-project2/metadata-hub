@@ -9,6 +9,8 @@ export class StoreService {
         this.restApiFetcherServer = restApiFetcherServer;
         this.lastSavedData = null;
         this.saveModal = new SaveModal();
+
+        this.injectIntoQueryEditor = false;
     }
 
     saveEditor() {
@@ -40,7 +42,10 @@ export class StoreService {
 
         });
 
-        if (JSON.stringify(this.lastSavedData) === JSON.stringify(data)) {
+        let savedTmp = JSON.stringify(JSON.parse(JSON.stringify(this.lastSavedData)));
+        let refTmp = JSON.stringify(JSON.parse(JSON.stringify(data)));
+
+        if (savedTmp === refTmp) {
             return false;
         }
 
@@ -60,7 +65,79 @@ export class StoreService {
 
     }
 
-    restoreEditor() {
+    restoreEditor(id) {
+        this.getStoredQuery(id, (data) => {
+            console.log(data.data);
+            console.log("HAAHAHAHAHA");
+            this.lastSavedData = JSON.parse(data.data);
+            this.injectIntoQueryEditor = true;
+
+            $("#nav-element-query-editor").trigger("click");
+        });
+    }
+
+    doRestoringLastSave() {
+        this.injectIntoQueryEditor = false;
+
+        let data = this.lastSavedData;
+
+        console.log("keys-start");
+        let keys = Object.keys(data);
+        console.log(keys);
+        console.log("keys-end");
+
+        keys.unshift("f4"); //QUICK-FIX
+        let isF4 = false;
+
+        let countAll=0;
+        keys.forEach(value => {
+            let dataArr = data[value];
+            dataArr.forEach(value2 => {
+                countAll++;
+            });
+        });
+
+        let time = Math.ceil(5000 / countAll);
+
+        countAll=0
+        keys.forEach(value => {
+                if (isF4 && value === "f4") {
+                    //nothing
+                } else {
+
+
+                    isF4 = true;
+                    let dataArr = data[value];
+                    console.log(dataArr);
+
+                    let counter = -1;
+                    dataArr.forEach(value2 => {
+                            counter++;
+                            // setTimeout(function(){
+                            //     //TODO later
+                            // }, time*countAll)
+                            let selector = $(`[data-name="${value}"]`).eq(counter);
+
+
+                            if (selector.attr("type") === "checkbox") {
+                                selector.prop("checked", value2);
+                            } else {
+
+                                selector.val(value2).change();
+                                selector.addClass("autocompleteDeactivated");
+                                selector.trigger("focusin");
+                                selector.trigger("focusout");
+                                selector.removeClass("autocompleteDeactivated");
+
+                            }
+                        }
+                    )
+
+                }
+
+            }
+        )
+
 
     }
 
@@ -69,10 +146,10 @@ export class StoreService {
     }
 
 
-    //server-api-methods
+//server-api-methods
 
-    //private
-    //higher-order-function/method
+//private
+//higher-order-function/method
     helperMethod(successFunc, errorFunc, completeCallback) {
 
         return function (event) {
@@ -118,6 +195,6 @@ export class StoreService {
         this.restApiFetcherServer.fetchPost("query-storage/delete-all-query", formData, this.helperMethod(successFunc, errorFunc, completeCallback));
     }
 
-    //end server-api-methods
+//end server-api-methods
 
 }

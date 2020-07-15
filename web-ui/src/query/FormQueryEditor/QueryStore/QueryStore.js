@@ -123,6 +123,7 @@ export class QueryStore extends Page {
 
             let thisdata = this;
             $(".restore-storage-element").click(function () {
+                $(".storage-container").stop(true).hide();
                 thisdata.storeService.restoreEditor($(this).data("id"));
             });
 

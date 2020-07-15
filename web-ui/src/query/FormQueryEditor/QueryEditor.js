@@ -45,6 +45,8 @@ export class QueryEditor extends Page {
 
         this.storeService = null;//new StoreService(this, this.parent.dependencies.restApiFetcherServer);
 
+        this.isFreshInstallation = false;
+
     }
 
     setStoreService(storeService) {
@@ -254,6 +256,19 @@ export class QueryEditor extends Page {
         });
     }
 
+    onLoad() {
+        if (this.storeService.injectIntoQueryEditor) {
+            if (!this.isFreshInstallation) {
+                this.isFreshInstallation = true;
+                this.clearCache();
+                this.reload();
+                return;
+            }
+
+            this.isFreshInstallation = false;
+            this.storeService.doRestoringLastSave();
+        }
+    }
 
 
     onUnMount() {
