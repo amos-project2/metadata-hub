@@ -13,7 +13,7 @@ export class StoreService {
         this.injectIntoQueryEditor = false;
     }
 
-    saveEditor() {
+    saveEditor(saveToServer) {
 
         let data = {};
 
@@ -45,6 +45,12 @@ export class StoreService {
         let savedTmp = JSON.stringify(JSON.parse(JSON.stringify(this.lastSavedData)));
         let refTmp = JSON.stringify(JSON.parse(JSON.stringify(data)));
 
+        console.log("START EUQALITY-CHECK");
+        console.log(savedTmp);
+        console.log(refTmp);
+        console.log("END EUQALITY-CHECK");
+
+
         if (savedTmp === refTmp) {
             return false;
         }
@@ -53,8 +59,10 @@ export class StoreService {
         let sendData = {author: author, title: title, data: data};
         console.log(sendData);
 
+        if (saveToServer) {
+            this.storeQuery(sendData);
+        }
 
-        this.storeQuery(sendData);
 
         // this.restApiFetcherServer.fetchJson("saveenginge", sendData, function (event) {
         //     console.log(event.data);

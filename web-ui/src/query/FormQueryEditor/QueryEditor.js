@@ -187,7 +187,7 @@ export class QueryEditor extends Page {
 
         $(".q-send-query-form-editor").submit(function (event) {
             event.preventDefault();
-            thisdata.storeService.saveEditor();
+            thisdata.storeService.saveEditor(true);
             let formGraphQL = thisdata.buildAndGetGraphQlQuery();
             thisdata.resultPresenter.generateResultAndInjectIntoDom(formGraphQL.generateAndGetGraphQlCode());
             thisdata.resultPresenter.updateState(formGraphQL);
@@ -198,7 +198,7 @@ export class QueryEditor extends Page {
         });
 
         $(".save-editor").click(function () {
-            let back = thisdata.storeService.saveEditor();
+            let back = thisdata.storeService.saveEditor(true);
             thisdata.storeService.getSaveModal().openModalWithState(back);
         });
 
@@ -267,6 +267,7 @@ export class QueryEditor extends Page {
 
             this.isFreshInstallation = false;
             this.storeService.doRestoringLastSave();
+            this.storeService.saveEditor(false);
         }
     }
 
