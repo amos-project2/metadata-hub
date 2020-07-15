@@ -161,7 +161,7 @@ export class Template {
 
             n.addOneNavElement(new NavElement(1, "Query-Editor", "query-editor", t => {return queryEditor}));
             n.addOneNavElement(new NavElement(1, "Query-Store", "query-store", t => {return queryStore}));
-            n.addOneNavElement(new NavElement(1, "File-Type-Categories", "file-type-categories", t => {return new FileTypeCategories(t)}));
+            n.addOneNavElement(new NavElement(2, "File-Type-Categories", "file-type-categories", t => {return new FileTypeCategories(t)}));
         });
 
 
