@@ -23,9 +23,6 @@ import crawler.services.environment as environment
 from crawler.services.config import Config
 
 
-_logger = logging.getLogger(__name__)
-
-
 class TreeWalkManager(threading.Thread):
 
     def __init__(self, db_info: dict, measure_time: bool, state: treewalk.State):
@@ -165,12 +162,12 @@ class TreeWalkManager(threading.Thread):
             )
 
         if self._work_packages:
-            _logger.debug('Running single work package for each worker')
+            logging.debug('Running single work package for each worker')
             work_single()
             self._update_progress()
             return check()
         if self._work_packages_split:
-            _logger.debug('Running split work package for each worker')
+            logging.debug('Running split work package for each worker')
             work_split()
             self._update_progress()
             return check()
@@ -226,7 +223,7 @@ class TreeWalkManager(threading.Thread):
                 queue_input.put(command)
                 queue_output.get()
                 worker.join()
-            _logger.info(
+            logging.info(
                 f'Reduced the number of workers by {diff} due to interval restriction.'
             )
         else:
@@ -248,7 +245,7 @@ class TreeWalkManager(threading.Thread):
                 )
                 self._workers.append((worker, queue_input, queue_output))
                 worker.start()
-            _logger.info(
+            logging.info(
                 f'Increased the number of workers by {diff} due to no interval restriction.'
             )
 
@@ -306,16 +303,16 @@ class TreeWalkManager(threading.Thread):
                 elif command.command == communication.MANAGER_UNPAUSE:
                     response = self._treewalk_unpause()
                 else:
-                    _logger.error(f'Received unknown command {command}')
+                    logging.error(f'Received unknown command {command}')
                 # Log the message and put the result to the output queue
                 if response.success:
-                    _logger.info(f'{response.command}: {response.message}')
+                    logging.info(f'{response.command}: {response.message}')
                 else:
-                    _logger.warning(f'{response.command}: {response.message}')
+                    logging.warning(f'{response.command}: {response.message}')
                 communication.manager_queue_output.put(response)
                 if shutdown:
                     break
-        _logger.info('Shutting TreeWalk down. Bye.')
+        logging.info('Shutting TreeWalk down. Bye.')
 
     def _treewalk_stop(self) -> communication.Response:
         """Stop the current execution of the TreeWalk.
@@ -445,7 +442,7 @@ class TreeWalkManager(threading.Thread):
             if max_cpu_level > 0:
                 actual = number_of_workers
                 number_of_workers = min(max_num_workers, number_of_workers)
-                _logger.info(
+                logging.info(
                     f'Reduced the number of workers by '
                     f'{abs(max_num_workers - actual)} '
                     f'due to interval restriction.'

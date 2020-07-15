@@ -24,9 +24,6 @@ from crawler.services.intervals import TimeInterval
 import crawler.communication as communication
 
 
-_logger = logging.getLogger(__name__)
-
-
 class TreeWalkScheduler(threading.Thread):
 
     def __init__(
@@ -146,9 +143,9 @@ class TreeWalkScheduler(threading.Thread):
         intervals = self._db_connection.get_intervals(as_json=False)
         new_interval = utils.get_present_interval(intervals)
         if new_interval == self._current_interval:
-            _logger.info(f'Current interval: {repr(self._current_interval)}')
+            logging.info(f'Current interval: {repr(self._current_interval)}')
         else:
-            _logger.info(
+            logging.info(
                 f'Changed from interval {repr(self._current_interval)} '
                 f'to interval {repr(new_interval)}.'
             )
@@ -172,7 +169,7 @@ class TreeWalkScheduler(threading.Thread):
             task (task_module.Task): task to dispatch
 
         """
-        _logger.info('TWS dispatching executio to TWM.')
+        logging.info('TWS dispatching executio to TWM.')
         config = Config(task.config)
         response = manager.start(config)
         if not response.success:
@@ -196,11 +193,11 @@ class TreeWalkScheduler(threading.Thread):
 
     def run(self) -> None:
         """Run the scheduler thread."""
-        _logger.info('Running TreeWalk Scheduler (TWS).')
+        logging.info('Running TreeWalk Scheduler (TWS).')
         self._intervals = self._db_connection.get_intervals(as_json=False)
         while True:
             try:
-                _logger.info('TWS waiting for command.')
+                logging.info('TWS waiting for command.')
                 command = communication.scheduler_queue_input.get(
                     block=True,
                     timeout=self._update_interval
@@ -211,10 +208,10 @@ class TreeWalkScheduler(threading.Thread):
             except queue.Empty:
                 pass
             finally:
-                _logger.info('TWS updating schedule.')
+                logging.info('TWS updating schedule.')
                 self._update()
             task = self._db_connection.get_next_task()
             if task is None:
                 continue
-            _logger.info('TWS retrieved a task to dispatch.')
+            logging.info('TWS retrieved a task to dispatch.')
             self._dispatch(task)
