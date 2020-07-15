@@ -90,7 +90,6 @@ class DatabaseConnection:
             # Update the analyzed directories and make query for updating the database
             get[6]["analyzed directories"].extend(package)
             query = Query.update(crawls) \
-                .set(crawls.analyzed_dirs, Parameter('%s')) \
                 .set(crawls.update_time, Parameter('%s')) \
                 .where(crawls.id == Parameter('%s'))
             query = curs.mogrify(str(query), (json.dumps(get[6]), datetime.now(), crawlID))
@@ -118,15 +117,13 @@ class DatabaseConnection:
         )
         author = config.get_author()
         name = config.get_name()
-        analyzed_dirs = json.dumps({"analyzed directories": []})
         starting_time = datetime.now()
-        insert_values = (dir_path, author, name, 'running', crawl_config, analyzed_dirs, starting_time)
+        insert_values = (dir_path, author, name, 'running', crawl_config, starting_time)
         # Construct the SQL query
         crawls = Table('crawls')
         query = Query.into(crawls) \
-            .columns('dir_path', 'author', 'name', 'status', 'crawl_config', 'analyzed_dirs', 'starting_time') \
-            .insert(Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'),
-                    Parameter('%s'))
+            .columns('dir_path', 'author', 'name', 'status', 'crawl_config', 'starting_time') \
+            .insert(Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'))
         curs = self.con.cursor()
         query = curs.mogrify(str(query), insert_values).decode('utf8')
         query = query + ' RETURNING id'

@@ -113,12 +113,6 @@ class TreeWalkManager(threading.Thread):
                 )
                 queue_input.put(command)
             self._workers_finished.wait()
-            # The single packages contain file names, so retrive the directories here
-            analyzed_dirs = list(set([
-                os.path.dirname(directory)
-                for worker_package in packages for directory in worker_package
-            ]))
-            self._db_connection.update_status(self._tree_walk_id, analyzed_dirs)
             self._workers_finished.clear()
 
         def work_split() -> None:
@@ -140,7 +134,6 @@ class TreeWalkManager(threading.Thread):
                 )
                 queue_input.put(command)
             self._workers_finished.wait()
-            self._db_connection.update_status(self._tree_walk_id, [directory])
             self._workers_finished.clear()
 
         def check() -> bool:
