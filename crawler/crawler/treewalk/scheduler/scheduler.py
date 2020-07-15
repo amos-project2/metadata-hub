@@ -143,11 +143,13 @@ class TreeWalkScheduler(threading.Thread):
         intervals = self._db_connection.get_intervals(as_json=False)
         new_interval = utils.get_present_interval(intervals)
         if new_interval == self._current_interval:
-            logging.info(f'Current interval: {repr(self._current_interval)}')
+            logging.info(
+                f'TWScheduler: active interval {repr(self._current_interval)}'
+            )
         else:
             logging.info(
-                f'Changed from interval {repr(self._current_interval)} '
-                f'to interval {repr(new_interval)}.'
+                'TWScheduler: changed from interval '
+                f'{repr(self._current_interval)} to {repr(new_interval)}.'
             )
             if self._current_interval is not None:
                 self._current_interval.deactivate()
@@ -193,11 +195,11 @@ class TreeWalkScheduler(threading.Thread):
 
     def run(self) -> None:
         """Run the scheduler thread."""
-        logging.info('Running TreeWalk Scheduler (TWS).')
+        logging.info('TWScheduler: Hello!')
         self._intervals = self._db_connection.get_intervals(as_json=False)
         while True:
             try:
-                logging.info('TWS waiting for command.')
+                logging.info('TWScheduler: waiting for command.')
                 command = communication.scheduler_queue_input.get(
                     block=True,
                     timeout=self._update_interval
@@ -208,10 +210,11 @@ class TreeWalkScheduler(threading.Thread):
             except queue.Empty:
                 pass
             finally:
-                logging.info('TWS updating schedule.')
+                logging.info('TWScheduler: updating schedule.')
                 self._update()
             task = self._db_connection.get_next_task()
             if task is None:
                 continue
-            logging.info('TWS retrieved a task to dispatch.')
+            logging.info('TWScheduler: retrieved a task to dispatch.')
             self._dispatch(task)
+        logging.info('TWScheduler: Goodbye!')

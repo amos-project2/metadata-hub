@@ -44,7 +44,7 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             curs.close()
             self.con.commit()
         except Exception as e:
-            logging.warning(f'Failed getting identifiers: {str(e)}')
+            logging.warning(f'TWSchedulerDB: failed getting identifiers: {str(e)}')
             curs.close()
             self.con.rollback()
             return None
@@ -78,7 +78,9 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             self.con.commit()
             return status
         except Exception as e:
-            logging.warning(f'Failed inserting config in schedule: {str(e)}')
+            logging.warning(
+                f'TWSchedulerDB: failed inserting config in schedule: {str(e)}'
+            )
             cursor.close()
             self.con.rollback()
             return False
@@ -124,7 +126,9 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             cursor.close()
             self.con.commit()
         except Exception as e:
-            logging.warning(f'Failed getting schedule from database: {str(e)}')
+            logging.warning(
+                f'TWSchedulerDB: failed getting schedule from database: {str(e)}'
+            )
             cursor.close()
             self.con.rollback()
             return None
@@ -153,7 +157,9 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             cursor.close()
             self.con.commit()
         except Exception as e:
-            logging.warning(f'Failed getting pending from database: {str(e)}')
+            logging.warning(
+                f'TWSchedulerDB: failed getting pending from database: {str(e)}'
+            )
             cursor.close()
             self.con.rollback()
             return None
@@ -183,7 +189,9 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             self.con.commit()
             return status
         except Exception as e:
-            logging.warning(f'Failed updating config in schedule: {str(e)}')
+            logging.warning(
+                f'TWSchedulerDB: failed updating config in schedule: {str(e)}'
+            )
             cursor.close()
             self.con.rollback()
             return False
@@ -208,7 +216,9 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             self.con.commit()
             return status
         except Exception as e:
-            logging.warning(f'Failed removing config from schedule: {str(e)}')
+            logging.warning(
+                f'TWSchedulerDB: failed removing config from schedule: {str(e)}'
+            )
             cursor.close()
             self.con.rollback()
             return False
@@ -240,7 +250,9 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             cursor.close()
             self.con.commit()
         except Exception as e:
-            logging.warning(f'Failed removing config from schedule: {str(e)}')
+            logging.warning(
+                f'TWSchedulerDB: failed removing config from schedule: {str(e)}'
+            )
             cursor.close()
             self.con.rollback()
             return False
@@ -284,7 +296,9 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             cursor.close()
             self.con.commit()
         except Exception as e:
-            logging.warning(f'Failed inserting interval in database: {str(e)}')
+            logging.warning(
+                f'TWSchedulerDB: failed inserting interval in database: {str(e)}'
+            )
             cursor.close()
             self.con.rollback()
             return False
@@ -310,7 +324,7 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             self.con.commit()
         except Exception as e:
             logging.warning(
-                f'Failed getting time intervals from database: {str(e)}'
+                f'TWSchedulerDB: failed getting time intervals from database: {str(e)}'
             )
             cursor.close()
             self.con.rollback()

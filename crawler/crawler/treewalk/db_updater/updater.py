@@ -66,10 +66,10 @@ class DatabaseUpdater(threading.Thread):
         For each file that fulfills this criteria, it removes it from the
         database.
         """
-        logging.info(f'Database updater started.')
+        logging.info(f'DBUpdater: Hello!')
         while True:
             logging.info(
-                f'Database updater sleeping for {self._update_interval} seconds.'
+                f'DBUpdater: sleeping for {self._update_interval} seconds.'
             )
             try:
                 command = communication.database_updater_input.get(
@@ -88,4 +88,5 @@ class DatabaseUpdater(threading.Thread):
                 if self._is_to_remove(curr_time=curr_time,remove_time=timestamp)
             ]
             num = self._db_connection.delete_files(ids=to_delete)
-            logging.info(f'Database updater removed {num} files.')
+            logging.info(f'DBUpdater: removed {num} files.')
+        logging.info(f'DBUpdater: Goodbye!')

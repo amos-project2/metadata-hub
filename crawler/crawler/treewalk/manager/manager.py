@@ -171,12 +171,12 @@ class TreeWalkManager(threading.Thread):
             )
 
         if self._work_packages:
-            logging.debug('Running single work package for each worker')
+            logging.debug('TWManager: running single work package.')
             work_single()
             self._update_progress()
             return check()
         if self._work_packages_split:
-            logging.debug('Running split work package for each worker')
+            logging.debug('TWManager: running split work package.')
             work_split()
             self._update_progress()
             return check()
@@ -207,7 +207,7 @@ class TreeWalkManager(threading.Thread):
             f'D={max(db_time):.2f}s'
         )
         str_manager = f'Manager: D={self._db_connection.get_time():.2f}s'
-        str_diff = str(datetime.now() - self._time_start)
+        str_diff = str(datetime.now() - self._time_start).total_seconds()
         logging.critical(
             f'TIME:: {str_worker} | {str_manager} | '
             f'Total: T={str_diff}'
@@ -232,9 +232,7 @@ class TreeWalkManager(threading.Thread):
                 queue_input.put(command)
                 queue_output.get()
                 worker.join()
-            logging.info(
-                f'Reduced the number of workers by {diff} due to interval restriction.'
-            )
+            logging.info(f'TWManager: reduced the number of workers by {diff}.')
         else:
             diff = num_workers - self._num_workers.value
             for id_worker in range(diff):
@@ -254,10 +252,7 @@ class TreeWalkManager(threading.Thread):
                 )
                 self._workers.append((worker, queue_input, queue_output))
                 worker.start()
-            logging.info(
-                f'Increased the number of workers by {diff} due to no interval restriction.'
-            )
-
+            logging.info(f'TWManager: increased the number of workers by {diff}.')
         self._work_packages = treewalk.resize_work_packages(
             work_packages=self._work_packages,
             num_workers=num_workers
@@ -305,6 +300,7 @@ class TreeWalkManager(threading.Thread):
 
     def run(self) -> None:
         """Run method of TreeWalk manager."""
+        logging.info('TWManager: Hello!')
         while True:
             check = False
             if self._state.is_running():
@@ -330,7 +326,7 @@ class TreeWalkManager(threading.Thread):
                 self.exec(command)
                 if self._shutdown:
                     break
-        logging.info('Shutting TreeWalk down. Bye.')
+        logging.info('TWManager: Goodbye!')
 
 
     def _treewalk_shutdown(self, data: Any) -> communication.Response:

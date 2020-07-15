@@ -45,7 +45,7 @@ class DBUpdaterDatabaseConnection(DatabaseConnectionBase):
             curs.close()
             self.con.commit()
         except Exception as e:
-            logging.warning(f'Failed deleting files: {str(e)}')
+            logging.warning(f'DBUpdaterDB: failed deleting files: {str(e)}')
             curs.close()
             self.con.rollback()
             return None
@@ -74,7 +74,7 @@ class DBUpdaterDatabaseConnection(DatabaseConnectionBase):
             curs.close()
             self.con.commit()
         except Exception as e:
-            logging.warning(f'Failed deleting files: {str(e)}')
+            logging.warning(f'DBUpdaterDB: failed deleting files: {str(e)}')
             curs.close()
             self.con.rollback()
             return None
