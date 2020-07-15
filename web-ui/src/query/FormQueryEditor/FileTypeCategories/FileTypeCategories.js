@@ -53,6 +53,9 @@ export class FileTypeCategories extends Page {
                     <button type="button" id="create-category-button" class="btn btn-primary">
                         Create File Category
                     </button>
+                    <button type="button" id="update-category-button" class="btn btn-primary">
+                        Update File Category
+                    </button>
                     <button type="button" id="delete-category-button" class="btn btn-danger">
                         Delete File Category
                     </button>
@@ -145,6 +148,7 @@ export class FileTypeCategories extends Page {
 
                     //add file types of file category into the query editor
                     $("#button-"+key).click(function () {
+                        thisdata.inputMultiplierFiletypeFilter.deleteAllInputValues("autocompleteDeactivated");
                         let file_types = fileCategoryMap[key];
                         $("#createCategoryForm").val(key);
                         for(var file_type_index in file_types){
@@ -175,6 +179,22 @@ export class FileTypeCategories extends Page {
 
             //send ajax call
             thisdata.fileTypeCategoriesService.createCategory(category, fileTypes, function(success){
+                console.log(success);
+            });
+        });
+
+        //Update a File Category
+        $("#update-category-button").click(function(){
+            let category = $("#createCategoryForm").val();
+            let fileTypes = [];
+
+            thisdata.inputMultiplierFiletypeFilter.each(function (fileTypeField) {
+                console.log($(fileTypeField).val())
+                fileTypes.push($(fileTypeField).val());
+            });
+
+            //send ajax call
+            thisdata.fileTypeCategoriesService.updateCategory(category, fileTypes, function(success){
                 console.log(success);
             });
         });

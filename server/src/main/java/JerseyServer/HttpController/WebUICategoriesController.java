@@ -53,9 +53,21 @@ public class WebUICategoriesController {
     public boolean createCategory(@PathParam("category") String category,
                                      @QueryParam("file_types") String file_types) throws DatabaseException, SQLException {
 
+        log.info("CreateCategory: " + category + " + " + file_types);
         List<String> fileTypesList = createList(file_types);
         categoryService.createCategory(category, fileTypesList);
-        log.info("CreateCategory: " + category + " + " + file_types);
+        return true;
+    }
+
+    @POST
+    @Path("/admin/{category}/update")
+    public boolean updateCategory(@PathParam("category") String category,
+                                  @QueryParam("file_types") String file_types) throws DatabaseException, SQLException {
+
+        log.info("UpdateCategory: " + category + " + " + file_types);
+        List<String> fileTypesList = createList(file_types);
+        categoryService.deleteCategory(category);
+        categoryService.createCategory(category, fileTypesList);
         return true;
     }
 

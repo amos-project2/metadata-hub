@@ -25,9 +25,8 @@ export class FileTypeCategoriesService {
         });
     }
 
-    // get all the file categories and their corresponding file types from the server
+    // create a new file category out of the file types
     createCategory(category, fileTypesList, callback) {
-        this.updateLists();
 
         let thisdata = this;
 
@@ -49,6 +48,28 @@ export class FileTypeCategoriesService {
         });
     }
 
+    // update the file types of a file category
+    updateCategory(category, fileTypesList, callback) {
+
+        let thisdata = this;
+
+        function getFileString() {
+
+            let resultString = "";
+            fileTypesList.forEach(element => {
+                resultString += element + "$x$";
+            });
+            console.log(resultString);
+            return resultString;
+        }
+
+        console.log("!! " + getFileString() + " ? " + category);
+
+        this.restApiFetcherServer.fetchPost("categoryService/admin/" + category + "/update/?file_types=" + encodeURIComponent(getFileString()), ":)", function (event) {
+            let success = event.data;
+            callback(success);
+        });
+    }
     deleteCategory(category, callback){
         let thisdata = this;
         this.restApiFetcherServer.restDelete("categoryService/admin/" + category, function (event) {
