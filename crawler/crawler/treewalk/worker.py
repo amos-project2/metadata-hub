@@ -65,7 +65,8 @@ class Worker(multiprocessing.Process):
         counter: multiprocessing.Value,
         finished: multiprocessing.Event,
         num_workers: multiprocessing.Value,
-        measure_time: bool
+        measure_time: bool,
+        event_can_exit: multiprocessing.Event
     ):
         super(Worker, self).__init__()
         self._queue_input = queue_input
@@ -83,6 +84,7 @@ class Worker(multiprocessing.Process):
         self._finished = finished
         self._num_workers = num_workers
         self._exiftool_time = 0
+        self._event_can_exit = event_can_exit
 
     def run(self) -> None:
         """Run the worker process."""
@@ -234,7 +236,7 @@ class Worker(multiprocessing.Process):
         try:
             process = subprocess.Popen(
                 [f'{self._exiftool}', '-n', '-json', *package],
-                stdout=subprocess.PIPE
+                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
             )
             # FIXME better solution?
             output = str(process.stdout.read(), 'utf-8')
@@ -356,7 +358,4 @@ class Worker(multiprocessing.Process):
             command=communication.WORKER_FINISH
         )
         self._queue_output.put(response)
-        # Wait for the manager to read the result, otherwise BrokenPipe will
-        # be raised
-        while not self._queue_output.empty():
-            pass
+        self._event_can_exit.wait()

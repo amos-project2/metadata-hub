@@ -39,7 +39,6 @@ def create_work_packages(
             yield directories[i: i+work_package_size]
 
     # Create list with every directory that is going to be processed
-    print(f'Initialized tree walk with {len(already_processed)} already processed nodes.')
     directories = []
     for input in inputs:
         path = input.get('path')

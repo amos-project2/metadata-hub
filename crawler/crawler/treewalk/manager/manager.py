@@ -16,6 +16,7 @@ from typing import Tuple, Any
 from datetime import datetime
 
 # Local imports
+from .worker_control import WorkerControl
 import crawler.treewalk as treewalk
 import crawler.database as database
 import crawler.communication as communication
@@ -37,6 +38,7 @@ class TreeWalkManager(threading.Thread):
         self._tree_walk_id = -1
         self._total = 0
         self._workers_finished = multiprocessing.Event()
+        self._workers_can_exit = multiprocessing.Event()
         self._state = state # type: treewalk.State
         self._connection_data = db_info
         self._measure_time = measure_time
@@ -106,12 +108,12 @@ class TreeWalkManager(threading.Thread):
                     pass
             self._work_packages = [items for items in self._work_packages if items]
             for index, package in enumerate(packages):
-                _, queue_input, _ = self._workers[index]
+                worker_control = self._workers[index]
                 command = communication.Command(
                     command=communication.WORKER_PACKAGE,
                     data=package
                 )
-                queue_input.put(command)
+                worker_control.queue_input.put(command)
             self._workers_finished.wait()
             self._workers_finished.clear()
 
@@ -127,12 +129,12 @@ class TreeWalkManager(threading.Thread):
             for index, fpath in enumerate(files):
                 tmp_lists[index % len(tmp_lists)].append(fpath)
             for index, package in enumerate(tmp_lists):
-                _, queue_input, _ = self._workers[index]
+                worker_control = self._workers[index]
                 command = communication.Command(
                     command=communication.WORKER_PACKAGE,
                     data=package
                 )
-                queue_input.put(command)
+                worker_control.queue_input.put(command)
             self._workers_finished.wait()
             self._workers_finished.clear()
 
@@ -156,8 +158,8 @@ class TreeWalkManager(threading.Thread):
                 command=communication.WORKER_FINISH,
                 data=None
             )
-            for _, queue_input, _ in self._workers:
-                queue_input.put(command)
+            for worker_control in self._workers:
+                worker_control.queue_input.put(command)
             self._db_connection.set_crawl_state(
                 tree_walk_id=self._tree_walk_id,
                 status=communication.CRAWL_STATUS_FINISHED
@@ -184,17 +186,24 @@ class TreeWalkManager(threading.Thread):
         """
         if not self._measure_time:
             # The worker always puts an item in the output queue at the end.
-            for worker, _, output_queue in self._workers:
-                _ = output_queue.get()
-                worker.join()
-                return
+            for worker_control in self._workers:
+                _ = worker_control.queue_output.get()
+            self._workers_can_exit.set()
+            for worker_control in self._workers:
+                worker_control.me.join()
+            self._workers_can_exit.clear()
+            return
         time_end = datetime.now()
         exiftool_time, db_time = ([], [])
-        for _, _, output_queue in self._workers:
-            response = output_queue.get()
+        for worker_control in self._workers:
+            response = worker_control.queue_output.get()
             this_exiftool_time, this_db_time = response.message
             exiftool_time.append(this_exiftool_time)
             db_time.append(this_db_time)
+        self._workers_can_exit.set()
+        for worker_control in self._workers:
+            worker_control.me.join()
+        self._workers_can_exit.clear()
         str_worker = (
             f'MAX-Worker: E={max(exiftool_time):.2f}s, '
             f'D={max(db_time):.2f}s'
@@ -220,11 +229,15 @@ class TreeWalkManager(threading.Thread):
                 command=communication.WORKER_STOP,
                 data=None
             )
-            for worker_id in range(diff):
-                worker, queue_input, queue_output = self._workers.pop()
-                queue_input.put(command)
-                queue_output.get()
-                worker.join()
+            to_kill = self._workers[:diff]
+            del self._workers[:diff]
+            for worker_control in to_kill:
+                worker_control.queue_input.put(command)
+                worker_control.queue_output.get()
+            self._workers_can_exit.set()
+            for worker_control in to_kill:
+                worker_control.me.join()
+            self._workers_can_exit.clear()
             logging.info(f'TWManager: reduced the number of workers by {diff}.')
         else:
             diff = num_workers - self._num_workers.value
@@ -241,9 +254,16 @@ class TreeWalkManager(threading.Thread):
                     counter=self._worker_counter,
                     finished=self._workers_finished,
                     num_workers=self._num_workers,
-                    measure_time=self._measure_time
+                    measure_time=self._measure_time,
+                    event_can_exit=self._workers_can_exit
                 )
-                self._workers.append((worker, queue_input, queue_output))
+                worker_control = WorkerControl(
+                    worker=worker,
+                    queue_input=queue_input,
+                    queue_output=queue_output,
+                    event_finished=self._workers_can_exit
+                )
+                self._workers.append(worker_control)
                 worker.start()
             logging.info(f'TWManager: increased the number of workers by {diff}.')
         self._work_packages = treewalk.resize_work_packages(
@@ -311,6 +331,7 @@ class TreeWalkManager(threading.Thread):
                             self._tree_walk_id, self._roots
                         )
                         self._log_execution_time()
+                        logging.info('TWManager: finished execution.')
                         self._reset()
             else:
                 command = communication.manager_queue_input.get()
@@ -354,10 +375,13 @@ class TreeWalkManager(threading.Thread):
                 command=communication.WORKER_STOP,
                 data=None
             )
-            for worker, a, b in self._workers:
-                a.put(command)
-                _ = b.get()
-                worker.join()
+            for worker_control in self._workers:
+                worker_control.queue_input.put(command)
+                _ = worker_control.queue_output.get()
+            self._workers_can_exit.set()
+            for worker_control in self._workers:
+                worker_control.me.join()
+            self._workers_can_exit.clear()
             self._db_connection.set_crawl_state(
                  tree_walk_id=self._tree_walk_id,
                  status=communication.CRAWL_STATUS_ABORTED
@@ -387,8 +411,8 @@ class TreeWalkManager(threading.Thread):
                 command=communication.WORKER_UNPAUSE,
                 data=None
             )
-            for _, queue_input, _ in self._workers:
-                queue_input.put(command)
+            for worker_control in self._workers:
+                worker_control.queue_input.put(command)
             self._db_connection.set_crawl_state(
                 tree_walk_id=self._tree_walk_id,
                 status=communication.CRAWL_STATUS_RUNNING
@@ -420,8 +444,8 @@ class TreeWalkManager(threading.Thread):
                 command=communication.WORKER_PAUSE,
                 data=None
             )
-            for _, queue_input, _ in self._workers:
-                queue_input.put(command)
+            for worker_control in self._workers:
+                worker_control.queue_input.put(command)
             self._db_connection.set_crawl_state(
                 tree_walk_id=self._tree_walk_id,
                 status=communication.CRAWL_STATUS_PAUSED
@@ -481,9 +505,6 @@ class TreeWalkManager(threading.Thread):
                     f'{abs(max_num_workers - actual)} '
                     f'due to interval restriction.'
                 )
-            # Prepare analyzed dirs
-            # FIXME: GET ALREADY PROCESSED NODES HERE
-            analyzedDirectories = json.dumps({"analyzed directories": []})
             # Prepare work packages
             work_packages, split = treewalk.create_work_packages(
                 inputs=config.get_directories(),
@@ -526,11 +547,18 @@ class TreeWalkManager(threading.Thread):
                 counter=self._worker_counter,
                 finished=self._workers_finished,
                 num_workers=self._num_workers,
-                measure_time=self._measure_time
+                measure_time=self._measure_time,
+                event_can_exit=self._workers_can_exit
             )
-            self._workers.append((worker, queue_input, queue_output))
-        for worker, _, _ in self._workers:
-            worker.start()
+            worker_control = WorkerControl(
+                worker=worker,
+                queue_input=queue_input,
+                queue_output=queue_output,
+                event_finished=self._workers_can_exit
+            )
+            self._workers.append(worker_control)
+        for worker_control in self._workers:
+            worker_control.me.start()
         # Update the manager
         self._config = config
         self._roots = config.get_directories()
