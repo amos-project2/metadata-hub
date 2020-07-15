@@ -14,6 +14,15 @@ export class RestAPIFetcher {
         this.fetchToResult(promise, callback);
     }
 
+    restDelete(path, callback){
+        let url = this.urlBuilder(path);
+        $.ajax({
+            url: url,
+            type: 'DELETE',
+            success: callback
+        });
+    }
+
     //public
     fetchGet(path, callback) {
         let promise = fetch(this.urlBuilder(path), {
