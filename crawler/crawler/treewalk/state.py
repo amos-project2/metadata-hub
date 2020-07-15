@@ -231,24 +231,31 @@ class State:
 
 
     @synchronized_state
-    def get_cpu_level(self) -> Tuple[int, int]:
+    def get_cpu_level(self, ignore: bool = False) -> Tuple[int, int]:
         """Get the current CPU level and if it must be enforced.
 
         If no interval changes happend since the last call, an exception is
         raised. This can reduce some logic for checking if an update of
         the number of workers is really neccessary.
 
+        Args:
+            ignore (bool): if set to true, ignore the interval change
+                and don't reset it respectively. Defaults to False.
+
         Raises:
             StateException: if interval didn't change since last call
 
         Returns:
-            Tuple[int, bool, int]: CPU level, number of workers
+            Tuple[int, int]: CPU level, number of workers
 
         """
+        data = (self._cpu_level, self._num_workers)
+        if ignore:
+            return data
         if not self._interval_changed:
             raise StateException('Interval didn\'t change since last call.')
         self._interval_changed = False
-        return (self._cpu_level, self._num_workers)
+        return data
 
 
     @synchronized_state

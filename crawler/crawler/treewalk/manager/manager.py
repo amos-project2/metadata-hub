@@ -305,7 +305,6 @@ class TreeWalkManager(threading.Thread):
 
     def run(self) -> None:
         """Run method of TreeWalk manager."""
-        shutdown = False
         while True:
             check = False
             if self._state.is_running():
@@ -329,7 +328,7 @@ class TreeWalkManager(threading.Thread):
                 check = True
             if check:
                 self.exec(command)
-                if shutdown:
+                if self._shutdown:
                     break
         logging.info('Shutting TreeWalk down. Bye.')
 
@@ -344,7 +343,7 @@ class TreeWalkManager(threading.Thread):
             communication.Response: response object
 
         """
-        response = self._treewalk_stop()
+        response = self._treewalk_stop(None)
         self._shutdown = True
         return response
 
@@ -484,7 +483,7 @@ class TreeWalkManager(threading.Thread):
             number_of_workers = treewalk.get_number_of_workers(
                 config.get_cpu_level()
             )
-            max_cpu_level, max_num_workers = self._state.get_cpu_level()
+            max_cpu_level, max_num_workers = self._state.get_cpu_level(True)
             if max_cpu_level > 0:
                 actual = number_of_workers
                 number_of_workers = min(max_num_workers, number_of_workers)
