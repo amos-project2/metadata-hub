@@ -5,17 +5,33 @@ import {Paginator} from "./Paginator";
 export class TableOutput {
 
 
-    constructor(resultPresenter) {
+    constructor(resultPresenter, controllunits, viewModal) {
         this.resultPresenter = resultPresenter;
-
+        this.controllunits = controllunits;
+        this.viewModal = viewModal;
     }
 
 
     getMainHtmlCode() {
         return `
             <div class="myTableContainer">
-                Send first a Query, then you get the Resulttable.
+                Send a Query first, then you get the Result.
             </div>`;
+    }
+
+    cleanUp() {
+        this.pSelector.find('.myTableContainer').html("");
+        this.cleared = true;
+    }
+
+
+    showError(error) {
+        this.pSelector.find('.myTableContainer').html(`
+            `);
+    }
+
+    showNoResult() {
+
     }
 
 
@@ -25,56 +41,27 @@ export class TableOutput {
         //this.pSelector.find('.exampleXX').DataTable();
     }
 
-    reinitialize(formGraphQL) {
-        let thisdata = this
-        let paginator = new Paginator("tableOutput", 2, 1000, 1);
-        paginator.registerPageListener(function (elem) {
-            thisdata.pSelector.find('.paginator-container').html(elem.getHtmlCode());
-            elem.addListener();
 
-            //formGraphQL.setOffset(elem.startIndex);//TODO reactivate, after server is fixed
-            formGraphQL.setLimit(elem.countElementsPerPage);
-            thisdata.resultPresenter.sendToServerAndAdjust(formGraphQL);
-
-        });
-
-
+    clearHtml() {
         //new installation
         this.pSelector.find('.myTableContainer').html(`
-<div class="row" style="margin:5px;">
-<label class="col-form-label" > Show entries: </label>
-    <div class="">
-            <select name="length"  class="custom-select custom-select-sm form-control form-control-sm myTableLength" >
-                <option value="2" selected>2</option>
-                <option value="10">10</option>
-                <option value="25">25</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-            </select>
-    </div>
-
-</div>
-<div class="myTableMainContainer">
-
-</div>
-<div class="paginator-container">
-    ${paginator.getHtmlCode()}
-</div>
-
-`
+                <div class="myTableMainContainer">
+                </div>`
         );
+    }
 
-        paginator.addListener();
-
-        this.pSelector.find('.myTableLength').change(function () {
-            paginator.setElementsPerPage($(this).val());
-
-        })
-
+    reinitialize(formGraphQL, initJson) {
+        this.clearHtml();
 
     }
 
-    updateState(json) {
+    updateState(formGraphQL, json) {
+
+        let totalFiles = json.data.searchForFileMetadata.numberOfTotalFiles;
+        let currentFiles = json.data.searchForFileMetadata.numberOfReturnedFiles;
+
+        // if (this.cleared || this.lastTotalFiles !== totalFiles) this.reinitialize(formGraphQL, json);
+
 
         let data = [];
         let structure = [];//bitmap
@@ -87,7 +74,17 @@ export class TableOutput {
         //alert(json.data.searchForFileMetadata.files[0].metadata[0].name);
 
         let files = json.data.searchForFileMetadata.files;
+        if (!files) {
+            files = [];
+        }
 
+        structure["#"] = firstSeenCount;
+        firstSeenCount++;
+        structure["id"] = firstSeenCount;
+        firstSeenCount++;
+
+
+        let counter = formGraphQL.getOffset();
         files.forEach(file => {
 
             let tmp = []
@@ -99,12 +96,26 @@ export class TableOutput {
                 }
                 tmp[metadata.name] = metadata.value;
 
-            })
-            data[file.id] = tmp;
-        })
+            });
+
+            counter++;
+            tmp["#"] = "<b>" + counter + "</b>";
+
+            tmp["id"] = file.id;
 
 
-        for(var index in structure) {
+            //"s"+file.id
+            data.push(tmp);
+        });
+
+        // let offsetLimit = formGraphQL.getOffset() + currentFiles;
+        // let offsetFiles = formGraphQL.getOffset() + 1;
+        // if(currentFiles===0) offsetFiles = 0;
+        // this.pSelector.find('.myEntryCount').html(`<b>${offsetFiles} - ${offsetLimit} [${currentFiles}] from ${totalFiles}</b> | Metadatacolumns: ${Object.keys(structure).length - 2}`);
+
+        this.controllunits.updateEntryCounter(formGraphQL, json, (Object.keys(structure).length - 2));
+
+        for (var index in structure) {
             structureReverseMap[structure[index]] = index;
         }
 
@@ -114,32 +125,38 @@ export class TableOutput {
         // })
 
 
-
         let headerAndFooter = "";
-        let content=""
+        let content = ""
+        let headElement = "";
+        let pointer = "";
         structureReverseMap.forEach(value => {
-            headerAndFooter += `<th>${value}</th>`;
+            if (value === "#") {
+                headElement = "";
+                pointer = "";
+            } else {
+                headElement = "head-element ";
+                pointer = "cursor: pointer;"
+            }
+            headerAndFooter += `<th class="${headElement}" style="${pointer}" data-value="${value}">${value}</th>`;
 
         })
 
 
-        let tmpContainer="";
+        let tmpContainer = "";
 
         data.forEach(value => {
-            content +="<tr>";
+            content += `<tr class="rel" data-rid="${value["id"]}" style="cursor: pointer">`;
 
             structureReverseMap.forEach(column => {
                 tmpContainer = value[column];
-                if(tmpContainer===undefined) tmpContainer="NULL";
-                content +=`<td>${tmpContainer}</td>`;
+                if (tmpContainer === undefined) tmpContainer = "NULL";
+                content += `<td class="detail-view-element">${tmpContainer}</td>`;
 
             });
 
-            content +="</tr>";
+            content += "</tr>";
 
         })
-
-
 
 
         let myTable = `
@@ -158,7 +175,56 @@ export class TableOutput {
         </table>
         `;
 
-        this.pSelector.find('.myTableMainContainer').html(myTable);
+
+        if (currentFiles === 0) {
+
+            let emptyText = `<span class="text-success font-weight-bold">The Resultset is empty</span>`;
+            this.pSelector.find('.myTableMainContainer').html(emptyText);
+        } else {
+            this.pSelector.find('.myTableMainContainer').html(myTable);
+        }
+
+
+        this.registerListener(formGraphQL, structureReverseMap);
+
+
+    }
+
+    registerListener(formGraphQL, structureReverseMap) {
+
+        let thisdata = this;
+
+        this.pSelector.find(".head-element").click(function () {
+
+            let attribute = $(this).data("value");
+            let sorting = formGraphQL.sortingIntern;
+
+            if (sorting.asc && sorting.attribute === attribute) {
+                formGraphQL.setSorting({attribute: attribute, asc: false});
+            } else {
+                formGraphQL.setSorting({attribute: attribute, asc: true});
+            }
+
+            thisdata.resultPresenter.sendToServerAndAdjust(formGraphQL);
+        });
+
+        this.pSelector.find(".rel").click(function () {
+            let rowId = $(this).data("rid");
+            let jqData = $(this).find("td");
+
+            let dataArray = [];
+
+            let counter = -1;
+            jqData.each(function () {
+                counter++;
+                dataArray.push({
+                    key: structureReverseMap[counter],
+                    data: $(this).html()
+                });
+            });
+            thisdata.viewModal.openModalWithData(rowId, dataArray);
+        });
+
 
     }
 

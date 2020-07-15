@@ -8,15 +8,23 @@ import {FormGraphQl} from "./Components/FormGraphQl";
 import {FiletypeFilter} from "./Components/FiletypeFilter";
 import {AttributSelector} from "./Components/AttributSelector";
 import {DateRangeFilter} from "./Components/DateRangeFilter";
+import {ClearCacheModal} from "./autocompletion/Modals/ClearCacheModal";
+import {FileTypeCategoriesService} from "./FileTypeCategories/FileTypeCategoriesService";
+import {StoreService} from "./QueryStore/StoreService";
 
-export class FormQueryEditor extends Page {
+export class QueryEditor extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         super(parent, identifier, mountpoint, titleSelector);
-        this.title = "Form Query Editor";
+        this.title = "Query Editor";
         this.cacheLevel = 3;
         this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
-        this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
-        this.graphQLIntrospectionModal = new GraphQlIntrospectionModel()
+
+        this.graphQLIntrospectionModal = new GraphQlIntrospectionModel(this.parent.storage, true);
+        this.resultPresenter = new ResultPresenter(this.graphQlFetcher, this.graphQLIntrospectionModal);
+        this.clearCacheModal = new ClearCacheModal();
+        this.clearCacheSelector = ".modalClearCache";
+
+        this.fileTypeCategoriesService = new FileTypeCategoriesService();
 
         this.metadatAutocompletion = new MetadataAutocompletion(
             this.parent.dependencies.restApiFetcherServer,
@@ -25,7 +33,6 @@ export class FormQueryEditor extends Page {
             ".fg-metadata-attribute",
             ".attribut-element-input",
             ".modalOpenerSelector",
-            ".modalClearCache"
         );
 
         this.dateRangeFilter = new DateRangeFilter();
@@ -33,6 +40,17 @@ export class FormQueryEditor extends Page {
         this.advancedFilter = new AdvancedFilter(this.metadatAutocompletion);
         this.attributSelector = new AttributSelector(this.metadatAutocompletion);
 
+        this.metadatAutocompletion.addAdvancedFilter(this.advancedFilter);
+        this.metadatAutocompletion.addAttributSelector(this.attributSelector);
+
+        this.storeService = null;//new StoreService(this, this.parent.dependencies.restApiFetcherServer);
+
+        this.isFreshInstallation = false;
+
+    }
+
+    setStoreService(storeService) {
+        this.storeService=storeService
     }
 
 
@@ -49,11 +67,11 @@ export class FormQueryEditor extends Page {
 
                     <div class="form-group col-md-6">
                         <label for="fq-query-Name">Query-Name <a class="pover" title="Query-Name" data-content="The Name, which is saved with the query here into the database to find it later again.">[?]</a></label>
-                        <input type="text" class="form-control" id="fq-query-Name" value="searchForFileMetadata">
+                        <input type="text" class="form-control save-element save-title" data-name="g1" id="fq-query-Name" value="searchForFileMetadata">
                     </div>
                     <div class="form-group col-md-6">
                         <label for="fq-owner">Owner <a class="pover" title="Owner" data-content="The Owner, which is saved with the query here into the database.">[?]</a></label>
-                        <input type="text" class="form-control" id="fq-owner" value="${localStorage.getItem("username")}" disabled>
+                        <input type="text" class="form-control save-author" data-name="g2" id="fq-owner" value="${localStorage.getItem("username")}" disabled>
                     </div>
                 </div>
 
@@ -102,15 +120,15 @@ export class FormQueryEditor extends Page {
                     </div>
                 </div>
 
-                <div class="form-row">
+                <div class="form-row" style="display: none;">
                     <div class="form-group col-md-12">
                         <label for="fq-limit">Limit <a class="pover" title="Limit" data-content="The max output limit.<br>Empty means no limit.">[?]</a></label>
-                        <input type="text"  class="form-control" id="fq-limit" value="3">
+                        <input type="text"  class="form-control" id="fq-limit" value="2">
                     </div>
                 </div>
 
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="fq-showDeleted">
+                    <input class="form-check-input save-element" data-name="g3" type="checkbox" value="" id="fq-showDeleted">
                     <label class="form-check-label" for="fq-showDeleted">
                         Show deleted files
                         <a class="pover" title="Show deleted files" data-content="If checked deleted files that are still in the database are also shown.">[?]</a>
@@ -125,9 +143,10 @@ export class FormQueryEditor extends Page {
 
                 <!--     Controll-Buttons           -->
 
-                <button type="submit" class="btn btn-primary">Send</button>
-                <button type="button" class="btn btn-primary open-query">Open Query</button>
-                <button type="button" class="btn btn-primary send-to-graphiql">Send to GraphiQL</button>
+                <button type="submit" class="btn btn-success">Send</button>
+                <button type="button" class="btn btn-primary open-query">Open Intermediate Query</button>
+                <button type="button" class="btn btn-success save-editor">Save Editor</button>
+                <button type="button" class="btn btn-danger modalClearCache">Clear Cache</button>
                 <button type="button" class="btn btn-primary clear-all">Clear All</button>
             </form>
             <br>
@@ -137,15 +156,21 @@ export class FormQueryEditor extends Page {
 
 
             ${this.graphQLIntrospectionModal.getHtmlCode()}
+            ${this.fileTypeCategoriesService.getModalHtml()}
+            ${this.resultPresenter.viewModal.getHtmlCode()}
+            ${this.storeService.getSaveModal().getHtmlCode()}
 
             ${this.metadatAutocompletion.getSuggestionViewer().getStaticModalHtml()}
-            ${this.metadatAutocompletion.getStaticModalHtmlClearCache()}
+            ${this.clearCacheModal.getHtmlCode()}
 
             `;
 
     }
 
     onMount() {
+
+        this.graphQLIntrospectionModal.onMount();
+        this.clearCacheModalOpenerAndRequest();
 
         this.resultPresenter.onMount();
 
@@ -162,6 +187,7 @@ export class FormQueryEditor extends Page {
 
         $(".q-send-query-form-editor").submit(function (event) {
             event.preventDefault();
+            thisdata.storeService.saveEditor(true);
             let formGraphQL = thisdata.buildAndGetGraphQlQuery();
             thisdata.resultPresenter.generateResultAndInjectIntoDom(formGraphQL.generateAndGetGraphQlCode());
             thisdata.resultPresenter.updateState(formGraphQL);
@@ -171,12 +197,9 @@ export class FormQueryEditor extends Page {
             thisdata.graphQLIntrospectionModal.openModalWithContent(thisdata.buildAndGetGraphQlQuery().generateAndGetGraphQlCode());
         });
 
-        $(".send-to-graphiql").click(function () {
-
-            thisdata.parent.storage.query_inject = thisdata.buildAndGetGraphQlQuery().generateAndGetGraphQlCode();
-            thisdata.parent.storage.openedFromEditor = true;
-            $("#nav-element-graphiql-console").trigger("click");
-
+        $(".save-editor").click(function () {
+            let back = thisdata.storeService.saveEditor(true);
+            thisdata.storeService.getSaveModal().openModalWithState(back);
         });
 
 
@@ -220,9 +243,38 @@ export class FormQueryEditor extends Page {
         if (showDeleted) {deleted = `showDeleted: true,\n  `;}
 
         formGraphQl.limit = limit;
-        formGraphQl.showDeleted = showDeleted;
+        formGraphQl.deleted = deleted;
 
         return formGraphQl;//.generateAndGetGraphQlCode();
+    }
+
+    clearCacheModalOpenerAndRequest() {
+        let thisdata = this;
+        $(this.clearCacheSelector).click(function () {
+            thisdata.clearCacheModal.openModal();
+            thisdata.restApiFetcherServer.fetchGet(`metadata-autocomplete/clear-cache/`, function (event) {});
+        });
+    }
+
+    onLoad() {
+        if (this.storeService.injectIntoQueryEditor) {
+            if (!this.isFreshInstallation) {
+                this.isFreshInstallation = true;
+                this.clearCache();
+                this.reload();
+                return;
+            }
+
+            this.isFreshInstallation = false;
+            this.storeService.doRestoringLastSave();
+            this.storeService.saveEditor(false);
+            setTimeout(function(){
+                $('html, body').animate({
+                    scrollTop: $(".save-editor").first().offset().top
+                }, 3000);
+            },1000);
+
+        }
     }
 
 

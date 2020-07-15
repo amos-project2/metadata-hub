@@ -78,4 +78,66 @@ export class InputFieldMultiplier {
     }
 
 
+    addInputValue(strValue, addHtmlClassWhileAdding) {
+        let lastField = $(this.fieldSelector).last();
+
+        lastField.addClass(addHtmlClassWhileAdding);
+        lastField.val(strValue);
+        lastField.trigger("focusin");
+        lastField.trigger("focusout");
+        lastField.removeClass(addHtmlClassWhileAdding);
+
+        return lastField;
+    }
+
+    addInputValueOnlyOnce(strValue, addHtmlClassWhileAdding) {
+
+        let found = false;
+        $(this.fieldSelector).each(function () {
+            if($(this).val()===strValue) found = true;
+        });
+        if(found) return;
+
+        let lastField = $(this.fieldSelector).last();
+
+        lastField.addClass(addHtmlClassWhileAdding);
+        lastField.val(strValue);
+        lastField.trigger("focusin");
+        lastField.trigger("focusout");
+        lastField.removeClass(addHtmlClassWhileAdding);
+
+        return lastField;
+    }
+
+    deleteInputValue(strValue, addHtmlClassWhileDeleting) {
+
+        $(this.fieldSelector).each(function () {
+            if ($(this).val() === strValue) {
+
+                let lastField = $(this);
+
+                lastField.addClass(addHtmlClassWhileDeleting);
+                lastField.val("");
+                lastField.trigger("focusin");
+                lastField.trigger("focusout");
+                lastField.removeClass(addHtmlClassWhileDeleting);
+            }
+        });
+
+    }
+
+    deleteAllInputValues(addHtmlClassWhileDeleting){
+        $(this.fieldSelector).each(function () {
+            let lastField = $(this);
+
+            lastField.addClass(addHtmlClassWhileDeleting);
+            lastField.val("");
+            lastField.trigger("focusin");
+            lastField.trigger("focusout");
+            lastField.removeClass(addHtmlClassWhileDeleting);
+        });
+    }
+
+
+
 }

@@ -1,5 +1,3 @@
-
-
 export class GraphQlFetcher {
 
     constructor(endpoint) {
@@ -44,10 +42,19 @@ export class GraphQlFetcher {
             }
         })
             .then(function (json) {
-                func(true, json, JSON.stringify(json, undefined, 2));
+
+                try {
+                    func(true, json, JSON.stringify(json, undefined, 2));
+                } catch (e) {
+                    console.log(e);
+                }
             })
             .catch(function (err) {
-                func(false, null, err.message);
+                try {
+                    func(false, null, err.message);
+                } catch (e) {
+                    console.log(e);
+                }
             });
 
     }

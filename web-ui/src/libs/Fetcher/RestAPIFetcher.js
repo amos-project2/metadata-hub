@@ -8,10 +8,19 @@ export class RestAPIFetcher {
     fetchPost(path, formData, callback) {
         let promise = fetch(this.urlBuilder(path), {
             method: "post",
-            body: formData
+            body: new URLSearchParams(formData)
         });
 
         this.fetchToResult(promise, callback);
+    }
+
+    restDelete(path, callback){
+        let url = this.urlBuilder(path);
+        $.ajax({
+            url: url,
+            type: 'DELETE',
+            success: callback
+        });
     }
 
     //public
@@ -27,7 +36,7 @@ export class RestAPIFetcher {
     fetchJson(path, jsonData, callback) {
         let promise = fetch(this.urlBuilder(path), {
             method: "POST",
-            body: JSON.stringify(data),
+            body: JSON.stringify(jsonData),
             headers: {
                 "Content-Type": "application/json"
             }
@@ -81,7 +90,7 @@ export class RestAPIFetcher {
 }
 
 //its used by the callback function in the fetchers
-class FetchResult {
+export class FetchResult {
 
     static SUCCESS() {return 1;} //const
     static NETWORK_ERROR() {return 2;}//const

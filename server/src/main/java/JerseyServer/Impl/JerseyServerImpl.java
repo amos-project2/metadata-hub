@@ -1,7 +1,7 @@
 package JerseyServer.Impl;
 
 import Config.Config;
-import HttpController.*;
+import JerseyServer.HttpController.*;
 import JerseyServer.HttpServer;
 import com.google.inject.Inject;
 import graphql.GraphQL;
@@ -29,7 +29,8 @@ public class JerseyServerImpl implements HttpServer
     public JerseyServerImpl(GraphQL graphQl, Config config,
                             GraphQLController c0, TestConsoleController c1,
                             WebUIController c2, CrawlerAPIProxyController c3,
-                            WebUIMetadataHelperController c4
+                            WebUIMetadataHelperController c4, ExportController c5,
+                            QueryEditorStorageController c6, WebUICategoriesController c7
     )
     {
         this.config = config;
@@ -43,6 +44,9 @@ public class JerseyServerImpl implements HttpServer
         resourceConfig.register(c2);
         resourceConfig.register(c3);
         resourceConfig.register(c4);
+        resourceConfig.register(c5);
+        resourceConfig.register(c6);
+        resourceConfig.register(c7);
 
         resourceConfig.register(ErrorHandler.class);
         this.server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, resourceConfig, false);

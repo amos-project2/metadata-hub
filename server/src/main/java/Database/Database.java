@@ -11,14 +11,13 @@ public interface Database
     /**
      * Here you can aquire directly a jdbc-connections from its pool
      */
-    Connection getJDBCConnection() throws SQLException;
+    Connection getJDBCConnection() throws SQLException, DatabaseException;
 
 
     /**
      * It's a synonym for getJDBCConnection()
      */
-    default public Connection gC() throws SQLException
-    {
+    default public Connection gC() throws SQLException, DatabaseException {
         //i think its ok to use here a short-name, cause the database is omnipresent
         return this.getJDBCConnection();
     }

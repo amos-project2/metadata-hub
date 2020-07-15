@@ -1,4 +1,4 @@
-package HttpController;
+package JerseyServer.HttpController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -66,7 +66,18 @@ public class GraphQLController
         return this.graphQlEndpoint(query, variables);
     }
 
-    private String graphQlEndpoint(String query, String variables) throws JsonProcessingException
+    public String graphQlEndpoint(String query, String variables) throws JsonProcessingException
+    {
+        Map<String, Object> resultMap = this.graphQlExecutor(query, variables);
+
+        ObjectMapper mapper = new ObjectMapper();
+        String json = mapper.writeValueAsString(resultMap);
+//      List<GraphQLError> errors = execute.getErrors();
+
+        return json;
+    }
+
+    public Map<String, Object> graphQlExecutor(String query, String variables)
     {
         ExecutionResult execute;
 
@@ -78,10 +89,7 @@ public class GraphQLController
         {
             execute = this.graphQl.execute(query);
         }
-
-        String json = new ObjectMapper().writeValueAsString(execute.toSpecification());
-        //List<GraphQLError> errors = execute.getErrors();
-        return json;
+        return execute.toSpecification();
     }
 
 

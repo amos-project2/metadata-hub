@@ -1,8 +1,10 @@
-package HttpController;
+package JerseyServer.HttpController;
 
 import Config.Config;
-import MetadataAutocompletion.FileTypeAutocompletionService;
-import MetadataAutocompletion.MetadataInfoService;
+import GraphQL.Fetcher.QueryCache;
+import Database.DatabaseException;
+import QueryServices.MetadataAutocompletion.FileTypeAutocompletionService;
+import QueryServices.MetadataAutocompletion.MetadataInfoService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
@@ -29,15 +31,18 @@ public class WebUIMetadataHelperController
     private final Config config;
     private final MetadataInfoService metadataInfoService;
     private final FileTypeAutocompletionService fileTypeAutocompletionService;
+    private final QueryCache queryCache;
 
     @Inject
     public WebUIMetadataHelperController(Config config,
                                          MetadataInfoService metadataInfoService,
-                                         FileTypeAutocompletionService fileTypeAutocompletionService)
+                                         FileTypeAutocompletionService fileTypeAutocompletionService,
+                                         QueryCache queryCache)
     {
         this.config = config;
         this.metadataInfoService = metadataInfoService;
         this.fileTypeAutocompletionService = fileTypeAutocompletionService;
+        this.queryCache = queryCache;
     }
 
     @GET
@@ -111,8 +116,7 @@ public class WebUIMetadataHelperController
     @GET
     @Produces("application/json")
     @Path("/filetype-suggestions")
-    public String getFileTypeSuggestions(@QueryParam("q") String query) throws JsonProcessingException, SQLException
-    {
+    public String getFileTypeSuggestions(@QueryParam("q") String query) throws JsonProcessingException, SQLException, DatabaseException {
         log.info("File Type Suggestions Query :" + query);
 
         String[] split = query.split("\\$XXX\\$");
@@ -128,6 +132,8 @@ public class WebUIMetadataHelperController
     }
 
 
+
+    //TODO maybe move to a own controller, because its not anymore still autocompletion related
     @GET
     @Produces("application/json")
     @Path("/clear-cache")
@@ -135,6 +141,7 @@ public class WebUIMetadataHelperController
     {
         log.info("clear-cache");
         this.metadataInfoService.cleanCache();
+        this.queryCache.clearCache();
         return "";
     }
 

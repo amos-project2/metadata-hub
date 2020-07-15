@@ -46,8 +46,8 @@ export class SuggestionViewer {
     retrieveMetadataSuggestions(limit, offset, callback) {
 
         this.restApiFetcherServer.fetchGet(`metadata-autocomplete/modal-suggestions/?limit=${limit}&offset=${offset}&fileTypes=` + encodeURIComponent(this.metadataAutocompletion.getFileString()), function (event) {
+            console.log("retrievMetadataSuggestions!");
             console.log(event.data);
-            console.log("hey");
             callback(event.data);
         });
 
@@ -87,13 +87,11 @@ export class SuggestionViewer {
             $(".suggestion-container").append(htmlTable);
             $(".adder-block").show(1000);
 
-            $(".filter-adder").not(".listenerAdded").click(function () {
-                let lastElement = $(".fg-metadata-attribute").last();
+            let refParent = thisdata.metadataAutocompletion;
 
-                lastElement.addClass("autocompleteDeactivated");
-                lastElement.val($(this).data("adderto"));
-                lastElement.trigger("focusin");
-                lastElement.trigger("focusout");
+
+            $(".filter-adder").not(".listenerAdded").click(function () {
+                refParent.advancedFilter.inputMultiplierAdvancedFilterRows.addInputValue($(this).data("adderto"), "autocompleteDeactivated");
 
                 let jqThis = $(this);
                 jqThis.parent().find(".filter-adder-message").show();
@@ -102,36 +100,21 @@ export class SuggestionViewer {
                 setTimeout(function () {
                     jqThis.parent().find(".filter-adder-message").hide(600);
                     jqThis.show(600);
-                    lastElement.removeClass("autocompleteDeactivated");
-                }, 1000)
+
+                    }, 1000)
 
             });
 
             $(".metadata-adder").not(".listenerAdded").change(function () {
 
-                let lastElement
-
                 if ($(this).is(':checked')) {
-                    lastElement = $(".attribut-element-input").last();
-                    lastElement.val($(this).data("adderto"));
-                    lastElement.addClass("autocompleteDeactivated");
-                    lastElement.trigger("focusin");
-                    lastElement.trigger("focusout");
-                    lastElement.removeClass("autocompleteDeactivated");
-                } else {
-                    let jqThis = $(this);
-                    $(".attribut-element-input").each(function () {
-                        if ($(this).val().toLowerCase().trim() === jqThis.data("adderto").toLowerCase().trim()) {
-                            $(this).val("");
-                            lastElement = $(this);
-                            lastElement.addClass("autocompleteDeactivated");
-                            lastElement.trigger("focusin");
-                            lastElement.trigger("focusout");
-                            lastElement.removeClass("autocompleteDeactivated");
-                        }
-                    });
-                }
 
+                    refParent.attributSelector.inputMultiplierAttributSelector.addInputValue($(this).data("adderto"), "autocompleteDeactivated");
+
+                } else {
+
+                    refParent.attributSelector.inputMultiplierAttributSelector.deleteInputValue($(this).data("adderto"), "autocompleteDeactivated");
+                }
 
             });
 

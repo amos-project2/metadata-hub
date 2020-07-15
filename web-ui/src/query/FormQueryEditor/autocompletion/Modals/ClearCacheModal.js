@@ -13,14 +13,14 @@ export class ClearCacheModal {
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel">Metadata Suggestions - Clear Cache</h5>
+                            <h5 class="modal-title" id="exampleModalLabel">Clear Cache</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
                         <div class="modal-body">
-                            The Autocompletion-Cache is cleared automatically after each 60min. Now you forced to clear it.<br><br>
-                            It was succesfully cleared.
+                            Different Caches (Autocompletion, Query-Cache, ...) are cleared automatically after a certain amount of time.<br> Now you forced to clear it.<br><br>
+                            <span class="text-success font-weight-bold">It was succesfully cleared.</span>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>

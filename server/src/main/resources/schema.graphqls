@@ -117,9 +117,12 @@ numberOfTotalFiles: the amount of total files the query would return
 numberOfReturnedFiles: the amount of files that are acutally returned, can differ from numberOfTotalFiles when limitFetchingSize or offset is used in the query
 """
 type ResultSet{
+    fromIndex: Int
+    toIndex: Int
     numberOfTotalFiles: Int
     numberOfReturnedFiles: Int
     files: [File]
+    error: Error
 }
 
 type File{
@@ -153,4 +156,9 @@ type Crawl{
     finished_time: String
     update_time: String!
     analyzed_dirs_hash: String
+}
+
+type Error{
+    message: String
+    stack_trace: String
 }

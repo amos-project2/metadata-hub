@@ -5,6 +5,7 @@ import Benchmark.IndexTest;
 import Config.ApplicationConfig;
 import Config.Config;
 import Config.JsonValideException;
+import Database.DatabaseException;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,11 @@ public class Start
 
     public static void main(String[] args) throws Exception
     {
-        new Start(args).start();
+        try{
+            new Start(args).start();
+        }catch (Exception exception){
+            exception.printStackTrace();
+        }
     }
 
     public Start(String[] args)
@@ -92,8 +97,7 @@ public class Start
         this.dependenciesContainer = new DependenciesContainer(this.config);
     }
 
-    private void startApplication() throws SQLException
-    {
+    private void startApplication() throws SQLException, DatabaseException {
         ApplicationService applicationService = this.dependenciesContainer.getInjector().getInstance(ApplicationService.class);
         applicationService.startAll();
     }
@@ -111,16 +115,14 @@ public class Start
 
     }
 
-    private  void executeBenchmark() throws SQLException, InterruptedException
-    {
+    private  void executeBenchmark() throws SQLException, InterruptedException, DatabaseException {
         boolean enableBenchmark = false;
         if(enableBenchmark){
              new BenchmarkTest(this.dependenciesContainer).doBenchmark();
         }
     }
 
-    private  void executeIndex() throws SQLException, InterruptedException
-    {
+    private  void executeIndex() throws SQLException, InterruptedException, DatabaseException {
         boolean enableIndexTest = false;
         if(enableIndexTest){
             new IndexTest(this.dependenciesContainer).test();

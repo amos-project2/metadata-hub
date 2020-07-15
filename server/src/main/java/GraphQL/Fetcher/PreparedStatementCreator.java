@@ -2,7 +2,6 @@ package GraphQL.Fetcher;
 
 import Database.Model.DatabaseSchemaDefinition;
 import GraphQL.Model.GraphQLSchemaDefinition;
-import com.google.common.graph.Graph;
 import graphql.GraphQLException;
 
 import java.util.HashMap;
@@ -16,7 +15,8 @@ public class PreparedStatementCreator {
 
         //TODO SQLInjection Prevention is needed!
         //TODO Don't select every field only the wanted ones (SELECT *) -> (SELECT id, metadata...)
-        StringBuilder stringBuilder = new StringBuilder("SELECT * FROM " + DatabaseSchemaDefinition.FILES_TABLE +  " WHERE ");
+//        StringBuilder stringBuilder = new StringBuilder("SELECT * FROM " + DatabaseSchemaDefinition.FILES_TABLE +  " WHERE ");
+        StringBuilder stringBuilder = new StringBuilder("FROM " + DatabaseSchemaDefinition.FILES_TABLE +  " WHERE ");
 
         //file_ids
         if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_FILES_IDS)){
@@ -265,7 +265,11 @@ public class PreparedStatementCreator {
                 }
             }
         }
-        stringBuilder.append(buildMetadataFilterLogic(graphQLArguments, metadata_filters));
+        try{
+            stringBuilder.append(buildMetadataFilterLogic(graphQLArguments, metadata_filters));
+        }catch (Exception exception){
+            throw new GraphQLException("Couldn't build metadata filter logic! The entered filter string is faulty!", exception);
+        }
     }
 
     /**
@@ -324,8 +328,6 @@ public class PreparedStatementCreator {
                 metadatafilterBuilder.append(filter.getValue() + logicalOperator);
             }
         }
-
-
 
         return metadatafilterBuilder.toString();
     }

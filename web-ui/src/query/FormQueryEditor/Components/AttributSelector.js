@@ -47,7 +47,7 @@ export class AttributSelector {
 
         let thisdata = this;
         let emptyFunction = function () {};
-        let appendingHtmlCode = `<div class="form-group col-md-4 fg-attribut-element"><input type="text" class="form-control attribut-element-input"></div>`;
+        let appendingHtmlCode = `<div class="form-group col-md-4 fg-attribut-element"><input type="text" class="form-control attribut-element-input save-element" data-name="m1" data-multiplier="true"></div>`;
 
         let focusOutFunction = function () {
             thisdata.metadatAutocompletion.updateLists();
