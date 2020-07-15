@@ -268,6 +268,12 @@ export class QueryEditor extends Page {
             this.isFreshInstallation = false;
             this.storeService.doRestoringLastSave();
             this.storeService.saveEditor(false);
+            setTimeout(function(){
+                $('html, body').animate({
+                    scrollTop: $(".save-editor").first().offset().top
+                }, 3000);
+            },1000);
+
         }
     }
 

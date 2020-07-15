@@ -31,7 +31,6 @@ export class ResultPresenter {
         this.exportOutput = new ExportOutput(this.downloadSuccessModal);
 
 
-
         this.cleared = true;
         this.lastTotalFiles = -1;
 
@@ -59,7 +58,7 @@ export class ResultPresenter {
             <div id="${this.id}">
                 <h4>Result:</h4>
 
-                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <ul class="nav nav-tabs myTab" id="myTab${this.id}" role="tablist">
                     <li class="nav-item" role="presentation">
                         <a class="nav-link" id="json-tab" data-toggle="tab" href="#json${this.id}" role="tab" aria-controls="json" aria-selected="true">Json</a>
                     </li>
@@ -179,6 +178,11 @@ export class ResultPresenter {
         formGraphQL.setSorting({attribute: "id", asc: true});
 
 
+        $('html, body').stop(true).animate({
+            // scrollTop: $("#myTab"+this.id).offset().top
+            scrollTop: '+=150px'
+        }, 1000);
+
         // this.tableOutput.reinitialize(formGraphQL);
         this.sendToServerAndAdjust(formGraphQL);
     }
@@ -223,6 +227,9 @@ export class ResultPresenter {
         `);
 
         messageContainer.stop(true).show(1000);
+        $('html, body').stop(true).animate({
+            scrollTop: $("#myTab" + this.id).offset().top
+        }, 2000);
 
     }
 
@@ -266,6 +273,12 @@ export class ResultPresenter {
             this.controllUnits.hidePaginatorAndSelectBox()
         }
 
+        let thisdata = this;
+        $('html, body').stop(true).animate({
+            scrollTop: $("#myTab" + this.id).offset().top
+        }, 2000);
+
+
     }
 
     //private
@@ -279,7 +292,7 @@ export class ResultPresenter {
             if (sucess && json && !json.errors && json.data.searchForFileMetadata && !json.data.searchForFileMetadata.error) {
                 thisdata.updateInternalState(formGraphQL, json);
             } else if (json === null) {
-                thisdata.updateError({message: "The ressource/Server is not avialable" , info: jsonString});
+                thisdata.updateError({message: "The ressource/Server is not avialable", info: jsonString});
             } else if (json.errors) {
                 thisdata.updateError({message: "An Error while parsing the Query is occured. Please dont use unescapted quotation marks, for example.", info: JSON.stringify(json, undefined, 2)});
             } else {
