@@ -28,6 +28,7 @@ def start(config: Config) -> communication.Response:
 
     """
     if config.get_force_update():
+        logging.info('TWManagerInterface: force-update was set. stopping.')
         command = communication.Command(
             command=communication.MANAGER_STOP,
             data=None

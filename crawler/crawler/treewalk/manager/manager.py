@@ -1,6 +1,8 @@
 """The TreeWalkManager manages the worker processes.
 
-TODO: Add description
+The TWManager is the center component of the TreeWalk. It manages the TWWorker
+and is responsible for pausing/continuing, etc.
+The start action for new executions is only called by the TWScheduler.
 """
 
 
@@ -71,11 +73,13 @@ class TreeWalkManager(threading.Thread):
         self._time_start = 0
         self._config = None
 
+
     def _update_progress(self) -> None:
         """Update the progress value."""
         packages_left = self._get_number_of_work_packages()
         progress = ((self._total - packages_left) / self._total) * 100.0
         self._state.set_progress(progress)
+
 
     def _get_number_of_work_packages(self) -> int:
         """Get the total number of work packages (directories).
@@ -87,6 +91,7 @@ class TreeWalkManager(threading.Thread):
         total = sum([len(worker_list) for worker_list in self._work_packages])
         total += len(self._work_packages_split)
         return total
+
 
     def _work(self) -> bool:
         """Work on the work packages step by step.
@@ -178,6 +183,7 @@ class TreeWalkManager(threading.Thread):
         done()
         return True
 
+
     def _log_execution_time(self) -> None:
         """Log the execution time of the crawl.
 
@@ -214,6 +220,7 @@ class TreeWalkManager(threading.Thread):
             f'TIME:: {str_worker} | {str_manager} | '
             f'Total: T={str_diff}'
         )
+
 
     def _update_workers(self, num_workers: int, reduce: bool) -> None:
         """Update the workers due to maximum resource consumption.
@@ -428,6 +435,7 @@ class TreeWalkManager(threading.Thread):
             command=communication.MANAGER_UNPAUSE
         )
 
+
     def _treewalk_pause(self, data: Any) -> communication.Response:
         """Pause the current execution of the TreeWalk.
 
@@ -515,7 +523,8 @@ class TreeWalkManager(threading.Thread):
             return (db_id, number_of_workers, work_packages, split)
 
 
-        # Check if it is ok to run
+        # Check if it is ok to run (preparing doesn't have to checked
+        # since it cannot be interrupted)
         if self._state.is_paused():
             return communication.Response(
                 success=False,
@@ -523,6 +532,7 @@ class TreeWalkManager(threading.Thread):
                 command=communication.MANAGER_START
             )
         if self._state.is_running():
+            logging.info('TWManager: attempted to start when TW is running.')
             return communication.Response(
                 success=False,
                 message='Attempted to start when TreeWalk is running.',

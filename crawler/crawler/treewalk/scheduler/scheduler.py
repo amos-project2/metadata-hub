@@ -171,7 +171,7 @@ class TreeWalkScheduler(threading.Thread):
             task (task_module.Task): task to dispatch
 
         """
-        logging.info('TWS dispatching executio to TWM.')
+        logging.info('TWScheduler: dispatching execution to TWManager.')
         config = Config(task.config)
         response = manager.start(config)
         if not response.success:
@@ -183,8 +183,9 @@ class TreeWalkScheduler(threading.Thread):
         if task.interval <= 0:
             self._db_connection.remove(identifier=task.identifier)
         else:
-            print(
-                f'Set TS from {task.timestamp_next} to {timestamp_next_new} '
+            logging.debug(
+                'TWScheduler: '
+                f'set TS from {task.timestamp_next} to {timestamp_next_new} '
                 f'and pending from {task.pending} to {pending_new}.'
             )
             self._db_connection.update(
