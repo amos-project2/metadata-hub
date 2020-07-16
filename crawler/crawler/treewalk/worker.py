@@ -185,9 +185,56 @@ class Worker(multiprocessing.Process):
     #         multipl = 1000000000000
     #     return int(size.split(' ')[0]) * multipl
 
-    def create_metadata_list(self, exif_output: json) -> Dict:
-        """Creates an easy to process dictionary for updating the 'metadata' table in the database
+    # def create_metadata_list(self, exif_output: json) -> Dict:
+    #     """Creates an easy to process dictionary for updating the 'metadata' table in the database
+    #
+    #     Args:
+    #         exif_output (json): The output from the ExifTool output.
+    #     Returns:
+    #         Dict: key: file type | value: Dict: key: tag value: count
+    #     """
+    #     # Loop over every tag for each file in the ExifTool output and add them to the dictionary
+    #     tag_values = {}
+    #     for single_output in exif_output:
+    #         fileType = single_output['FileType']
+    #         if fileType not in tag_values:
+    #             tag_values[fileType] = {}
+    #         for tag_value in single_output:
+    #             test = dict(single_output)
+    #             if tag_value in tag_values[fileType]:
+    #                 tag_values[fileType][tag_value][0] += 1
+    #             else:
+    #                 tag_values[fileType][tag_value] = [1, '?']
+    #             if tag_values[fileType][tag_value][1] == '?':
+    #                 tag_values[fileType][tag_value][1] = self.output_type(test[tag_value])
+    #     return tag_values
 
+    def create_metadata_increase(self, exif_output: json) -> Dict:
+        """Creates an easy to process dictionary for updating the 'metadata' table.
+        Loop over every tag for each file in the ExifTool output and add them to
+        the dictionary.
+        Args:
+            exif_output (json): The output from the ExifTool output.
+        Returns:
+            Dict: key: file type | value: Dict: key: tag value: count
+        """
+        tag_values = {}
+        for single_output in exif_output:
+            fileType = single_output['FileType']
+            if fileType not in tag_values:
+                tag_values[fileType] = {}
+            for tag_value in single_output:
+                test = dict(single_output)
+                if tag_value in tag_values[fileType]:
+                    tag_values[fileType][tag_value][0] += 1
+                else:
+                    tag_values[fileType][tag_value] = [1, '?']
+                if tag_values[fileType][tag_value][1] == '?':
+                    tag_values[fileType][tag_value][1] = self.output_type(test[tag_value])
+        return tag_values
+
+    def create_metadata_decrease(self, exif_output: json) -> Dict:
+        """Creates an easy to process dictionary for updating the 'metadata' table in the database
         Args:
             exif_output (json): The output from the ExifTool output.
         Returns:
@@ -202,9 +249,9 @@ class Worker(multiprocessing.Process):
             for tag_value in single_output:
                 test = dict(single_output)
                 if tag_value in tag_values[fileType]:
-                    tag_values[fileType][tag_value][0] += 1
+                    tag_values[fileType][tag_value][0] -= 1
                 else:
-                    tag_values[fileType][tag_value] = [1, '?']
+                    tag_values[fileType][tag_value] = [-1, '?']
                 if tag_values[fileType][tag_value][1] == '?':
                     tag_values[fileType][tag_value][1] = self.output_type(test[tag_value])
         return tag_values
@@ -318,27 +365,19 @@ class Worker(multiprocessing.Process):
                 except:
                     _logger.warning('Failed inserting single file again.')
 
-        # Update the values in the 'metadata' table
-        try:
-            # Create a comprehensive dictionary of all updates to be made in the 'metadata' table
-            metadata_list = self.create_metadata_list([json.loads(j[5]) for j in inserts])
-            # Put the new information into the database
-            self._db_connection.update_metadata(metadata_list)
-        except:
-            _logger.warning("Error updating metadata")
-
         # Check if there was a previous entry in the database
-        # if yes: Set the tag in the database to true
+        # if yes: Delete the file (files that were moved since then are deleted in the manager)
         toDelete = []
         directories = set([x[1] for x in inserts])
+        # List of jsons with the old data (Used for the metadata management)
+        jsons = []
         try:
             for dir in directories:
                 file_ids = self._db_connection.check_directory(dir, [x[-2] for x in inserts])
                 if file_ids:
-                    toDelete.extend(file_ids)
+                    toDelete.extend([x[0] for x in file_ids])
+                    jsons.extend([x[1] for x in file_ids])
             if len(toDelete) > 0:
-                # Decrease the dynamic tags in 'metadata' table
-                self._db_connection.decrease_dynamic(toDelete)
                 # Delete the files
                 self._db_connection.delete_files(toDelete)
         except Exception as e:
@@ -346,6 +385,15 @@ class Worker(multiprocessing.Process):
             _logger.warning(
                 'There was an error setting the deleted tags. Manual check necessary!'
             )
+        # Update the values in the 'metadata' table
+        try:
+            # Create comprehensive dictionaries of all increases and decreases to be made in the 'metadata' table
+            metadata_increase = self.create_metadata_increase([json.loads(j[5]) for j in inserts])
+            metadata_decrease = self.create_metadata_decrease(jsons)
+            # Put the new information into the database
+            self._db_connection.update_metadata(metadata_increase, metadata_decrease)
+        except:
+            _logger.warning("Error updating metadata")
         clean_up()
 
     def _clean_up(self) -> None:

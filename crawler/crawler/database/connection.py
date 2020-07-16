@@ -217,7 +217,7 @@ class DatabaseConnection:
         """
         files = Table('files')
         query = Query.from_(files) \
-            .select('id', 'crawl_id', 'dir_path', 'name', 'file_hash') \
+            .select('id', 'crawl_id', 'dir_path', 'name', 'file_hash', 'metadata') \
             .where(files.dir_path == Parameter('%s'))
         curs = self.con.cursor()
         query = curs.mogrify(str(query), (path,))
@@ -236,7 +236,7 @@ class DatabaseConnection:
             return []
         recent_crawl = max(id_set)
         # Make list with every file_id in that directory/crawl
-        file_ids = [x[0] for x in get if x[1] == recent_crawl and x[-1] in current_hashes]
+        file_ids = [(x[0],x[-1]) for x in get if x[1] == recent_crawl and x[-2] in current_hashes]
         return file_ids
 
     @measure_time
@@ -335,6 +335,29 @@ class DatabaseConnection:
         """
         return self._time
 
+    def create_metadata_decrease(self, exif_output: json) -> Dict:
+        """Creates an easy to process dictionary for updating the 'metadata' table in the database
+        Args:
+            exif_output (json): The output from the ExifTool output.
+        Returns:
+            Dict: key: file type | value: Dict: key: tag value: count
+        """
+        # Loop over every tag for each file in the ExifTool output and add them to the dictionary
+        tag_values = {}
+        for single_output in exif_output:
+            fileType = single_output['FileType']
+            if fileType not in tag_values:
+                tag_values[fileType] = {}
+            for tag_value in single_output:
+                test = dict(single_output)
+                if tag_value in tag_values[fileType]:
+                    tag_values[fileType][tag_value][0] -= 1
+                else:
+                    tag_values[fileType][tag_value] = [-1, '?']
+                if tag_values[fileType][tag_value][1] == '?':
+                    tag_values[fileType][tag_value][1] = self.output_type(test[tag_value])
+        return tag_values
+
     @measure_time
     def delete_lost(self, crawlId: int, roots: List) -> None:
         """Scans the directories at the end of a scan, to find directories that were deleted since the last crawl
@@ -344,11 +367,13 @@ class DatabaseConnection:
             roots (List): list with every path/recursive pair
         """
         # Request a list of every directory skipped during the deletion process
+        # Request a list of every directory skipped during the deletion process
         files = Table('files')
         query = Query.from_(files) \
-                .select(files.id) \
-                .where(files.crawl_id != crawlId) \
-                .where(files.deleted == False)
+            .select(files.id) \
+            .select(files.metadata) \
+            .where(files.crawl_id != crawlId) \
+            .where(files.deleted == False)
         curs = self.con.cursor()
         statements = []
         for root in roots:
@@ -360,9 +385,10 @@ class DatabaseConnection:
         try:
             curs.execute(query)
             entries = curs.fetchall()
-            self.set_deleted(entries)
+            self.set_deleted([x[0] for x in entries])
             if len(entries) > 0:
-                self.decrease_dynamic([x[0] for x in entries])
+                decrease = self.create_metadata_decrease([x[1] for x in entries])
+                self.update_metadata({}, decrease)
             curs.close()
             self.con.commit()
         except Exception as e:
@@ -371,26 +397,50 @@ class DatabaseConnection:
             curs.close()
             self.con.rollback()
 
+    # Methods to implement in child class
+    def _combine_dict(self, increases: dict, decreases: dict) -> dict:
+        combined = increases
+        all_type = {}
+        # Subtract each value in decrease for each individual file typ
+        for data_type in decreases.keys():
+            if data_type in combined.keys():
+                for tag_type in decreases[data_type]:
+                    if tag_type in increases[data_type].keys():
+                        combined[data_type][tag_type][0] = combined[data_type][tag_type][0] + decreases[data_type][tag_type][0]
+                    else:
+                        combined[data_type][tag_type] = decreases[data_type][tag_type]
+            else:
+                combined[data_type] = decreases[data_type]
+        # Add the values to the 'ALL'-type
+        for data_type in combined.keys():
+            for tag_type in combined[data_type].keys():
+                if tag_type in all_type.keys():
+                    all_type[tag_type][0] = all_type[tag_type][0] + combined[data_type][tag_type][0]
+                else:
+                    all_type[tag_type] = combined[data_type][tag_type].copy()
+        combined['ALL'] = all_type
+        return combined
 
-    def update_metadata(self, additions: dict) -> None:
+    @measure_time
+    def update_metadata(self, increases: dict, decreases:dict) -> None:
         """Given a dictionary with key (file type) and values ((tag name, increments)) update the database
         accordingly
         Args:
             additions (dict): key (file type) and values ((tag name, increments))
         Return:
-
         """
+        combined = self._combine_dict(increases,decreases)
         # Query to get the old values from the 'metadata' table (For each file type)
         query = "SELECT * FROM metadata WHERE file_type IN %s;"
-        curs = self.con.cursor()
-        query = curs.mogrify(query, (tuple([file_type for file_type in additions]),))
         try:
+            curs = self.con.cursor()
+            query = curs.mogrify(query, (tuple([file_type for file_type in combined]),))
             curs.execute(query)
             entries = curs.fetchall()
             # Query to update the values of each entry that has a previous entry
             for entry in entries:
                 file_type = [x for x in entry][0]
-                updates = additions[file_type]
+                updates = combined[file_type]
                 query = 'UPDATE metadata SET "tags" = %s WHERE "file_type" = %s;'
                 # increase the values of each entry according to the new files
                 for tag in entry[1]:
@@ -400,13 +450,13 @@ class DatabaseConnection:
                 # Tag doesn't exist yet
                 for tag in updates:
                     entry[1][tag] = [int(updates[tag][0]), updates[tag][1]]
-                del additions[file_type]
+                del combined[file_type]
                 query = curs.mogrify(query, (json.dumps(entry[1]), file_type))
                 curs.execute(query)
             # Insert the updated values of each corresponding data type
-            for file_type in additions:
+            for file_type in combined:
                 query = 'INSERT INTO "metadata" ("file_type", "tags")VALUES (%s, %s)'
-                updates = (file_type, json.dumps(additions[file_type]))
+                updates = (file_type, json.dumps(combined[file_type]))
                 query = curs.mogrify(query, updates)
                 curs.execute(query)
             curs.close()
