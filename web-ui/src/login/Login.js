@@ -42,7 +42,7 @@ export class Login {
             }
             if (this.config.crawlerEnabled) {
                 scope.push(2);
-                startpage = "crawler-controller";
+                startpage = "treewalk-controller";
             }
         } else {
             if (this.config.queryConstructorEnabled) {
