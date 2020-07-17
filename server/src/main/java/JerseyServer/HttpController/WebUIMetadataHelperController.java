@@ -55,9 +55,8 @@ public class WebUIMetadataHelperController
         String[] split = query.split("\\$XXX\\$");
         String metadataTag = split[0].trim();
 
-        //TODO Change to ALL_TYPES, when implemented
         // Default value if no file type is used
-        String fileTypes = "JPEG";
+        String fileTypes = "ALL";
         if (split.length > 1)
         {
             fileTypes = split[1].toUpperCase().trim();
