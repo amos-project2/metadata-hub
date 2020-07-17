@@ -53,6 +53,30 @@ def measure_exiftool(func):
     return decorator
 
 
+def measure_hashing(func):
+    """Decorator for time measurement of the hashing execution.
+
+    This decorator is used for roughly estimate the time spent for creating
+    the file hashes on the work packages.
+
+    Args:
+        func (function): function to wrap
+
+    """
+
+    def decorator(self, *args, **kwargs):
+        if self._measure_time:
+            start = datetime.now()
+            result = func(self, *args, **kwargs)
+            end = datetime.now()
+            self._hashing_time += (end - start).total_seconds()
+        else:
+            result = func(self, *args, **kwargs)
+        return result
+
+    return decorator
+
+
 class Worker(multiprocessing.Process):
 
     def __init__(
@@ -86,6 +110,7 @@ class Worker(multiprocessing.Process):
         self._finished = finished
         self._num_workers = num_workers
         self._exiftool_time = 0
+        self._hashing_time = 0
         self._event_can_exit = event_can_exit
         self._debug = debug
 
@@ -156,6 +181,24 @@ class Worker(multiprocessing.Process):
         return metadata
 
 
+    @measure_hashing
+    def run_hashing(self, fpath: str) -> str:
+        """Run the hashing on the given file.
+
+        Args:
+            fpath (str): file path
+
+        Returns:
+            str: sha256 hash
+
+        """
+        # compute the hash256 and add it to the values string
+        with open(fpath, 'rb') as file:
+            bytes = file.read()
+            hash256 = hashlib.sha256(bytes).hexdigest()
+        return hash256
+
+
     def _do_work(self, package: List[str]) -> None:
         """Process the work package.
 
@@ -187,6 +230,7 @@ class Worker(multiprocessing.Process):
         if metadata is None:
             clean_up()
             return
+
         inserts = []
         tag_values = []
         for result in metadata:
@@ -200,10 +244,9 @@ class Worker(multiprocessing.Process):
                 )
                 continue
             # compute the hash256 and add it to the values string
-            with open(f"{result['Directory']}/{result['FileName']}".replace("\'\'", "\'"), "rb") as file:
-                bytes = file.read()
-                hash256 = hashlib.sha256(bytes).hexdigest()
-                insert_values += (hash256, False)
+            fpath = f"{result['Directory']}/{result['FileName']}".replace("\'\'", "\'")
+            hash256 = self.run_hashing(fpath)
+            insert_values += (hash256, False)
             # add the value string to the rest for insert batching
             # FIXME Better solution for ignoring files with no file_type?
             if insert_values[3] == 'NULL':
@@ -270,7 +313,11 @@ class Worker(multiprocessing.Process):
         self._db_connection.close()
         response = communication.Response(
             success=True,
-            message=(self._exiftool_time, self._db_connection.get_time()),
+            message=(
+                self._exiftool_time,
+                self._hashing_time,
+                self._db_connection.get_time()
+            ),
             command=communication.WORKER_FINISH
         )
         self._queue_output.put(response)

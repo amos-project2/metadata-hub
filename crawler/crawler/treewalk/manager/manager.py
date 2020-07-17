@@ -46,7 +46,7 @@ class TreeWalkManager(threading.Thread):
         self._connection_data = db_info
         self._measure_time = measure_time
         self._db_connection = None # type: database.DatabaseConnection
-        self._time_start = 0
+        self._time_start = None
         self._config = None # type: Config
         self._functions = {
             communication.MANAGER_PAUSE: self._treewalk_pause,
@@ -71,7 +71,7 @@ class TreeWalkManager(threading.Thread):
         self._state.set_ready()
         self._db_connection.close()
         self._db_connection = None
-        self._time_start = 0
+        self._time_start = None
         self._config = None
 
 
@@ -208,25 +208,22 @@ class TreeWalkManager(threading.Thread):
             self._workers_can_exit.clear()
             return
         time_end = datetime.now()
-        exiftool_time, db_time = ([], [])
         for worker_control in self._workers:
             response = worker_control.queue_output.get()
-            this_exiftool_time, this_db_time = response.message
-            exiftool_time.append(this_exiftool_time)
-            db_time.append(this_db_time)
+            exiftool_time, hashing_time, database_time = response.message
+            logging.critical(
+                f'TWManager: time of TWWorker {worker_control.me.pid}: '
+                f'ExifTool = {exiftool_time:.2f} s, '
+                f'Hashing = {hashing_time:.2f} s, '
+                f'Database = {database_time:.2f} s'
+            )
         self._workers_can_exit.set()
         for worker_control in self._workers:
             worker_control.me.join()
         self._workers_can_exit.clear()
-        str_worker = (
-            f'MAX-Worker: E={max(exiftool_time):.2f}s, '
-            f'D={max(db_time):.2f}s'
-        )
-        str_manager = f'Manager: D={self._db_connection.get_time():.2f}s'
-        str_diff = str(datetime.now() - self._time_start).total_seconds()
         logging.critical(
-            f'TIME:: {str_worker} | {str_manager} | '
-            f'Total: T={str_diff}'
+            f'TWManager: execution time was: '
+            f'{(datetime.now() - self._time_start).total_seconds():.2f} s'
         )
 
 
@@ -589,6 +586,7 @@ class TreeWalkManager(threading.Thread):
         self._tree_walk_id = tree_walk_id
         self._state.set_running(config)
         self._state.set_running_workers(self._num_workers.value)
+        self._time_start = datetime.now()
         return communication.Response(
             success=True,
             message=communication.MANAGER_OK,
