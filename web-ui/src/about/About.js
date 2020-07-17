@@ -22,6 +22,7 @@ export class About extends Page {
                 <b><a href="https://github.com/amos-project2/metadata-hub/" target="_blank">Code at Github</a></b><br><br>
 
                 <b>Author:</b><br>
+                Gregor Fendt<br>
                 Benjamin Fischer<br>
                 Thomas Wolter<br>
                 Robin Kreuzer<br>

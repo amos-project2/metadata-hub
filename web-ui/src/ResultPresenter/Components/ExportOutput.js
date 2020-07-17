@@ -28,7 +28,7 @@ export class ExportOutput {
                     <div class="form-check mb-4">
                         <input class="form-check-input" type="checkbox" value="" id="meta-all${this.id}">
                         <label class="form-check-label" for="meta-all${this.id}">
-                            Include all Metadataattributes <br>(Ignore the Metadataattributes-Filter)
+                            Include all metadata attributes <br>(Ignore the metadata attributes-filter)
                         </label>
                     </div>
                      <div class="form-check mb-4" id="${this.id}">
@@ -44,7 +44,7 @@ export class ExportOutput {
                         </label>
                     </div>
                     <div class="col text-center mb-4">
-                        <button type="button" class="btn btn-primary download-button ">Download Init</button>
+                        <button type="button" class="btn btn-primary download-button ">Initialize download</button>
                     </div>
                 </div>
                  <div class="mx-auto start-area" style="width: 290px; display: none">
@@ -57,10 +57,10 @@ export class ExportOutput {
                         </div>
 
                          <div class="col text-center mb-4">
-                            <button type="button" class="btn btn-danger download-button-abbort download-button-abbort-start">Abbort</button>
+                            <button type="button" class="btn btn-danger download-button-abbort download-button-abbort-start">Abort</button>
                         </div>
                          <div class="col text-center mb-4">
-                            <button type="submit" class="btn btn-success download-button-start download-button-abbort-start">Download Start</button>
+                            <button type="submit" class="btn btn-success download-button-start download-button-abbort-start">Start download</button>
                         </div>
 
                         </form>

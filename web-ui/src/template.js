@@ -175,10 +175,10 @@ export class Template {
             n.addOneNavElement(new NavElement(1, "GraphQL-Query", "graphql-query", t => {return new GraphqlQueryEditor(t)}));
         });
 
-        this.addNavGroup(2, "Crawler", n => {
-            n.addOneNavElement(new NavElement(2, "Controller", "crawler-controller", t => {return new CrawlerController(t)}));
-            n.addOneNavElement(new NavElement(2, "Scheduler", "crawler-scheduler", t => {return new CrawlerScheduler(t)}));
-            n.addOneNavElement(new NavElement(2, "Intervals", "crawler-intervals", t => {return new CrawlerIntervals(t)}));
+        this.addNavGroup(2, "TreeWalk", n => {
+            n.addOneNavElement(new NavElement(2, "Controller", "treewalk-controller", t => {return new CrawlerController(t)}));
+            n.addOneNavElement(new NavElement(2, "Scheduler", "treewalk-scheduler", t => {return new CrawlerScheduler(t)}));
+            n.addOneNavElement(new NavElement(2, "Intervals", "treewalk-intervals", t => {return new CrawlerIntervals(t)}));
         });
 
 
