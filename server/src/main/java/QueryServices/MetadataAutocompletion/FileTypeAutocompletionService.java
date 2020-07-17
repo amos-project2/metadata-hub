@@ -32,6 +32,9 @@ public class FileTypeAutocompletionService
      */
     public List<String> getFileTypes(List<String> excludeFileTypes, String search, int count) throws SQLException, DatabaseException {
 
+        //exclude our ALL-type from the file-type-suggestions
+        excludeFileTypes.add("all");
+
         ArrayList<String> ret = new ArrayList<String>();
         String file_type;
 
