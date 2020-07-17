@@ -1,4 +1,4 @@
-## TreeWalk
+## WebUI
 
 This section will shortly explain the interface of the TreeWalk component.
 Metadata-Hub provides a web interface for using the TreeWalk component:
@@ -8,16 +8,6 @@ Metadata-Hub provides a web interface for using the TreeWalk component:
   Interface for viewing/modifying the schedule of the TreeWalk.
 * **Intervals**<br>
   Interface for viewing/modifying the intervals of the TreeWalk.
-
-### Examples
-
-This section will show example pictures of the web interface.
-It will be updated until 22nd July.
-
-### Technical overview
-
-This section will shortly describe the technical design of the
-TreeWalk component. It will be updated until 22nd July.
 
 ### Configuration
 
@@ -84,7 +74,69 @@ please have a look at the schema defining the JSON configuration.
 This is required for accessing the API of the TreeWalk directly.
 
 
-### API
+
+### Examples
+
+This section will show example pictures of the web interface.
+It will be updated until 22nd July.
+
+## Architecture
+
+The TreeWalk is split into four major components. The abbreviaton *TW* stands
+for *TreeWalk*.
+
+* **TWManager**<br>
+  The manager controls the state of the TreeWalk. In detail, it controls the
+  worker processes and executes control mechanisms such as pausing or stopping
+  the TreeWalk.
+
+* **TWScheduler**<br>
+  The scheduler keeps track of scheduled executions and time interval
+  restrictions. It dispatches executions to the TWManager when they are ready
+  to run and updates their status in the database.
+
+* **TWApi**<br>
+  The API provides a simple REST interface for accessing the functionality
+  of the TreeWalk. It's implemented as a simple Flask application.
+
+* **TWDatabaseUpdater**<br>
+  The database updater periodically removes files in the database that were
+  marked as deleted but still have a certain timeout before they are totally
+  removed from the storage.
+
+* **TWWorker**<br>
+  The worker runs the ExifTool, creates hashes of the single files and inserts
+  the results into the datbase.
+
+All these components are implemented as seperate threads except the workers
+that run as standalone processes. They all run in ``while True`` loops but
+block on certain events to reduce CPU usage. For example, the manager is simply
+blocking execution until a new command is retrieved when the TreeWalk is not
+running.
+
+## Algorithm
+
+This is just a small sketch about the steps that are executed when the TreeWalk
+is running.
+
+1. The input directories are traversed in order to create *evenly* distributed
+   work load for the workers. Packages are created in a way that directories
+   containing few files are combined and directories that contain many files
+   are split up at a later point.
+2. While running, the manager dispatches each worker a new package.
+   The workers then run the ExifTool and calculate the file hashes.
+   Afterwards, they insert the data into the database.
+   The worker that finished last signals the manager that the iteration has
+   finished.
+3. The manager then updates the progress that have been made and checks if a
+   new command has been send in the meantime. If this is the case, the manager
+   exeuctes the retrieved command, e.g pausing the TreeWalk. When no command
+   was sent, it simply dispatches each worker a new work package.
+4. When no work packages are present anymore, all data strucuteres are cleared
+   and the worker processes terminate. Finally, the state changes to ready again.
+
+
+## API
 
 This section will shortly explain the API of the TreeWalk.
 This is helpful when you plan to use the TreeWalk as a standalone
@@ -187,7 +239,32 @@ For the sake of simplicity, all these endpoints support ``GET`` and ``POST`` req
     This will force a possible running execution of the TreeWalk to end and exit the TreeWalk process.
 
 
-### Evaluations
+## CLI
+
+The TreeWalk can be also controlled via the command line. The module ``cli.py``
+forwards the commands to the REST API of the TreeWalk and prints the response
+to the console. It can be directly executed from the repository. In this case,
+the default enviroment settings `configs/enviroment.default.json` will be used.
+For using another setting, either change the values in this file or let the
+environment variable ``METADAHUB_ENV`` point to the file with the correct
+settings.
+Please have a look at the [schema](https://raw.githubusercontent.com/amos-project2/metadata-hub/master/configs/crawler-config.schema) of a TreeWalk configuration
+and the [environment settings](https://raw.githubusercontent.com/amos-project2/metadata-hub/master/configs/environment.default.json) before.
+When everything was set up properly and the TreeWalk is running,
+an examplary usage would look like this:
+
+```bash
+$ python3 cli.py info
+{
+    "status": "ready",
+    "config": null,
+    "processes": 0
+}
+$ python3 cli.py stop
+Attempted to stop when TreeWalk was ready.
+```
+
+## Evaluations
 
 In this section, time measurements / benchmarkings of the TreeWalk are discussed.
 *TW* is a abbreviation for *TreeWalk*.
@@ -207,7 +284,7 @@ to decide which one to include in the final release of the product.
 * **seperate-database-threads**<br>
   In this version, TWWorker (separate processes) run only the ExifTool and
   file hashing. The database operations are dispatched to dedicated database
-  threads. Before running, the TWManager dispatches all work packages to the TWWorker
+  threads. Before running, the TWManager dispatches all work packages to the TWWorker.
 
 Based on this behaviour, we thought the version *seperate-database-threads*
 would lead to an performance improvement because the database operations
@@ -241,13 +318,13 @@ deleted and restarted.
 Here are the results with *v12* being the *seperate-database-threads* version
 and *v10* the *sprint-10-release*.
 
-[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker1PackageSize10.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker1PackageSize250.png)
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/670252a500274c974625c8351d9123be6521e6a6/documentation/images/crawler/benchmarks/20200715/Worker1PackageSize10_prev.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker1PackageSize250.png)
 
-[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker1PackageSize250.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker1PackageSize250.png)
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/670252a500274c974625c8351d9123be6521e6a6/documentation/images/crawler/benchmarks/20200715/Worker1PackageSize250_prev.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker1PackageSize250.png)
 
-[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker4PackageSize10.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker1PackageSize250.png)
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/670252a500274c974625c8351d9123be6521e6a6/documentation/images/crawler/benchmarks/20200715/Worker4PackageSize10_prev.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker1PackageSize250.png)
 
-[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker4PackageSize250.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker1PackageSize250.png)
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/670252a500274c974625c8351d9123be6521e6a6/documentation/images/crawler/benchmarks/20200715/Worker4PackageSize250_prev.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker1PackageSize250.png)
 
 It shows that the *sprint-10-release* version outperforms the
 *separate-database-threads* version.
@@ -275,7 +352,7 @@ Another one-run example also shows the difference between these versions.
 It was run on a dataset with .mp4 files, 4687 in total with a size of ~9GB.
 The technical setup was the same.
 
-[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker4PackageSize100DatasetPart9GB.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker4PackageSize100DatasetPart9GB.png)
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/670252a500274c974625c8351d9123be6521e6a6/documentation/images/crawler/benchmarks/20200715/Worker4PackageSize100DatasetPart9GB_prev.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/b779d0c366ec9722979ece7a9555027cdfecec1e/documentation/images/crawler/benchmarks/20200715/Worker4PackageSize100DatasetPart9GB.png)
 
 In this example, the version *sprint-10-release* is also faster in execution.
 Based on this observation, we just ran this version on a larger dataset.

@@ -5,15 +5,6 @@ jobs:
   allow_failures:
   - name: crawler.lint
   include:
-  - name: crawler.doc
-    language: python
-    python: 3.8
-    install:
-    - pip install -r crawler/requirements/doc.txt
-    before_script:
-    - cd crawler/doc/autodoc
-    script:
-    - make html SPHINXOPTS="-W --keep-going"
   - name: crawler.lint
     language: python
     python: 3.8

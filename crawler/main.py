@@ -25,7 +25,7 @@ if __name__ == '__main__':
         exit(1)
     logging.basicConfig(
         level=environment.env.CRAWLER_LOGGING_LEVEL,
-        format='%(asctime)s %(levelname)s %(module)s - %(funcName)s : %(message)s',
+        format='%(asctime)s %(levelname)s : %(message)s',
         datefmt='%H:%M:%S %Y-%m-%d'
     )
     db_connection_data = dict(

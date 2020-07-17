@@ -16,9 +16,6 @@ from crawler.database import measure_time
 from crawler.database import DatabaseConnectionBase
 
 
-_logger = logging.getLogger(__name__)
-
-
 class DBUpdaterDatabaseConnection(DatabaseConnectionBase):
 
     def __init__(self, db_info: dict, measure_time: bool):
@@ -48,7 +45,7 @@ class DBUpdaterDatabaseConnection(DatabaseConnectionBase):
             curs.close()
             self.con.commit()
         except Exception as e:
-            _logger.warning(f'Failed deleting files: {str(e)}')
+            logging.warning(f'DBUpdaterDB: failed deleting files: {str(e)}')
             curs.close()
             self.con.rollback()
             return None
@@ -77,7 +74,7 @@ class DBUpdaterDatabaseConnection(DatabaseConnectionBase):
             curs.close()
             self.con.commit()
         except Exception as e:
-            _logger.warning(f'Failed deleting files: {str(e)}')
+            logging.warning(f'DBUpdaterDB: failed deleting files: {str(e)}')
             curs.close()
             self.con.rollback()
             return None
