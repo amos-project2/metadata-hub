@@ -117,7 +117,7 @@ export class ControllUnits {
         let offsetLimit = formGraphQL.getOffset() + currentFiles;
         let offsetFiles = formGraphQL.getOffset() + 1;
         if (currentFiles === 0) offsetFiles = 0;
-        this.pSelector.find('.myEntryCount').html(`<b>${offsetFiles} - ${offsetLimit} [${currentFiles}] from ${totalFiles}</b> | Metadatacolumns: ${metadatacolums}`);
+        this.pSelector.find('.myEntryCount').html(`<b>${offsetFiles} - ${offsetLimit} [${currentFiles}] from ${totalFiles}</b> | metadata columns: ${metadatacolums}`);
 
     }
 

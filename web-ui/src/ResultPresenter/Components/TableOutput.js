@@ -15,7 +15,7 @@ export class TableOutput {
     getMainHtmlCode() {
         return `
             <div class="myTableContainer">
-                Send a Query first, then you get the Result.
+                Send a query first, then you will get the result.
             </div>`;
     }
 

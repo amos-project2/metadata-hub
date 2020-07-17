@@ -12,7 +12,7 @@ export class CrawlerScheduler extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         // Page
         super(parent, identifier, mountpoint, titleSelector);
-        this.title = "Crawler Scheduler";
+        this.title = "TreeWalk Scheduler";
         this.titleActive = false;
         this.cacheLevel = 3;
         this.restAPIFetcherCrawler = this.parent.dependencies.restApiFetcherCrawler;
