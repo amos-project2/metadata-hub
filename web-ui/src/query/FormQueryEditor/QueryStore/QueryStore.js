@@ -94,6 +94,7 @@ export class QueryStore extends Page {
             if (data.length === 0) {
                 $(".storage-container").html("There arent any Query-Editor-Views saved yet.");
                 $(".storage-container").stop(true).show(1000);
+                return;
             }
 
             data.forEach(value => {
