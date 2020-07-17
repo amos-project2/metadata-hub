@@ -64,6 +64,22 @@ export class SuggestionViewer {
         this.suggestionViewerModal.getContentSelector().html(`
                  <div class ="sugesstion-waiter" >Please wait...</div>
                  <div class ="container suggestion-container">
+
+                    <div class="row" style="margin-bottom: 15px;">
+                        <div class="col-sm-6"">
+                           <b>Element</b>
+                        </div>
+                        <div class="col-sm-3"">
+                          <b>Filter</b>
+                        </div>
+                        <div class="col-sm-3"">
+
+                          <b>Metadata</b>
+
+
+                        </div>
+                    </div>
+
                  </div>
             `);
 
