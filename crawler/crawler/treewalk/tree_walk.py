@@ -1,7 +1,11 @@
+"""Utility module for the TreeWalk"""
+
+
 # Python imports
 import os
 import psutil
 from typing import List, Tuple
+
 
 def workSize(pathInput: str) -> List[str]:
     """Creates a hash table based on the total amount of files per directory.
@@ -134,3 +138,20 @@ def resize_work_packages(
         new_work_packages[index].append(package)
         index = (index + 1) % num_workers
     return new_work_packages
+
+
+def chunkify_files(files: List[str], size: int) -> List[str]:
+    """Splits a list of files into 'equally' sized chunks.
+
+    Args:
+        files (List[str]): [description]
+        size (int): [description]
+
+    Returns:
+        List[str]: list of chunks of size 'size'
+
+    """
+    result = []
+    for idx in range(0, len(files), size):
+        result.append(files[idx:idx+size])
+    return result

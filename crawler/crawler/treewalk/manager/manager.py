@@ -130,18 +130,25 @@ class TreeWalkManager(threading.Thread):
                 for entry in os.listdir(directory)
             ]
             files = [entry for entry in entries if os.path.isfile(entry)]
-            tmp_lists = [[] for _ in range(self._num_workers.value)]
-            for index, fpath in enumerate(files):
-                tmp_lists[index % len(tmp_lists)].append(fpath)
-            for index, package in enumerate(tmp_lists):
-                worker_control = self._workers[index]
-                command = communication.Command(
-                    command=communication.WORKER_PACKAGE,
-                    data=package
-                )
-                worker_control.queue_input.put(command)
-            self._workers_finished.wait()
-            self._workers_finished.clear()
+            work_packages = treewalk.chunkify_files(
+                files=files,
+                size=self._config.get_package_size()
+            )
+            # In each iteration, all workers must retrieve a work package.
+            # Otherwise, the finish mechanism won't work.
+            while len(work_packages) % self._num_workers.value != 0:
+                work_packages.append([])
+            while work_packages:
+                for worker_control in self._workers:
+                    package = work_packages.pop()
+                    command = communication.Command(
+                        command=communication.WORKER_PACKAGE,
+                        data=package
+                    )
+                    worker_control.queue_input.put(command)
+                self._workers_finished.wait()
+                self._workers_finished.clear()
+
 
         def check() -> bool:
             """Check if work packages are left.
