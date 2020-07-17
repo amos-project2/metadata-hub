@@ -24,6 +24,7 @@ import crawler.database as database
 import crawler.communication as communication
 import crawler.services.environment as environment
 from crawler.services.config import Config
+from crawler.treewalk.worker import Worker
 
 
 class TreeWalkManager(threading.Thread):
@@ -258,7 +259,7 @@ class TreeWalkManager(threading.Thread):
             for id_worker in range(diff):
                 queue_input = multiprocessing.Queue()
                 queue_output = multiprocessing.Queue()
-                worker = treewalk.Worker(
+                worker = Worker(
                     queue_input=queue_input,
                     queue_output=queue_output,
                     config=self._config,
@@ -554,7 +555,7 @@ class TreeWalkManager(threading.Thread):
         for id_worker in range(num_workers):
             queue_input = multiprocessing.Queue()
             queue_output = multiprocessing.Queue()
-            worker = treewalk.Worker(
+            worker = Worker(
                 queue_input=queue_input,
                 queue_output=queue_output,
                 config=config,
