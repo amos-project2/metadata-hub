@@ -270,7 +270,8 @@ class TreeWalkManager(threading.Thread):
                     finished=self._workers_finished,
                     num_workers=self._num_workers,
                     measure_time=self._measure_time,
-                    event_can_exit=self._workers_can_exit
+                    event_can_exit=self._workers_can_exit,
+                    debug=environment.env.CRAWLER_LOGGING_LEVEL == 'DEBUG'
                 )
                 worker_control = WorkerControl(
                     worker=worker,
@@ -566,7 +567,8 @@ class TreeWalkManager(threading.Thread):
                 finished=self._workers_finished,
                 num_workers=self._num_workers,
                 measure_time=self._measure_time,
-                event_can_exit=self._workers_can_exit
+                event_can_exit=self._workers_can_exit,
+                debug=environment.env.CRAWLER_LOGGING_LEVEL == 'DEBUG'
             )
             worker_control = WorkerControl(
                 worker=worker,
