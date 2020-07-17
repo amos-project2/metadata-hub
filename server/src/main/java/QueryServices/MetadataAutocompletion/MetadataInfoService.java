@@ -126,7 +126,7 @@ public class MetadataInfoService
             //fallback for now to jpg
             if (fileTypes.size() == 0)
             {
-                metadataInfoCache = cache.computeIfAbsent(fileTypesID, (key) -> { return new MetadataInfoCache("JPEG", this.database); });
+                metadataInfoCache = cache.computeIfAbsent(fileTypesID, (key) -> { return new MetadataInfoCache("ALL", this.database); });
             }
             else if (fileTypes.size() == 1)
             {
