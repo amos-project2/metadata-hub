@@ -8,34 +8,39 @@ export class DateRangeFilter {
     getMainHtmlCode() {
 
         return `
-         <div class="form-row">
+         <button type="button" class="btn btn-primary" id="apply-time-filter-button">Apply Time Filters</button>
+
+         <div class="form-row data-range-filters">
                     <div class="form-group col-md-6">
-                        <label for="fq-createFileTimeRangeStart">Start-DateTime (File created)<a class="pover" title="Start-DateTime" data-content="It collects all files, which are older (created-time) than Start-DateTime">[?]</a></label>
+                        <label for="fq-createFileTimeRangeStart">Start Creation Time<a class="pover" title="Start Creation Time" data-content="Filters out all Files with a creation time before Start Creation Time.">[?]</a></label>
                         <input type="datetime-local" class="form-control save-element" data-name="d1" id="fq-createFileTimeRangeStart" placeholder="2020-05-22 07:19:29">
                     </div>
                     <div class="form-group col-md-6">
-                        <label for="fq-createFileTimeRangeEnd">End-DateTime (File created)<a class="pover" title="End-DateTime" data-content="It collects all files, which are younger (created-time) than End-DateTime">[?]</a></label>
+                        <label for="fq-createFileTimeRangeEnd">End Creation Time<a class="pover" title="End Creation Time" data-content="Filters out all Files with a creation time older than End Creation Time.">[?]</a></label>
                         <input type="datetime-local" class="form-control save-element" data-name="d2" id="fq-createFileTimeRangeEnd" placeholder="2020-07-28 20:35:22">
                     </div>
-                </div>
+         </div>
 
-
-
-                <div class="form-row">
+         <div class="form-row data-range-filters">
                     <div class="form-group col-md-6">
-                        <label for="fq-createFileTimeRangeStartUpdated">Start-DateTime (File modified)<a class="pover" title="Start-DateTime" data-content="It collects all files, which are older (modified-time) than Start-DateTime">[?]</a></label>
+                        <label for="fq-createFileTimeRangeStartUpdated">Start Modification Time<a class="pover" title="Start-DateTime" data-content="Filters out all Files with a modification time before Start Modification Time.">[?]</a></label>
                         <input type="datetime-local" class="form-control save-element" data-name="d3" id="fq-createFileTimeRangeStartUpdated" placeholder="2020-05-22 07:19:29">
                     </div>
                     <div class="form-group col-md-6">
-                        <label for="fq-createFileTimeRangeEndUpdated">End-DateTime (File modified)<a class="pover" title="End-DateTime" data-content="It collects all files, which are younger (modified-time) than End-DateTime">[?]</a></label>
+                        <label for="fq-createFileTimeRangeEndUpdated">End Modification Time<a class="pover" title="End-DateTime" data-content="Filters out all Files with a modification time older than End Modification Time.">[?]</a></label>
                         <input type="datetime-local" class="form-control save-element" data-name="d4" id="fq-createFileTimeRangeEndUpdated" placeholder="2020-07-28 20:35:22">
                     </div>
-                </div>
+         </div>
+         <br>
                 `;
     }
 
 
     onMount() {
+        $(".data-range-filters").toggle();
+        $("#apply-time-filter-button").click(function() {
+            $(".data-range-filters").toggle("slow");
+        });
 
     }
 

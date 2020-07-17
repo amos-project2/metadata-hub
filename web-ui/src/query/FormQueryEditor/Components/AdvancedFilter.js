@@ -13,7 +13,18 @@ export class AdvancedFilter {
 
         return `
                 <div class="form-row">
-                    <div class="col-md-12">Filter: <a class="pover" title="Filter" data-content="Select a filter option.<br>Specify on which metadataattribut you want to use the filter. In the last Input must insert the value<br>For example: Pattern include FileName dog">[?]</a></div>
+                    <div class="col-md-12">Metadata Filters: <a class="pover" title=" Metadata Filter" data-content="Metadata filters can be specified here, which filter files based on their metadata.<br>
+                        A Metadata Filter consists of a metadata attribute, an option and a value. Based on the selected option in the drop-down menu, the filter function differs.<br>
+                        <br>
+                         Available options:<br>
+                         <b>Pattern included:</b> filter for files, where the pattern in value is present for the corresponding metadata attribute<br>
+                         <b>Pattern excluded:</b> filter for files, where the pattern in value is missing for the corresponding metadata attribute<br>
+                         <b>Equal:</b> filter for files, where value is exactly equal for the corresponding metadata attribute<br>
+                         <b>Exists:</b> filter for files, which have the specified metadata attribute<br>
+                         <b>GreaterThan:</b> filter for files, where the value of the corresponding metadata attribute is greater than the specified value<br>
+                         <b>SmallerThan:</b> filter for files, where the value of the corresponding metadata attribute is smaller than the specified value<br>
+                         ">[?]</a></div>
+
                 </div>
 
                 <div class="fg-filter-container">
@@ -22,7 +33,7 @@ export class AdvancedFilter {
                 <div>
                 <div class="form-row justify-content-md-center">
                     <div class="form-group col-md-2">
-                    <label for="fg-filter-connector-options">Filter Connector<a class="pover-filter-connector" style="cursor:pointer; color: #007bff;">[?]</a></label>
+                    <label for="fg-filter-connector-options">Metadata Filter Connector<a class="pover-filter-connector" style="cursor:pointer; color: #007bff;">[?]</a></label>
                         <select class="custom-select fg-filter-connector-options save-element" data-name="f1" id="fg-filter-connector-options">
                                 <option value="all-and" selected>ALL AND</option>
                                 <option value="all-or">ALL OR</option>
@@ -34,20 +45,21 @@ export class AdvancedFilter {
                 </div>
 
                  <div class="form-row fq-custom-filter-connector-row-description" style="display:none">
-                 <p class="text-left"><b>Filter-Connector-Description:</b>
-                   <br><br>You can choose here from 5 different filter-connector options. Each option connects your filter in a different way.
-                   <br><b>All AND</b> connects al filter with an AND.
-                   <br><b>ALL OR</b> connects all filter with an OR.
-                   <br><b>Custom Only</b> connects the filter in that way, you want to connect them. So you can connect some filters with an AND some others with an OR, you can also use brackets to group it. If you want to negate a filter you can use a NOT
-                   <br><b>Custom And</b> connects the filter the same way Custum Only does, but appends automatically all not in your custom-input referenced filters with an AND
-                   <br><b>Custom Or</b> connects the filter the same way Custum Only does, but appends automatically all not in your custom-input referenced filters with an OR
+                 <p class="text-left"><b>Metadata Filter Connector Description:</b>
+                   <br><br>You can choose from 5 different filter connector options. Each option connects the metadata filters in a different way.
+                   <br>
+                   <br><b>AND Only</b> connects all filters with an AND.
+                   <br><b>OR Only</b> connects all filters with an OR.
+                   <br><b>Custom Only</b> connects the filters according to your own filter logic and only uses the filters specified in Custom Filter Logic. ( AND, OR, NOT and Brackets can be used)
+                   <br><b>Custom AND</b> connects the filters according to your own filter logic and filters unused in the custom filter string get connected with AND.
+                   <br><b>Custom OR</b> connects the filters according to your own filter logic and filters unused in the custom filter string get connected with OR.
                    <br>
                    </p>
                 </div>
 
                  <div class="form-row fq-custom-filter-connector-row" style="display:none">
                     <div class="form-group col-md-12">
-                        <label for="fq-custom-filter-connector">Custom Filter<a class="pover" title="Custom Filter" data-content="Here you can type in your own bool-expression: Example ((f1 AND f2) OR (f3 AND NOT f0)) AND f5">[?]</a></label>
+                        <label for="fq-custom-filter-connector">Custom Filter Logic<a class="pover" title="Custom Filter Logic" data-content="Here you can type in your own bool-expression: e.g. ((f1 AND f2) OR (f3 AND NOT f0)) AND f5">[?]</a></label>
                         <input type="text" class="form-control save-element" data-name="f2" id="fq-custom-filter-connector" value="">
                     </div>
                 </div>
@@ -70,8 +82,8 @@ export class AdvancedFilter {
                             <option value="excluded">Pattern excluded</option>
                             <option value="equal">Equal</option>
                             <option value="exists">Exists (Attribute)</option>
-                            <option value="bigger">Greather Than</option>
-                            <option value="smaller">Lower Than</option>
+                            <option value="bigger">Greater Than</option>
+                            <option value="smaller">Smaller Than</option>
                         </select>
                     </div>
                     <input type="text" class="form-control fg-metadata-attribute save-element" data-name="f4" data-multiplier="true" placeholder="Metadata-Attribute">

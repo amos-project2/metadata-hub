@@ -46,7 +46,8 @@ export class FiletypeFilter {
 
                 <!--     file-types                  -->
                 <div class="form-row">
-                    <div class="col-md-12">Which Filetypes: <a class="pover" title="Which Filetypes" data-content="Here you can specify a prefilter of filetypes. If it is empty means, no filetype-filter here">[?]</a></div>
+                    <div class="col-md-12">Filetype Filters: <a class="pover" title="Filetype Filters" data-content="If this filter is used, only files which are of one of the specified file types get returned.
+                        The file type filter is used aswell for giving better Metadata-Attribute recommendations.">[?]</a></div>
                 </div>
 
 
