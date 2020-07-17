@@ -12,7 +12,7 @@ export class AttributSelector {
 
         return `
                 <div class="form-row">
-                    <div class="col-md-12">Select which Metadata Attributes get returned.<a class="pover" title="Metadata Attributes" data-content="When unused, every metadata attribute of all the returned files get returned.
+                    <div class="col-md-12">Select which Metadata Attributes get returned: <a class="pover" title="Metadata Attributes" data-content="When unused, every metadata attribute of all the returned files get returned.
                         <br>Otherwise for the returned files only the specified metadata attributes get returned.">[?]</a></div>
                 </div>
 

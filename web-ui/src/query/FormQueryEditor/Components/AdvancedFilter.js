@@ -35,8 +35,8 @@ export class AdvancedFilter {
                     <div class="form-group col-md-2">
                     <label for="fg-filter-connector-options">Metadata Filter Connector<a class="pover-filter-connector" style="cursor:pointer; color: #007bff;">[?]</a></label>
                         <select class="custom-select fg-filter-connector-options save-element" data-name="f1" id="fg-filter-connector-options">
-                                <option value="all-and" selected>ALL AND</option>
-                                <option value="all-or">ALL OR</option>
+                                <option value="all-and" selected>All AND</option>
+                                <option value="all-or">All OR</option>
                                 <option value="custom-only">Custom Only</option>
                                 <option value="custom-and">Custom And</option>
                                 <option value="custom-or">Custom OR</option>
