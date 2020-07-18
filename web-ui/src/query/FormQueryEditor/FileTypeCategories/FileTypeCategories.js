@@ -44,7 +44,7 @@ export class FileTypeCategories extends Page {
                 <div class="form-group col-md-12 ">
                 <div class="form-row justify-content-md-center">
                     <button type="button" id="file-category-button2" class="btn btn-primary mr-3" data-toggle="modal" data-target="#file-categories-modal2">
-                        All File Categories
+                        All File Type Categories
                     </button>
                 </div>
                     </br>
@@ -69,7 +69,7 @@ export class FileTypeCategories extends Page {
 
                      <div class="form-group">
                             File Category
-                            <a class="pover" title="File Categories" data-content="Enter a name for the creation or deletion of a File Category. When creating a File Category the File Types below are used.">[?]</a>
+                            <a class="pover" title="File Type Categories" data-content="Enter a name for the creation or deletion of a File Category. When creating a File Category the File Types below are used.">[?]</a>
                         <input type="text" class="form-control" id="createCategoryForm" aria-describedby="createCategoryHelp" placeholder="File Category Name">
                         <small id="createCategoryHelp" class="form-text text-muted">Enter a File Category Name</small>
                      </div>
@@ -81,7 +81,7 @@ export class FileTypeCategories extends Page {
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="file-categories-label">
-                                    File Categories
+                                    File Type Categories
                                 </h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
@@ -155,12 +155,14 @@ export class FileTypeCategories extends Page {
                     return;
                 }
 
-                $("#file-categories-modal2-body").html("Click on a file category to choose multiple file types for the query editor.<br/><br/>")
+                $("#file-categories-modal2-body").html("Click on a file type category to add it into the selection, where you can then update or delete the file type category.<br/>" +
+                    "Or you can delete a file type category directly.<br/><br>" +
+                    "<b>File Type Categories:</b><br><br>")
 
                 Object.keys(fileCategoryMap).forEach( key => {
-                    $("#file-categories-modal2-body").append("<button type=\"button\" class=\"btn btn-primary\" id='button-"+ key + "' data-dismiss=\"modal\"> File Category: " + key + "</button>" +
+                    $("#file-categories-modal2-body").append("<button type=\"button\" class=\"btn btn-primary\" id='button-"+ key + "' data-dismiss=\"modal\"><b>" + key + "</b></button>" +
                         "<button type=\"button\" id=\"delete" + key + "\" class=\"btn btn-danger\" data-dismiss=\"modal\"> delete </button> <br/>");
-                    $("#file-categories-modal2-body").append("File Types: " + "<br\>" + fileCategoryMap[key] + "<br/><br/>");
+                    $("#file-categories-modal2-body").append("<b>File Types:</b> " + "<br\>" + fileCategoryMap[key] + "<br/><br/>");
 
                     //add file types of file category into the query editor
                     $("#button-"+key).click(function () {
