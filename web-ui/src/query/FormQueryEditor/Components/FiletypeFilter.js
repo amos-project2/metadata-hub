@@ -111,8 +111,9 @@ export class FiletypeFilter {
                     $("#file-categories-modal-body").append(`
                         <div class=" row mb-3">
                             <div class="col font-weight-bold">${key}</div>
-                            <div class="col"><button type="button" class="btn btn-primary btn-sm" id='fbutton-${counter}' data-dismiss="modal">Apply</button></div>
                             <div class="col">${fileCategoryString}</div>
+                            <div class="col-2"><button type="button" class="btn btn-primary btn-sm" id='fbutton-${counter}' data-dismiss="modal">Apply</button></div>
+
                          </div>`);
 
 
