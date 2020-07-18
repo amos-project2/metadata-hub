@@ -9,7 +9,7 @@ export class CrawlerController extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         // Page
         super(parent, identifier, mountpoint, titleSelector);
-        this.title = "Crawler Controller";
+        this.title = "TreeWalk Controller";
         this.titleActive = false;
         this.restAPIFetcherCrawler = this.parent.dependencies.restApiFetcherCrawler;
         this.cacheLevel = 3;
@@ -191,7 +191,6 @@ export class CrawlerController extends Page {
                                 <div class="col-sm-10">
                                     <select id="platform" class="form-control">
                                         <option selected value="Linux">Linux</option>
-                                        <option value="Windows">Windows</option>
                                     </select>
                                 </div>
                             </div>

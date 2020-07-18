@@ -47,7 +47,7 @@ export class GraphiqlConsole extends Page {
             this.signalToRemoveGoBackToEditor = true;
 
             $(".go-to-editor").click(function () {
-                $("#nav-element-form-query").trigger("click");
+                $("#nav-element-query-editor").trigger("click");
             });
         }
 

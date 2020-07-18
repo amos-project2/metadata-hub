@@ -179,7 +179,7 @@ def shutdown():
     scheduler.shutdown()
     func = flask.request.environ.get('werkzeug.server.shutdown')
     if func is None:
-        # TODO handle error
+        logging.critical('TWApi: Unable to shutdown Flask server!')
         return None
     func()
     response = communication.Response(
@@ -260,6 +260,12 @@ def intervals_list() -> flask.Response:
 
 @app.route('/', methods=['GET'])
 def home():
+    """API endpoint for connectivity check.
+
+    Returns:
+        flask.Response: REST reponse
+
+    """
     resp = flask.Response(
         status=defaults.STATUS_OK,
         mimetype=defaults.MIMETYPE_JSON

@@ -1,3 +1,6 @@
+"""Definition of application-wide environment settings."""
+
+
 class Env:
     # Database to connect to
     DATABASE_NAME = None

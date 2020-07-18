@@ -6,8 +6,6 @@ public class DatabaseSchemaDefinition {
 
     /**
      * Columns of the table "files"
-     *
-     * Notice: needs to be specified if we're using multiple tables!
      */
     public static final String FILES_TABLE = "files";
 
@@ -24,5 +22,13 @@ public class DatabaseSchemaDefinition {
     public static final String FILES_FILE_HASH = "file_hash";
     public static final String FILES_DELETED = "deleted";
     public static final String FILES_DELETED_TIME = "deleted_time";
+
+    /**
+     * Columns of the table "file_categories"
+     */
+    public static final String FILE_CATEGORIES_TABLE = "file_categories";
+
+    public static final String FILE_CATEGORIES_FILE_CATEGORY = "file_category";
+    public static final String FILE_CATEGORIES_FILE_TYPES = "file_types";
 
 }
