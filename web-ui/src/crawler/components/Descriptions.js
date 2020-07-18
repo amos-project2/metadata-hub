@@ -5,18 +5,18 @@ export class Descriptions {
 
     static controllerInfo() {
         return `
-            This is the panel for controlling the crawler.
-            The crawler has three states:
+            This is the panel for controlling the TreeWalk.
+            The TreeWalk has three states:
             <b>ready</b>, <b>running</b> and <b>paused</b>.
             All these actions are safe to use in all states,
             but some may have no impact in a certain state.
-            For example, stopping the crawler when it was running
+            For example, stopping the TreeWalk when it was running
             will stop the current execution, but stopping when
-            the crawler was ready will have no consequences.
+            the TreeWalk was ready will have no consequences.
             Make sure to wait for the response if you invoked an
             action. You'll see an alert message at the bottom
             once the action has finished.
-            Especially starting the crawler might take some time
+            Especially starting the TreeWalk might take some time
             due to the generation of the work packages.
         `;
     }
@@ -24,7 +24,7 @@ export class Descriptions {
     static actionStop() {
         return `
             <b>Stop</b> the current execution.
-            If the crawler is ready, the action will be ignored.
+            If the TreeWalk is ready, the action will be ignored.
             Otherwise, the running/paused execution will be aborted.
         `;
     }
@@ -32,7 +32,7 @@ export class Descriptions {
     static actionPause() {
         return `
             <b>Pause</b> the current execution.
-            If the crawler is ready or already paused,
+            If the TreeWalk is ready or already paused,
             the action will be ignored.
             Otherwise, it will pause the current exeution
             so that it can be continued later on.
@@ -41,8 +41,8 @@ export class Descriptions {
 
     static actionContinue() {
         return `
-            <b>Continue</b> a paused execution of the crawler.
-            If the crawler is ready or already running,
+            <b>Continue</b> a paused execution of the TreeWalk.
+            If the TreeWalk is ready or already running,
             the action will be ignored.
             Otherwise, it will continue the currently
             paused execution.
@@ -51,16 +51,16 @@ export class Descriptions {
 
     static actionShutdown() {
         return `
-            <b>Shutdown</b> the crawler entirely.
+            <b>Shutdown</b> the TreeWalk entirely.
             Stop a possible current execution and terminate
-            all crawler threads.
+            all TreeWalk threads.
         `;
 
     }
 
     static actionStart() {
         return `
-            <b>Start</b> a crawler execution.
+            <b>Start</b> a TreeWalk execution.
             Shows the configuration panel for a manual insertion
             of the configuration data.
         `;
