@@ -8,7 +8,7 @@ export class DateRangeFilter {
     getMainHtmlCode() {
 
         return `
-         <button type="button" class="btn btn-primary" id="apply-time-filter-button">Show Time Filters</button>
+         <button type="button" class="btn btn-primary mb-3" id="apply-time-filter-button">Show Time Filters</button>
 
          <div class="form-row data-range-filters">
                     <div class="form-group col-md-6">
