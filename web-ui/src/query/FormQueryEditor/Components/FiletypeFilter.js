@@ -93,12 +93,33 @@ export class FiletypeFilter {
 
                 $("#file-categories-modal-body").html("Click on a file category to choose multiple file types for the Filetype Filter. The contained File Types of a Category are enumerated below them.<br/><br/>")
 
+
                 Object.keys(fileCategoryMap).forEach(key => {
-                    $("#file-categories-modal-body").append("<button type=\"button\" class=\"btn btn-primary\" id='fbutton-" + key + "' data-dismiss=\"modal\"> File Category: " + key + "</button> <br/>");
-                    $("#file-categories-modal-body").append("File Types: " + "<br\>" + fileCategoryMap[key] + "<br/><br/>");
+
+                    let fileCategoryString = "";
+                    fileCategoryMap[key].forEach(value =>{
+                        fileCategoryString += value + ", ";
+                    });
+                    fileCategoryString=fileCategoryString.substr(0, fileCategoryString.length - 2);
+
+                    console.log(fileCategoryMap[key]);
+                    console.log(key);
+                    //.split(",").join(", ")
+                    // $("#file-categories-modal-body").append("<button type=\"button\" class=\"btn btn-primary\" id='fbutton-" + key + "' data-dismiss=\"modal\"> File Category: " + key + "</button> <br/>");
+                    // $("#file-categories-modal-body").append("File Types: " + "<br\>" + fileCategoryMap[key] + "<br/><br/>");
+                    $("#file-categories-modal-body").append(`
+                        <div class=" row mb-3">
+                            <div class="col font-weight-bold">${key}</div>
+                            <div class="col"><button type="button" class="btn btn-primary btn-sm" id='fbutton-${key}' data-dismiss="modal">Apply</button></div>
+                            <div class="col">${fileCategoryString}</div>
+                         </div>`);
+
+
+                    $("#fbutton-" + key).off();
 
                     //add file types of file category into the query editor
                     $("#fbutton-" + key).click(function () {
+                        alert("hey");
                         let file_types = fileCategoryMap[key];
                         for (var file_type_index in file_types) {
                             thisdata.inputMultiplierFiletypeFilter.addInputValueOnlyOnce(file_types[file_type_index],
