@@ -8,7 +8,7 @@ export class DateRangeFilter {
     getMainHtmlCode() {
 
         return `
-         <button type="button" class="btn btn-primary" id="apply-time-filter-button">Apply Time Filters</button>
+         <button type="button" class="btn btn-primary" id="apply-time-filter-button">Show Time Filters</button>
 
          <div class="form-row data-range-filters">
                     <div class="form-group col-md-6">
@@ -39,6 +39,11 @@ export class DateRangeFilter {
     onMount() {
         $(".data-range-filters").toggle();
         $("#apply-time-filter-button").click(function() {
+            if( $("#apply-time-filter-button").html() == "Hide Time Filters"){
+                $("#apply-time-filter-button").html("Show Time Filters");
+            }else{
+                $("#apply-time-filter-button").html("Hide Time Filters");
+            }
             $(".data-range-filters").toggle("slow");
         });
 
