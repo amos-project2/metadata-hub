@@ -109,7 +109,7 @@ export class FiletypeFilter {
                     // $("#file-categories-modal-body").append("<button type=\"button\" class=\"btn btn-primary\" id='fbutton-" + key + "' data-dismiss=\"modal\"> File Category: " + key + "</button> <br/>");
                     // $("#file-categories-modal-body").append("File Types: " + "<br\>" + fileCategoryMap[key] + "<br/><br/>");
                     $("#file-categories-modal-body").append(`
-                        <div class=" row mb-3">
+                        <div class="row mb-3 detail-view-element">
                             <div class="col font-weight-bold">${key}</div>
                             <div class="col">${fileCategoryString}</div>
                             <div class="col-2"><button type="button" class="btn btn-primary btn-sm" id='fbutton-${counter}' data-dismiss="modal">Apply</button></div>
