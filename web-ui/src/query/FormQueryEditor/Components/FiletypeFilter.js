@@ -94,11 +94,11 @@ export class FiletypeFilter {
                 $("#file-categories-modal-body").html("Click on a file category to choose multiple file types for the Filetype Filter. The contained File Types of a Category are enumerated below them.<br/><br/>")
 
                 Object.keys(fileCategoryMap).forEach(key => {
-                    $("#file-categories-modal-body").append("<button type=\"button\" class=\"btn btn-primary\" id='button-" + key + "' data-dismiss=\"modal\"> File Category: " + key + "</button> <br/>");
+                    $("#file-categories-modal-body").append("<button type=\"button\" class=\"btn btn-primary\" id='fbutton-" + key + "' data-dismiss=\"modal\"> File Category: " + key + "</button> <br/>");
                     $("#file-categories-modal-body").append("File Types: " + "<br\>" + fileCategoryMap[key] + "<br/><br/>");
 
                     //add file types of file category into the query editor
-                    $("#button-" + key).click(function () {
+                    $("#fbutton-" + key).click(function () {
                         let file_types = fileCategoryMap[key];
                         for (var file_type_index in file_types) {
                             thisdata.inputMultiplierFiletypeFilter.addInputValueOnlyOnce(file_types[file_type_index],
