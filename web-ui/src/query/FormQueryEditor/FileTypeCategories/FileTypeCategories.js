@@ -35,7 +35,11 @@ export class FileTypeCategories extends Page {
 
                 ${this.modal.getHtmlCode()}
 
-                </br>
+                <br>
+                File Type Categories are used to group multiple file types in one category.</br>
+                The File Type Categories can get selected in the Query-Editor.
+                <br>
+                <br>
                 <!--     file-category-selector       -->
                 <div class="form-group col-md-12 ">
                 <div class="form-row justify-content-md-center">

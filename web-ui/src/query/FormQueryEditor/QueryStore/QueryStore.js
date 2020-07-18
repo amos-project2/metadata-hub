@@ -30,6 +30,11 @@ export class QueryStore extends Page {
         return `
 
              <div class="row mb-3 ml-3">
+             <br>
+             The Query Store is used for saving queries, which were already executed or specifically saved.</br>
+             These queries can get restored, which will fill in the query information in the Query Editor.
+             <br>
+             <br>
 
                       <div class="form-group row">
                         <label for="author-filter" class="col-sm-4 col-form-label">Author-Filter</label>

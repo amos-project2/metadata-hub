@@ -64,6 +64,12 @@ export class QueryEditor extends Page {
             <!--     for tracking          -->
 
                 <div class="form-row">
+                <br>
+                The Query Editor is used for creating queries, which return file metadata.</br>
+                Queries are saved in the Query-Store, so they can get executed at a later point in time, without filling in the information again.</br>
+                There are multiple filters that can be used to limit the returned file metadata.
+                <br>
+                <br>
 
                     <div class="form-group col-md-6">
                         <label for="fq-query-Name">Query-Name <a class="pover" title="Query-Name" data-content="The name of the query, which is used to save the query in the Query-Store.">[?]</a></label>
