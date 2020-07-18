@@ -34,7 +34,7 @@ export class ExportOutput {
                      <div class="form-check mb-4" id="${this.id}">
                         <input class="form-check-input" type="checkbox" value="" id="pagination-no${this.id}">
                         <label class="form-check-label" for="pagination-no${this.id}">
-                            Include all files/rows <br>(Ignore pagination[limit, offest])
+                            Include all files/rows <br>(Ignore pagination[limit, offset])
                         </label>
                     </div>
                     <div class="form-check mb-4" id="${this.id}">
