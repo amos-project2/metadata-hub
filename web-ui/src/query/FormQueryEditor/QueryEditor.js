@@ -20,7 +20,7 @@ export class QueryEditor extends Page {
         this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
 
         this.graphQLIntrospectionModal = new GraphQlIntrospectionModel(this.parent.storage, true);
-        this.resultPresenter = new ResultPresenter(this.graphQlFetcher, this.graphQLIntrospectionModal);
+        this.resultPresenter = new ResultPresenter(this.graphQlFetcher, this.graphQLIntrospectionModal, this.parent.dependencies.restApiFetcherServer);
         this.clearCacheModal = new ClearCacheModal();
         this.clearCacheSelector = ".modalClearCache";
 

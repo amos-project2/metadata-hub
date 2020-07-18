@@ -153,7 +153,8 @@ export class MetadataAutocompletion {
                 preventEnter: true,
                 minLength: 0,
                 resolverSettings: {
-                    url: 'http://localhost:8080/api/metadata-autocomplete/' + method,
+                    url: thisdata.restApiFetcherServer.urlBuilder('metadata-autocomplete/' + method),
+                    //url: 'http://localhost:8080/api/metadata-autocomplete/' + method,
                     requestThrottling: 100
                 },
                 events: {
