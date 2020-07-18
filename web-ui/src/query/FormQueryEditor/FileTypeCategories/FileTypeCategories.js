@@ -144,14 +144,13 @@ export class FileTypeCategories extends Page {
         this.inputMultiplierFiletypeFilter.listenerAdd();
 
 
-
         //Activate File Category Modal Pop-Up Window
         $("#file-category-button2").click(function () {
             thisdata.fileTypeCategoriesService.getAllFileCategories(function (fileCategoryMap) {
 
                 console.log(fileCategoryMap);
 
-                if(fileCategoryMap == undefined){
+                if (fileCategoryMap == undefined) {
                     return;
                 }
 
@@ -159,24 +158,43 @@ export class FileTypeCategories extends Page {
                     "Or you can delete a file type category directly.<br/><br>" +
                     "<b>File Type Categories:</b><br><br>")
 
-                Object.keys(fileCategoryMap).forEach( key => {
-                    $("#file-categories-modal2-body").append("<button type=\"button\" class=\"btn btn-primary\" id='button-"+ key + "' data-dismiss=\"modal\"><b>" + key + "</b></button>" +
-                        "<button type=\"button\" id=\"delete" + key + "\" class=\"btn btn-danger\" data-dismiss=\"modal\"> delete </button> <br/>");
-                    $("#file-categories-modal2-body").append("<b>File Types:</b> " + "<br\>" + fileCategoryMap[key] + "<br/><br/>");
+                let counter = -1;
+                Object.keys(fileCategoryMap).forEach(key => {
+                    counter++;
+
+                    let fileCategoryString = "";
+                    fileCategoryMap[key].forEach(value => {
+                        fileCategoryString += value + ", ";
+                    });
+                    fileCategoryString = fileCategoryString.substr(0, fileCategoryString.length - 2);
+
+
+                    // $("#file-categories-modal2-body").append("<button type=\"button\" class=\"btn btn-primary\" id='button-"+ key + "' data-dismiss=\"modal\"><b>" + key + "</b></button>" +
+                    //     "<button type=\"button\" id=\"delete" + key + "\" class=\"btn btn-danger\" data-dismiss=\"modal\"> delete </button> <br/>");
+                    // $("#file-categories-modal2-body").append("<b>File Types:</b> " + "<br\>" + fileCategoryMap[key] + "<br/><br/>");
+
+                    $("#file-categories-modal2-body").append(`
+                        <div class=" row mb-3">
+                            <div class="col font-weight-bold">${key}</div>
+                             <div class="col">${fileCategoryString}</div>
+                             <div class="col-2"><button type="button" class="btn btn-primary btn-sm" id='button-${counter}' data-dismiss="modal">apply</button></div>
+                             <div class="col-3"><button type="button" id="delete-${counter}" class="btn btn-danger" data-dismiss="modal"> delete </button></div>
+                         </div>`);
+
 
                     //add file types of file category into the query editor
-                    $("#button-"+key).click(function () {
+                    $("#button-" + counter).click(function () {
                         thisdata.inputMultiplierFiletypeFilter.deleteAllInputValues("autocompleteDeactivated");
                         let file_types = fileCategoryMap[key];
                         $("#createCategoryForm").val(key);
-                        for(var file_type_index in file_types){
+                        for (var file_type_index in file_types) {
                             thisdata.inputMultiplierFiletypeFilter.addInputValueOnlyOnce(file_types[file_type_index],
                                 "autocompleteDeactivated");
                         }
                     })
 
-                    $("#delete"+key).click(function () {
-                        thisdata.fileTypeCategoriesService.deleteCategory(key, function(success){
+                    $("#delete" + counter).click(function () {
+                        thisdata.fileTypeCategoriesService.deleteCategory(key, function (success) {
                             console.log(success);
                         });
                     });
@@ -186,25 +204,7 @@ export class FileTypeCategories extends Page {
         });
 
         //Create a new File Category
-        $("#create-category-button").click(function(){
-            let category = $("#createCategoryForm").val();
-            let fileTypes = [];
-
-            thisdata.inputMultiplierFiletypeFilter.each(function (fileTypeField) {
-                console.log($(fileTypeField).val())
-               fileTypes.push($(fileTypeField).val());
-            });
-
-            //send ajax call
-            thisdata.fileTypeCategoriesService.createCategory(category, fileTypes, function(success){
-                console.log(success);
-            });
-
-            thisdata.modal.openModalWithText("The category was created successfully",true);
-        });
-
-        //Update a File Category
-        $("#update-category-button").click(function(){
+        $("#create-category-button").click(function () {
             let category = $("#createCategoryForm").val();
             let fileTypes = [];
 
@@ -214,20 +214,38 @@ export class FileTypeCategories extends Page {
             });
 
             //send ajax call
-            thisdata.fileTypeCategoriesService.updateCategory(category, fileTypes, function(success){
+            thisdata.fileTypeCategoriesService.createCategory(category, fileTypes, function (success) {
                 console.log(success);
             });
-            thisdata.modal.openModalWithText("The category was updated successfully",true);
+
+            thisdata.modal.openModalWithText("The category was created successfully", true);
+        });
+
+        //Update a File Category
+        $("#update-category-button").click(function () {
+            let category = $("#createCategoryForm").val();
+            let fileTypes = [];
+
+            thisdata.inputMultiplierFiletypeFilter.each(function (fileTypeField) {
+                console.log($(fileTypeField).val())
+                fileTypes.push($(fileTypeField).val());
+            });
+
+            //send ajax call
+            thisdata.fileTypeCategoriesService.updateCategory(category, fileTypes, function (success) {
+                console.log(success);
+            });
+            thisdata.modal.openModalWithText("The category was updated successfully", true);
         });
 
         //Delete File Category in Form
-        $("#delete-category-button").click(function(){
+        $("#delete-category-button").click(function () {
             let category = $("#createCategoryForm").val();
             //send ajax call
-            thisdata.fileTypeCategoriesService.deleteCategory(category, function(success){
+            thisdata.fileTypeCategoriesService.deleteCategory(category, function (success) {
                 console.log(success);
             });
-            thisdata.modal.openModalWithText("The category was deleted successfully",true);
+            thisdata.modal.openModalWithText("The category was deleted successfully", true);
 
         });
 
@@ -243,9 +261,7 @@ export class FileTypeCategories extends Page {
     }
 
 
-
     inputMultiplierFiletypeFilterBuilder() {
-
 
 
         let thisdata = this;
@@ -254,7 +270,7 @@ export class FileTypeCategories extends Page {
         let appendingHtmlCode = `<div class="form-group col-md-4 fg-filetype-element2"><input type="text" class="form-control filetype-element-input2"></div>`;
 
         let focusOutFunction = function () {
-           // thisdata.fileTypeCategoriesService.updateLists();
+            // thisdata.fileTypeCategoriesService.updateLists();
             thisdata.metadatAutocompletion.updateLists();
         }
 
