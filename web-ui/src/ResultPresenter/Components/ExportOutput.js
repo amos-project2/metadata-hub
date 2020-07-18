@@ -11,8 +11,9 @@ export class ExportOutput {
         return this.count || 0;
     }
 
-    constructor(downloadSuccessModal) {
+    constructor(downloadSuccessModal, restApiFetcherServer) {
         this.downloadSuccessModal = downloadSuccessModal;
+        this.restApiFetcherServer = restApiFetcherServer;
         this.id = "export-" + ExportOutput.increaseCount();
         this.pSelector = null;
         this.lastformGraphQL = null;
@@ -49,7 +50,7 @@ export class ExportOutput {
                 </div>
                  <div class="mx-auto start-area" style="width: 290px; display: none">
 
-                        <form action="http://localhost:8080/api/export/download" method="post" target="_blank">
+                        <form action="${this.restApiFetcherServer.urlBuilder('export/download')}" method="post" target="_blank">
                         <div style="display:none">
                         <input type="text" name="query-included" class="tquery-included">
                         <textarea name="query" class="tquery"></textarea>

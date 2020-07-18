@@ -52,7 +52,7 @@ export class RestAPIFetcher {
     }
 
 
-    //private
+    //public
     urlBuilder(path) {
         return this.endpoint + "/" + path;
     }

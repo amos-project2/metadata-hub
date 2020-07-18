@@ -15,7 +15,7 @@ export class ResultPresenter {
         return this.count || 0;
     }
 
-    constructor(graphQlFetcher, graphQLIntrospectionModal) {
+    constructor(graphQlFetcher, graphQLIntrospectionModal, restApiFetcherServer) {
         ResultPresenter.increaseCount();
         this.id = "ResultPresenter-" + ResultPresenter.getCount();
         this.pSelector = $("#" + this.id);
@@ -28,7 +28,7 @@ export class ResultPresenter {
 
         this.jsonOutput = new JsonOutput();
         this.tableOutput = new TableOutput(this, this.controllUnits, this.viewModal);
-        this.exportOutput = new ExportOutput(this.downloadSuccessModal);
+        this.exportOutput = new ExportOutput(this.downloadSuccessModal, restApiFetcherServer);
 
 
         this.cleared = true;

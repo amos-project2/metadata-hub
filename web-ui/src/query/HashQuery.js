@@ -11,7 +11,7 @@ export class HashQuery extends Page {
         this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
 
         this.graphQLIntrospectionModal = new GraphQlIntrospectionModel(this.parent.storage, false);
-        this.resultPresenter = new ResultPresenter(this.graphQlFetcher, this.graphQLIntrospectionModal);
+        this.resultPresenter = new ResultPresenter(this.graphQlFetcher, this.graphQLIntrospectionModal, this.parent.dependencies.restApiFetcherServer);
 
     }
 
