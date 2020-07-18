@@ -1,18 +1,12 @@
-import {FileTypeCategoriesModal} from "./FileTypeCategoriesModal";
-
 export class FileTypeCategoriesService {
 
     constructor(restApiFetcherServer) {
 
-        this.fileTypeCategoriesModal = new FileTypeCategoriesModal();
         this.restApiFetcherServer = restApiFetcherServer;
 
         this.fileTypes = [];
     }
 
-    getModalHtml() {
-        return this.fileTypeCategoriesModal.getHtmlCode();
-    }
 
     // get all the file categories and their corresponding file types from the server
     getAllFileCategories(callback) {

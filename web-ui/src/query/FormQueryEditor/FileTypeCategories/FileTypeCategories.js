@@ -3,6 +3,7 @@ import {FileTypeCategoriesService} from "./FileTypeCategoriesService";
 import {MetadataAutocompletion} from "../autocompletion/MetadataAutocompletion";
 import {FiletypeFilter} from "../Components/FiletypeFilter";
 import {InputFieldMultiplier} from "../../../Utilities/InputFieldMultiplier";
+import {FileTypeCategoriesModal} from "./FileTypeCategoriesModal";
 
 
 export class FileTypeCategories extends Page {
@@ -11,6 +12,7 @@ export class FileTypeCategories extends Page {
         this.title = "File Type Categories";
         this.cacheLevel = 3;
 
+        this.modal = new FileTypeCategoriesModal();
 
         this.fileTypeCategoriesService = new FileTypeCategoriesService(this.parent.dependencies.restApiFetcherServer);
         this.inputMultiplierFiletypeFilter = this.inputMultiplierFiletypeFilterBuilder();
@@ -30,6 +32,9 @@ export class FileTypeCategories extends Page {
 
     content() {
         return `
+
+                ${this.modal.getHtmlCode()}
+
                 </br>
                 <!--     file-category-selector       -->
                 <div class="form-group col-md-12 ">
@@ -188,6 +193,8 @@ export class FileTypeCategories extends Page {
             thisdata.fileTypeCategoriesService.createCategory(category, fileTypes, function(success){
                 console.log(success);
             });
+
+            thisdata.modal.openModalWithText("The category was created successfully",true);
         });
 
         //Update a File Category
@@ -204,6 +211,7 @@ export class FileTypeCategories extends Page {
             thisdata.fileTypeCategoriesService.updateCategory(category, fileTypes, function(success){
                 console.log(success);
             });
+            thisdata.modal.openModalWithText("The category was update successfully",true);
         });
 
         //Delete File Category in Form
@@ -213,6 +221,8 @@ export class FileTypeCategories extends Page {
             thisdata.fileTypeCategoriesService.deleteCategory(category, function(success){
                 console.log(success);
             });
+            thisdata.modal.openModalWithText("The category was deleted successfully",true);
+
         });
 
         //Delete all file types

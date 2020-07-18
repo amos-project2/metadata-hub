@@ -156,7 +156,6 @@ export class QueryEditor extends Page {
 
 
             ${this.graphQLIntrospectionModal.getHtmlCode()}
-            ${this.fileTypeCategoriesService.getModalHtml()}
             ${this.resultPresenter.viewModal.getHtmlCode()}
             ${this.storeService.getSaveModal().getHtmlCode()}
 
