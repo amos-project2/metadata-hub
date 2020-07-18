@@ -16,6 +16,7 @@ import javax.ws.rs.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -121,8 +122,8 @@ public class WebUIMetadataHelperController
         String[] split = query.split("\\$XXX\\$");
         String searchString = split[0].toLowerCase().trim();
         String usedFileTypes = split[1].toLowerCase().trim();
-
-        List<String> fileTypeSuggestions = fileTypeAutocompletionService.getFileTypes(this.createList(usedFileTypes), searchString, 10);
+        List<String> usedFileTypesList = this.createList(usedFileTypes);
+        List<String> fileTypeSuggestions = fileTypeAutocompletionService.getFileTypes(usedFileTypesList, searchString, 10);
 
         String jsonFileTypeSuggestions = new ObjectMapper().writeValueAsString(fileTypeSuggestions);
         log.info("File Type Suggestions: " + jsonFileTypeSuggestions);
@@ -154,7 +155,7 @@ public class WebUIMetadataHelperController
     {
         String x = "x";
         if (bigX) x = "X";
-        return (data.equals("")) ? new ArrayList<>() : Arrays.asList(data.split("\\$" + x + "\\$"));
+        return (data.equals("")) ? new ArrayList<>() : new LinkedList<>(Arrays.asList(data.split("\\$" + x + "\\$")));
     }
 
 
