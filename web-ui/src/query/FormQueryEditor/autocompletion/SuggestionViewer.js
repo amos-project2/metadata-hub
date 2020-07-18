@@ -67,14 +67,14 @@ export class SuggestionViewer {
 
                     <div class="row" style="margin-bottom: 15px;">
                         <div class="col-sm-6"">
-                           <b>Element</b>
+                           <b>Metadata Attribute</b>
                         </div>
                         <div class="col-sm-3"">
-                          <b>Filter</b>
+                          <b>Filters</b>
                         </div>
                         <div class="col-sm-3"">
 
-                          <b>Metadata</b>
+                          <b>Return</b>
 
 
                         </div>

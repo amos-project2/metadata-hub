@@ -36,12 +36,12 @@ export class ControllUnits {
                         <option value="100">100</option>
                     </select>
                 </div>
-                <div style="margin:5px;" class="for-hiding" data-toggle="tooltip-vis" data-placement="top" title="Please go to the Table-Tab. With clicking on the columns you can adjust the sorting">
+                <div style="margin:5px;" class="for-hiding" data-toggle="tooltip-vis" data-placement="top" title="Please go to the Table Tab for selecting a sorting attribute. You can click on the table columns to sort by a specific attribute or change the sotring order(ascending or descending).">
                     Sorting: <span class="badge badge-success mySorting"> id (ascending) </span>
                 </div>
 
-                <div style=" margin:2px; cursor: pointer" data-toggle="tooltip-vis" data-placement="top" title="It shows the final query, with pagination-informations included">
-                    <button type="button" class="btn btn-primary open-final-query btn-sm">Open Final Query</button>
+                <div style=" margin:2px; cursor: pointer" data-toggle="tooltip-vis" data-placement="top" title="Show the final query, with pagination-information(limit, offset) included">
+                    <button type="button" class="btn btn-primary open-final-query btn-sm">Open Final GraphQL Query</button>
                 </div>
 
             </div>

@@ -91,7 +91,7 @@ export class FiletypeFilter {
                     return;
                 }
 
-                $("#file-categories-modal-body").html("Click on a file category to choose multiple file types for the query editor.<br/><br/>")
+                $("#file-categories-modal-body").html("Click on a file category to choose multiple file types for the Filetype Filter. The contained File Types of a Category are enumerated below them.<br/><br/>")
 
                 Object.keys(fileCategoryMap).forEach(key => {
                     $("#file-categories-modal-body").append("<button type=\"button\" class=\"btn btn-primary\" id='button-" + key + "' data-dismiss=\"modal\"> File Category: " + key + "</button> <br/>");

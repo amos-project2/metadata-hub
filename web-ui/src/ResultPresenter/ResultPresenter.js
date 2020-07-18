@@ -78,7 +78,7 @@ export class ResultPresenter {
                         </div>
                     </div>
                     <div class="message-container">
-                        Send a query first, then you will get the result.
+                        Only after sending a query first, you can get a result.
                     </div>
 
 
@@ -292,9 +292,9 @@ export class ResultPresenter {
             if (sucess && json && !json.errors && json.data.searchForFileMetadata && !json.data.searchForFileMetadata.error) {
                 thisdata.updateInternalState(formGraphQL, json);
             } else if (json === null) {
-                thisdata.updateError({message: "The ressource/Server is not avialable", info: jsonString});
+                thisdata.updateError({message: "The ressource/Server is not available", info: jsonString});
             } else if (json.errors) {
-                thisdata.updateError({message: "An Error while parsing the Query is occured. Please dont use unescapted quotation marks, for example.", info: JSON.stringify(json, undefined, 2)});
+                thisdata.updateError({message: "An Error while parsing the Query has occured. Please don't use unescaped quotation marks, for example.", info: JSON.stringify(json, undefined, 2)});
             } else {
                 let err = {
                     message: json.data.searchForFileMetadata.error.message,

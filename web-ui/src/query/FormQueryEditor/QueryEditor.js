@@ -144,7 +144,7 @@ export class QueryEditor extends Page {
                 <!--     Controll-Buttons           -->
 
                 <button type="submit" class="btn btn-success">Send</button>
-                <button type="button" class="btn btn-primary open-query">Open Intermediate Query</button>
+                <button type="button" class="btn btn-primary open-query">Open Intermediate GraphQL Query</button>
                 <button type="button" class="btn btn-success save-editor">Save Editor</button>
                 <button type="button" class="btn btn-danger modalClearCache">Clear Cache</button>
                 <button type="button" class="btn btn-primary clear-all">Clear All</button>

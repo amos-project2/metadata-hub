@@ -28,19 +28,19 @@ export class ExportOutput {
                     <div class="form-check mb-4">
                         <input class="form-check-input" type="checkbox" value="" id="meta-all${this.id}">
                         <label class="form-check-label" for="meta-all${this.id}">
-                            Include all metadata attributes <br>(Ignore the metadata attributes-filter)
+                            Include all metadata attributes <br>(Ignore the selection in Returned Metadata Attributes)
                         </label>
                     </div>
                      <div class="form-check mb-4" id="${this.id}">
                         <input class="form-check-input" type="checkbox" value="" id="pagination-no${this.id}">
                         <label class="form-check-label" for="pagination-no${this.id}">
-                            Include all rows <br>(Ignore pagination)
+                            Include all files/rows <br>(Ignore pagination[limit, offest])
                         </label>
                     </div>
                     <div class="form-check mb-4" id="${this.id}">
                         <input class="form-check-input" type="checkbox" value="" id="query-include${this.id}">
                         <label class="form-check-label" for="query-include${this.id}">
-                           Include the query
+                           Include the GraphQL query
                         </label>
                     </div>
                     <div class="col text-center mb-4">
