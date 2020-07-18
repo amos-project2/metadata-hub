@@ -211,7 +211,7 @@ export class FileTypeCategories extends Page {
             thisdata.fileTypeCategoriesService.updateCategory(category, fileTypes, function(success){
                 console.log(success);
             });
-            thisdata.modal.openModalWithText("The category was update successfully",true);
+            thisdata.modal.openModalWithText("The category was updated successfully",true);
         });
 
         //Delete File Category in Form
