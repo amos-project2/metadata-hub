@@ -170,7 +170,6 @@ export class Login {
                             <div class="card-body">
                                 <div class="text-center" style="width:100%">
                                     <img src="logo.png" alt="Metadata-Hub" style="width:180px;"> <!--style="width:240px">-->
-                                    <img src="logo.png" alt="Metadata-Hub" style="width:180px;"> <!--style="width:240px">-->
                                 </div>
                                 <h4 class="card-title text-center font-weight-bold">Sign In</h4>
                                 <form class="form-signin">
@@ -184,7 +183,7 @@ export class Login {
                                         <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button-admin ${this.adminLoginVisible}" type="button">Sign in as Admin</button>
                                     </div>
                                     <hr class="my-4">
-                                    <span class="text-secondary">* The Your-Name is used for save it along possible queries you will do. It must be not System-known.</span>
+                                    <span class="text-secondary">* Your name is used for saving your queries.</span>
                                 </form>
                             </div>
                         </div>

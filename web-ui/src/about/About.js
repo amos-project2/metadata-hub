@@ -19,9 +19,9 @@ export class About extends Page {
 
                 <b>Version: 1.0.0</b><br><br>
 
-                <b><a href="https://github.com/amos-project2/metadata-hub/" target="_blank">Code at Github</a></b><br><br>
+                <b><a href="https://github.com/amos-project2/metadata-hub/" target="_blank">Code on Github</a></b><br><br>
 
-                <b>Author:</b><br>
+                <b>Authors:</b><br>
                 Gregor Fendt<br>
                 Benjamin Fischer<br>
                 Thomas Wolter<br>
