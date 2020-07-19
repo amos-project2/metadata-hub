@@ -178,7 +178,7 @@ export class FileTypeCategories extends Page {
                             <div class="col font-weight-bold">${key}</div>
                              <div class="col">${fileCategoryString}</div>
                              <div class="col-2"><button type="button" class="btn btn-primary btn-sm" id='button-${counter}' data-dismiss="modal">apply</button></div>
-                             <div class="col-3"><button type="button" id="delete-${counter}" class="btn btn-danger btn-sm" data-dismiss="modal"> delete </button></div>
+                             <div class="col-3"><button type="button" id='delete-${counter}' class="btn btn-danger btn-sm" data-dismiss="modal"> delete</button></div>
                          </div>`);
 
 
@@ -193,7 +193,7 @@ export class FileTypeCategories extends Page {
                         }
                     })
 
-                    $("#delete" + counter).click(function () {
+                    $("#delete-" + counter).click(function () {
                         thisdata.fileTypeCategoriesService.deleteCategory(key, function (success) {
                             console.log(success);
                         });
