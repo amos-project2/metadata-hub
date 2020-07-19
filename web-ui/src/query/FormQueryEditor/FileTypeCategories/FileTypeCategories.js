@@ -178,7 +178,7 @@ export class FileTypeCategories extends Page {
                             <div class="col font-weight-bold">${key}</div>
                              <div class="col">${fileCategoryString}</div>
                              <div class="col-2"><button type="button" class="btn btn-primary btn-sm" id='button-${counter}' data-dismiss="modal">apply</button></div>
-                             <div class="col-3"><button type="button" id="delete-${counter}" class="btn btn-danger" data-dismiss="modal"> delete </button></div>
+                             <div class="col-3"><button type="button" id="delete-${counter}" class="btn btn-danger btn-sm" data-dismiss="modal"> delete </button></div>
                          </div>`);
 
 
