@@ -36,7 +36,7 @@ export class FileTypeCategoriesService {
 
         console.log("!! " + getFileString() + " ? " + category);
 
-        this.restApiFetcherServer.fetchPost("categoryService/admin/" + category + "/?file_types=" + encodeURIComponent(getFileString()), ":)", function (event) {
+        this.restApiFetcherServer.fetchPost("categoryService/admin/" + category + "/?file_types=" + encodeURIComponent(getFileString()), null, function (event) {
             let success = event.data;
             callback(success);
         });
@@ -59,7 +59,7 @@ export class FileTypeCategoriesService {
 
         console.log("!! " + getFileString() + " ? " + category);
 
-        this.restApiFetcherServer.fetchPost("categoryService/admin/" + category + "/update/?file_types=" + encodeURIComponent(getFileString()), ":)", function (event) {
+        this.restApiFetcherServer.fetchPost("categoryService/admin/" + category + "/update/?file_types=" + encodeURIComponent(getFileString()), null, function (event) {
             let success = event.data;
             callback(success);
         });
