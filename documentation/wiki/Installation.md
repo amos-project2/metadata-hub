@@ -13,87 +13,105 @@ Therefore, please refer to the official installation instructions of Docker at
 Please make sure to install at least version *19.03* and check the installation
 before continuing.
 
-## Installation
+## Usage
 
-The image is published using the DockerHub registry at
-[amosproject2/metadatahub](https://hub.docker.com/r/amosproject2/metadatahub).
-There are two versions of the application you can use:
+This guide is written based on a working Docker setup on Linux.
+If you want to use the Software on Windows, please follow the procedure but
+modify the commands according to your setup.
+When you're using PowerShell on Windows, you can use the same commands as
+described below.
 
-* ``latest`` The latest stable version, usually updated once a week
-* ``dev`` The currently developed version, might be unstable
+#### Pulling the image
 
-The ``latest`` version is the recommended one to use, thus
-
-```bash
-$ docker pull amosproject2/metadatahub
-```
-
-will pull the image tagged with ``latest`` by default.
-
-### Configuration
-
-The image is build with a default configuration that specifies some mandatory
-settings that cannot be changed, such as the default database user and
-port settings inside the container (see more at [Usage](#Usage)).
-
-The storage of the database will kept inside the container by default.
-Indeed, it can be useful to store this data on the host system to access it
-later on.
-Therefore, simply create a Docker volume that is used to store the content
-of the database.
+In the first step, pull the image from DockerHub.
+The ```latest``` version is the latest stable version that is updated on each release.
+The ```dev``` version is the currently developed version and may still contain
+errors.
+Execute the following command in order to pull the latest stable image.
 
 ```bash
-$ docker volume create --name metadatahub-database -d local
+$ docker pull amosproject2/metadatahub:latest
 ```
 
-It is also possible to use multiple volumes to have separate 'databases' for the
-various container.
+#### Persisting the database
 
-### Usage
+If you want to persist the database on your machine, a Docker volume is required.
+Mounting an arbitrary directory will lead to a failure during the PostgreSQL
+startup. Here is an example that shows how to create a local volume using
+the Docker CLI. For more information, please have a look at the
+[official documentation](https://docs.docker.com/storage/volumes/).
 
-After setting everything up, you are ready to run the image.
-Therefore, use the following template.
+```bash
+ docker volume create --name metadatahub-database -d local
+```
+
+#### Running Metadata-Hub
+
+The image can be started according to the following command:
 
 ```bash
 docker run \
-    -p {HOST_SERVER_PORT}:8080 \
-    -p {HOST_CRAWLER_PORT}:9000 \
-    -v {DATA}:/filesystem \
-    -v metadatahub-database:/var/lib/postgresql/12/main \
+    -p {ui-port}:8080 \
+    -p {treewalk-port}:9000 \
+    -p {database-port}:5432 \
+    -v {data}:/filesystem \
+    -v {volume-name}:/var/lib/postgresql/12/main \
     amosproject2/metadatahub
 ```
 
-The following values have to be specified by the user:
+* ``ui-port``<br>
+  The port that publishes the web interface on the *host* machine.
 
-* ``HOST_SERVER_PORT``<br>
-  The port that publishes the *server* with the graphical user interface
-  for data querying on the *host* machine.
+* ``treewalk-port``<br>
+  The port that publishes the TreeWalk API on the *host* machine.
+  Setting this port is only required when you directly want to access the
+  TreeWalk API and can be omitted.
 
-* ``HOST_CRAWLER_PORT``<br>
-  The port that publishes the API of the *crawler* on the *host* machine.
+* ``database-port``<br>
+  The port that publishes the database instance on the *host* machine.
+  Setting this port is only required when you directly want to access the
+  database and can be omitted.
 
-* ``DATA``<br>
+* ``data``<br>
   This directory will be mounted inside the container and therefore is
-  accessible for the crawler.
+  accessible for the TreeWalk.
 
-The ports *8080* and *9000* must not change thus they are required for internal
-communication.
-For example, you can run the image with the following command.
+* ``volume-name``<br>
+  The name of the volume that should be used to persist the database on the
+  host machine over multiple runs. In the example from above, the volume name
+  would be set to ``metadatahub-database``
+
+The internal ports ``8080``, ``9000`` and ``5432`` must **not** change because
+they are required for internal communication.
+Of course, multiple directories can be mounted inside the container,
+simply provide each directory with the corresponding ``-v`` flag.
+
+This example starts a container with access to the ``/home/data`` directory.
 
 ```bash
 docker run \
-    -p 9999:8080 \
-    -p 9998:9000 \
-    -v /home/john/data:/filesystem
+    -p 8080:8080 \
+    -v /home/data:/filesystem  \
     -v metadatahub-database:/var/lib/postgresql/12/main \
     amosproject2/metadatahub
 ```
 
-If you want to connect to the PostgreSQL database directly, provide an
-additional ``-p 9997:5432``. This will publish the running PostgreSQL instance
-on your host machine. You should be able to access both ``localhost:9999`` and
-``localhost:9998`` for the corresponding services.
+Please refer to the
+[Usage Guide](https://github.com/amos-project2/metadata-hub/wiki/Usage)
+for a demo of how to use the application. Make sure to provide the filepaths
+relative to mounted directory inside the container.
+
+#### Inspecting a container
+
+In order to inspect a container with the ID ``container-id``,
+start a bash session inside the container.
+
+```bash
+docker exec -it {container-id} /bin/bash
+```
+
+The log files for further investigation are directly located in the
+``/metadatahub`` root directory.
 
 If you encounter any errors, please refer to the
 [FAQ](https://github.com/amos-project2/metadata-hub/wiki/FAQ) section.
-
