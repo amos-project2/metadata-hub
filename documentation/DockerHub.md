@@ -33,8 +33,10 @@ All these three services run inside the image as standalone processess.
 This guide is written based on a working Docker setup on Linux.
 If you want to use the Software on Windows, please follow the procedure but
 modify the commands according to your setup.
+When you're using PowerShell on Windows, you can use the same commands as
+described below.
 
-#### Pulling thze image
+#### Pulling the image
 
 In the first step, pull the image from DockerHub.
 The ```latest``` version is the latest stable version that is updated on each release.
