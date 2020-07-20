@@ -113,7 +113,14 @@ class Worker(multiprocessing.Process):
         self._hashing_time = 0
         self._event_can_exit = event_can_exit
         self._debug = debug
-
+        self._db_connection_files = database.DatabaseConnectionFiles(
+            db_info=connection_data,
+            measure_time=self._measure_time
+        )
+        self._db_connection_metadata = database.DatabaseConnectionMetadata(
+            db_info=connection_data,
+            measure_time=self._measure_time
+        )
 
     def message(self, msg: str, ignore: bool = False) -> None:
         """Print message to the console if logging level was set to DEBUG.
@@ -256,7 +263,7 @@ class Worker(multiprocessing.Process):
         # insert into the database
         try:
             # Insert the result in a batched query
-            self._db_connection.insert_new_record_files(inserts)
+            self._db_connection_files.insert_new_record_files(inserts)
         except Exception as e:
             self.message(
                 f'there was an error inserting the batched results, inserting individually: {str(e)}',
@@ -265,7 +272,7 @@ class Worker(multiprocessing.Process):
             # Try to insert each command individually and print out the problematic result
             for insert in inserts:
                 try:
-                    self._db_connection.insert_new_record_files([insert])
+                    self._db_connection_files.insert_new_record_files([insert])
                 except:
                     self.message('failed inserting single file again.', ignore=True)
 
@@ -277,13 +284,13 @@ class Worker(multiprocessing.Process):
         jsons = []
         try:
             for dir in directories:
-                file_ids = self._db_connection.check_directory(dir, [x[-2] for x in inserts])
+                file_ids = self._db_connection_files.check_directory(dir, [x[-2] for x in inserts])
                 if file_ids:
                     toDelete.extend([x[0] for x in file_ids])
                     jsons.extend([x[1] for x in file_ids])
             if len(toDelete) > 0:
                 # Delete the files
-                self._db_connection.delete_files(toDelete)
+                self._db_connection_files.delete_files(toDelete)
         except Exception as e:
             self.message(
                 f'there was an error setting the deleted tags. Manual check necessary: {str(e)}',
@@ -301,7 +308,7 @@ class Worker(multiprocessing.Process):
                 exif_output=jsons, increase=False
             )
             # Put the new information into the database
-            self._db_connection.update_metadata(metadata_increase, metadata_decrease)
+            self._db_connection_metadata.update_metadata(metadata_increase, metadata_decrease)
         except:
             self.message('error updating metadata', ignore=True)
         clean_up()

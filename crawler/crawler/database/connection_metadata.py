@@ -43,7 +43,7 @@ def measure_time(func):
     return decorator
 
 
-class DatabaseConnection:
+class DatabaseConnectionMetadata:
 
     def __init__(self, db_info: dict, measure_time: bool) -> None:
         """Initialize the connection to Postgre Database.
@@ -69,82 +69,44 @@ class DatabaseConnection:
         self._time = 0
         self._measure_time = measure_time
 
-    @measure_time
-    def insert_new_record_crawls(self, config: Config) -> int:
-        """Insert a new record to the 'crawls' table. Used at the start of a crawl task.
-           TODO: Add docstring
-        Args:
-            config (Config): Config for the crawl task.
-
-        """
-        # Prepare necessary values
-        crawl_config = config.get_data(as_json=True)
-        dir_path = ', '.join(
-            [inputs['path'] for inputs in config.get_directories()]
-        )
-        author = config.get_author()
-        name = config.get_name()
-        starting_time = datetime.now()
-        insert_values = (dir_path, author, name, 'running', crawl_config, starting_time)
-        # Construct the SQL query
-        crawls = Table('crawls')
-        query = Query.into(crawls) \
-            .columns('dir_path', 'author', 'name', 'status', 'crawl_config', 'starting_time') \
-            .insert(Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'), Parameter('%s'))
-        curs = self.con.cursor()
-        query = curs.mogrify(str(query), insert_values).decode('utf8')
-        query = query + ' RETURNING id'
-        # Make database request
-        try:
-            curs.execute(query)
-        except:
-            _logger.warning('"Error updating database"')
-            curs.close()
-            self.con.rollback()
-            raise
-        # Return result or 0 in case nothing could be fetched
-        try:
-            dbID = curs.fetchone()[0]
-        except:
-            dbID = 0
-        curs.close()
-        self.con.commit()
-        return dbID
 
     def close(self) -> None:
         self.con.close()
 
+
     @measure_time
-    def set_crawl_state(self, tree_walk_id: int, status: str) -> None:
-        """Update the status of the crawler in it's corresponding database entry.
+    def check_directory(self, path: str, current_hashes: List[str]) -> List[int]:
+        """checks the database for a given directory. Returns all the most recent ids.
 
         Args:
-            tree_walk_id (int): ID of the TreeWalk execution
-            status (str): status to set
+            path (str): directory path to be checked
+            current_hashes (List[str]): list of all hashes from current files
+        Returns:
+            List(int): file ids that are supposed to be deleted
         """
-        # Build query to update status
-        crawls = Table('crawls')
-        query = Query.update(crawls) \
-            .set(crawls.finished_time, Parameter('%s')) \
-            .set(crawls.status, Parameter('%s')) \
-            .where(crawls.id == Parameter('%s'))
-        # Check if valid status was given
-        if status in [communication.CRAWL_STATUS_FINISHED, communication.CRAWL_STATUS_PAUSED,
-                      communication.CRAWL_STATUS_RUNNING, communication.CRAWL_STATUS_ABORTED]:
-            curs = self.con.cursor()
-            query = curs.mogrify(str(query), (datetime.now(), status, tree_walk_id))
-        else:
-            _logger.warning('"Error updating database state, state not recognized"')
-            return
-        # Execute query
+        files = Table('files')
+        query = Query.from_(files) \
+            .select('id', 'crawl_id', 'dir_path', 'name', 'file_hash', 'metadata') \
+            .where(files.dir_path == Parameter('%s'))
+        curs = self.con.cursor()
+        query = curs.mogrify(str(query), (path,))
         try:
             curs.execute(query)
-            curs.close()
-            self.con.commit()
+            get = curs.fetchall()
         except:
-            _logger.warning('"Error updating database state"')
-            curs.close()
-            self.con.rollback()
+            return []
+        curs.close()
+        self.con.commit()
+
+        # Find the second highest crawl id (remove max first as it is the current crawl)
+        id_set = set([x[1] for x in get])
+        id_set.remove(max(id_set))
+        if len(id_set) == 0:
+            return []
+        recent_crawl = max(id_set)
+        # Make list with every file_id in that directory/crawl
+        file_ids = [(x[0],x[-1]) for x in get if x[1] == recent_crawl and x[-2] in current_hashes]
+        return file_ids
 
     @measure_time
     def set_deleted(self, file_ids: List[int]) -> None:
@@ -172,6 +134,62 @@ class DatabaseConnection:
             _logger.warning('"Error updating file deletion"')
             curs.close()
             self.con.rollback()
+
+    @measure_time
+    def get_ids_to_delete(self) -> List[Tuple[int, datetime]]:
+        """Get the list of IDs which are marked as to be deleted.
+
+        The result consists of a set of tuples with the corresponding ID and
+        the timestamp when the file was marked as to delete.
+        The calling method is responsible for checking of the time limit
+        is already exceeded.
+
+        TODO: The performance may break if there is a massive amount of files.
+
+        Returns:
+            List[Tuple(int, str)]: list of items (ID, timestamp) or None on error
+
+        """
+        sql = 'SELECT id, deleted_time FROM files WHERE deleted;'
+        curs = self.con.cursor()
+        try:
+            curs.execute(sql)
+            entries = curs.fetchall()
+            curs.close()
+            self.con.commit()
+        except Exception as e:
+            _logger.warning(f'Failed deleting files: {str(e)}')
+            curs.close()
+            self.con.rollback()
+            return None
+        return entries
+
+    @measure_time
+    def delete_files(self, ids: List[int]) -> int:
+        """Remove the given IDs from the files table.
+
+        Args:
+            ids (List[int]): list of IDs
+
+        Returns:
+            int: number of deleted rows or None on error
+
+        """
+        if not ids:
+            return 0
+        curs = self.con.cursor()
+        sql = curs.mogrify('DELETE FROM files WHERE id IN %s;', (tuple(ids),))
+        try:
+            curs.execute(sql, ids)
+            num = curs.rowcount
+            curs.close()
+            self.con.commit()
+        except Exception as e:
+            _logger.warning(f'Failed deleting files: {str(e)}')
+            curs.close()
+            self.con.rollback()
+            return None
+        return num
 
     def clear_time(self) -> None:
         """Clears the time recording for database operations."""
@@ -315,6 +333,77 @@ class DatabaseConnection:
         except Exception as e:
             print(e)
             _logger.warning("Error increasing the values of the metadata table!")
+            # TODO Make sure the main method knows a reevaluate method should be called
+            curs.close()
+            self.con.rollback()
+            raise
+
+    def output_type(self, to_check: str):
+        """Determine whether the output value of a file is a digit or a string
+        Args:
+            to_check (str): The string variant of the value
+        Returns:
+            float representation if conversion is possible, string otherwise
+        """
+        try:
+            checked = float(to_check)
+            return 'dig'
+        except:
+            return 'str'
+
+    def decrease_dynamic(self, ids: List[int]) -> None:
+        """
+        Decreases the tag values in the 'metadata' table by the tag values of the files present in ids
+        Args:
+            ids (List[int]): file ids that metadata is gathered about
+        """
+
+        def create_metadata(metadata_delete: List[str]) -> Dict:
+            # Loop over every tag in the json and sum them up in a dictionary
+            metadata_dict = {}
+            try:
+                for entry in metadata_delete:
+                    if entry[1] not in metadata_dict.keys():
+                        metadata_dict[entry[1]] = {}
+                    for file_result in entry[0]:
+                        if file_result not in metadata_dict[entry[1]]:
+                            metadata_dict[entry[1]][file_result] = [0, self.output_type(entry[0][file_result])]
+                        metadata_dict[entry[1]][file_result][0] += 1
+            except Exception as e:
+                raise
+            return metadata_dict
+
+        # Query for requesting all the information from the previous entries (Needed to reconstruct the tags used by
+        # each file)
+        query = 'SELECT "metadata", "type" FROM "files" WHERE "id" IN %s'
+        curs = self.con.cursor()
+        query = curs.mogrify(query, (tuple(ids),))
+        try:
+            curs.execute(query)
+            entries = curs.fetchall()
+            # Create a dictionary structure for further processing
+            metadata = create_metadata(entries)
+            # Create a tuple with every relevant file type (For fetching the corresponding metadata)
+            relevant_file_types = tuple(set([x[1] for x in entries]))
+            # Query for obtaining the old data from the 'metadata' table (Must be decreased by the previous values)
+            query = 'SELECT * FROM "metadata" WHERE "file_type" in %s'
+            query = curs.mogrify(query, (relevant_file_types,))
+            curs.execute(query)
+            entries = curs.fetchall()
+            # Go over every value in the old data and update it with new values
+            for file_type in entries:
+                to_update = file_type[1]
+                merger = metadata[file_type[0]]
+                for key in merger.keys():
+                    to_update[key][0] = int(file_type[1][key][0]) - merger[key][0]
+                query = 'UPDATE metadata SET "tags" = %s WHERE "file_type" = %s;'
+                query = curs.mogrify(query, (json.dumps(to_update), file_type[0]))
+                curs.execute(query)
+            curs.close()
+            self.con.commit()
+
+        except:
+            _logger.warning("Error decreasing the values of the metadata table!")
             # TODO Make sure the main method knows a reevaluate method should be called
             curs.close()
             self.con.rollback()
