@@ -2,11 +2,9 @@ package JerseyServer.HttpController;
 
 import Database.DatabaseException;
 import QueryServices.StoreService.QueryEditorStorageService;
-import QueryServices.StoreService.StoredQuery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

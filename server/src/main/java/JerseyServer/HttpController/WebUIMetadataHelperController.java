@@ -1,8 +1,8 @@
 package JerseyServer.HttpController;
 
 import Config.Config;
-import GraphQL.Fetcher.QueryCache;
 import Database.DatabaseException;
+import GraphQL.Fetcher.QueryCache;
 import QueryServices.MetadataAutocompletion.FileTypeAutocompletionService;
 import QueryServices.MetadataAutocompletion.MetadataInfoService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -12,7 +12,10 @@ import com.google.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;

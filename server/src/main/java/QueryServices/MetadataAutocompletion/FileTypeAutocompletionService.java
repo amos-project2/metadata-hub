@@ -1,6 +1,7 @@
 package QueryServices.MetadataAutocompletion;
 
-import Database.*;
+import Database.Database;
+import Database.DatabaseException;
 import com.google.inject.Inject;
 
 import java.sql.Connection;

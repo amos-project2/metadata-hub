@@ -3,7 +3,6 @@ package QueryServices.MetadataAutocompletion;
 import Database.Database;
 import Database.Model.MetadataInfo;
 import Database.Model.MetadatumValueDatatype;
-import JerseyServer.HttpController.WebUIMetadataHelperController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.Setter;

@@ -1,6 +1,7 @@
 package GraphQL.Fetcher;
 
-import Database.*;
+import Database.Database;
+import Database.DatabaseException;
 import Database.Model.DatabaseSchemaDefinition;
 import GraphQL.Model.Error;
 import GraphQL.Model.File;
@@ -11,7 +12,6 @@ import graphql.GraphQLException;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import org.jetbrains.annotations.NotNull;
-import org.jooq.meta.derby.sys.Sys;
 import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

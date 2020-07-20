@@ -1,6 +1,7 @@
 package Start;
 
-import Database.*;
+import Database.Database;
+import Database.DatabaseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Injector;
 import graphql.ExecutionResult;
@@ -21,9 +22,7 @@ public class RuntimeTests
 {
     private final DependenciesContainer dependenciesContainer;
     private final Injector injector;
-    // private final Registry registry;
 
-    //public RuntimeTests(Registry registry) {this.registry = registry;}
 
     public RuntimeTests(DependenciesContainer dependenciesContainer)
     {
@@ -32,7 +31,6 @@ public class RuntimeTests
     }
 
     public void databaseTest() throws SQLException, DatabaseException {
-//        DatabaseProvider databaseProvider = registry.getDatabaseProvider();
         Database database =injector.getInstance(Database.class);
         try
         {
@@ -58,7 +56,6 @@ public class RuntimeTests
 
     public void graphQLTest() throws IOException
     {
-        //GraphQLProvider graphQLProvider = registry.getGraphQLProvider();
         GraphQL graphQL = injector.getInstance(GraphQL.class);
 
         ExecutionResult execute = graphQL.execute("query {teststuff(id: \"1\") {id, testvalue}}");

@@ -26,9 +26,12 @@ public class Start
 
     public static void main(String[] args) throws Exception
     {
-        try{
+        try
+        {
             new Start(args).start();
-        }catch (Exception exception){
+        }
+        catch (Exception exception)
+        {
             exception.printStackTrace();
         }
     }
@@ -97,12 +100,13 @@ public class Start
         this.dependenciesContainer = new DependenciesContainer(this.config);
     }
 
-    private void startApplication() throws SQLException, DatabaseException {
+    private void startApplication() throws SQLException, DatabaseException
+    {
         ApplicationService applicationService = this.dependenciesContainer.getInjector().getInstance(ApplicationService.class);
         applicationService.startAll();
     }
 
-    private  void executeRuntimeTests()
+    private void executeRuntimeTests()
     {
 
         //this is not related to our integration-tests
@@ -115,26 +119,23 @@ public class Start
 
     }
 
-    private  void executeBenchmark() throws SQLException, InterruptedException, DatabaseException {
+    private void executeBenchmark() throws SQLException, InterruptedException, DatabaseException
+    {
         boolean enableBenchmark = false;
-        if(enableBenchmark){
-             new BenchmarkTest(this.dependenciesContainer).doBenchmark();
+        if (enableBenchmark)
+        {
+            new BenchmarkTest(this.dependenciesContainer).doBenchmark();
         }
     }
 
-    private  void executeIndex() throws SQLException, InterruptedException, DatabaseException {
+    private void executeIndex() throws SQLException, InterruptedException, DatabaseException
+    {
         boolean enableIndexTest = false;
-        if(enableIndexTest){
+        if (enableIndexTest)
+        {
             new IndexTest(this.dependenciesContainer).test();
         }
     }
-
-
-
-
-
-
-
 
 
 }
