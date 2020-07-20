@@ -318,6 +318,8 @@ class Worker(multiprocessing.Process):
         """Clean up method for cleaning up all used resources."""
         self.message('cleaning up before exiting.')
         self._db_connection.close()
+        self._db_connection_files.close()
+        self._db_connection_metadata.close()
         response = communication.Response(
             success=True,
             message=(
