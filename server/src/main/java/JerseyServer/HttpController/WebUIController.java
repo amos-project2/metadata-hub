@@ -108,7 +108,6 @@ public class WebUIController
     @Path("/logo.png")
     public StreamingOutput getLogo()
     {
-        System.out.println("hier drinnen");
         InputStream inputStream = this.loadFromClassContext("web-ui/logo.png");
 
 
