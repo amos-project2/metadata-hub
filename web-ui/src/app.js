@@ -7,8 +7,6 @@ import {Utilities} from "./Utilities/Utilities";
 import {Login} from "./login/Login";
 
 
-
-
 if (window.myApplication === undefined) {
     alert("The start-html-page must define window.myApplication{}. It is missing. The pageload is abborted");
 } else {
