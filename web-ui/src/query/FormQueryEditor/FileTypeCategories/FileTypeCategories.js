@@ -1,7 +1,6 @@
 import {Page} from "../../../Page";
 import {FileTypeCategoriesService} from "./FileTypeCategoriesService";
 import {MetadataAutocompletion} from "../autocompletion/MetadataAutocompletion";
-import {FiletypeFilter} from "../Components/FiletypeFilter";
 import {InputFieldMultiplier} from "../../../Utilities/InputFieldMultiplier";
 import {FileTypeCategoriesModal} from "./FileTypeCategoriesModal";
 
@@ -27,7 +26,6 @@ export class FileTypeCategories extends Page {
             ".null",
         );
 
-        //this.filetypeFilter = new FiletypeFilter(this.metadatAutocompletion);
     }
 
     content() {
@@ -138,8 +136,6 @@ export class FileTypeCategories extends Page {
     onMount() {
         let thisdata = this;
 
-        //this.filetypeFilter.onMount();
-
         this.metadatAutocompletion.addListener();
         this.inputMultiplierFiletypeFilter.listenerAdd();
 
@@ -168,10 +164,6 @@ export class FileTypeCategories extends Page {
                     });
                     fileCategoryString = fileCategoryString.substr(0, fileCategoryString.length - 2);
 
-
-                    // $("#file-categories-modal2-body").append("<button type=\"button\" class=\"btn btn-primary\" id='button-"+ key + "' data-dismiss=\"modal\"><b>" + key + "</b></button>" +
-                    //     "<button type=\"button\" id=\"delete" + key + "\" class=\"btn btn-danger\" data-dismiss=\"modal\"> delete </button> <br/>");
-                    // $("#file-categories-modal2-body").append("<b>File Types:</b> " + "<br\>" + fileCategoryMap[key] + "<br/><br/>");
 
                     $("#file-categories-modal2-body").append(`
                         <div class="row mb-3 detail-view-element">
@@ -256,10 +248,6 @@ export class FileTypeCategories extends Page {
     }
 
 
-    onLoad() {
-        //this method is called on each load of the page-section here
-    }
-
 
     inputMultiplierFiletypeFilterBuilder() {
 
@@ -270,12 +258,10 @@ export class FileTypeCategories extends Page {
         let appendingHtmlCode = `<div class="form-group col-md-4 fg-filetype-element2"><input type="text" class="form-control filetype-element-input2"></div>`;
 
         let focusOutFunction = function () {
-            // thisdata.fileTypeCategoriesService.updateLists();
             thisdata.metadatAutocompletion.updateLists();
         }
 
         let focusInIfEmptyFieldFunction = function () {
-            //thisdata.fileTypeCategoriesService.reAddListener();
             thisdata.metadatAutocompletion.reAddListener();
         };
 

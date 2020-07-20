@@ -43,10 +43,4 @@ SOFTWARE.
     }
 
 
-
-
-    onMount() {
-
-    }
-
 }

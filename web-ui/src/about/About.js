@@ -34,8 +34,4 @@ export class About extends Page {
 
     }
 
-    onMount() {
-
-    }
-
 }
