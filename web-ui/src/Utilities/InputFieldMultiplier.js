@@ -16,8 +16,9 @@ export class InputFieldMultiplier {
         this.additionalListenerHook = additionalListenerHook;
     }
 
+
     addFirstElementToContainer() {
-        $(this.containerain).append(this.appendingHtmlCode);
+        $(this.container).append(this.appendingHtmlCode);
     }
 
     getFirstElement() {
