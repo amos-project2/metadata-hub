@@ -1,4 +1,4 @@
-export class ResultPresenterOld {
+export class ResultPresenterSimple {
 
     static increaseCount() {
         this.count = this.getCount() + 1;
@@ -9,8 +9,8 @@ export class ResultPresenterOld {
     }
 
     constructor(graphQlFetcher) {
-        ResultPresenterOld.increaseCount();
-        this.id = "ResultPresenterOld-" + ResultPresenterOld.getCount();
+        ResultPresenterSimple.increaseCount();
+        this.id = "ResultPresenterSimple-" + ResultPresenterSimple.getCount();
         this.pSelector = $("#" + this.id);
         this.graphQlFetcher = graphQlFetcher;
     }
@@ -30,7 +30,7 @@ export class ResultPresenterOld {
     }
 
     generateResultAndInjectIntoDom(query) {
-        this.pSelector = $("#" + this.id);//it seems i have to reattach also the beginning of the selector, otherwise it wouldnt work
+        this.pSelector = $("#" + this.id);
         let thisdata = this;
         this.graphQlFetcher.fetchAdvanced(query, function (sucess, json, jsonString) {
             thisdata.pSelector.find(".q_result").text(jsonString);

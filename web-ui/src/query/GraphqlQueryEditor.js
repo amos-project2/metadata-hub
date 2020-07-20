@@ -1,6 +1,6 @@
 import {Page} from "../Page";
 import {ResultPresenter} from "../ResultPresenter/ResultPresenter";
-import {ResultPresenterOld} from "../ResultPresenter/ResultPresenterOld";
+import {ResultPresenterSimple} from "../ResultPresenter/ResultPresenterSimple";
 
 export class GraphqlQueryEditor extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
@@ -9,7 +9,7 @@ export class GraphqlQueryEditor extends Page {
         this.cacheLevel = 3;
         this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
         //this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
-        this.resultPresenter = new ResultPresenterOld(this.graphQlFetcher);
+        this.resultPresenter = new ResultPresenterSimple(this.graphQlFetcher);
     }
 
     content() {
