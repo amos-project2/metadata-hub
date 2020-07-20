@@ -13,6 +13,7 @@
     "crawler-measure-time": false,
     "server-host": "[::]",
     "server-port": 8080,
+    "server-logging-level": "INFO",
     "webui-queryConstructorEnabled": true,
     "webui-crawlerEnabled": true,
     "webui-defaultUsername": "User",

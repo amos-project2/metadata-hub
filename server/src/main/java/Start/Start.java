@@ -6,12 +6,15 @@ import Config.ApplicationConfig;
 import Config.Config;
 import Config.JsonValideException;
 import Database.DatabaseException;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 
 
 public class Start
@@ -47,6 +50,7 @@ public class Start
 
         this.parseCLI();
         this.loadConfig();//could have System.exit-side-effect
+        this.setLoggerLevel();
         this.checkAndExcecuteIntegrationTest();
         this.loadDependencies();
         this.startApplication();
@@ -56,6 +60,18 @@ public class Start
 
         System.out.println("all services are started");
         Thread.currentThread().join();
+    }
+
+    private void setLoggerLevel()
+    {
+
+        String logLevel = this.config.getProperty("server-logging-level", "info");  // default to Level.DEBUG
+
+        Level level = Level.toLevel(logLevel.toUpperCase());
+
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        List<ch.qos.logback.classic.Logger> loggerList = loggerContext.getLoggerList();
+        loggerList.stream().forEach(tmpLogger -> tmpLogger.setLevel(level));
     }
 
     private void parseCLI()
