@@ -17,8 +17,6 @@ export class StoreService {
 
         let data = {};
 
-        //let multiplierList={}
-
         let author = $(".save-author").val();
         let title = $(".save-title").val();
 
@@ -33,12 +31,6 @@ export class StoreService {
                 tmp = ($(this).prop('checked'));
             }
             data[$(this).data("name")].push(tmp);
-
-            // if ($(this).data("multiplier") === "true") {
-            //
-            // } else {
-            //     data[$(this).data("name")]=$(this).val();
-            // }
 
         });
 
@@ -63,11 +55,6 @@ export class StoreService {
             this.storeQuery(sendData);
         }
 
-
-        // this.restApiFetcherServer.fetchJson("saveenginge", sendData, function (event) {
-        //     console.log(event.data);
-        //     console.log("hey");
-        // });
 
         return true;
 
@@ -97,7 +84,7 @@ export class StoreService {
         keys.unshift("f4"); //QUICK-FIX
         let isF4 = false;
 
-        let countAll=0;
+        let countAll = 0;
         keys.forEach(value => {
             let dataArr = data[value];
             dataArr.forEach(value2 => {
@@ -107,7 +94,7 @@ export class StoreService {
 
         let time = Math.ceil(5000 / countAll);
 
-        countAll=0
+        countAll = 0
         keys.forEach(value => {
                 if (isF4 && value === "f4") {
                     //nothing
@@ -121,11 +108,7 @@ export class StoreService {
                     let counter = -1;
                     dataArr.forEach(value2 => {
                             counter++;
-                            // setTimeout(function(){
-                            //     //TODO later
-                            // }, time*countAll)
                             let selector = $(`[data-name="${value}"]`).eq(counter);
-
 
                             if (selector.attr("type") === "checkbox") {
                                 selector.prop("checked", value2);
@@ -156,8 +139,8 @@ export class StoreService {
 
 //server-api-methods
 
-//private
-//higher-order-function/method
+    //private
+    //higher-order-function/method
     helperMethod(successFunc, errorFunc, completeCallback) {
 
         return function (event) {

@@ -1,5 +1,4 @@
 import {Page} from "../Page";
-import {ResultPresenter} from "../ResultPresenter/ResultPresenter";
 import {ResultPresenterSimple} from "../ResultPresenter/ResultPresenterSimple";
 
 export class GraphqlQueryEditor extends Page {
@@ -8,7 +7,6 @@ export class GraphqlQueryEditor extends Page {
         this.title = "GraphQl Query Editor";
         this.cacheLevel = 3;
         this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
-        //this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
         this.resultPresenter = new ResultPresenterSimple(this.graphQlFetcher);
     }
 
@@ -32,8 +30,6 @@ export class GraphqlQueryEditor extends Page {
 
     onMount() {
         let thisdata = this;
-
-       // this.resultPresenter.onMount();
 
         $(".q-send-query-editor").submit(function (event) {
             event.preventDefault();

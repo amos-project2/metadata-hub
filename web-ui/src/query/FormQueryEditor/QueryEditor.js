@@ -43,7 +43,7 @@ export class QueryEditor extends Page {
         this.metadatAutocompletion.addAdvancedFilter(this.advancedFilter);
         this.metadatAutocompletion.addAttributSelector(this.attributSelector);
 
-        this.storeService = null;//new StoreService(this, this.parent.dependencies.restApiFetcherServer);
+        this.storeService = null;
 
         this.isFreshInstallation = false;
 
@@ -249,7 +249,7 @@ export class QueryEditor extends Page {
         formGraphQl.limit = limit;
         formGraphQl.deleted = deleted;
 
-        return formGraphQl;//.generateAndGetGraphQlCode();
+        return formGraphQl;
     }
 
     clearCacheModalOpenerAndRequest() {
@@ -279,19 +279,6 @@ export class QueryEditor extends Page {
             },1000);
 
         }
-    }
-
-
-    onUnMount() {
-
-    }
-
-    onRegister() {
-
-    }
-
-    onUnLoad() {
-
     }
 
 }
