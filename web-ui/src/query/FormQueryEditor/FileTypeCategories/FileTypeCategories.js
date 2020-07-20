@@ -144,8 +144,6 @@ export class FileTypeCategories extends Page {
         $("#file-category-button2").click(function () {
             thisdata.fileTypeCategoriesService.getAllFileCategories(function (fileCategoryMap) {
 
-                console.log(fileCategoryMap);
-
                 if (fileCategoryMap == undefined) {
                     return;
                 }
@@ -187,7 +185,6 @@ export class FileTypeCategories extends Page {
 
                     $("#delete-" + counter).click(function () {
                         thisdata.fileTypeCategoriesService.deleteCategory(key, function (success) {
-                            console.log(success);
                         });
                     });
                 });
@@ -201,13 +198,11 @@ export class FileTypeCategories extends Page {
             let fileTypes = [];
 
             thisdata.inputMultiplierFiletypeFilter.each(function (fileTypeField) {
-                console.log($(fileTypeField).val())
                 fileTypes.push($(fileTypeField).val());
             });
 
             //send ajax call
             thisdata.fileTypeCategoriesService.createCategory(category, fileTypes, function (success) {
-                console.log(success);
             });
 
             thisdata.modal.openModalWithText("The category was created successfully", true);
@@ -219,13 +214,11 @@ export class FileTypeCategories extends Page {
             let fileTypes = [];
 
             thisdata.inputMultiplierFiletypeFilter.each(function (fileTypeField) {
-                console.log($(fileTypeField).val())
                 fileTypes.push($(fileTypeField).val());
             });
 
             //send ajax call
             thisdata.fileTypeCategoriesService.updateCategory(category, fileTypes, function (success) {
-                console.log(success);
             });
             thisdata.modal.openModalWithText("The category was updated successfully", true);
         });
@@ -235,7 +228,6 @@ export class FileTypeCategories extends Page {
             let category = $("#createCategoryForm").val();
             //send ajax call
             thisdata.fileTypeCategoriesService.deleteCategory(category, function (success) {
-                console.log(success);
             });
             thisdata.modal.openModalWithText("The category was deleted successfully", true);
 

@@ -28,7 +28,6 @@ export class FileTypeCategoriesService {
             fileTypesList.forEach(element => {
                 resultString += element + "$x$";
             });
-            console.log(resultString);
             return resultString;
         }
 
@@ -49,7 +48,6 @@ export class FileTypeCategoriesService {
             fileTypesList.forEach(element => {
                 resultString += element + "$x$";
             });
-            console.log(resultString);
             return resultString;
         }
 

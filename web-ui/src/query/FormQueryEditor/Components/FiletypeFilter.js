@@ -85,7 +85,6 @@ export class FiletypeFilter {
         $("#file-category-button").click(function () {
             thisdata.metadatAutocompletion.getAllFileCategories(function (fileCategoryMap) {
 
-                console.log(fileCategoryMap);
 
                 if (fileCategoryMap == undefined) {
                     return;
@@ -98,16 +97,10 @@ export class FiletypeFilter {
                     counter++;
 
                     let fileCategoryString = "";
-                    fileCategoryMap[key].forEach(value =>{
+                    fileCategoryMap[key].forEach(value => {
                         fileCategoryString += value + ", ";
                     });
-                    fileCategoryString=fileCategoryString.substr(0, fileCategoryString.length - 2);
-
-                    console.log(fileCategoryMap[key]);
-                    console.log(key);
-                    //.split(",").join(", ")
-                    // $("#file-categories-modal-body").append("<button type=\"button\" class=\"btn btn-primary\" id='fbutton-" + key + "' data-dismiss=\"modal\"> File Category: " + key + "</button> <br/>");
-                    // $("#file-categories-modal-body").append("File Types: " + "<br\>" + fileCategoryMap[key] + "<br/><br/>");
+                    fileCategoryString = fileCategoryString.substr(0, fileCategoryString.length - 2);
                     $("#file-categories-modal-body").append(`
                         <div class="row mb-3 detail-view-element">
                             <div class="col font-weight-bold">${key}</div>

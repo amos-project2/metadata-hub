@@ -37,11 +37,6 @@ export class StoreService {
         let savedTmp = JSON.stringify(JSON.parse(JSON.stringify(this.lastSavedData)));
         let refTmp = JSON.stringify(JSON.parse(JSON.stringify(data)));
 
-        console.log("START EUQALITY-CHECK");
-        console.log(savedTmp);
-        console.log(refTmp);
-        console.log("END EUQALITY-CHECK");
-
 
         if (savedTmp === refTmp) {
             return false;
@@ -49,7 +44,6 @@ export class StoreService {
 
         this.lastSavedData = data;
         let sendData = {author: author, title: title, data: data};
-        console.log(sendData);
 
         if (saveToServer) {
             this.storeQuery(sendData);
@@ -62,8 +56,6 @@ export class StoreService {
 
     restoreEditor(id) {
         this.getStoredQuery(id, (data) => {
-            console.log(data.data);
-            console.log("HAAHAHAHAHA");
             this.lastSavedData = JSON.parse(data.data);
             this.injectIntoQueryEditor = true;
 
@@ -75,11 +67,7 @@ export class StoreService {
         this.injectIntoQueryEditor = false;
 
         let data = this.lastSavedData;
-
-        console.log("keys-start");
         let keys = Object.keys(data);
-        console.log(keys);
-        console.log("keys-end");
 
         keys.unshift("f4"); //QUICK-FIX
         let isF4 = false;
@@ -103,7 +91,6 @@ export class StoreService {
 
                     isF4 = true;
                     let dataArr = data[value];
-                    console.log(dataArr);
 
                     let counter = -1;
                     dataArr.forEach(value2 => {
