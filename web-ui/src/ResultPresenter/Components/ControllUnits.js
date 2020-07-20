@@ -93,16 +93,19 @@ export class ControllUnits {
 
     }
 
+    /**
+     * called by updateInternalState from Resultpresenter
+     */
     updateState(formGraphQL, json) {
         let sorting = formGraphQL.sortingIntern;
         let scending = " (descending) ";
-        if(sorting.asc) {
+        if (sorting.asc) {
             scending = " (ascending) ";
         }
-        this.pSelector.find(".mySorting").html(sorting.attribute+scending);
+        this.pSelector.find(".mySorting").html(sorting.attribute + scending);
 
         this.pSelector.find(".open-final-query").off(); // remove last listener
-        this.pSelector.find(".open-final-query").click(()=>{
+        this.pSelector.find(".open-final-query").click(() => {
             this.graphQLIntrospectionModal.openModalWithContent(formGraphQL.generateAndGetGraphQlCode());
         });
     }

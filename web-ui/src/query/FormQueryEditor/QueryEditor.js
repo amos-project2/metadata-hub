@@ -194,7 +194,6 @@ export class QueryEditor extends Page {
             event.preventDefault();
             thisdata.storeService.saveEditor(true);
             let formGraphQL = thisdata.buildAndGetGraphQlQuery();
-            thisdata.resultPresenter.generateResultAndInjectIntoDom(formGraphQL.generateAndGetGraphQlCode());
             thisdata.resultPresenter.updateState(formGraphQL);
         });
 
