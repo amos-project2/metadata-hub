@@ -18,6 +18,7 @@ export class QueryEditor extends Page {
         this.title = "Query Editor";
         this.cacheLevel = 3;
         this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
+        this.restApiFetcherServer = this.parent.dependencies.restApiFetcherServer;
 
         this.graphQLIntrospectionModal = new GraphQlIntrospectionModel(this.parent.storage, true);
         this.resultPresenter = new ResultPresenter(this.graphQlFetcher, this.graphQLIntrospectionModal, this.parent.dependencies.restApiFetcherServer);

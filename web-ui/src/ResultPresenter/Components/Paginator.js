@@ -149,9 +149,9 @@ export class Paginator {
             if (this.countAllPages === 0) tmp = "";
             if (this.countAllPages === 1) tmp = gH(1);
             if (this.countAllPages === 2) tmp = gH(1) + gH(2);
-            if (this.countAllPages === 3) tmp = gH(1) + gH(2) + gh(3);
-            if (this.countAllPages === 4) tmp = gH(1) + gH(2) + gh(3) + gh(4);
-            if (this.countAllPages === 5) tmp = gH(1) + gH(2) + gh(3) + gh(4) + gH(5);
+            if (this.countAllPages === 3) tmp = gH(1) + gH(2) + gH(3);
+            if (this.countAllPages === 4) tmp = gH(1) + gH(2) + gH(3) + gH(4);
+            if (this.countAllPages === 5) tmp = gH(1) + gH(2) + gH(3) + gH(4) + gH(5);
         }
 
         // language=HTML
