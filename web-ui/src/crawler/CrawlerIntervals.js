@@ -135,7 +135,6 @@ export class CrawlerIntervals extends Page {
             $(`#${this.intervalForm.endMinutesID}`).val()
         );
         let cpu = $(`#${this.intervalForm.cpuLevelID}`).val();
-        console.log(cpu);
         let start = `${startDay}:${startHours}:${startMinutes}`;
         let end = `${endDay}:${endHours}:${endMinutes}`;
         let url = `intervals/add?start=${start}&end=${end}&cpu=${cpu}`;
