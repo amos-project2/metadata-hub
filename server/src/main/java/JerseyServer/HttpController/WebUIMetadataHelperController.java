@@ -102,8 +102,6 @@ public class WebUIMetadataHelperController
         log.info("Modal Tag Suggestions Query :" + fileTypes + " limit: " + limit + " offset: " + offset);
         List<String> usedFileTypes = this.createList(fileTypes.toUpperCase().trim(), true);
 
-//        List<String> tagSuggestions = metadataAutocompletionService.request(Arrays.asList(usedFileTypes), new ArrayList<>(), null, 20, false);
-
         List<String> tagSuggestions = metadataInfoService.requestTagSuggestions(usedFileTypes, limit, offset);
 
         String jsonTagSuggestions = new ObjectMapper().writeValueAsString(tagSuggestions);
