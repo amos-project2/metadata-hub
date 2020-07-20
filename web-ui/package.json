@@ -4,8 +4,8 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "dev-build-vendor": "webpack --config webpack.config.vendor.js -o ../server/src/main/resources/static-files/vendor.bundle.js",
-        "dev-build-app": "webpack -o ../server/src/main/resources/static-files/bundle.js",
+        "dev-build-vendor": "webpack --mode='production' --config webpack.config.vendor.js -o ../server/src/main/resources/static-files/vendor.bundle.js",
+        "dev-build-app": "webpack --mode='production' -o ../server/src/main/resources/static-files/bundle.js",
         "runtime-build-vendor": "webpack --config webpack.config.vendor.js -o ../server/target/classes/static-files/vendor.bundle.js",
         "runtime-build-app": "webpack -o ../server/target/classes/static-files/bundle.js",
         "test": "echo \"Error: no test specified\" && exit 1"
