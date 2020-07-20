@@ -1,3 +1,4 @@
+import {autocomplete} from "bootstrap-autocomplete";
 import {SuggestionViewer} from "./SuggestionViewer";
 
 
@@ -119,6 +120,8 @@ export class MetadataAutocompletion {
 
 
     reAddListener() {
+
+        let thisdata = this;
 
         function getUsedAsString(type) {
 

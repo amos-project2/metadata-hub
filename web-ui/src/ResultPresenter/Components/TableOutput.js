@@ -1,7 +1,3 @@
-import {datatables} from "datatables.net-bs4"
-import {Paginator} from "./Paginator";
-
-
 export class TableOutput {
 
 
