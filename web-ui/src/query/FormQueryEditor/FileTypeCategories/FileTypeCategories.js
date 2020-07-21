@@ -35,7 +35,7 @@ export class FileTypeCategories extends Page {
 
                 <br>
                 File Type Categories are used to group multiple file types in one category.</br>
-                The File Type Categories can get selected in the Query-Editor.
+                The File Type Categories can get selected in the Query-Editor, to limit the query to specific file types.
                 <br>
                 <br>
                 <!--     file-category-selector       -->
@@ -67,7 +67,8 @@ export class FileTypeCategories extends Page {
 
                      <div class="form-group">
                             File Category
-                            <a class="pover" title="File Type Categories" data-content="Enter a name for the creation or deletion of a File Category. When creating a File Category the File Types below are used.">[?]</a>
+                            <a class="pover" title="File Type Categories" data-content="Enter a name for creating, updating or deleting a File Category.</br>
+                             When creating or updating a File Category the File Types below are used.">[?]</a>
                         <input type="text" class="form-control" id="createCategoryForm" aria-describedby="createCategoryHelp" placeholder="File Category Name">
                         <small id="createCategoryHelp" class="form-text text-muted">Enter a File Category Name</small>
                      </div>
@@ -110,7 +111,7 @@ export class FileTypeCategories extends Page {
 
 
                     File Types
-                    <a class="pover" title="Filetypes" data-content="Here it is possible to select file types which can be added to a file category">[?]</a>
+                    <a class="pover" title="Filetypes" data-content="Here it is possible to select file types, which can be added to a file category">[?]</a>
 
 
                       <div class="fg-filetype-container2 form-row">
