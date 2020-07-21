@@ -33,9 +33,9 @@ public class MetadataInfo implements Comparable<MetadataInfo>
     {
         this.occurrence += other.getOccurrence();
 
-        //TODO test if we ever have this problem
+        //Never happened but maybe the ExifTool returns differing data types for a Tag, then the default data type is String
         if(this.valueDatatype != other.valueDatatype){
-            throw new RuntimeException("Ohhh there are actually differing DataTypes for the same metadata attributes of different files types :O");
+            this.valueDatatype = MetadatumValueDatatype.str;
         }
 
         return this;
