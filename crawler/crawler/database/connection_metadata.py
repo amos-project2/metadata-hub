@@ -4,7 +4,6 @@
 import json
 import logging
 import os
-from builtins import print
 from datetime import datetime
 from typing import List, Tuple, Dict
 
@@ -18,8 +17,6 @@ from .base import DatabaseConnectionBase
 
 from crawler.services.config import Config
 import crawler.communication as communication
-
-_logger = logging.getLogger(__name__)
 
 
 class DatabaseConnectionMetadata(DatabaseConnectionBase):
@@ -110,7 +107,7 @@ class DatabaseConnectionMetadata(DatabaseConnectionBase):
             self.con.commit()
         except Exception as e:
             print(e)
-            _logger.warning("Error increasing the values of the metadata table!")
+            logging.warning("Error increasing the values of the metadata table!")
             # TODO Make sure the main method knows a reevaluate method should be called
             curs.close()
             self.con.rollback()

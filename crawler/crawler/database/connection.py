@@ -4,7 +4,6 @@
 import json
 import logging
 import os
-from builtins import print
 from datetime import datetime
 from typing import List, Tuple, Dict
 
@@ -19,8 +18,6 @@ from .base import DatabaseConnectionBase
 from crawler.services.config import Config
 import crawler.communication as communication
 
-_logger = logging.getLogger(__name__)
-
 
 class DatabaseConnection(DatabaseConnectionBase):
 
@@ -34,8 +31,10 @@ class DatabaseConnection(DatabaseConnectionBase):
 
     @measure_time
     def insert_new_record_crawls(self, config: Config) -> int:
-        """Insert a new record to the 'crawls' table. Used at the start of a crawl task.
-           TODO: Add docstring
+        """Insert a new record to the 'crawls' table.
+
+        Used at the start of a crawl task.
+
         Args:
             config (Config): Config for the crawl task.
 
@@ -61,7 +60,7 @@ class DatabaseConnection(DatabaseConnectionBase):
         try:
             curs.execute(query)
         except:
-            _logger.warning('"Error updating database"')
+            logging.warning('"Error updating database"')
             curs.close()
             self.con.rollback()
             raise
@@ -82,6 +81,7 @@ class DatabaseConnection(DatabaseConnectionBase):
         Args:
             tree_walk_id (int): ID of the TreeWalk execution
             status (str): status to set
+
         """
         # Build query to update status
         crawls = Table('crawls')
@@ -95,7 +95,7 @@ class DatabaseConnection(DatabaseConnectionBase):
             curs = self.con.cursor()
             query = curs.mogrify(str(query), (datetime.now(), status, tree_walk_id))
         else:
-            _logger.warning('"Error updating database state, state not recognized"')
+            logging.warning('"Error updating database state, state not recognized"')
             return
         # Execute query
         try:
@@ -103,7 +103,7 @@ class DatabaseConnection(DatabaseConnectionBase):
             curs.close()
             self.con.commit()
         except:
-            _logger.warning('"Error updating database state"')
+            logging.warning('"Error updating database state"')
             curs.close()
             self.con.rollback()
 
@@ -146,7 +146,7 @@ class DatabaseConnection(DatabaseConnectionBase):
             self.con.commit()
         except Exception as e:
             print(e)
-            _logger.warning('"Error updating file deletion"')
+            logging.warning('"Error updating file deletion"')
             curs.close()
             self.con.rollback()
 
@@ -173,7 +173,7 @@ class DatabaseConnection(DatabaseConnectionBase):
             self.con.commit()
         except Exception as e:
             print(e)
-            _logger.warning('"Error updating file deletion"')
+            logging.warning('"Error updating file deletion"')
             curs.close()
             self.con.rollback()
 
@@ -241,11 +241,14 @@ class DatabaseConnection(DatabaseConnectionBase):
 
 
     def _update_metadata(self, increases: dict, decreases:dict) -> None:
-        """Given a dictionary with key (file type) and values ((tag name, increments)) update the database
-        accordingly
+        """Update the metadata table.
+
+        Given a dictionary with key (file type) and values
+        ((tag name, increments)) update the database accordingly.
+
         Args:
             additions (dict): key (file type) and values ((tag name, increments))
-        Return:
+
         """
         combined = self._combine_dict(increases,decreases)
         # Query to get the old values from the 'metadata' table (For each file type)
@@ -281,7 +284,7 @@ class DatabaseConnection(DatabaseConnectionBase):
             self.con.commit()
         except Exception as e:
             print(e)
-            _logger.warning("Error increasing the values of the metadata table!")
+            logging.warning("Error increasing the values of the metadata table!")
             # TODO Make sure the main method knows a reevaluate method should be called
             curs.close()
             self.con.rollback()
