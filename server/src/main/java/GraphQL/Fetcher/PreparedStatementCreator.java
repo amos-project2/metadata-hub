@@ -281,7 +281,7 @@ public class PreparedStatementCreator {
      * From Start to finish every f[x] gets substituted by a metadata filter
      */
     private static String buildMetadataFilterLogic(Map<String, Object> graphQLArguments, Map<Integer, String> metadata_filters){
-       StringBuilder metadatafilterBuilder = new StringBuilder(" ");
+       StringBuilder metadatafilterBuilder = new StringBuilder(" (");
        Map<Integer, String> unused_metadata_filters = new HashMap<>(metadata_filters);
 
        //Insert the metadata filters into the filter logic string to create a sql statement
@@ -320,10 +320,12 @@ public class PreparedStatementCreator {
 
        String logicOptions = GraphQLSchemaDefinition.FILTER_LOGIC_OPTION_AND;
        String logicalOperator = " AND ";
+       Boolean isOR = false;
         if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC_OPTIONS)){
             logicOptions = (String) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC_OPTIONS);
             if(logicOptions.equals(GraphQLSchemaDefinition.FILTER_LOGIC_OPTION_OR)){
                 logicalOperator = " OR ";
+                isOR = true;
             }
         }
 
@@ -334,6 +336,12 @@ public class PreparedStatementCreator {
             }
         }
 
-        return metadatafilterBuilder.toString();
+        if(isOR && metadata_filters.size() > 0){
+            metadatafilterBuilder.append(" FALSE ");
+        }else{
+            metadatafilterBuilder.append(" TRUE ");
+        }
+
+        return metadatafilterBuilder.append(") AND ").toString();
     }
 }
