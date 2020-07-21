@@ -74,12 +74,6 @@ please have a look at the schema defining the JSON configuration.
 This is required for accessing the API of the TreeWalk directly.
 
 
-
-### Examples
-
-This section will show example pictures of the web interface.
-It will be updated until 22nd July.
-
 ## Architecture
 
 The TreeWalk is split into four major components. The abbreviaton *TW* stands
