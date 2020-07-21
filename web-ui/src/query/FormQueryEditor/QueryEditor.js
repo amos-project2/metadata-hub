@@ -68,7 +68,7 @@ export class QueryEditor extends Page {
                 <br>
                 The Query Editor is used for creating queries, which return file metadata.</br>
                 Queries are saved in the Query-Store, so they can get executed at a later point in time, without filling in the information again.</br>
-                There are multiple filters that can be used to limit the returned file metadata.
+                In the query multiple filters can be used to limit the result set of the returned file metadata.
                 <br>
                 <br>
 
