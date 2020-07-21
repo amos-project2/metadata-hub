@@ -1,7 +1,6 @@
 import {Page} from "../../../Page";
 import {FileTypeCategoriesService} from "./FileTypeCategoriesService";
 import {MetadataAutocompletion} from "../autocompletion/MetadataAutocompletion";
-import {FiletypeFilter} from "../Components/FiletypeFilter";
 import {InputFieldMultiplier} from "../../../Utilities/InputFieldMultiplier";
 import {FileTypeCategoriesModal} from "./FileTypeCategoriesModal";
 
@@ -27,7 +26,6 @@ export class FileTypeCategories extends Page {
             ".null",
         );
 
-        //this.filetypeFilter = new FiletypeFilter(this.metadatAutocompletion);
     }
 
     content() {
@@ -37,7 +35,7 @@ export class FileTypeCategories extends Page {
 
                 <br>
                 File Type Categories are used to group multiple file types in one category.</br>
-                The File Type Categories can get selected in the Query-Editor.
+                The File Type Categories can get selected in the Query-Editor, to limit the query to specific file types.
                 <br>
                 <br>
                 <!--     file-category-selector       -->
@@ -69,7 +67,8 @@ export class FileTypeCategories extends Page {
 
                      <div class="form-group">
                             File Category
-                            <a class="pover" title="File Type Categories" data-content="Enter a name for the creation or deletion of a File Category. When creating a File Category the File Types below are used.">[?]</a>
+                            <a class="pover" title="File Type Categories" data-content="Enter a name for creating, updating or deleting a File Category.</br>
+                             When creating or updating a File Category the File Types below are used.">[?]</a>
                         <input type="text" class="form-control" id="createCategoryForm" aria-describedby="createCategoryHelp" placeholder="File Category Name">
                         <small id="createCategoryHelp" class="form-text text-muted">Enter a File Category Name</small>
                      </div>
@@ -112,7 +111,7 @@ export class FileTypeCategories extends Page {
 
 
                     File Types
-                    <a class="pover" title="Filetypes" data-content="Here it is possible to select file types which can be added to a file category">[?]</a>
+                    <a class="pover" title="Filetypes" data-content="Here it is possible to select file types, which can be added to a file category">[?]</a>
 
 
                       <div class="fg-filetype-container2 form-row">
@@ -138,8 +137,6 @@ export class FileTypeCategories extends Page {
     onMount() {
         let thisdata = this;
 
-        //this.filetypeFilter.onMount();
-
         this.metadatAutocompletion.addListener();
         this.inputMultiplierFiletypeFilter.listenerAdd();
 
@@ -147,8 +144,6 @@ export class FileTypeCategories extends Page {
         //Activate File Category Modal Pop-Up Window
         $("#file-category-button2").click(function () {
             thisdata.fileTypeCategoriesService.getAllFileCategories(function (fileCategoryMap) {
-
-                console.log(fileCategoryMap);
 
                 if (fileCategoryMap == undefined) {
                     return;
@@ -168,10 +163,6 @@ export class FileTypeCategories extends Page {
                     });
                     fileCategoryString = fileCategoryString.substr(0, fileCategoryString.length - 2);
 
-
-                    // $("#file-categories-modal2-body").append("<button type=\"button\" class=\"btn btn-primary\" id='button-"+ key + "' data-dismiss=\"modal\"><b>" + key + "</b></button>" +
-                    //     "<button type=\"button\" id=\"delete" + key + "\" class=\"btn btn-danger\" data-dismiss=\"modal\"> delete </button> <br/>");
-                    // $("#file-categories-modal2-body").append("<b>File Types:</b> " + "<br\>" + fileCategoryMap[key] + "<br/><br/>");
 
                     $("#file-categories-modal2-body").append(`
                         <div class="row mb-3 detail-view-element">
@@ -195,7 +186,6 @@ export class FileTypeCategories extends Page {
 
                     $("#delete-" + counter).click(function () {
                         thisdata.fileTypeCategoriesService.deleteCategory(key, function (success) {
-                            console.log(success);
                         });
                     });
                 });
@@ -209,13 +199,11 @@ export class FileTypeCategories extends Page {
             let fileTypes = [];
 
             thisdata.inputMultiplierFiletypeFilter.each(function (fileTypeField) {
-                console.log($(fileTypeField).val())
                 fileTypes.push($(fileTypeField).val());
             });
 
             //send ajax call
             thisdata.fileTypeCategoriesService.createCategory(category, fileTypes, function (success) {
-                console.log(success);
             });
 
             thisdata.modal.openModalWithText("The category was created successfully", true);
@@ -227,13 +215,11 @@ export class FileTypeCategories extends Page {
             let fileTypes = [];
 
             thisdata.inputMultiplierFiletypeFilter.each(function (fileTypeField) {
-                console.log($(fileTypeField).val())
                 fileTypes.push($(fileTypeField).val());
             });
 
             //send ajax call
             thisdata.fileTypeCategoriesService.updateCategory(category, fileTypes, function (success) {
-                console.log(success);
             });
             thisdata.modal.openModalWithText("The category was updated successfully", true);
         });
@@ -243,7 +229,6 @@ export class FileTypeCategories extends Page {
             let category = $("#createCategoryForm").val();
             //send ajax call
             thisdata.fileTypeCategoriesService.deleteCategory(category, function (success) {
-                console.log(success);
             });
             thisdata.modal.openModalWithText("The category was deleted successfully", true);
 
@@ -256,10 +241,6 @@ export class FileTypeCategories extends Page {
     }
 
 
-    onLoad() {
-        //this method is called on each load of the page-section here
-    }
-
 
     inputMultiplierFiletypeFilterBuilder() {
 
@@ -270,12 +251,10 @@ export class FileTypeCategories extends Page {
         let appendingHtmlCode = `<div class="form-group col-md-4 fg-filetype-element2"><input type="text" class="form-control filetype-element-input2"></div>`;
 
         let focusOutFunction = function () {
-            // thisdata.fileTypeCategoriesService.updateLists();
             thisdata.metadatAutocompletion.updateLists();
         }
 
         let focusInIfEmptyFieldFunction = function () {
-            //thisdata.fileTypeCategoriesService.reAddListener();
             thisdata.metadatAutocompletion.reAddListener();
         };
 

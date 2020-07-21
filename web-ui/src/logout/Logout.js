@@ -44,18 +44,5 @@ export class Logout extends Page {
         });
     }
 
-    onUnMount() {
-
-
-    }
-
-
-    onLoad() {
-
-    }
-
-    onUnLoad() {
-
-    }
 
 }

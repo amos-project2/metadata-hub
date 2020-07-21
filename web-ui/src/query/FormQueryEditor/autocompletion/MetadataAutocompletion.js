@@ -1,10 +1,6 @@
 import {autocomplete} from "bootstrap-autocomplete";
-
-import {ClearCacheModal} from "./Modals/ClearCacheModal";
-import {SuggestionViewerModal} from "./Modals/SuggestionViewerModal";
 import {SuggestionViewer} from "./SuggestionViewer";
 
-//var autocompleter = require('bootstrap-autocomplete');
 
 /**
  * Its a high cohesive class to FormQueryEditor.
@@ -47,7 +43,6 @@ export class MetadataAutocompletion {
     //public
     addListener() {
 
-        let thisdata = this;
         this.suggestionViewer.addListener();
         this.reAddListener();
     }
@@ -68,8 +63,6 @@ export class MetadataAutocompletion {
             return resultString + "$XXX$";
         }
 
-        let query = getFileString();
-        let autocompletionClass = this;
 
         this.restApiFetcherServer.fetchGet("metadata-autocomplete/datatype/?q=" + encodeURIComponent(getFileString()), function (event) {
             datatype = event.data.toString();
@@ -80,8 +73,6 @@ export class MetadataAutocompletion {
 
     // get all the file categories and their corresponding file types from the server
     getAllFileCategories(callback) {
-
-        let autocompletionClass = this;
 
         this.restApiFetcherServer.fetchGet("categoryService/", function (event) {
             let fileCategories = event.data;
@@ -154,7 +145,6 @@ export class MetadataAutocompletion {
                 minLength: 0,
                 resolverSettings: {
                     url: thisdata.restApiFetcherServer.urlBuilder('metadata-autocomplete/' + method),
-                    //url: 'http://localhost:8080/api/metadata-autocomplete/' + method,
                     requestThrottling: 100
                 },
                 events: {

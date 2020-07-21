@@ -30,7 +30,6 @@ public class CrawlerAPIProxyController
     {
         this.config = config;
         Client client = ClientBuilder.newClient();
-        //target = client.target("http://localhost:" + config.getProperty("crawler-port"));
         target = client.target("http://"+config.getProperty("crawler-service-name")+":" + config.getProperty("crawler-port"));
     }
 
@@ -63,23 +62,13 @@ public class CrawlerAPIProxyController
             if(parameters.getFirst(value) !=null)
             {
                 webTarget=webTarget.queryParam(value, URLEncoder.encode(parameters.getFirst(value), "UTF-8").replaceAll("\\+", "%20"));
-                System.out.println("value -> " + value + " | key -> " + parameters.getFirst(value));
             }
 
 
         }
 
+
         //TODO fix it! webtarget is inmutaable
-        //for debuggingwas
-        if(form != null)
-        {
-            form.forEach((key, values) ->
-            {
-                System.out.println(values + "POST " + key);
-            });
-        }
-
-
         Response response;
         if (form == null)
         {

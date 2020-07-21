@@ -150,20 +150,25 @@ export class ResultPresenter {
 
     }
 
-    generateResultAndInjectIntoDom(query) {
-        // //this.pSelector = $("#" + this.id);//it seems i have to reattach also the beginning of the selector, otherwise it wouldnt work
-        // let thisdata = this;
-        // this.graphQlFetcher.fetchAdvanced(query, function (sucess, json, jsonString) {
-        //     thisdata.jsonOutput.updateText(jsonString);
-        //     //TODO to more
-        // });
+    showTabs() {
+        let messageContainer = this.pSelector.find(".message-container");
+        let loadContainer = this.pSelector.find(".load-icon-container");
+        let mainTabContent = this.pSelector.find(".main-tab-content");
+
+        mainTabContent.stop(true).show(1000);
+        messageContainer.stop(true).hide(1000);
+        loadContainer.stop(true).hide(1000);
     }
+
 
     waitForLoad() {
         this.pSelector.find(".load-icon-container").show(1000);
     }
 
 
+    /**
+     * This method is called by the client each time he want to get a fresh visualiziation of a fresh query
+     */
     //public
     updateState(formGraphQL) {
         let thisdata = this;
@@ -179,108 +184,16 @@ export class ResultPresenter {
 
 
         $('html, body').stop(true).animate({
-            // scrollTop: $("#myTab"+this.id).offset().top
             scrollTop: '+=150px'
         }, 1000);
 
-        // this.tableOutput.reinitialize(formGraphQL);
         this.sendToServerAndAdjust(formGraphQL);
     }
 
-    // error(err) {
-    //     this.tableOutput.showError(err);
-    // }
 
-    //private
-    updateInternalState(formGraphQL, json) {
-
-        let totalFiles = json.data.searchForFileMetadata.numberOfTotalFiles;
-        let currentFiles = json.data.searchForFileMetadata.numberOfReturnedFiles;
-
-        if (this.cleared || this.lastTotalFiles !== totalFiles) {
-            this.reinitialize(formGraphQL, json);
-        }
-
-
-        this.controllUnits.updateState(formGraphQL, json)
-        this.jsonOutput.updateText(JSON.stringify(json, undefined, 2));
-        this.tableOutput.updateState(formGraphQL, json);
-        this.exportOutput.updateState(formGraphQL, json);
-
-        this.showTabs();
-
-    }
-
-    //private
-    updateError(error) {
-        this.cleanUp();
-
-        let messageContainer = this.pSelector.find(".message-container");
-
-        messageContainer.html(`
-        <div class="text-danger">
-            <b>Error: ${error.message}</b><br><br>
-            <b>Info:</b>
-            <pre style="color: orangered">${error.info}</pre>
-        </div>
-        <br><br>
-        `);
-
-        messageContainer.stop(true).show(1000);
-        $('html, body').stop(true).animate({
-            scrollTop: $("#myTab" + this.id).offset().top
-        }, 2000);
-
-    }
-
-    showTabs() {
-        let messageContainer = this.pSelector.find(".message-container");
-        let loadContainer = this.pSelector.find(".load-icon-container");
-        let mainTabContent = this.pSelector.find(".main-tab-content");
-
-        mainTabContent.stop(true).show(1000);
-        messageContainer.stop(true).hide(1000);
-        loadContainer.stop(true).hide(1000);
-    }
-
-    cleanUp() {
-
-        this.cleared = true;
-
-        let messageContainer = this.pSelector.find(".message-container");
-        let loadContainer = this.pSelector.find(".load-icon-container");
-        let mainTabContent = this.pSelector.find(".main-tab-content");
-
-        mainTabContent.stop(true).hide(1000);
-        messageContainer.stop(true).hide(1000);
-        loadContainer.stop(true).hide(1000);
-
-    }
-
-
-    reinitialize(formGraphQL, json) {
-        let totalFiles = json.data.searchForFileMetadata.numberOfTotalFiles;
-        let currentFiles = json.data.searchForFileMetadata.numberOfReturnedFiles;
-
-        this.cleared = false;
-        this.lastTotalFiles = totalFiles;
-
-        this.controllUnits.reinitialize(formGraphQL, json);
-        this.tableOutput.reinitialize();
-        this.exportOutput.reinitialize(formGraphQL);
-
-        if (totalFiles < 3) {
-            this.controllUnits.hidePaginatorAndSelectBox()
-        }
-
-        let thisdata = this;
-        $('html, body').stop(true).animate({
-            scrollTop: $("#myTab" + this.id).offset().top
-        }, 2000);
-
-
-    }
-
+    /**
+     * This method fetch the data from the server and calls the right method if there is an error or if it is succesfull.
+     */
     //private
     sendToServerAndAdjust(formGraphQL) {
         let thisdata = this;
@@ -307,6 +220,94 @@ export class ResultPresenter {
 
 
         });
+
+    }
+
+    /**
+     * This method is internally called, after the server-response has no error and is there.
+     */
+    //private
+    updateInternalState(formGraphQL, json) {
+
+        let totalFiles = json.data.searchForFileMetadata.numberOfTotalFiles;
+        let currentFiles = json.data.searchForFileMetadata.numberOfReturnedFiles;
+
+        if (this.cleared || this.lastTotalFiles !== totalFiles) {
+            this.reinitialize(formGraphQL, json);
+        }
+
+
+        this.controllUnits.updateState(formGraphQL, json)
+        this.jsonOutput.updateText(JSON.stringify(json, undefined, 2));
+        this.tableOutput.updateState(formGraphQL, json);
+        this.exportOutput.updateState(formGraphQL, json);
+
+        this.showTabs();
+
+    }
+
+
+    /**
+     * This method is called after server-success and if it is a fresh-request
+     */
+    //private
+    reinitialize(formGraphQL, json) {
+        let totalFiles = json.data.searchForFileMetadata.numberOfTotalFiles;
+        let currentFiles = json.data.searchForFileMetadata.numberOfReturnedFiles;
+
+        this.cleared = false;
+        this.lastTotalFiles = totalFiles;
+
+        this.controllUnits.reinitialize(formGraphQL, json);
+        this.tableOutput.reinitialize();
+        this.exportOutput.reinitialize(formGraphQL);
+
+        if (totalFiles < 3) {
+            this.controllUnits.hidePaginatorAndSelectBox()
+        }
+
+        let thisdata = this;
+        $('html, body').stop(true).animate({
+            scrollTop: $("#myTab" + this.id).offset().top
+        }, 2000);
+
+
+    }
+
+
+    cleanUp() {
+
+        this.cleared = true;
+
+        let messageContainer = this.pSelector.find(".message-container");
+        let loadContainer = this.pSelector.find(".load-icon-container");
+        let mainTabContent = this.pSelector.find(".main-tab-content");
+
+        mainTabContent.stop(true).hide(1000);
+        messageContainer.stop(true).hide(1000);
+        loadContainer.stop(true).hide(1000);
+
+    }
+
+    //private
+    updateError(error) {
+        this.cleanUp();
+
+        let messageContainer = this.pSelector.find(".message-container");
+
+        messageContainer.html(`
+        <div class="text-danger">
+            <b>Error: ${error.message}</b><br><br>
+            <b>Info:</b>
+            <pre style="color: orangered">${error.info}</pre>
+        </div>
+        <br><br>
+        `);
+
+        messageContainer.stop(true).show(1000);
+        $('html, body').stop(true).animate({
+            scrollTop: $("#myTab" + this.id).offset().top
+        }, 2000);
 
     }
 

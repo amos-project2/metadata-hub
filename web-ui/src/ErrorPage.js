@@ -12,21 +12,4 @@ export class ErrorPage extends Page {
 
     }
 
-    onMount() {
-
-    }
-
-    onUnMount() {
-
-    }
-
-
-    onLoad() {
-
-    }
-
-    onUnLoad() {
-
-    }
-
 }

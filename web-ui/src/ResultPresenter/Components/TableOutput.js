@@ -1,7 +1,3 @@
-import {datatables} from "datatables.net-bs4"
-import {Paginator} from "./Paginator";
-
-
 export class TableOutput {
 
 
@@ -19,26 +15,16 @@ export class TableOutput {
             </div>`;
     }
 
-    cleanUp() {
-        this.pSelector.find('.myTableContainer').html("");
-        this.cleared = true;
-    }
-
-
-    showError(error) {
-        this.pSelector.find('.myTableContainer').html(`
-            `);
-    }
-
-    showNoResult() {
-
-    }
-
-
     onMount(pSelector) {
         this.pSelector = pSelector;
+    }
 
-        //this.pSelector.find('.exampleXX').DataTable();
+
+
+
+    reinitialize(formGraphQL, initJson) {
+        this.clearHtml();
+
     }
 
 
@@ -50,17 +36,19 @@ export class TableOutput {
         );
     }
 
-    reinitialize(formGraphQL, initJson) {
-        this.clearHtml();
-
+    cleanUp() {
+        this.pSelector.find('.myTableContainer').html("");
+        this.cleared = true;
     }
 
+    /**
+     * called by updateInternalState from Resultpresenter
+     */
     updateState(formGraphQL, json) {
 
         let totalFiles = json.data.searchForFileMetadata.numberOfTotalFiles;
         let currentFiles = json.data.searchForFileMetadata.numberOfReturnedFiles;
 
-        // if (this.cleared || this.lastTotalFiles !== totalFiles) this.reinitialize(formGraphQL, json);
 
 
         let data = [];
@@ -68,10 +56,6 @@ export class TableOutput {
         let structureReverseMap = [];
         let firstSeenCount = 0;
 
-        // console.log(json.data.searchForFileMetadata.files[0]);
-        // console.log(json.data.searchForFileMetadata.files[0].metadata[0]);
-        // alert(json.data.searchForFileMetadata.files[0].metadata[0]);
-        //alert(json.data.searchForFileMetadata.files[0].metadata[0].name);
 
         let files = json.data.searchForFileMetadata.files;
         if (!files) {
@@ -108,21 +92,11 @@ export class TableOutput {
             data.push(tmp);
         });
 
-        // let offsetLimit = formGraphQL.getOffset() + currentFiles;
-        // let offsetFiles = formGraphQL.getOffset() + 1;
-        // if(currentFiles===0) offsetFiles = 0;
-        // this.pSelector.find('.myEntryCount').html(`<b>${offsetFiles} - ${offsetLimit} [${currentFiles}] from ${totalFiles}</b> | Metadatacolumns: ${Object.keys(structure).length - 2}`);
-
         this.controllunits.updateEntryCounter(formGraphQL, json, (Object.keys(structure).length - 2));
 
         for (var index in structure) {
             structureReverseMap[structure[index]] = index;
         }
-
-        // structure.forEach(value => {
-        //     console.log(value);
-        //     structureReverseMap[value] = index;
-        // })
 
 
         let headerAndFooter = "";

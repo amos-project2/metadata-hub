@@ -46,8 +46,6 @@ export class SuggestionViewer {
     retrieveMetadataSuggestions(limit, offset, callback) {
 
         this.restApiFetcherServer.fetchGet(`metadata-autocomplete/modal-suggestions/?limit=${limit}&offset=${offset}&fileTypes=` + encodeURIComponent(this.metadataAutocompletion.getFileString()), function (event) {
-            console.log("retrievMetadataSuggestions!");
-            console.log(event.data);
             callback(event.data);
         });
 

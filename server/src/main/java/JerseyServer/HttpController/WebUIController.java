@@ -69,7 +69,6 @@ public class WebUIController
         content = content.replaceAll("%serverApi%", "api");
         content = content.replaceAll("%crawlerApi%", "crawlerapi/");
 
-        System.out.println(config.getProperty("webui-queryConstructorEnabled"));
 
 
         content = content.replaceAll("%queryConstructorEnabled%", config.getProperty("webui-queryConstructorEnabled"));
@@ -109,10 +108,8 @@ public class WebUIController
     @Path("/logo.png")
     public StreamingOutput getLogo()
     {
-        System.out.println("hier drinnen");
         InputStream inputStream = this.loadFromClassContext("web-ui/logo.png");
 
-        System.out.println(inputStream);
 
         return new StreamingOutput()
         {
@@ -125,10 +122,6 @@ public class WebUIController
             }
         };
 
-//        Response.ResponseBuilder response = Response.ok(inputStream);
-//        response.header("Content-Disposition",
-//            "attachment; filename=logo.png");
-//        return response.build();
     }
 
 

@@ -77,6 +77,9 @@ export class ExportOutput {
         this.pSelector.find(".init-area").show(1000);
     }
 
+    /**
+     * called by updateInternalState from Resultpresenter
+     */
     updateState(formGraphQL, json) {
         this.pSelector.find(".start-area").hide(1000);
         this.pSelector.find(".init-area").show(1000);
@@ -104,9 +107,7 @@ export class ExportOutput {
             if (paginationNo) paginationNo = true; else paginationNo = false;
             if (queryInclude) queryInclude = true; else queryInclude = false;
 
-            // alert(metaAll + paginationNo + queryInclude);
 
-            // let formGraphQL = [...this.lastformGraphQL]; //shallow-copy , its not nested, so its ok
             let formGraphQL = Object.assign(new FormGraphQl(), this.lastformGraphQL); //shallow-copy , its not nested, so its ok
 
             if (metaAll) {
@@ -126,14 +127,6 @@ export class ExportOutput {
             this.pSelector.find(".start-area").show(1000);
             this.pSelector.find(".init-area").hide(1000);
 
-            // let body = "blub";
-            //
-            // var downloading = browser.downloads.download({
-            //     url : "http://localhost:8080/api/export/download",
-            //     filename : 'query-editor-output.json',
-            //     method: "POST",
-            //     body: body
-            // });
 
         });
 

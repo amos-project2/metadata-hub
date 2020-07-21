@@ -15,7 +15,7 @@ export class FiletypeFilter {
 
                  <div class="form-row justify-content-md-center">
                   <button type="button" id="file-category-button" class="btn btn-primary mr-3" data-toggle="modal" data-target="#file-categories-modal">
-                        Select File Category
+                        Select File Type Category
                   </button>
                    <button type="button" id="delete-types-button" class="btn btn-danger" ">
                         Clear selected File Types
@@ -28,7 +28,7 @@ export class FiletypeFilter {
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="file-categories-label">
-                                    File Categories
+                                    File Type Categories
                                 </h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
@@ -46,7 +46,7 @@ export class FiletypeFilter {
 
                 <!--     file-types                  -->
                 <div class="form-row">
-                    <div class="col-md-12">Filetype Filters: <a class="pover" title="Filetype Filters" data-content="If unused all file types get returned!</br> If this filter is used, only files which are of one of the specified file types get returned.</br>
+                    <div class="col-md-12">File Type Filters: <a class="pover" title="File Type Filters" data-content="If no file type filter is selected no file types get filtered out!</br> If this filter is used, only files, which are of one of the specified file types, get returned.</br>
                         The file type filter is used aswell for giving better Metadata-Attribute recommendations.">[?]</a></div>
                 </div>
 
@@ -85,29 +85,24 @@ export class FiletypeFilter {
         $("#file-category-button").click(function () {
             thisdata.metadatAutocompletion.getAllFileCategories(function (fileCategoryMap) {
 
-                console.log(fileCategoryMap);
 
                 if (fileCategoryMap == undefined) {
                     return;
                 }
 
-                $("#file-categories-modal-body").html("Click on a file category to choose multiple file types for the Filetype Filter. The contained File Types of a Category are enumerated below them.<br/><br/>")
+                $("#file-categories-modal-body").html("Select a File Type Category to apply all the included file types to the File Type filter.<br/>" +
+                    "<br>If no file type filter is selected, all file types are considered in the query.<br/>" +
+                    "<br>")
 
                 let counter = -1;
                 Object.keys(fileCategoryMap).forEach(key => {
                     counter++;
 
                     let fileCategoryString = "";
-                    fileCategoryMap[key].forEach(value =>{
+                    fileCategoryMap[key].forEach(value => {
                         fileCategoryString += value + ", ";
                     });
-                    fileCategoryString=fileCategoryString.substr(0, fileCategoryString.length - 2);
-
-                    console.log(fileCategoryMap[key]);
-                    console.log(key);
-                    //.split(",").join(", ")
-                    // $("#file-categories-modal-body").append("<button type=\"button\" class=\"btn btn-primary\" id='fbutton-" + key + "' data-dismiss=\"modal\"> File Category: " + key + "</button> <br/>");
-                    // $("#file-categories-modal-body").append("File Types: " + "<br\>" + fileCategoryMap[key] + "<br/><br/>");
+                    fileCategoryString = fileCategoryString.substr(0, fileCategoryString.length - 2);
                     $("#file-categories-modal-body").append(`
                         <div class="row mb-3 detail-view-element">
                             <div class="col font-weight-bold">${key}</div>

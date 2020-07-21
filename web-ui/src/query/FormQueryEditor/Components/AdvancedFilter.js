@@ -220,7 +220,6 @@ export class AdvancedFilter {
 
                 thisdata.metadatAutocompletion.getDataType($(elem).val(), function (datatype) {
 
-                    console.log("datatype is " + datatype)
 
                     if (datatype == "str") {
                         $(elem).parent().find(".fg-metadata-value").prop('placeholder', "Value [Text]");

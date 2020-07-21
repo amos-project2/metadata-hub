@@ -34,9 +34,6 @@ public class ExportController
     @Path("/download")
     public Response graphQLEndpointJsonInput(@FormParam("query") String query, @FormParam("query-included") String includeQuery) throws IOException
     {
-//        System.out.println(query +"query");
-//        System.out.println(includeQuery + " includeQuery");
-
         Map<String, Object> resultMap = this.graphQLController.graphQlExecutor(query, "");
 
         if (includeQuery.toLowerCase().trim().equals("true")) {
@@ -51,10 +48,7 @@ public class ExportController
         response.header("Content-Disposition","attachment; filename=\"MetadataExport.json\"");
         return response.build();
 
-
     }
-
-
 
 
 }

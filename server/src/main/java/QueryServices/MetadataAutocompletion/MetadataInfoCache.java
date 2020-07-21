@@ -6,6 +6,8 @@ import Database.Model.MetadatumValueDatatype;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Setter
 public class MetadataInfoCache
 {
+    private static final Logger log = LoggerFactory.getLogger(MetadataInfoCache.class);
     private Map<String, MetadataInfo> tagsSorted = new LinkedHashMap<>();
 
     public MetadataInfoCache(String fileType, Database database)
@@ -41,7 +44,7 @@ public class MetadataInfoCache
         }
         catch (Throwable throwable)
         {
-            throwable.printStackTrace();
+            log.error("metadata info cache error", throwable);
             throw new RuntimeException(throwable);
         }
     }

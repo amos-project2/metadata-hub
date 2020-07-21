@@ -20,7 +20,5 @@ public class DependenciesContainer
             new DatabaseModule(),
             new GraphQLModule(),
             new HttpServerModule());
-//        DatabaseModule instance = injector.getInstance(DatabaseModule.class);
-//        GraphQL instance2 = injector.getInstance(GraphQL.class);
     }
 }

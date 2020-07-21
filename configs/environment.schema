@@ -74,7 +74,17 @@
         "server-port": {
             "$ref": "#/definitions/port"
         },
-
+        "server-logging-level": {
+            "description": "Logging level of the server",
+            "type": "string",
+            "enum": [
+                "DEBUG",
+                "INFO",
+                "WARN",
+                "ERROR",
+                "TRACE"
+            ]
+        },
         "webui-queryConstructorEnabled": {
            "description": "activate/deactivate the Query-Constructor in the webui",
            "type": "boolean"

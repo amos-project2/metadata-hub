@@ -1,5 +1,4 @@
 import {Page} from "./Page";
-import {Testname} from "./status/Testname";
 import {GraphiqlConsole} from "./graphiql/Graphiql-console";
 import {QueryEditor} from "./query/FormQueryEditor/QueryEditor";
 import {GraphqlQueryEditor} from "./query/GraphqlQueryEditor";

@@ -57,7 +57,6 @@ export class GraphQlIntrospectionModel {
 
     //public
     openModalWithContent(content) {
-        console.log(this.getContentSelector().html());
         this.getContentSelector().text(content);
         this.openModal();
     }

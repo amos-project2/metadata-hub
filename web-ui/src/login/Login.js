@@ -77,7 +77,6 @@ export class Login {
             $("#your-name").trigger('propertychange');
         }
 
-
     }
 
 
@@ -123,7 +122,6 @@ export class Login {
 
                     $(".login-action-button").slideDown(2000);
                 }
-                //$(".login-action-button").removeClass("hide_active");
 
             } else {
 
@@ -135,7 +133,6 @@ export class Login {
                     $(".login-action-button").slideUp(1000);
                 }
 
-                //$(".login-action-button").addClass("hide_active");
             }
 
         });
@@ -153,7 +150,6 @@ export class Login {
         let template = new Template(this.dependencies, usedScope);
         this.unLoadPage();
         template.injectinDomeAndRegisterListener(this.mountpoint);
-        //this.template.goToPage(this.utilities.getUrlParam("p", "form-query"));
         template.goToPage(this.utilities.getUrlParam("p", defaultStartPage));
     }
 

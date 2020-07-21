@@ -2,11 +2,9 @@ package JerseyServer.HttpController;
 
 import Database.DatabaseException;
 import QueryServices.StoreService.QueryEditorStorageService;
-import QueryServices.StoreService.StoredQuery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,8 +61,6 @@ public class QueryEditorStorageController
 
         String author = (String) map.get("author");
         String title = (String) map.get("title");
-//        String data = map.get("data");
-        System.out.println(map.get("data"));
 
         ObjectMapper mapper2 = new ObjectMapper();
         String data = mapper2.writeValueAsString(map.get("data"));

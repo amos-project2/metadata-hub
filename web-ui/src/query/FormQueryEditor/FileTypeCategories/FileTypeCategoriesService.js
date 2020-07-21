@@ -1,9 +1,7 @@
 export class FileTypeCategoriesService {
 
     constructor(restApiFetcherServer) {
-
         this.restApiFetcherServer = restApiFetcherServer;
-
         this.fileTypes = [];
     }
 
@@ -30,11 +28,8 @@ export class FileTypeCategoriesService {
             fileTypesList.forEach(element => {
                 resultString += element + "$x$";
             });
-            console.log(resultString);
             return resultString;
         }
-
-        console.log("!! " + getFileString() + " ? " + category);
 
         this.restApiFetcherServer.fetchPost("categoryService/admin/" + category + "/?file_types=" + encodeURIComponent(getFileString()), null, function (event) {
             let success = event.data;
@@ -53,11 +48,9 @@ export class FileTypeCategoriesService {
             fileTypesList.forEach(element => {
                 resultString += element + "$x$";
             });
-            console.log(resultString);
             return resultString;
         }
 
-        console.log("!! " + getFileString() + " ? " + category);
 
         this.restApiFetcherServer.fetchPost("categoryService/admin/" + category + "/update/?file_types=" + encodeURIComponent(getFileString()), null, function (event) {
             let success = event.data;
@@ -68,7 +61,6 @@ export class FileTypeCategoriesService {
         let thisdata = this;
         this.restApiFetcherServer.restDelete("categoryService/admin/" + category, function (event) {
             let success = event.data;
-            console.log("deleteCategory: " + success);
             callback(success);
         });
 

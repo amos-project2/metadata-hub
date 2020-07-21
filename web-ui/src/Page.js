@@ -1,7 +1,7 @@
 export class Page {
     constructor(parent, identifier, mountpoint = ".our-content", titleSelector = ".our-title") {
         this.parent = parent;
-        this.config=parent.dependencies.config;
+        this.config = parent.dependencies.config;
         this.identifier = identifier;
         this.moutpoint = mountpoint;
         this.atLeastOnceMounted = false;
@@ -29,6 +29,7 @@ export class Page {
         this.identifier = identifier;
     }
 
+    //this method is called at the time (and only one time) the whole webapplication is started
     //to-ovveride
     onRegister() {}
 
@@ -123,9 +124,11 @@ export class Page {
     }
 
 
+    //this method is called on each load of the page-section
     //to-ovveride
     onLoad() {};
 
+    //this method is called on first load of the page-section
     //to-ovveride
     onFirstLoad() {}
 
@@ -136,6 +139,7 @@ export class Page {
         this.onUnLoad();
     }
 
+    //this method is called on each unload of the page-section
     //to-ovveride
     onUnLoad() {}
 
