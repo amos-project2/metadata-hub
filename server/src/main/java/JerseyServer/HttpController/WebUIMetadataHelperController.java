@@ -17,10 +17,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Used by the WebUI to give suggestions and validate entries in the FormQuery based on the metadata in the database.
@@ -115,7 +113,8 @@ public class WebUIMetadataHelperController
     @GET
     @Produces("application/json")
     @Path("/filetype-suggestions")
-    public String getFileTypeSuggestions(@QueryParam("q") String query) throws JsonProcessingException, SQLException, DatabaseException {
+    public String getFileTypeSuggestions(@QueryParam("q") String query) throws JsonProcessingException, SQLException, DatabaseException
+    {
         log.info("File Type Suggestions Query :" + query);
 
         String[] split = query.split("\\$XXX\\$");
@@ -129,7 +128,6 @@ public class WebUIMetadataHelperController
         return jsonFileTypeSuggestions;
 
     }
-
 
 
     //TODO maybe move to a own controller, because its not anymore still autocompletion related
@@ -154,7 +152,8 @@ public class WebUIMetadataHelperController
     {
         String x = "x";
         if (bigX) x = "X";
-        return (data.equals("")) ? new ArrayList<>() : new LinkedList<>(Arrays.asList(data.split("\\$" + x + "\\$")));
+        List<String> ret = (data.equals("")) ? new ArrayList<String>() : new LinkedList<>(Arrays.asList(data.split("\\$" + x + "\\$")));
+        return ret.stream().map(s -> s.trim()).collect(Collectors.toList());
     }
 
 
