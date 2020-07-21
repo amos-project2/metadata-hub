@@ -30,8 +30,6 @@
     "dependencies": {
         "bootstrap": "^4.5.0",
         "bootstrap-autocomplete": "^2.3.5",
-        "bootstrap-datetimepicker-npm": "^4.17.37-npm",
-        "bootswatch": "^4.5.0",
         "darkreader": "^4.9.10",
         "graphiql": "^0.17.5",
         "graphql": "^14.0.0",
