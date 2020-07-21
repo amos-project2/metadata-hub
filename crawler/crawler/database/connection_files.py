@@ -4,7 +4,6 @@
 import json
 import logging
 import os
-from builtins import print
 from datetime import datetime
 from typing import List, Tuple, Dict
 
@@ -18,8 +17,6 @@ from .base import DatabaseConnectionBase
 
 from crawler.services.config import Config
 import crawler.communication as communication
-
-_logger = logging.getLogger(__name__)
 
 
 class DatabaseConnectionFiles(DatabaseConnectionBase):
@@ -50,7 +47,7 @@ class DatabaseConnectionFiles(DatabaseConnectionBase):
         try:
             curs.execute(query[:-1])
         except:
-            _logger.warning('"Error inserting data into database"')
+            logging.warning('"Error inserting data into database"')
             curs.close()
             self.con.rollback()
             raise
@@ -61,13 +58,17 @@ class DatabaseConnectionFiles(DatabaseConnectionBase):
 
     @measure_time
     def check_directory(self, path: str, current_hashes: List[str]) -> List[int]:
-        """checks the database for a given directory. Returns all the most recent ids.
+        """checks the database for a given directory.
+
+        Returns all the most recent ids.
 
         Args:
             path (str): directory path to be checked
             current_hashes (List[str]): list of all hashes from current files
+
         Returns:
             List(int): file ids that are supposed to be deleted
+
         """
         files = Table('files')
         query = Query.from_(files) \
@@ -117,7 +118,7 @@ class DatabaseConnectionFiles(DatabaseConnectionBase):
             self.con.commit()
         except Exception as e:
             print(e)
-            _logger.warning('"Error updating file deletion"')
+            logging.warning('"Error updating file deletion"')
             curs.close()
             self.con.rollback()
 
@@ -143,7 +144,7 @@ class DatabaseConnectionFiles(DatabaseConnectionBase):
             curs.close()
             self.con.commit()
         except Exception as e:
-            _logger.warning(f'Failed deleting files: {str(e)}')
+            logging.warning(f'Failed deleting files: {str(e)}')
             curs.close()
             self.con.rollback()
             return None
