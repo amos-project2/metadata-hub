@@ -102,10 +102,6 @@ class Worker(multiprocessing.Process):
         self._lock = lock
         self._counter = counter
         self._measure_time = measure_time
-        self._db_connection = database.DatabaseConnection(
-            db_info=connection_data,
-            measure_time=self._measure_time
-        )
         self._exiftool = self._config.get_exiftool_executable()
         self._finished = finished
         self._num_workers = num_workers
@@ -317,7 +313,6 @@ class Worker(multiprocessing.Process):
     def _clean_up(self) -> None:
         """Clean up method for cleaning up all used resources."""
         self.message('cleaning up before exiting.')
-        self._db_connection.close()
         self._db_connection_files.close()
         self._db_connection_metadata.close()
         response = communication.Response(
@@ -325,7 +320,7 @@ class Worker(multiprocessing.Process):
             message=(
                 self._exiftool_time,
                 self._hashing_time,
-                self._db_connection.get_time()
+                self._db_connection_files.get_time() + self._db_connection_metadata.get_time()
             ),
             command=communication.WORKER_FINISH
         )

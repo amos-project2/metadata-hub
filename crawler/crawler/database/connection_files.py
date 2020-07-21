@@ -100,7 +100,7 @@ class DatabaseConnectionFiles(DatabaseConnectionBase):
 
         Args:
             file_ids (List[int): List of file ids to be deleted
-        Returns:
+
         """
         if len(file_ids) < 1:
             return

@@ -31,6 +31,7 @@ class DatabaseConnection(DatabaseConnectionBase):
             measure_time=measure_time
         )
 
+
     @measure_time
     def insert_new_record_crawls(self, config: Config) -> int:
         """Insert a new record to the 'crawls' table. Used at the start of a crawl task.
@@ -108,12 +109,54 @@ class DatabaseConnection(DatabaseConnectionBase):
 
 
     @measure_time
-    def set_deleted(self, file_ids: List[int]) -> None:
+    def delete_lost(self, crawlId: int, roots: List) -> None:
+        """Delete directories that have been removed since the last crawl.
+
+        Scans the directories at the end of a scan,
+        to find directories that were deleted since the last crawl.
+
+        Args:
+            crawlId (int): id of the current crawl
+            roots (List): list with every path/recursive pair
+
+        """
+        # Request a list of every directory skipped during the deletion process
+        files = Table('files')
+        query = Query.from_(files) \
+            .select(files.id) \
+            .select(files.metadata) \
+            .where(files.crawl_id != crawlId) \
+            .where(files.deleted == False)
+        curs = self.con.cursor()
+        statements = []
+        for root in roots:
+            if root['recursive']:
+                statements.append(curs.mogrify('"dir_path" LIKE %s', (f'{root["path"]}%',)).decode('utf8'))
+            else:
+                statements.append(curs.mogrify('"dir_path" = %s', (f'{root["path"]}',)).decode('utf8'))
+        query = str(query) + ' AND (' + ' OR '.join(statements) + ')'
+        try:
+            curs.execute(query)
+            entries = curs.fetchall()
+            self._set_deleted([x[0] for x in entries])
+            if len(entries) > 0:
+                decrease = self._create_metadata_decrease([x[1] for x in entries])
+                self._update_metadata({}, decrease)
+            curs.close()
+            self.con.commit()
+        except Exception as e:
+            print(e)
+            _logger.warning('"Error updating file deletion"')
+            curs.close()
+            self.con.rollback()
+
+
+    def _set_deleted(self, file_ids: List[int]) -> None:
         """Set every file in file_ids deleted and deleted_time value.
 
         Args:
             file_ids (List[int): List of file ids to be deleted
-        Returns:
+
         """
         if len(file_ids) < 1:
             return
@@ -135,14 +178,18 @@ class DatabaseConnection(DatabaseConnectionBase):
             self.con.rollback()
 
 
-    def create_metadata_decrease(self, exif_output: json) -> Dict:
-        """Creates an easy to process dictionary for updating the 'metadata' table in the database
+    def _create_metadata_decrease(self, exif_output: json) -> Dict:
+        """Creates dictionary for updating the 'metadata' table in the database.
+
         Args:
             exif_output (json): The output from the ExifTool output.
+
         Returns:
             Dict: key: file type | value: Dict: key: tag value: count
+
         """
-        # Loop over every tag for each file in the ExifTool output and add them to the dictionary
+        # Loop over every tag for each file in the ExifTool output and add
+        # them to the dictionary
         tag_values = {}
         for single_output in exif_output:
             fileType = single_output['FileType']
@@ -155,50 +202,21 @@ class DatabaseConnection(DatabaseConnectionBase):
                 else:
                     tag_values[fileType][tag_value] = [-1, '?']
                 if tag_values[fileType][tag_value][1] == '?':
-                    tag_values[fileType][tag_value][1] = self.output_type(test[tag_value])
+                    tag_values[fileType][tag_value][1] = self._output_type(test[tag_value])
         return tag_values
 
-    @measure_time
-    def delete_lost(self, crawlId: int, roots: List) -> None:
-        """Scans the directories at the end of a scan, to find directories that were deleted since the last crawl
+
+    def _combine_dict(self, increases: dict, decreases: dict) -> dict:
+        """Combines the dicts of de- and increasing metadata.
 
         Args:
-            crawlId (int): id of the current crawl
-            roots (List): list with every path/recursive pair
-        """
-        # Request a list of every directory skipped during the deletion process
-        # Request a list of every directory skipped during the deletion process
-        files = Table('files')
-        query = Query.from_(files) \
-            .select(files.id) \
-            .select(files.metadata) \
-            .where(files.crawl_id != crawlId) \
-            .where(files.deleted == False)
-        curs = self.con.cursor()
-        statements = []
-        for root in roots:
-            if root['recursive']:
-                statements.append(curs.mogrify('"dir_path" LIKE %s', (f'{root["path"]}%',)).decode('utf8'))
-            else:
-                statements.append(curs.mogrify('"dir_path" = %s', (f'{root["path"]}',)).decode('utf8'))
-        query = str(query) + ' AND (' + ' OR '.join(statements) + ')'
-        try:
-            curs.execute(query)
-            entries = curs.fetchall()
-            self.set_deleted([x[0] for x in entries])
-            if len(entries) > 0:
-                decrease = self.create_metadata_decrease([x[1] for x in entries])
-                self.update_metadata({}, decrease)
-            curs.close()
-            self.con.commit()
-        except Exception as e:
-            print(e)
-            _logger.warning('"Error updating file deletion"')
-            curs.close()
-            self.con.rollback()
+            increases (dict): dictionary of increases
+            decreases (dict): dictionary of decreases
 
-    # Methods to implement in child class
-    def _combine_dict(self, increases: dict, decreases: dict) -> dict:
+        Returns:
+            dict: combined dictionary
+
+        """
         combined = increases
         all_type = {}
         # Subtract each value in decrease for each individual file typ
@@ -222,8 +240,7 @@ class DatabaseConnection(DatabaseConnectionBase):
         return combined
 
 
-    @measure_time
-    def update_metadata(self, increases: dict, decreases:dict) -> None:
+    def _update_metadata(self, increases: dict, decreases:dict) -> None:
         """Given a dictionary with key (file type) and values ((tag name, increments)) update the database
         accordingly
         Args:
@@ -269,3 +286,21 @@ class DatabaseConnection(DatabaseConnectionBase):
             curs.close()
             self.con.rollback()
             raise
+
+
+    def _output_type(self, to_check: str) -> str:
+        """Determine whether the output value of a file is a digit or a string.
+
+        Args:
+            to_check (str): The string variant of the value
+
+        Returns:
+            float representation if conversion is possible, string otherwise
+
+        """
+        try:
+            checked = float(to_check)
+            return 'dig'
+        except:
+            return 'str'
+
