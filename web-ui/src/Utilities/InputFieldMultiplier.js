@@ -31,6 +31,9 @@ export class InputFieldMultiplier {
         $(this.fieldSelector).not(".listenerAdded").focusout(function () {
             if ($(thisdata.fieldSelector).length < 2) {return;}
 
+            if ($(this).val() !== " ") {
+                $(this).val($(this).val().trim());
+            }
 
 
             if ($(this).val() === "") {
