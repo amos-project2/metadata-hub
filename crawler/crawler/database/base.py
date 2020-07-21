@@ -1,3 +1,4 @@
+"""Base database connection."""
 
 
 # Python imports
@@ -55,9 +56,11 @@ class DatabaseConnectionBase:
         self._time = 0
         self._measure_time = measure_time
 
+
     def clear_time(self) -> None:
         """Clears the time recording for database operations."""
         self._time = 0
+
 
     def get_time(self) -> int:
         """Return the time spent for database operations in seconds.
@@ -67,3 +70,8 @@ class DatabaseConnectionBase:
 
         """
         return self._time
+
+
+    def close(self) -> None:
+        """Close the database connection."""
+        self.con.close()

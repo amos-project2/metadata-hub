@@ -223,8 +223,10 @@ class TreeWalkManager(threading.Thread):
         self._workers_can_exit.clear()
         logging.critical(
             f'TWManager: execution time was: '
-            f'{(datetime.now() - self._time_start).total_seconds():.2f} s'
+            f'{(datetime.now() - self._time_start).total_seconds():.2f} s, '
+            f'Database: {self._db_connection.get_time():.2f}s'
         )
+        self._db_connection.clear_time()
 
 
     def _update_workers(self, num_workers: int, reduce: bool) -> None:
