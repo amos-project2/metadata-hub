@@ -2,7 +2,7 @@
 
 The database Metadata-Hub is using is a [PostgreSQL](https://www.postgresql.org/) database.
 It stores the extracted metadata of the crawled files as well as auxiliary
-data for TreeWalk, or the query interface.
+data for the TreeWalk, Server and WebUI.
 
 ### Database Setup
 1. Create the database role - [metadatahub-role.sql](https://github.com/amos-project2/metadata-hub/blob/master/database/metadatahub-role.sql)
