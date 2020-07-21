@@ -120,10 +120,8 @@ public class MetadataInfoService
     @NotNull
     private MetadataInfoCache getMetadataInfoCache(List<String> fileTypes, String fileTypesID)
     {
-        MetadataInfoCache metadataInfoCache;//synchronized (this) //not needed i think
+        MetadataInfoCache metadataInfoCache;
         {
-            //TODO all-fileTypes
-            //fallback for now to jpg
             if (fileTypes.size() == 0)
             {
                 metadataInfoCache = cache.computeIfAbsent(fileTypesID, (key) -> { return new MetadataInfoCache("ALL", this.database); });
@@ -134,7 +132,12 @@ public class MetadataInfoService
             }
             else
             {
-                metadataInfoCache = cache.computeIfAbsent(fileTypesID, (key) -> { return new MetadataInfoCache(fileTypes, cache, database); });
+                //Maybe a string-based lock on fileTypesID around the following code, to reduce double calculation sheduled near the same time
+                metadataInfoCache = cache.get(fileTypesID);
+                if(metadataInfoCache !=null) return metadataInfoCache;
+
+                metadataInfoCache = new MetadataInfoCache(fileTypes, cache, database);
+                cache.put(fileTypesID, metadataInfoCache); // here we could write the same MetadataInfoCache twice ore more times; its not a problem
             }
         }
         return metadataInfoCache;
