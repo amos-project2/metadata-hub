@@ -10,7 +10,9 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -76,7 +78,7 @@ public class JerseyServerImpl implements HttpServer
             System.out.println("Jersey-Server started\n");
             System.out.println("Listening-Address: " + config.getProperty("server-host") + " | Port: " + config.getProperty("server-port"));
             System.out.println("WEB-GUI: http://localhost:" + config.getProperty("server-port"));
-            System.out.println("GRAPHQL-ENDPOINT: http://localhost:" + config.getProperty("server-port") + "/graphql/?query=hey");
+            System.out.println("GRAPHQL-ENDPOINT: http://localhost:" + config.getProperty("server-port") + "/graphql/?query=" + getGraphQLExampleQuery());
             System.out.println("GRAPHQL-TEST-CONSOLE: http://localhost:" + config.getProperty("server-port") + "/testconsole/");
 
         }
@@ -96,5 +98,9 @@ public class JerseyServerImpl implements HttpServer
     public void shutdownNow()
     {
         this.server.shutdownNow();
+    }
+
+    private String getGraphQLExampleQuery() throws UnsupportedEncodingException {
+        return URLEncoder.encode("query{searchForFileMetadata(limitFetchingSize:1){files{name,type,metadata{name,value}}}}","UTF-8");
     }
 }
