@@ -274,22 +274,31 @@ public class PreparedStatementCreator {
 
     /**
      * Builds a String that can be used in a SQL statement out of the specified metadata_filters
+     *
+     * Concerning the custom set Filter Logic String
+     * A Filter Logic String looks like this: "(f1 AND f3) OR f2 AND (f11 AND f0)"
+     * The indexes in the Filter Logic String resemble the metadata filters index in the metadata_filters map
+     * From Start to finish every f[x] gets substituted by a metadata filter
      */
     private static String buildMetadataFilterLogic(Map<String, Object> graphQLArguments, Map<Integer, String> metadata_filters){
        StringBuilder metadatafilterBuilder = new StringBuilder(" ");
+       Map<Integer, String> unused_metadata_filters = new HashMap<>(metadata_filters);
 
-       //Insert the filter options into the filter logic string to create a sql statement
+       //Insert the metadata filters into the filter logic string to create a sql statement
        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC)){
            String filterLogic = (String) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC);
 
            metadatafilterBuilder.append(filterLogic + " AND ");
-           for(int filterIndexStart = metadatafilterBuilder.indexOf("f"); filterIndexStart != -1; filterIndexStart = metadatafilterBuilder.indexOf("f")){
+           int lastFoundFilterIndex = 0;
+           for(int filterIndexStart = metadatafilterBuilder.indexOf("f"); filterIndexStart != -1; filterIndexStart = metadatafilterBuilder.indexOf("f", lastFoundFilterIndex)){
 
+               //Get the end position of the filter in the filter logic string
                int filterIndexEnd = metadatafilterBuilder.indexOf(" ", filterIndexStart);
                while(metadatafilterBuilder.charAt(filterIndexEnd-1) == ')'){
                    filterIndexEnd--;
                }
 
+               //Get the index of the filter among the metadata filters
                String filterIndexString = metadatafilterBuilder.substring(filterIndexStart + 1, filterIndexEnd);
                int filterIndex =  Integer.parseInt(filterIndexString);
 
@@ -297,18 +306,14 @@ public class PreparedStatementCreator {
                    throw new GraphQLException(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC + ": Specified filter index [" + filterIndex + "] couldn't be found in metadata filters. Maybe out of range.");
                }
 
-               String filter = metadata_filters.remove(filterIndex);
+               String filter = metadata_filters.get(filterIndex);
+               unused_metadata_filters.remove(filterIndex);
 
-               //replaceAll occurences of the filter index
-               int tmpIndex = filterIndexStart;
-               while(tmpIndex != -1){
-                   // filterIndex isn't multi-digit
-                   if(metadatafilterBuilder.charAt(tmpIndex + filterIndexString.length() + 1 ) < 48) {
-                       metadatafilterBuilder.replace(tmpIndex, tmpIndex + filterIndexString.length() + 1, filter);
-                   }
-                   tmpIndex += filterIndexString.length() + 1;
-                   tmpIndex = metadatafilterBuilder.indexOf("f"+filterIndex, tmpIndex);
-               }
+               //Remember how far the filter logic String got analyzed
+               lastFoundFilterIndex = filterIndexStart  + filter.length();
+
+               //replace occurence of the filter index
+               metadatafilterBuilder.replace(filterIndexStart, filterIndexStart + filterIndexString.length() + 1, filter);
            }
 
        }
@@ -324,7 +329,7 @@ public class PreparedStatementCreator {
 
         //Add the rest of the filter options that were'nt used in the logic string
         if(!logicOptions.equals(GraphQLSchemaDefinition.FILTER_LOGIC_OPTION_ONLY_LOGIC)) {
-            for (Map.Entry<Integer, String> filter : metadata_filters.entrySet()) {
+            for (Map.Entry<Integer, String> filter : unused_metadata_filters.entrySet()) {
                 metadatafilterBuilder.append(filter.getValue() + logicalOperator);
             }
         }
