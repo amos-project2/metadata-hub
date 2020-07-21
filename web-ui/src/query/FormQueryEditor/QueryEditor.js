@@ -51,7 +51,7 @@ export class QueryEditor extends Page {
     }
 
     setStoreService(storeService) {
-        this.storeService=storeService
+        this.storeService = storeService
     }
 
 
@@ -88,15 +88,6 @@ export class QueryEditor extends Page {
                     </div>
                 </div>
 
-                <!--     date-range-filter           -->
-                ${this.dateRangeFilter.getMainHtmlCode()}
-
-               <div class="form-row">
-                    <div class="col-md-12">
-                        <hr>
-                    </div>
-                </div>
-
                 <!--     filetypes filter           -->
                 ${this.filetypeFilter.getMainHtmlCode()}
 
@@ -114,6 +105,16 @@ export class QueryEditor extends Page {
                         <hr>
                     </div>
                 </div>
+
+                 <!--     date-range-filter           -->
+                ${this.dateRangeFilter.getMainHtmlCode()}
+
+               <div class="form-row">
+                    <div class="col-md-12">
+                        <hr>
+                    </div>
+                </div>
+
 
                  <!--     Attribut-Selector           -->
                  ${this.attributSelector.getMainHtmlCode()}
@@ -273,11 +274,11 @@ export class QueryEditor extends Page {
             this.isFreshInstallation = false;
             this.storeService.doRestoringLastSave();
             this.storeService.saveEditor(false);
-            setTimeout(function(){
+            setTimeout(function () {
                 $('html, body').animate({
                     scrollTop: $(".save-editor").first().offset().top
                 }, 3000);
-            },1000);
+            }, 1000);
 
         }
     }
