@@ -49,19 +49,22 @@ public class DatabaseImpl implements Database, DatabaseService
 
     }
 
-    public void start() throws DatabaseException {
+    public synchronized void start() throws DatabaseException {
         try {
             if (this.isStarted) throw new RuntimeException("already started");
 
+            //if it cant obtain a connection it throws an error
             hikariDataSource = new HikariDataSource(hikariConfig);
             dslContext = DSL.using(hikariDataSource, SQLDialect.POSTGRES);
+
             this.isStarted = true;
+
         }catch (Exception exception){
             throw new DatabaseException("Couldn't establish connection to database!", exception);
         }
     }
 
-    public void shutdown()
+    public synchronized void shutdown()
     {
         if (!this.isStarted) return;
 
@@ -70,20 +73,16 @@ public class DatabaseImpl implements Database, DatabaseService
         this.isStarted = false;
     }
 
+    /**
+     * If the db crashes after the pool is initialized, it works again after the db is restarted
+     * In the meantime it throws an exception after a timeout. But retries later are possible
+     */
     @Override
     public Connection getJDBCConnection() throws SQLException, DatabaseException {
         if(!this.isStarted){
             start();
         }
-
-        try {
-            return this.hikariDataSource.getConnection();
-            //If connection was closed, it can get established again.
-        }catch (SQLTransientConnectionException exception){
-            this.isStarted = false;
-            start();
-            return this.hikariDataSource.getConnection();
-        }
+        return this.hikariDataSource.getConnection();
     }
 
 
