@@ -1,40 +1,32 @@
-### Crawler
+This chapter provides demo videos with German audio about the major
+functionalities of the Metadata-Hub application.
 
-Each endpoint except ``/config`` will send its response in JSON format.
-On success, the response will be the default message ``{"message": OK}``.
-On failure, the response will be ``{"error": <description>}`` with
-*description* being the description of the failure that occured.
+### Installing Metadata-Hub
 
-#### How to start the crawler
+[This video](https://raw.githubusercontent.com/amos-project2/metadata-hub/42d860fbdd9d52669e4bcedc3ede43891bea6efb/documentation/videos/Installation.mp4)
+shows how to install and start the Metadata-Hub application.
 
-The crawler can be started using the web UI
-([GIF](https://raw.githubusercontent.com/amos-project2/metadata-hub/eda6d067e7121ea233456067e1e84e53a50aa9c1/documentation/gifs/crawler-config.gif),
-[PNG](https://raw.githubusercontent.com/amos-project2/metadata-hub/bc74f86a2777819d6a70187de3aa4a1d7b9691a1/documentation/images/crawler/crawler_config.png))
-or the REST interface
-([GIF](https://raw.githubusercontent.com/amos-project2/metadata-hub/eda6d067e7121ea233456067e1e84e53a50aa9c1/documentation/gifs/crawler-start.gif)).
-The web UI displays a success/error message on success/failure.
+### TreeWalk - Configuration
 
-#### How to get status information
+[This video](https://raw.githubusercontent.com/amos-project2/metadata-hub/42d860fbdd9d52669e4bcedc3ede43891bea6efb/documentation/videos/TW-1-Konfiguration.mp4)
+shows how to configure a TreeWalk exeuction.
 
-Navigate to ``/info`` and the status will be displayed as JSON data
-([PNG](https://raw.githubusercontent.com/amos-project2/metadata-hub/bc74f86a2777819d6a70187de3aa4a1d7b9691a1/documentation/images/crawler/crawler_info.png),
-[GIF](https://raw.githubusercontent.com/amos-project2/metadata-hub/eda6d067e7121ea233456067e1e84e53a50aa9c1/documentation/gifs/crawler-info.gif)).
+### TreeWalk - Running
 
-#### How to stop the crawler
+[This video](https://raw.githubusercontent.com/amos-project2/metadata-hub/42d860fbdd9d52669e4bcedc3ede43891bea6efb/documentation/videos/TW-2-Ausfuehrung.mp4)
+shows how the TreeWalk can be controlled using the admin panel.
 
-Navigate to ``/stop`` and the current execution will be stopped
-([PNG](https://raw.githubusercontent.com/amos-project2/metadata-hub/bc74f86a2777819d6a70187de3aa4a1d7b9691a1/documentation/images/crawler/crawler_stop_success.png),
-[GIF](https://raw.githubusercontent.com/amos-project2/metadata-hub/eda6d067e7121ea233456067e1e84e53a50aa9c1/documentation/gifs/crawler-stop.gif)).
-Here is an example for an error message
-([PNG](https://raw.githubusercontent.com/amos-project2/metadata-hub/bc74f86a2777819d6a70187de3aa4a1d7b9691a1/documentation/images/crawler/crawler_stop_failure.png))
+### TreeWalk - Intervals (configuration)
 
-#### How to pause the crawler
+[This video](https://raw.githubusercontent.com/amos-project2/metadata-hub/42d860fbdd9d52669e4bcedc3ede43891bea6efb/documentation/videos/TW-3-Interval.mp4)
+shows how time intervals for maximum resource consumption can be configured.
 
-Navigate to ``/pause`` and the current execution will be paused
-([GIF](https://raw.githubusercontent.com/amos-project2/metadata-hub/eda6d067e7121ea233456067e1e84e53a50aa9c1/documentation/gifs/crawler-pause.gif)).
+### TreeWalk - Intervals (active)
 
+[This video](https://raw.githubusercontent.com/amos-project2/metadata-hub/42d860fbdd9d52669e4bcedc3ede43891bea6efb/documentation/videos/TW-4-IntervalAktiv.mp4)
+shows the effect of active time intervals on the executions of the TreeWalk.
 
-#### How to continue the crawler
+### MdH-WebUI - File type categories
 
-Navigate to ``/continue`` and the current execution will be continued
-([GIF](https://raw.githubusercontent.com/amos-project2/metadata-hub/eda6d067e7121ea233456067e1e84e53a50aa9c1/documentation/gifs/crawler-continue.gif)).
+[This video](https://raw.githubusercontent.com/amos-project2/metadata-hub/42d860fbdd9d52669e4bcedc3ede43891bea6efb/documentation/videos/UI-DateitypKategorien.mp4)
+shows how to create and manage custom file type categories for the metadata queries.
