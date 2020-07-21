@@ -2,7 +2,7 @@
 
 The database Metadata-Hub is using is a [PostgreSQL](https://www.postgresql.org/) database.
 It stores the extracted metadata of the crawled files as well as auxiliary
-data for TreeWalk or the query interface.
+data for TreeWalk, or the query interface.
 
 ### Database Setup
 1. Create the database role - [metadatahub-role.sql](https://github.com/amos-project2/metadata-hub/blob/master/database/metadatahub-role.sql)
@@ -45,7 +45,7 @@ There's a short description about each of these tables in the upcoming sections.
 
 This table stores information about executions of the TreeWalk.
 It updates the state, e.g *paused* or *aborted*, and finishing times upon
-completion of the exeution.
+completion of the execution.
 
 | **column**  | **type**  | **description**  |
 |---|---|---|
@@ -83,13 +83,13 @@ It is filled and updated by the crawler and is queried by the server.
 
 #### metadata
 
-This table stores all the file types present in the files table and their associated tags.
+This table stores all the file types present in the files table, and their associated tags.
 It is used in the UI for file type and metadata attribute autocompletion and setting the datatype of a metadata attribute.
 
 | **column**  | **type**  | **description**  |
 |---|---|---|
 | file_type | text | file type present in the files table |
-| tag | json | the file type's associated tags, their number of occurence and the datatype of the tag (String or Digit)  |
+| tag | json | the file type's associated tags, their number of occurrence and the datatype of the tag (String or Digit)  |
 
 #### intervals
 
@@ -118,16 +118,16 @@ In the WebUI they can be saved and restored again.
 
 #### schedule
 
-This tables stores information about scheduled (periodically) TreeWalk exeuctions.
+This tables stores information about scheduled (periodically) TreeWalk executions.
 
 | **column**  | **type**  | **description**  |
 |---|---|---|
 | id | text | unique identifier of an entry |
 | config | json | configuration of the TreeWalk execution |
 | timestamp | timestamp without time zone | timestamp of next execution |
-| force | boolean | true if the exeuction should force an already running one to stop |
+| force | boolean | true if the execution should force an already running one to stop |
 | pending | boolean | true if the execution is already pending |
-| interval | bigint | interval in seconds in which the exeuction repeats |
+| interval | bigint | interval in seconds in which the execution repeats |
 
 #### file_categories
 
