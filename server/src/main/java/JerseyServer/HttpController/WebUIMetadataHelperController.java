@@ -65,8 +65,6 @@ public class WebUIMetadataHelperController
         {
             fileTypes = split[1].toUpperCase().trim();
         }
-        //TODO delete at some point
-        System.out.println("getMetadata:  tag: " + metadataTag + " fileTypes: " + fileTypes);
 
         String tagDatatype = metadataInfoService.requestTagDataType(this.createList(fileTypes, true), metadataTag);
 
