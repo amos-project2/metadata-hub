@@ -179,7 +179,7 @@ export class ResultPresenter {
         thisdata.tableOutput.clearHtml();
 
         formGraphQL.setOffset(0);
-        formGraphQL.setLimit(2);
+        formGraphQL.setLimit(5);
         formGraphQL.setSorting({attribute: "id", asc: true});
 
 

@@ -29,7 +29,7 @@ export class ControllUnits {
                 <label class="col-form-label for-hiding">Show entries: </label>
                 <div class="for-hiding">
                     <select name="length" class="custom-select custom-select-sm form-control form-control-sm myTableLength">
-                        <option value="2" selected>2</option>
+                        <option value="5" selected>5</option>
                         <option value="10">10</option>
                         <option value="25">25</option>
                         <option value="50">50</option>
@@ -68,7 +68,7 @@ export class ControllUnits {
         let totalFiles = initJson.data.searchForFileMetadata.numberOfTotalFiles;
         let currentFiles = initJson.data.searchForFileMetadata.numberOfReturnedFiles;
 
-        let paginator = new Paginator(this.id, 2, totalFiles, 1);
+        let paginator = new Paginator(this.id, 5, totalFiles, 1);
         paginator.registerPageListener(function (elem) {
             thisdata.pSelector.find('.paginator-container').html(elem.getHtmlCode());
             elem.addListener();
