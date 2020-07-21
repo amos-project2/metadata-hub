@@ -29,6 +29,7 @@ public class DatabaseImpl implements Database, DatabaseService
     @Getter private DSLContext dslContext;
     private static Config config;
     @Getter private boolean isStarted = false;
+    @Getter private boolean isShutdowned = false;
 
 
     @Inject
@@ -49,8 +50,17 @@ public class DatabaseImpl implements Database, DatabaseService
 
     }
 
-    public synchronized void start() throws DatabaseException {
-        try {
+    public synchronized void start() throws DatabaseException
+    {
+        this.isShutdowned = false;
+        this.startIntern();
+    }
+
+    private synchronized void startIntern() throws DatabaseException
+    {
+        try
+        {
+            if (this.isShutdowned) throw new RuntimeException("the pool is shutdowned");
             if (this.isStarted) throw new RuntimeException("already started");
 
             //if it cant obtain a connection it throws an error
@@ -59,13 +69,17 @@ public class DatabaseImpl implements Database, DatabaseService
 
             this.isStarted = true;
 
-        }catch (Exception exception){
+        }
+        catch (Exception exception)
+        {
             throw new DatabaseException("Couldn't establish connection to database!", exception);
         }
     }
 
+
     public synchronized void shutdown()
     {
+        this.isShutdowned = true;
         if (!this.isStarted) return;
 
         this.dslContext.close();
@@ -78,10 +92,13 @@ public class DatabaseImpl implements Database, DatabaseService
      * In the meantime it throws an exception after a timeout. But retries later are possible
      */
     @Override
-    public Connection getJDBCConnection() throws SQLException, DatabaseException {
-        if(!this.isStarted){
+    public Connection getJDBCConnection() throws SQLException, DatabaseException
+    {
+        if (!this.isStarted)
+        {
             start();
         }
+
         return this.hikariDataSource.getConnection();
     }
 
