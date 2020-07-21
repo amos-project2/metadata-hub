@@ -46,8 +46,6 @@ export class SuggestionViewer {
     retrieveMetadataSuggestions(limit, offset, callback) {
 
         this.restApiFetcherServer.fetchGet(`metadata-autocomplete/modal-suggestions/?limit=${limit}&offset=${offset}&fileTypes=` + encodeURIComponent(this.metadataAutocompletion.getFileString()), function (event) {
-            console.log("retrievMetadataSuggestions!");
-            console.log(event.data);
             callback(event.data);
         });
 
@@ -64,6 +62,22 @@ export class SuggestionViewer {
         this.suggestionViewerModal.getContentSelector().html(`
                  <div class ="sugesstion-waiter" >Please wait...</div>
                  <div class ="container suggestion-container">
+
+                    <div class="row" style="margin-bottom: 15px;">
+                        <div class="col-sm-6"">
+                           <b>Metadata Attribute</b>
+                        </div>
+                        <div class="col-sm-3"">
+                          <b>Filters</b>
+                        </div>
+                        <div class="col-sm-3"">
+
+                          <b>Return</b>
+
+
+                        </div>
+                    </div>
+
                  </div>
             `);
 

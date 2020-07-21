@@ -1,9 +1,11 @@
 package QueryServices;
 
 import Database.Database;
+import Database.DatabaseException;
 import Database.Model.DatabaseSchemaDefinition;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -14,9 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import Database.DatabaseException;
-import org.jetbrains.annotations.NotNull;
 
 public class FileCategoryService {
 

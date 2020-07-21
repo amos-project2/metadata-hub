@@ -15,7 +15,7 @@ export class ResultPresenter {
         return this.count || 0;
     }
 
-    constructor(graphQlFetcher, graphQLIntrospectionModal) {
+    constructor(graphQlFetcher, graphQLIntrospectionModal, restApiFetcherServer) {
         ResultPresenter.increaseCount();
         this.id = "ResultPresenter-" + ResultPresenter.getCount();
         this.pSelector = $("#" + this.id);
@@ -28,7 +28,7 @@ export class ResultPresenter {
 
         this.jsonOutput = new JsonOutput();
         this.tableOutput = new TableOutput(this, this.controllUnits, this.viewModal);
-        this.exportOutput = new ExportOutput(this.downloadSuccessModal);
+        this.exportOutput = new ExportOutput(this.downloadSuccessModal, restApiFetcherServer);
 
 
         this.cleared = true;
@@ -78,7 +78,7 @@ export class ResultPresenter {
                         </div>
                     </div>
                     <div class="message-container">
-                        Send a Query first, then you get the Result.
+                        Only after sending a query first, you can get a result.
                     </div>
 
 
@@ -150,20 +150,25 @@ export class ResultPresenter {
 
     }
 
-    generateResultAndInjectIntoDom(query) {
-        // //this.pSelector = $("#" + this.id);//it seems i have to reattach also the beginning of the selector, otherwise it wouldnt work
-        // let thisdata = this;
-        // this.graphQlFetcher.fetchAdvanced(query, function (sucess, json, jsonString) {
-        //     thisdata.jsonOutput.updateText(jsonString);
-        //     //TODO to more
-        // });
+    showTabs() {
+        let messageContainer = this.pSelector.find(".message-container");
+        let loadContainer = this.pSelector.find(".load-icon-container");
+        let mainTabContent = this.pSelector.find(".main-tab-content");
+
+        mainTabContent.stop(true).show(1000);
+        messageContainer.stop(true).hide(1000);
+        loadContainer.stop(true).hide(1000);
     }
+
 
     waitForLoad() {
         this.pSelector.find(".load-icon-container").show(1000);
     }
 
 
+    /**
+     * This method is called by the client each time he want to get a fresh visualiziation of a fresh query
+     */
     //public
     updateState(formGraphQL) {
         let thisdata = this;
@@ -179,18 +184,48 @@ export class ResultPresenter {
 
 
         $('html, body').stop(true).animate({
-            // scrollTop: $("#myTab"+this.id).offset().top
             scrollTop: '+=150px'
         }, 1000);
 
-        // this.tableOutput.reinitialize(formGraphQL);
         this.sendToServerAndAdjust(formGraphQL);
     }
 
-    // error(err) {
-    //     this.tableOutput.showError(err);
-    // }
 
+    /**
+     * This method fetch the data from the server and calls the right method if there is an error or if it is succesfull.
+     */
+    //private
+    sendToServerAndAdjust(formGraphQL) {
+        let thisdata = this;
+        let query = formGraphQL.generateAndGetGraphQlCode();
+
+        this.preLoad();
+
+        this.graphQlFetcher.fetchAdvanced(query, function (sucess, json, jsonString) {
+            if (sucess && json && !json.errors && json.data.searchForFileMetadata && !json.data.searchForFileMetadata.error) {
+                thisdata.updateInternalState(formGraphQL, json);
+            } else if (json === null) {
+                thisdata.updateError({message: "The ressource/Server is not available", info: jsonString});
+            } else if (json.errors) {
+                thisdata.updateError({message: "An Error while parsing the Query has occured. Please don't use unescaped quotation marks, for example.", info: JSON.stringify(json, undefined, 2)});
+            } else {
+                let err = {
+                    message: json.data.searchForFileMetadata.error.message,
+                    info: json.data.searchForFileMetadata.error.stack_trace,
+                };
+                thisdata.updateError(err);
+            }
+
+            thisdata.postLoad();
+
+
+        });
+
+    }
+
+    /**
+     * This method is internally called, after the server-response has no error and is there.
+     */
     //private
     updateInternalState(formGraphQL, json) {
 
@@ -211,53 +246,11 @@ export class ResultPresenter {
 
     }
 
+
+    /**
+     * This method is called after server-success and if it is a fresh-request
+     */
     //private
-    updateError(error) {
-        this.cleanUp();
-
-        let messageContainer = this.pSelector.find(".message-container");
-
-        messageContainer.html(`
-        <div class="text-danger">
-            <b>Error: ${error.message}</b><br><br>
-            <b>Info:</b>
-            <pre style="color: orangered">${error.info}</pre>
-        </div>
-        <br><br>
-        `);
-
-        messageContainer.stop(true).show(1000);
-        $('html, body').stop(true).animate({
-            scrollTop: $("#myTab" + this.id).offset().top
-        }, 2000);
-
-    }
-
-    showTabs() {
-        let messageContainer = this.pSelector.find(".message-container");
-        let loadContainer = this.pSelector.find(".load-icon-container");
-        let mainTabContent = this.pSelector.find(".main-tab-content");
-
-        mainTabContent.stop(true).show(1000);
-        messageContainer.stop(true).hide(1000);
-        loadContainer.stop(true).hide(1000);
-    }
-
-    cleanUp() {
-
-        this.cleared = true;
-
-        let messageContainer = this.pSelector.find(".message-container");
-        let loadContainer = this.pSelector.find(".load-icon-container");
-        let mainTabContent = this.pSelector.find(".main-tab-content");
-
-        mainTabContent.stop(true).hide(1000);
-        messageContainer.stop(true).hide(1000);
-        loadContainer.stop(true).hide(1000);
-
-    }
-
-
     reinitialize(formGraphQL, json) {
         let totalFiles = json.data.searchForFileMetadata.numberOfTotalFiles;
         let currentFiles = json.data.searchForFileMetadata.numberOfReturnedFiles;
@@ -281,32 +274,40 @@ export class ResultPresenter {
 
     }
 
+
+    cleanUp() {
+
+        this.cleared = true;
+
+        let messageContainer = this.pSelector.find(".message-container");
+        let loadContainer = this.pSelector.find(".load-icon-container");
+        let mainTabContent = this.pSelector.find(".main-tab-content");
+
+        mainTabContent.stop(true).hide(1000);
+        messageContainer.stop(true).hide(1000);
+        loadContainer.stop(true).hide(1000);
+
+    }
+
     //private
-    sendToServerAndAdjust(formGraphQL) {
-        let thisdata = this;
-        let query = formGraphQL.generateAndGetGraphQlCode();
+    updateError(error) {
+        this.cleanUp();
 
-        this.preLoad();
+        let messageContainer = this.pSelector.find(".message-container");
 
-        this.graphQlFetcher.fetchAdvanced(query, function (sucess, json, jsonString) {
-            if (sucess && json && !json.errors && json.data.searchForFileMetadata && !json.data.searchForFileMetadata.error) {
-                thisdata.updateInternalState(formGraphQL, json);
-            } else if (json === null) {
-                thisdata.updateError({message: "The ressource/Server is not avialable", info: jsonString});
-            } else if (json.errors) {
-                thisdata.updateError({message: "An Error while parsing the Query is occured. Please dont use unescapted quotation marks, for example.", info: JSON.stringify(json, undefined, 2)});
-            } else {
-                let err = {
-                    message: json.data.searchForFileMetadata.error.message,
-                    info: json.data.searchForFileMetadata.error.stack_trace,
-                };
-                thisdata.updateError(err);
-            }
+        messageContainer.html(`
+        <div class="text-danger">
+            <b>Error: ${error.message}</b><br><br>
+            <b>Info:</b>
+            <pre style="color: orangered">${error.info}</pre>
+        </div>
+        <br><br>
+        `);
 
-            thisdata.postLoad();
-
-
-        });
+        messageContainer.stop(true).show(1000);
+        $('html, body').stop(true).animate({
+            scrollTop: $("#myTab" + this.id).offset().top
+        }, 2000);
 
     }
 

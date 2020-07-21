@@ -101,6 +101,8 @@ def create_work_packages(
 def get_number_of_workers(cpu_level: int) -> int:
     """Returns the number of worker processes to create based on the CPU level.
 
+    If the actual number of workers would be 0, at least 1 is returned
+
     Args:
         cpu_level (int): cpu level specified in the configuration
 
@@ -108,7 +110,7 @@ def get_number_of_workers(cpu_level: int) -> int:
         int: number of processes to spawn
 
     """
-    return int(cpu_level * 0.25 * psutil.cpu_count(logical=False))
+    return max(int(cpu_level * 0.25 * psutil.cpu_count(logical=False)), 1)
 
 
 def resize_work_packages(

@@ -18,9 +18,10 @@ export class QueryEditor extends Page {
         this.title = "Query Editor";
         this.cacheLevel = 3;
         this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
+        this.restApiFetcherServer = this.parent.dependencies.restApiFetcherServer;
 
         this.graphQLIntrospectionModal = new GraphQlIntrospectionModel(this.parent.storage, true);
-        this.resultPresenter = new ResultPresenter(this.graphQlFetcher, this.graphQLIntrospectionModal);
+        this.resultPresenter = new ResultPresenter(this.graphQlFetcher, this.graphQLIntrospectionModal, this.parent.dependencies.restApiFetcherServer);
         this.clearCacheModal = new ClearCacheModal();
         this.clearCacheSelector = ".modalClearCache";
 
@@ -43,14 +44,14 @@ export class QueryEditor extends Page {
         this.metadatAutocompletion.addAdvancedFilter(this.advancedFilter);
         this.metadatAutocompletion.addAttributSelector(this.attributSelector);
 
-        this.storeService = null;//new StoreService(this, this.parent.dependencies.restApiFetcherServer);
+        this.storeService = null;
 
         this.isFreshInstallation = false;
 
     }
 
     setStoreService(storeService) {
-        this.storeService=storeService
+        this.storeService = storeService
     }
 
 
@@ -64,25 +65,22 @@ export class QueryEditor extends Page {
             <!--     for tracking          -->
 
                 <div class="form-row">
+                <br>
+                The Query Editor is used for creating queries, which return file metadata.</br>
+                Queries are saved in the Query-Store, so they can get executed at a later point in time, without filling in the information again.</br>
+                In the query multiple filters can be used to limit the result set of the returned file metadata.
+                <br>
+                <br>
 
                     <div class="form-group col-md-6">
-                        <label for="fq-query-Name">Query-Name <a class="pover" title="Query-Name" data-content="The Name, which is saved with the query here into the database to find it later again.">[?]</a></label>
-                        <input type="text" class="form-control save-element save-title" data-name="g1" id="fq-query-Name" value="searchForFileMetadata">
+                        <label for="fq-query-Name">Query-Name <a class="pover" title="Query-Name" data-content="The name of the query, which is used to save the query in the Query-Store.">[?]</a></label>
+                        <input type="text" class="form-control save-element save-title" data-name="g1" id="fq-query-Name" value="Default Query Name">
                     </div>
                     <div class="form-group col-md-6">
-                        <label for="fq-owner">Owner <a class="pover" title="Owner" data-content="The Owner, which is saved with the query here into the database.">[?]</a></label>
+                        <label for="fq-owner">Query-Owner <a class="pover" title="Query-Owner" data-content="The owner of the query, which is used to save the query in the Query-Store.">[?]</a></label>
                         <input type="text" class="form-control save-author" data-name="g2" id="fq-owner" value="${localStorage.getItem("username")}" disabled>
                     </div>
                 </div>
-
-               <div class="form-row">
-                    <div class="col-md-12">
-                        <hr>
-                    </div>
-                </div>
-
-                <!--     date-range-filter           -->
-                ${this.dateRangeFilter.getMainHtmlCode()}
 
                <div class="form-row">
                     <div class="col-md-12">
@@ -107,6 +105,16 @@ export class QueryEditor extends Page {
                         <hr>
                     </div>
                 </div>
+
+                 <!--     date-range-filter           -->
+                ${this.dateRangeFilter.getMainHtmlCode()}
+
+               <div class="form-row">
+                    <div class="col-md-12">
+                        <hr>
+                    </div>
+                </div>
+
 
                  <!--     Attribut-Selector           -->
                  ${this.attributSelector.getMainHtmlCode()}
@@ -144,10 +152,10 @@ export class QueryEditor extends Page {
                 <!--     Controll-Buttons           -->
 
                 <button type="submit" class="btn btn-success">Send</button>
-                <button type="button" class="btn btn-primary open-query">Open Intermediate Query</button>
-                <button type="button" class="btn btn-success save-editor">Save Editor</button>
+                <button type="button" class="btn btn-primary open-query">Open Intermediate GraphQL Query</button>
+                <button type="button" class="btn btn-success save-editor">Save in Query-Store</button>
                 <button type="button" class="btn btn-danger modalClearCache">Clear Cache</button>
-                <button type="button" class="btn btn-primary clear-all">Clear All</button>
+                <button type="button" class="btn btn-danger clear-all">Clear Query Editor</button>
             </form>
             <br>
             <div class="resultView1">
@@ -156,7 +164,6 @@ export class QueryEditor extends Page {
 
 
             ${this.graphQLIntrospectionModal.getHtmlCode()}
-            ${this.fileTypeCategoriesService.getModalHtml()}
             ${this.resultPresenter.viewModal.getHtmlCode()}
             ${this.storeService.getSaveModal().getHtmlCode()}
 
@@ -189,7 +196,6 @@ export class QueryEditor extends Page {
             event.preventDefault();
             thisdata.storeService.saveEditor(true);
             let formGraphQL = thisdata.buildAndGetGraphQlQuery();
-            thisdata.resultPresenter.generateResultAndInjectIntoDom(formGraphQL.generateAndGetGraphQlCode());
             thisdata.resultPresenter.updateState(formGraphQL);
         });
 
@@ -245,7 +251,7 @@ export class QueryEditor extends Page {
         formGraphQl.limit = limit;
         formGraphQl.deleted = deleted;
 
-        return formGraphQl;//.generateAndGetGraphQlCode();
+        return formGraphQl;
     }
 
     clearCacheModalOpenerAndRequest() {
@@ -268,26 +274,13 @@ export class QueryEditor extends Page {
             this.isFreshInstallation = false;
             this.storeService.doRestoringLastSave();
             this.storeService.saveEditor(false);
-            setTimeout(function(){
+            setTimeout(function () {
                 $('html, body').animate({
                     scrollTop: $(".save-editor").first().offset().top
                 }, 3000);
-            },1000);
+            }, 1000);
 
         }
-    }
-
-
-    onUnMount() {
-
-    }
-
-    onRegister() {
-
-    }
-
-    onUnLoad() {
-
     }
 
 }

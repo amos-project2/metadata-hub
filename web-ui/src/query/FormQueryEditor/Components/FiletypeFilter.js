@@ -15,20 +15,12 @@ export class FiletypeFilter {
 
                  <div class="form-row justify-content-md-center">
                   <button type="button" id="file-category-button" class="btn btn-primary mr-3" data-toggle="modal" data-target="#file-categories-modal">
-                        Select File Category
+                        Select File Type Category
                   </button>
                    <button type="button" id="delete-types-button" class="btn btn-danger" ">
                         Clear selected File Types
                     </button>
                      </div>
-<!--                <div class="form-group col-md-6">-->
-<!--                    <button type="button" id="file-category-button" class="btn btn-primary " data-toggle="modal" data-target="#file-categories-modal">-->
-<!--                        Select File Category-->
-<!--                    </button>-->
-<!--                    <button type="button" id="delete-types-button" class="btn btn-danger" ">-->
-<!--                        Delete all File Types-->
-<!--                    </button>-->
-<!--                </div>-->
 
                 <!-- file-categories-modal -->
                 <div class="modal fade" id="file-categories-modal" tabindex="-1" role="dialog" aria-labelledby="file-categories-label" aria-hidden="true">
@@ -36,7 +28,7 @@ export class FiletypeFilter {
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="file-categories-label">
-                                    File Categories
+                                    File Type Categories
                                 </h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
@@ -54,7 +46,8 @@ export class FiletypeFilter {
 
                 <!--     file-types                  -->
                 <div class="form-row">
-                    <div class="col-md-12">Which Filetypes: <a class="pover" title="Which Filetypes" data-content="Here you can specify a prefilter of filetypes. If it is empty means, no filetype-filter here">[?]</a></div>
+                    <div class="col-md-12">File Type Filters: <a class="pover" title="File Type Filters" data-content="If no file type filter is selected no file types get filtered out!</br> If this filter is used, only files, which are of one of the specified file types, get returned.</br>
+                        The file type filter is used aswell for giving better Metadata-Attribute recommendations.">[?]</a></div>
                 </div>
 
 
@@ -92,20 +85,35 @@ export class FiletypeFilter {
         $("#file-category-button").click(function () {
             thisdata.metadatAutocompletion.getAllFileCategories(function (fileCategoryMap) {
 
-                console.log(fileCategoryMap);
 
                 if (fileCategoryMap == undefined) {
                     return;
                 }
 
-                $("#file-categories-modal-body").html("Click on a file category to choose multiple file types for the query editor.<br/><br/>")
+                $("#file-categories-modal-body").html("Select a File Type Category to apply all the included file types to the File Type filter.<br/>" +
+                    "<br>If no file type filter is selected, all file types are considered in the query.<br/>" +
+                    "<br>")
 
+                let counter = -1;
                 Object.keys(fileCategoryMap).forEach(key => {
-                    $("#file-categories-modal-body").append("<button type=\"button\" class=\"btn btn-primary\" id='button-" + key + "' data-dismiss=\"modal\"> File Category: " + key + "</button> <br/>");
-                    $("#file-categories-modal-body").append("File Types: " + "<br\>" + fileCategoryMap[key] + "<br/><br/>");
+                    counter++;
+
+                    let fileCategoryString = "";
+                    fileCategoryMap[key].forEach(value => {
+                        fileCategoryString += value + ", ";
+                    });
+                    fileCategoryString = fileCategoryString.substr(0, fileCategoryString.length - 2);
+                    $("#file-categories-modal-body").append(`
+                        <div class="row mb-3 detail-view-element">
+                            <div class="col font-weight-bold">${key}</div>
+                            <div class="col">${fileCategoryString}</div>
+                            <div class="col-2"><button type="button" class="btn btn-primary btn-sm" id='fbutton-${counter}' data-dismiss="modal">Apply</button></div>
+
+                         </div>`);
+
 
                     //add file types of file category into the query editor
-                    $("#button-" + key).click(function () {
+                    $("#fbutton-" + counter).click(function () {
                         let file_types = fileCategoryMap[key];
                         for (var file_type_index in file_types) {
                             thisdata.inputMultiplierFiletypeFilter.addInputValueOnlyOnce(file_types[file_type_index],

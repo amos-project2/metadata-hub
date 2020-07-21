@@ -6,15 +6,24 @@ export class RestAPIFetcher {
 
     //public
     fetchPost(path, formData, callback) {
-        let promise = fetch(this.urlBuilder(path), {
-            method: "post",
-            body: new URLSearchParams(formData)
-        });
+        let promise;
+
+        if (formData == null) {
+            promise = fetch(this.urlBuilder(path), {
+                method: "post"
+            });
+        } else {
+            promise = fetch(this.urlBuilder(path), {
+                method: "post",
+                body: new URLSearchParams(formData)
+            });
+        }
+
 
         this.fetchToResult(promise, callback);
     }
 
-    restDelete(path, callback){
+    restDelete(path, callback) {
         let url = this.urlBuilder(path);
         $.ajax({
             url: url,
@@ -52,7 +61,7 @@ export class RestAPIFetcher {
     }
 
 
-    //private
+    //public
     urlBuilder(path) {
         return this.endpoint + "/" + path;
     }

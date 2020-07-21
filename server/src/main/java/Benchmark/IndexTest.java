@@ -1,10 +1,13 @@
 package Benchmark;
 
-import Database.*;
+import Database.Database;
+import Database.DatabaseException;
 import Start.DependenciesContainer;
 import com.google.inject.Injector;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class IndexTest {
 

@@ -1,7 +1,5 @@
 package Database.Model;
 
-import Database.Database;
-
 public class DatabaseSchemaDefinition {
 
     /**

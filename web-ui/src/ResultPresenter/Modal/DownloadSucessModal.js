@@ -19,7 +19,7 @@ export class DownloadSucessModal {
                             </button>
                         </div>
                         <div class="modal-body">
-                            <span class="text-success font-weight-bold">The download was started successfully</span>
+                            <span class="text-success font-weight-bold">The download was started successfully!</span>
 
                         </div>
                         <div class="modal-footer">

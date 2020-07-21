@@ -11,8 +11,9 @@ export class ExportOutput {
         return this.count || 0;
     }
 
-    constructor(downloadSuccessModal) {
+    constructor(downloadSuccessModal, restApiFetcherServer) {
         this.downloadSuccessModal = downloadSuccessModal;
+        this.restApiFetcherServer = restApiFetcherServer;
         this.id = "export-" + ExportOutput.increaseCount();
         this.pSelector = null;
         this.lastformGraphQL = null;
@@ -28,28 +29,28 @@ export class ExportOutput {
                     <div class="form-check mb-4">
                         <input class="form-check-input" type="checkbox" value="" id="meta-all${this.id}">
                         <label class="form-check-label" for="meta-all${this.id}">
-                            Include all Metadataattributes <br>(Ignore the Metadataattributes-Filter)
+                            Include all metadata attributes <br>(Ignore the selection in Returned Metadata Attributes)
                         </label>
                     </div>
                      <div class="form-check mb-4" id="${this.id}">
                         <input class="form-check-input" type="checkbox" value="" id="pagination-no${this.id}">
                         <label class="form-check-label" for="pagination-no${this.id}">
-                            Include all rows <br>(Ignore pagination)
+                            Include all files/rows <br>(Ignore pagination[limit, offset])
                         </label>
                     </div>
                     <div class="form-check mb-4" id="${this.id}">
                         <input class="form-check-input" type="checkbox" value="" id="query-include${this.id}">
                         <label class="form-check-label" for="query-include${this.id}">
-                           Include the query
+                           Include the GraphQL query
                         </label>
                     </div>
                     <div class="col text-center mb-4">
-                        <button type="button" class="btn btn-primary download-button ">Download Init</button>
+                        <button type="button" class="btn btn-primary download-button ">Initialize download</button>
                     </div>
                 </div>
                  <div class="mx-auto start-area" style="width: 290px; display: none">
 
-                        <form action="http://localhost:8080/api/export/download" method="post" target="_blank">
+                        <form action="${this.restApiFetcherServer.urlBuilder('export/download')}" method="post" target="_blank">
                         <div style="display:none">
                         <input type="text" name="query-included" class="tquery-included">
                         <textarea name="query" class="tquery"></textarea>
@@ -57,10 +58,10 @@ export class ExportOutput {
                         </div>
 
                          <div class="col text-center mb-4">
-                            <button type="button" class="btn btn-danger download-button-abbort download-button-abbort-start">Abbort</button>
+                            <button type="button" class="btn btn-danger download-button-abbort download-button-abbort-start">Abort</button>
                         </div>
                          <div class="col text-center mb-4">
-                            <button type="submit" class="btn btn-success download-button-start download-button-abbort-start">Download Start</button>
+                            <button type="submit" class="btn btn-success download-button-start download-button-abbort-start">Start download</button>
                         </div>
 
                         </form>
@@ -76,6 +77,9 @@ export class ExportOutput {
         this.pSelector.find(".init-area").show(1000);
     }
 
+    /**
+     * called by updateInternalState from Resultpresenter
+     */
     updateState(formGraphQL, json) {
         this.pSelector.find(".start-area").hide(1000);
         this.pSelector.find(".init-area").show(1000);
@@ -103,9 +107,7 @@ export class ExportOutput {
             if (paginationNo) paginationNo = true; else paginationNo = false;
             if (queryInclude) queryInclude = true; else queryInclude = false;
 
-            // alert(metaAll + paginationNo + queryInclude);
 
-            // let formGraphQL = [...this.lastformGraphQL]; //shallow-copy , its not nested, so its ok
             let formGraphQL = Object.assign(new FormGraphQl(), this.lastformGraphQL); //shallow-copy , its not nested, so its ok
 
             if (metaAll) {
@@ -125,14 +127,6 @@ export class ExportOutput {
             this.pSelector.find(".start-area").show(1000);
             this.pSelector.find(".init-area").hide(1000);
 
-            // let body = "blub";
-            //
-            // var downloading = browser.downloads.download({
-            //     url : "http://localhost:8080/api/export/download",
-            //     filename : 'query-editor-output.json',
-            //     method: "POST",
-            //     body: body
-            // });
 
         });
 

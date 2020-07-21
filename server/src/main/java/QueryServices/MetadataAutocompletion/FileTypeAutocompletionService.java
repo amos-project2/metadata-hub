@@ -1,6 +1,7 @@
 package QueryServices.MetadataAutocompletion;
 
-import Database.*;
+import Database.Database;
+import Database.DatabaseException;
 import com.google.inject.Inject;
 
 import java.sql.Connection;
@@ -31,6 +32,9 @@ public class FileTypeAutocompletionService
      * The List excludeFileTypes must contain lower-cased-elements
      */
     public List<String> getFileTypes(List<String> excludeFileTypes, String search, int count) throws SQLException, DatabaseException {
+
+        //exclude our ALL-type from the file-type-suggestions
+        excludeFileTypes.add("all");
 
         ArrayList<String> ret = new ArrayList<String>();
         String file_type;

@@ -1,6 +1,7 @@
 package Benchmark;
 
-import Database.*;
+import Database.Database;
+import Database.DatabaseException;
 import Start.DependenciesContainer;
 
 import javax.ws.rs.client.Client;

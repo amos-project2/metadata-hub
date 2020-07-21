@@ -12,7 +12,8 @@ export class AttributSelector {
 
         return `
                 <div class="form-row">
-                    <div class="col-md-12">Which Attributes: <a class="pover" title="Which Attributes" data-content="Here you can limit the result to the specific metadata attributes.<br>If you dont add least one, then you get a result of all">[?]</a></div>
+                    <div class="col-md-12">Returned Metadata Attributes: <a class="pover" title="Metadata Attributes" data-content="When unused, every metadata attribute of all the returned files get returned.
+                        <br>Otherwise for the returned files only the specified metadata attributes get returned.">[?]</a></div>
                 </div>
 
                 <div class="fg-attribut-container form-row">

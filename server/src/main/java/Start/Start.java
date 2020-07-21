@@ -6,12 +6,15 @@ import Config.ApplicationConfig;
 import Config.Config;
 import Config.JsonValideException;
 import Database.DatabaseException;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 
 
 public class Start
@@ -26,9 +29,12 @@ public class Start
 
     public static void main(String[] args) throws Exception
     {
-        try{
+        try
+        {
             new Start(args).start();
-        }catch (Exception exception){
+        }
+        catch (Exception exception)
+        {
             exception.printStackTrace();
         }
     }
@@ -44,15 +50,26 @@ public class Start
 
         this.parseCLI();
         this.loadConfig();//could have System.exit-side-effect
-        this.checkAndExcecuteIntegrationTest();
+        this.setLoggerLevel();
         this.loadDependencies();
         this.startApplication();
-        this.executeRuntimeTests();
         this.executeBenchmark();
         this.executeIndex();
 
         System.out.println("all services are started");
         Thread.currentThread().join();
+    }
+
+    private void setLoggerLevel()
+    {
+
+        String logLevel = this.config.getProperty("server-logging-level", "info");  // default to Level.DEBUG
+
+        Level level = Level.toLevel(logLevel.toUpperCase());
+
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        List<ch.qos.logback.classic.Logger> loggerList = loggerContext.getLoggerList();
+        loggerList.stream().forEach(tmpLogger -> tmpLogger.setLevel(level));
     }
 
     private void parseCLI()
@@ -68,73 +85,34 @@ public class Start
         }
     }
 
-    private void checkAndExcecuteIntegrationTest()
-    {
-        boolean isIntegrationTest = this.cliParser.isIntegrationTest();
-
-        if (this.isIntegrationTest)
-        {
-            System.out.println("***** INTEGRATION-TEST *****\n\n");
-
-            IntegrationTest integrationTest = new IntegrationTest(dependenciesContainer);
-            boolean result = integrationTest.testAll();
-
-            if (result)
-            {
-                System.out.println("Integrationtest succeeded!");
-                System.exit(0);
-            }
-            else
-            {
-                System.out.println("Integrationtest failed!");
-                System.exit(-1);
-            }
-        }
-    }
-
     private void loadDependencies()
     {
         this.dependenciesContainer = new DependenciesContainer(this.config);
     }
 
-    private void startApplication() throws SQLException, DatabaseException {
+    private void startApplication() throws SQLException, DatabaseException
+    {
         ApplicationService applicationService = this.dependenciesContainer.getInjector().getInstance(ApplicationService.class);
         applicationService.startAll();
     }
 
-    private  void executeRuntimeTests()
+    private void executeBenchmark() throws SQLException, InterruptedException, DatabaseException
     {
-
-        //this is not related to our integration-tests
-        RuntimeTests runtimeTests = new RuntimeTests(this.dependenciesContainer);
-        /**
-         * you can add there tests, activate, deactivate, however you want
-         */
-        // runtimeTests.databaseTest();
-        // runtimeTests.graphQLTest();
-
-    }
-
-    private  void executeBenchmark() throws SQLException, InterruptedException, DatabaseException {
         boolean enableBenchmark = false;
-        if(enableBenchmark){
-             new BenchmarkTest(this.dependenciesContainer).doBenchmark();
+        if (enableBenchmark)
+        {
+            new BenchmarkTest(this.dependenciesContainer).doBenchmark();
         }
     }
 
-    private  void executeIndex() throws SQLException, InterruptedException, DatabaseException {
+    private void executeIndex() throws SQLException, InterruptedException, DatabaseException
+    {
         boolean enableIndexTest = false;
-        if(enableIndexTest){
+        if (enableIndexTest)
+        {
             new IndexTest(this.dependenciesContainer).test();
         }
     }
-
-
-
-
-
-
-
 
 
 }

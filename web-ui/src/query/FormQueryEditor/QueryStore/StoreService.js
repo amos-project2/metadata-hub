@@ -17,8 +17,6 @@ export class StoreService {
 
         let data = {};
 
-        //let multiplierList={}
-
         let author = $(".save-author").val();
         let title = $(".save-title").val();
 
@@ -34,21 +32,10 @@ export class StoreService {
             }
             data[$(this).data("name")].push(tmp);
 
-            // if ($(this).data("multiplier") === "true") {
-            //
-            // } else {
-            //     data[$(this).data("name")]=$(this).val();
-            // }
-
         });
 
         let savedTmp = JSON.stringify(JSON.parse(JSON.stringify(this.lastSavedData)));
         let refTmp = JSON.stringify(JSON.parse(JSON.stringify(data)));
-
-        console.log("START EUQALITY-CHECK");
-        console.log(savedTmp);
-        console.log(refTmp);
-        console.log("END EUQALITY-CHECK");
 
 
         if (savedTmp === refTmp) {
@@ -57,17 +44,11 @@ export class StoreService {
 
         this.lastSavedData = data;
         let sendData = {author: author, title: title, data: data};
-        console.log(sendData);
 
         if (saveToServer) {
             this.storeQuery(sendData);
         }
 
-
-        // this.restApiFetcherServer.fetchJson("saveenginge", sendData, function (event) {
-        //     console.log(event.data);
-        //     console.log("hey");
-        // });
 
         return true;
 
@@ -75,8 +56,6 @@ export class StoreService {
 
     restoreEditor(id) {
         this.getStoredQuery(id, (data) => {
-            console.log(data.data);
-            console.log("HAAHAHAHAHA");
             this.lastSavedData = JSON.parse(data.data);
             this.injectIntoQueryEditor = true;
 
@@ -88,16 +67,12 @@ export class StoreService {
         this.injectIntoQueryEditor = false;
 
         let data = this.lastSavedData;
-
-        console.log("keys-start");
         let keys = Object.keys(data);
-        console.log(keys);
-        console.log("keys-end");
 
         keys.unshift("f4"); //QUICK-FIX
         let isF4 = false;
 
-        let countAll=0;
+        let countAll = 0;
         keys.forEach(value => {
             let dataArr = data[value];
             dataArr.forEach(value2 => {
@@ -107,7 +82,7 @@ export class StoreService {
 
         let time = Math.ceil(5000 / countAll);
 
-        countAll=0
+        countAll = 0
         keys.forEach(value => {
                 if (isF4 && value === "f4") {
                     //nothing
@@ -116,16 +91,11 @@ export class StoreService {
 
                     isF4 = true;
                     let dataArr = data[value];
-                    console.log(dataArr);
 
                     let counter = -1;
                     dataArr.forEach(value2 => {
                             counter++;
-                            // setTimeout(function(){
-                            //     //TODO later
-                            // }, time*countAll)
                             let selector = $(`[data-name="${value}"]`).eq(counter);
-
 
                             if (selector.attr("type") === "checkbox") {
                                 selector.prop("checked", value2);
@@ -156,8 +126,8 @@ export class StoreService {
 
 //server-api-methods
 
-//private
-//higher-order-function/method
+    //private
+    //higher-order-function/method
     helperMethod(successFunc, errorFunc, completeCallback) {
 
         return function (event) {

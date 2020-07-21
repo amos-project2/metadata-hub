@@ -1,8 +1,8 @@
 package JerseyServer.HttpController;
 
 import Config.Config;
-import GraphQL.Fetcher.QueryCache;
 import Database.DatabaseException;
+import GraphQL.Fetcher.QueryCache;
 import QueryServices.MetadataAutocompletion.FileTypeAutocompletionService;
 import QueryServices.MetadataAutocompletion.MetadataInfoService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -12,11 +12,13 @@ import com.google.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Used by the WebUI to give suggestions and validate entries in the FormQuery based on the metadata in the database.
@@ -55,15 +57,12 @@ public class WebUIMetadataHelperController
         String[] split = query.split("\\$XXX\\$");
         String metadataTag = split[0].trim();
 
-        //TODO Change to ALL_TYPES, when implemented
         // Default value if no file type is used
-        String fileTypes = "JPEG";
+        String fileTypes = "ALL";
         if (split.length > 1)
         {
             fileTypes = split[1].toUpperCase().trim();
         }
-        //TODO delete at some point
-        System.out.println("getMetadata:  tag: " + metadataTag + " fileTypes: " + fileTypes);
 
         String tagDatatype = metadataInfoService.requestTagDataType(this.createList(fileTypes, true), metadataTag);
 
@@ -102,8 +101,6 @@ public class WebUIMetadataHelperController
         log.info("Modal Tag Suggestions Query :" + fileTypes + " limit: " + limit + " offset: " + offset);
         List<String> usedFileTypes = this.createList(fileTypes.toUpperCase().trim(), true);
 
-//        List<String> tagSuggestions = metadataAutocompletionService.request(Arrays.asList(usedFileTypes), new ArrayList<>(), null, 20, false);
-
         List<String> tagSuggestions = metadataInfoService.requestTagSuggestions(usedFileTypes, limit, offset);
 
         String jsonTagSuggestions = new ObjectMapper().writeValueAsString(tagSuggestions);
@@ -116,21 +113,21 @@ public class WebUIMetadataHelperController
     @GET
     @Produces("application/json")
     @Path("/filetype-suggestions")
-    public String getFileTypeSuggestions(@QueryParam("q") String query) throws JsonProcessingException, SQLException, DatabaseException {
+    public String getFileTypeSuggestions(@QueryParam("q") String query) throws JsonProcessingException, SQLException, DatabaseException
+    {
         log.info("File Type Suggestions Query :" + query);
 
         String[] split = query.split("\\$XXX\\$");
         String searchString = split[0].toLowerCase().trim();
         String usedFileTypes = split[1].toLowerCase().trim();
-
-        List<String> fileTypeSuggestions = fileTypeAutocompletionService.getFileTypes(this.createList(usedFileTypes), searchString, 10);
+        List<String> usedFileTypesList = this.createList(usedFileTypes);
+        List<String> fileTypeSuggestions = fileTypeAutocompletionService.getFileTypes(usedFileTypesList, searchString, 10);
 
         String jsonFileTypeSuggestions = new ObjectMapper().writeValueAsString(fileTypeSuggestions);
         log.info("File Type Suggestions: " + jsonFileTypeSuggestions);
         return jsonFileTypeSuggestions;
 
     }
-
 
 
     //TODO maybe move to a own controller, because its not anymore still autocompletion related
@@ -155,7 +152,8 @@ public class WebUIMetadataHelperController
     {
         String x = "x";
         if (bigX) x = "X";
-        return (data.equals("")) ? new ArrayList<>() : Arrays.asList(data.split("\\$" + x + "\\$"));
+        List<String> ret = (data.equals("")) ? new ArrayList<String>() : new LinkedList<>(Arrays.asList(data.split("\\$" + x + "\\$")));
+        return ret.stream().map(s -> s.trim()).collect(Collectors.toList());
     }
 
 

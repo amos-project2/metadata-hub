@@ -14,7 +14,6 @@ module.exports = {
         "js-sha256",
         "darkreader",
         "bootstrap-autocomplete",
-        "datatables.net-bs4",
     ],
    // devtool: 'inline-source-map',
     output: {

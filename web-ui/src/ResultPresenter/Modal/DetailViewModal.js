@@ -82,8 +82,6 @@ export class DetailViewModal {
 
     openModalWithData(id, data) {
 
-        console.log(data);
-
         this.pSelector.find(".detail-view-html").hide();
         this.pSelector.find(".detail-view-data").html(id);
         this.pSelector.find(".detail-view-html2").html("");

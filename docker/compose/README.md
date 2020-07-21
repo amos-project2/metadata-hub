@@ -26,21 +26,30 @@ The components share the following configuration that is build inside the corres
 **This** configuration can't be changed without modifying the ```environment.testing.json``` file and rebuilding the images.
 
 ```bash
-{
-    "database-host": "database",
-    "database-name": "metadatahub",
-    "database-user": "metadatahub",
-    "database-password": "metadatahub",
-    "database-port": 5432,
-    "crawler-host": "0.0.0.0",
-    "crawler-port": 9000,
-    "server-host": "0.0.0.0",
-    "server-port": 8080
-}
+"database-name": "metadatahub",
+"database-host": "database",
+"database-port": 5432,
+"database-user": "metadatahub",
+"database-password": "metadatahub",
+"crawler-host": "0.0.0.0",
+"crawler-service-name": "crawler",
+"crawler-port": 9000,
+"crawler-logging-level": "DEBUG",
+"crawler-db-update-interval": 60,
+"crawler-scheduler-interval": 60,
+"crawler-measure-time": false,
+"server-host": "0.0.0.0",
+"server-port": 8080,
+"webui-queryConstructorEnabled": true,
+"webui-crawlerEnabled": true,
+"webui-defaultUsername": "User",
+"webui-adminLoginEnabeled": true,
+"webui-enduserLoginEnabled": true,
+"webui-autoLogin": "",
+"webui-pageChangeAnimation": true
 ```
 
-The database is already initialized with the user/password and the database schemata. There is also some test data inside the database.
-
+The database is already initialized with the user/password and the database schemata.
 
 
 The ```.env``` file in this directory does configure the following values.

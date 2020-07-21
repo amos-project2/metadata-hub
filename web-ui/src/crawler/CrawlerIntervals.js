@@ -15,7 +15,7 @@ export class CrawlerIntervals extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
         // Page
         super(parent, identifier, mountpoint, titleSelector);
-        this.title = "Crawler Intervals";
+        this.title = "TreeWalk Intervals";
         this.titleActive = false;
         this.cacheLevel = 3;
         this.restAPIFetcherCrawler = this.parent.dependencies.restApiFetcherCrawler;
@@ -35,7 +35,7 @@ export class CrawlerIntervals extends Page {
                 intervals for maximum resource consumption. These time intervals
                 can be added and deleted using the form and the remove buttons on
                 each item. They are periodically defined for each week.
-                The page is refreshed every <strong>60</strong> or
+                The page is refreshed each minute or
                 upon adding/deleting time intervals. If you want to update it
                 manually, just click the refresh button.
             </p>
@@ -135,7 +135,6 @@ export class CrawlerIntervals extends Page {
             $(`#${this.intervalForm.endMinutesID}`).val()
         );
         let cpu = $(`#${this.intervalForm.cpuLevelID}`).val();
-        console.log(cpu);
         let start = `${startDay}:${startHours}:${startMinutes}`;
         let end = `${endDay}:${endHours}:${endMinutes}`;
         let url = `intervals/add?start=${start}&end=${end}&cpu=${cpu}`;

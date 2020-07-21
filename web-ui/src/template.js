@@ -1,5 +1,4 @@
 import {Page} from "./Page";
-import {Testname} from "./status/Testname";
 import {GraphiqlConsole} from "./graphiql/Graphiql-console";
 import {QueryEditor} from "./query/FormQueryEditor/QueryEditor";
 import {GraphqlQueryEditor} from "./query/GraphqlQueryEditor";
@@ -175,35 +174,28 @@ export class Template {
             n.addOneNavElement(new NavElement(1, "GraphQL-Query", "graphql-query", t => {return new GraphqlQueryEditor(t)}));
         });
 
-        this.addNavGroup(2, "Crawler", n => {
-            n.addOneNavElement(new NavElement(2, "Controller", "crawler-controller", t => {return new CrawlerController(t)}));
-            n.addOneNavElement(new NavElement(2, "Scheduler", "crawler-scheduler", t => {return new CrawlerScheduler(t)}));
-            n.addOneNavElement(new NavElement(2, "Intervals", "crawler-intervals", t => {return new CrawlerIntervals(t)}));
+        this.addNavGroup(2, "TreeWalk", n => {
+            n.addOneNavElement(new NavElement(2, "Controller", "treewalk-controller", t => {return new CrawlerController(t)}));
+            n.addOneNavElement(new NavElement(2, "Scheduler", "treewalk-scheduler", t => {return new CrawlerScheduler(t)}));
+            n.addOneNavElement(new NavElement(2, "Intervals", "treewalk-intervals", t => {return new CrawlerIntervals(t)}));
         });
 
 
-        this.addNavGroup(3, "status", n => {
-            n.addOneNavElement(new NavElement(3, "Testname", "testname", t => {return new Testname(t)}));
-            n.addOneNavElement(new NavElement(3, "Testname2", "testname2", t => {return new Page(t)}));
-            n.addMoreNavElementsToOneGroup("MyDropdown", [
-                new NavElement(3, "Testname3", "testname3", t => {return new Page(t)}),
-                new NavElement(3, "Testname4", "testname4", t => {return new Page(t)}),
-                new NavElement(3, "divider"),
-                new NavElement(3, "Testname5", "testname5", t => {return new Page(t)})
-            ]);
-            n.addOneNavElement(3, new NavElement(3, "Testname6", "testname6", t => {return new Page(t)}));
-        });
+        /**
+         * This is an example how to add menue-items with dropdown-links
+         */
+        // this.addNavGroup(3, "status", n => {
+        //     n.addOneNavElement(new NavElement(3, "Testname", "testname", t => {return new Testname(t)}));
+        //     n.addOneNavElement(new NavElement(3, "Testname2", "testname2", t => {return new Page(t)}));
+        //     n.addMoreNavElementsToOneGroup("MyDropdown", [
+        //         new NavElement(3, "Testname3", "testname3", t => {return new Page(t)}),
+        //         new NavElement(3, "Testname4", "testname4", t => {return new Page(t)}),
+        //         new NavElement(3, "divider"),
+        //         new NavElement(3, "Testname5", "testname5", t => {return new Page(t)})
+        //     ]);
+        //     n.addOneNavElement(3, new NavElement(3, "Testname6", "testname6", t => {return new Page(t)}));
+        // });
 
-        this.addNavGroup(3, "Help", n => {
-            n.addOneNavElement(new NavElement(3, "help1", "help1", t => {return new Page(t)}));
-            n.addOneNavElement(new NavElement(3, "help1", "help2", t => {return new Page(t)}));
-        });
-
-
-        this.addNavGroup(3, "About", n => {
-            n.addOneNavElement(new NavElement(3, "about1", "about1", t => {return new Page(t)}));
-            n.addOneNavElement(new NavElement(3, "about1", "about2", t => {return new Page(t)}));
-        });
 
         this.addNavGroup(0, "About", n => {
             n.addOneNavElement(new NavElement(0, "About", "about", t => {return new About(t)}));

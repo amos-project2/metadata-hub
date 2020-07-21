@@ -36,12 +36,12 @@ export class ControllUnits {
                         <option value="100">100</option>
                     </select>
                 </div>
-                <div style="margin:5px;" class="for-hiding" data-toggle="tooltip-vis" data-placement="top" title="Please go to the Table-Tab. With clicking on the columns you can adjust the sorting">
+                <div style="margin:5px;" class="for-hiding" data-toggle="tooltip-vis" data-placement="top" title="Please go to the Table Tab for selecting a sorting attribute. You can click on the table columns to sort by a specific attribute or change the sotring order(ascending or descending).">
                     Sorting: <span class="badge badge-success mySorting"> id (ascending) </span>
                 </div>
 
-                <div style=" margin:2px; cursor: pointer" data-toggle="tooltip-vis" data-placement="top" title="It shows the final query, with pagination-informations included">
-                    <button type="button" class="btn btn-primary open-final-query btn-sm">Open Final Query</button>
+                <div style=" margin:2px; cursor: pointer" data-toggle="tooltip-vis" data-placement="top" title="Show the final query, with pagination-information(limit, offset) included">
+                    <button type="button" class="btn btn-primary open-final-query btn-sm">Open Final GraphQL Query</button>
                 </div>
 
             </div>
@@ -93,16 +93,19 @@ export class ControllUnits {
 
     }
 
+    /**
+     * called by updateInternalState from Resultpresenter
+     */
     updateState(formGraphQL, json) {
         let sorting = formGraphQL.sortingIntern;
         let scending = " (descending) ";
-        if(sorting.asc) {
+        if (sorting.asc) {
             scending = " (ascending) ";
         }
-        this.pSelector.find(".mySorting").html(sorting.attribute+scending);
+        this.pSelector.find(".mySorting").html(sorting.attribute + scending);
 
         this.pSelector.find(".open-final-query").off(); // remove last listener
-        this.pSelector.find(".open-final-query").click(()=>{
+        this.pSelector.find(".open-final-query").click(() => {
             this.graphQLIntrospectionModal.openModalWithContent(formGraphQL.generateAndGetGraphQlCode());
         });
     }
@@ -117,7 +120,7 @@ export class ControllUnits {
         let offsetLimit = formGraphQL.getOffset() + currentFiles;
         let offsetFiles = formGraphQL.getOffset() + 1;
         if (currentFiles === 0) offsetFiles = 0;
-        this.pSelector.find('.myEntryCount').html(`<b>${offsetFiles} - ${offsetLimit} [${currentFiles}] from ${totalFiles}</b> | Metadatacolumns: ${metadatacolums}`);
+        this.pSelector.find('.myEntryCount').html(`<b>${offsetFiles} - ${offsetLimit} [${currentFiles}] from ${totalFiles}</b> | metadata columns: ${metadatacolums}`);
 
     }
 

@@ -1,5 +1,4 @@
 import {Page} from "../../../Page";
-import {StoreService} from "./StoreService";
 
 import * as moment from 'moment';
 
@@ -28,18 +27,24 @@ export class QueryStore extends Page {
     content() {
         // language=HTML
         return `
+            <br>
+            The Query Store is used for saving queries, which were already executed or specifically saved.</br>
+            These queries can get restored, which will fill in the query information in the Query Editor.
+            <br>
+            <br>
 
-             <div class="row mb-3 ml-3">
+            <div class="row mb-3 ml-3">
 
-                      <div class="form-group row">
-                        <label for="author-filter" class="col-sm-4 col-form-label">Author-Filter</label>
-                        <div class="col-sm-8">
+
+                <div class="form-group row">
+                    <label for="author-filter" class="col-sm-4 col-form-label">Author-Filter</label>
+                    <div class="col-sm-8">
                         <input type="text" class="form-control" id="author-filter" value="${this.author}">
-                        </div>
                     </div>
-
-
                 </div>
+
+
+            </div>
 
 
             <div class="storage-load-container" style="display: none">
@@ -49,8 +54,9 @@ export class QueryStore extends Page {
             </div>
             <div class="storage-container container pt-4 pb-4" style="display:none"></div>
 
-<div class="col pb-4"><button type="button" class="btn btn-sm btn-danger delete-all" style="${this.notAdminExtension}">Delete All</button></div>
-
+            <div class="col pb-4">
+                <button type="button" class="btn btn-sm btn-danger delete-all" style="${this.notAdminExtension}">Delete All</button>
+            </div>
 `;
 
 
@@ -94,11 +100,10 @@ export class QueryStore extends Page {
             if (data.length === 0) {
                 $(".storage-container").html("There arent any Query-Editor-Views saved yet.");
                 $(".storage-container").stop(true).show(1000);
+                return;
             }
 
             data.forEach(value => {
-                // language=HTML
-
 
                 let dateString = moment(new Date(value.create_time)).format('YYYY-MM-DD HH:MM');
 
@@ -118,7 +123,6 @@ export class QueryStore extends Page {
                     </div>
 
                 `);
-                console.log(value);
             });
 
             let thisdata = this;
