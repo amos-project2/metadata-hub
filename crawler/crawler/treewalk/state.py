@@ -299,8 +299,7 @@ class State:
                 'status': self._status,
                 'config': self._config.get_data(as_json=False),
                 'processes': self._running_workers,
-                'progress': self._progress,
-
+                'progress': f'{self._progress:.2f}'
             }
         return communication.Response(
             success=True,
