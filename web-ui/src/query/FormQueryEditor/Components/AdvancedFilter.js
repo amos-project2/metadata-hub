@@ -227,6 +227,7 @@ export class AdvancedFilter {
                     } else if (datatype == "dig") {
                         $(elem).parent().find(".fg-metadata-value").prop('placeholder', "Value [Number]");
                         $(elem).parent().find(".fg-metadata-value").prop('type', 'number');
+                        $(elem).parent().find(".fg-metadata-value").prop('step', 'any');
                     } else {
                         $(elem).parent().find(".fg-metadata-value").prop('placeholder', "Value");
                         $(elem).parent().find(".fg-metadata-value").prop('type', 'number');
