@@ -27,7 +27,10 @@ public class GraphQLSchemaDefinition {
     public static final String QUERY_METADATA_FILTER_LOGIC_OPTIONS = "metadata_filter_logic_options";
     public static final String QUERY_METADATA_FILTER_LOGIC = "metadata_filter_logic";
     public static final String QUERY_SELECTED_ATTRIBUTES = "selected_attributes";
+    public static final String QUERY_SORT_BY_ATTRIBUTES = "sortBy";
+    public static final String QUERY_SORT_BY_OPTIONS = "sortBy_options";
     public static final String QUERY_LIMIT_FETCHING_SIZE = "limitFetchingSize";
+    public static final String QUERY_OFFSET = "offset";
     public static final String QUERY_SHOW_DELETED = "showDeleted";
 
     /**

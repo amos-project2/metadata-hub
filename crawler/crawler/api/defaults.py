@@ -1,3 +1,6 @@
+"""Definition of default values used in the API module."""
+
+
 #: HTTP OK
 STATUS_OK = 200
 

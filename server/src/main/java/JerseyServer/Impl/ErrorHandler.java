@@ -16,8 +16,7 @@ public class ErrorHandler implements ExceptionMapper<Throwable>
 
 		public Response toResponse(Throwable error)
 		{
-		    log.info(error.getMessage());
-			error.printStackTrace();
+		    log.info(error.getMessage(), error);
 
 			if (error instanceof WebApplicationException)
 			{

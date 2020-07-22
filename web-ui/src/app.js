@@ -1,12 +1,10 @@
 import 'bootstrap';
 import darkstyle from './scss/dark/dark.lazy.scss3';
 import './scss/app.scss';
-import {GraphQlFetcher} from "./buisnesslogic/GraphQlFetcher";
-import {RestAPIFetcher} from "./buisnesslogic/RestAPIFetcher";
-import {Utilities} from "./buisnesslogic/Utilities";
+import {GraphQlFetcher} from "./libs/Fetcher/GraphQlFetcher";
+import {RestAPIFetcher} from "./libs/Fetcher/RestAPIFetcher";
+import {Utilities} from "./Utilities/Utilities";
 import {Login} from "./login/Login";
-
-
 
 
 if (window.myApplication === undefined) {

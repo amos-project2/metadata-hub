@@ -66,6 +66,20 @@ class State:
         self._num_workers = -1
         self._progress = 0
         self._running_workers = 0
+        self._interval_changed = False
+
+
+    def _is_ready(self) -> bool:
+        """Return if the current state is ready.
+
+        Does not synchronize the object.
+
+        Returns:
+            bool: True if state is ready, False otherwise
+
+        """
+        return self._status == State.READY
+
 
     @synchronized_state
     def get_status(self) -> str:
@@ -75,6 +89,7 @@ class State:
             str: current state
         """
         return self._status
+
 
     @synchronized_state
     def get_config(self) -> Config:
@@ -88,6 +103,7 @@ class State:
             return None
         return self._config.get_data()
 
+
     @synchronized_state
     def is_running(self) -> bool:
         """Return if the current state is running.
@@ -97,6 +113,7 @@ class State:
 
         """
         return self._status == State.RUNNING
+
 
     @synchronized_state
     def is_paused(self) -> bool:
@@ -108,6 +125,7 @@ class State:
         """
         return self._status == State.PAUSED
 
+
     @synchronized_state
     def is_ready(self) -> bool:
         """Return if the current state is ready.
@@ -118,16 +136,6 @@ class State:
         """
         return self._status == State.READY
 
-    def _is_ready(self) -> bool:
-        """Return if the current state is ready.
-
-        Does not synchronize the object.
-
-        Returns:
-            bool: True if state is ready, False otherwise
-
-        """
-        return self._status == State.READY
 
     @synchronized_state
     def set_running(self, config: Config) -> None:
@@ -147,6 +155,7 @@ class State:
         self._status = State.RUNNING
         self._config = config
 
+
     @synchronized_state
     def set_paused(self) -> None:
         """Set the state to paused.
@@ -161,6 +170,7 @@ class State:
             )
         self._status = State.PAUSED
 
+
     @synchronized_state
     def set_unpaused(self) -> None:
         """Set the state to running again.
@@ -174,6 +184,7 @@ class State:
                 f'Cannot continue from {self._status}.'
             )
         self._status = State.RUNNING
+
 
     @synchronized_state
     def set_preparing(self, config: Config) -> None:
@@ -193,11 +204,13 @@ class State:
         self._status = State.PREPARING
         self._config = config
 
+
     @synchronized_state
     def set_ready(self) -> None:
         """Set status to ready."""
         self._config = None
         self._status = State.READY
+
 
     @synchronized_state
     def set_cpu_level(self, cpu_level: int) -> None:
@@ -214,16 +227,36 @@ class State:
             self._num_workers = -1
         else:
             self._num_workers = treewalk.get_number_of_workers(self._cpu_level)
+        self._interval_changed = True
+
 
     @synchronized_state
-    def get_cpu_level(self) -> Tuple[int, int]:
+    def get_cpu_level(self, ignore: bool = False) -> Tuple[int, int]:
         """Get the current CPU level and if it must be enforced.
 
+        If no interval changes happend since the last call, an exception is
+        raised. This can reduce some logic for checking if an update of
+        the number of workers is really neccessary.
+
+        Args:
+            ignore (bool): if set to true, ignore the interval change
+                and don't reset it respectively. Defaults to False.
+
+        Raises:
+            StateException: if interval didn't change since last call
+
         Returns:
-            Tuple[int, bool, int]: CPU level, number of workers
+            Tuple[int, int]: CPU level, number of workers
 
         """
-        return (self._cpu_level, self._num_workers)
+        data = (self._cpu_level, self._num_workers)
+        if ignore:
+            return data
+        if not self._interval_changed:
+            raise StateException('Interval didn\'t change since last call.')
+        self._interval_changed = False
+        return data
+
 
     @synchronized_state
     def set_progress(self, progress: float) -> None:
@@ -235,6 +268,7 @@ class State:
         """
         self._progress = progress
 
+
     @synchronized_state
     def set_running_workers(self, num_workers: int) -> None:
         """Set the number of running worker processes.
@@ -244,6 +278,7 @@ class State:
 
         """
         self._running_workers = num_workers
+
 
     @synchronized_state
     def info(self) -> communication.Response:
@@ -264,8 +299,7 @@ class State:
                 'status': self._status,
                 'config': self._config.get_data(as_json=False),
                 'processes': self._running_workers,
-                'progress': self._progress,
-
+                'progress': f'{self._progress:.2f}'
             }
         return communication.Response(
             success=True,

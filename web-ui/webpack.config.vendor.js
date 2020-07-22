@@ -13,6 +13,7 @@ module.exports = {
         "graphiql/graphiql.min.css",
         "js-sha256",
         "darkreader",
+        "bootstrap-autocomplete",
     ],
    // devtool: 'inline-source-map',
     output: {

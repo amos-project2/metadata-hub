@@ -1,7 +1,7 @@
 package JerseyServer.Impl;
 
 import Config.Config;
-import HttpController.*;
+import JerseyServer.HttpController.*;
 import JerseyServer.HttpServer;
 import com.google.inject.Inject;
 import graphql.GraphQL;
@@ -10,7 +10,9 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,9 +29,10 @@ public class JerseyServerImpl implements HttpServer
 
     @Inject
     public JerseyServerImpl(GraphQL graphQl, Config config,
-							CrawlerUiProxyController c0, GraphQLController c1,
-							TestconsoleController c2, WebuiController c3,
-                            CrawlerAPIProxyController c4, MetadataAutocompletionController c5
+                            GraphQLController c0, TestConsoleController c1,
+                            WebUIController c2, CrawlerAPIProxyController c3,
+                            WebUIMetadataHelperController c4, ExportController c5,
+                            QueryEditorStorageController c6, WebUICategoriesController c7
     )
     {
         this.config = config;
@@ -44,6 +47,8 @@ public class JerseyServerImpl implements HttpServer
         resourceConfig.register(c3);
         resourceConfig.register(c4);
         resourceConfig.register(c5);
+        resourceConfig.register(c6);
+        resourceConfig.register(c7);
 
         resourceConfig.register(ErrorHandler.class);
         this.server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, resourceConfig, false);
@@ -72,9 +77,9 @@ public class JerseyServerImpl implements HttpServer
 
             System.out.println("Jersey-Server started\n");
             System.out.println("Listening-Address: " + config.getProperty("server-host") + " | Port: " + config.getProperty("server-port"));
-            System.out.println("WEB-GUI: http://localhost:" + config.getProperty("server-port"));
-            System.out.println("GRAPHQL-ENDPOINT: http://localhost:" + config.getProperty("server-port") + "/graphql/?query=hey");
+            System.out.println("GRAPHQL-ENDPOINT: http://localhost:" + config.getProperty("server-port") + "/graphql/?query=" + getGraphQLExampleQuery());
             System.out.println("GRAPHQL-TEST-CONSOLE: http://localhost:" + config.getProperty("server-port") + "/testconsole/");
+            System.out.println("WEB-GUI: http://localhost:" + config.getProperty("server-port"));
 
         }
         catch (IOException ex)
@@ -93,5 +98,9 @@ public class JerseyServerImpl implements HttpServer
     public void shutdownNow()
     {
         this.server.shutdownNow();
+    }
+
+    private String getGraphQLExampleQuery() throws UnsupportedEncodingException {
+        return URLEncoder.encode("query{searchForFileMetadata(limitFetchingSize:1){files{name,type,metadata{name,value}}}}","UTF-8");
     }
 }

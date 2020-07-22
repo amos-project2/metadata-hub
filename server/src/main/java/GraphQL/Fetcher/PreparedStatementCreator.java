@@ -15,7 +15,8 @@ public class PreparedStatementCreator {
 
         //TODO SQLInjection Prevention is needed!
         //TODO Don't select every field only the wanted ones (SELECT *) -> (SELECT id, metadata...)
-        StringBuilder stringBuilder = new StringBuilder("SELECT * FROM " + DatabaseSchemaDefinition.FILES_TABLE +  " WHERE ");
+//        StringBuilder stringBuilder = new StringBuilder("SELECT * FROM " + DatabaseSchemaDefinition.FILES_TABLE +  " WHERE ");
+        StringBuilder stringBuilder = new StringBuilder("FROM " + DatabaseSchemaDefinition.FILES_TABLE +  " WHERE ");
 
         //file_ids
         if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_FILES_IDS)){
@@ -128,10 +129,51 @@ public class PreparedStatementCreator {
 
         stringBuilder.append(" TRUE");
 
-        //Only fetch a certain amount of rows
-        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE)) {
-            stringBuilder.append(" FETCH FIRST " + graphQLArguments.get(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE) + " ROWS ONLY");
+        //Order the result on different attributes depending on different sort options
+        //TODO: check if attributes are valid Database attributes?
+        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_SORT_BY_ATTRIBUTES)){
+            List<String> sortBy_attributes = (List<String>) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_SORT_BY_ATTRIBUTES);
+            stringBuilder.append(" ORDER BY ");
+
+            if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_SORT_BY_OPTIONS)){
+                List<String> sortBy_options = (List<String>) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_SORT_BY_OPTIONS);
+
+                if(sortBy_attributes.size() == sortBy_options.size()){
+                    for(int i = 0; i < (sortBy_attributes.size() - 1); i++){
+                        stringBuilder.append(sortBy_attributes.get(i) + " " + sortBy_options.get(i) + " , ");
+                    }
+                    stringBuilder.append(sortBy_attributes.get(sortBy_attributes.size() - 1) + " " + sortBy_options.get(sortBy_options.size() - 1) + " ");
+                    //sizes of attribute and option list differs, all options get ignored
+                } else {
+                    for(int i = 0; i < (sortBy_attributes.size() - 1); i++){
+                        stringBuilder.append(sortBy_attributes.get(i) + " , ");
+                    }
+                    stringBuilder.append(sortBy_attributes.get(sortBy_attributes.size() - 1) + " ");
+                }
+
+                // no sortBy_options declared
+            } else {
+                for(int i = 0; i < (sortBy_attributes.size() - 1); i++){
+                    stringBuilder.append(sortBy_attributes.get(i) + " , ");
+                }
+                stringBuilder.append(sortBy_attributes.get(sortBy_attributes.size() - 1) + " ");
+            }
+
+            // If limit or offset are used the result also needs to get sorted to be sure that one can iterate over the result set.
+            // otherwise postgreSQL doesn't secure a predictable result set
+        } else if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE) || graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_OFFSET)){
+            stringBuilder.append(" ORDER BY " + DatabaseSchemaDefinition.FILES_NAME + " ");
         }
+
+        //Only fetch a certain amount of rows
+        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE) && !(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_OFFSET))) {
+            stringBuilder.append(" LIMIT " + graphQLArguments.get(GraphQLSchemaDefinition.QUERY_LIMIT_FETCHING_SIZE));
+        }
+
+//        //Ignores all rows of result till offset
+//        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_OFFSET)){
+//            stringBuilder.append(" OFFSET " + graphQLArguments.get(GraphQLSchemaDefinition.QUERY_OFFSET));
+//        }
 
         return stringBuilder.toString();
     }
@@ -223,27 +265,40 @@ public class PreparedStatementCreator {
                 }
             }
         }
-        stringBuilder.append(buildMetadataFilterLogic(graphQLArguments, metadata_filters));
+        try{
+            stringBuilder.append(buildMetadataFilterLogic(graphQLArguments, metadata_filters));
+        }catch (Exception exception){
+            throw new GraphQLException("Couldn't build metadata filter logic! The entered filter string is faulty!", exception);
+        }
     }
 
     /**
      * Builds a String that can be used in a SQL statement out of the specified metadata_filters
+     *
+     * Concerning the custom set Filter Logic String
+     * A Filter Logic String looks like this: "(f1 AND f3) OR f2 AND (f11 AND f0)"
+     * The indexes in the Filter Logic String resemble the metadata filters index in the metadata_filters map
+     * From Start to finish every f[x] gets substituted by a metadata filter
      */
     private static String buildMetadataFilterLogic(Map<String, Object> graphQLArguments, Map<Integer, String> metadata_filters){
-       StringBuilder metadatafilterBuilder = new StringBuilder(" ");
+       StringBuilder metadatafilterBuilder = new StringBuilder(" (");
+       Map<Integer, String> unused_metadata_filters = new HashMap<>(metadata_filters);
 
-       //Insert the filter options into the filter logic string to create a sql statement
+       //Insert the metadata filters into the filter logic string to create a sql statement
        if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC)){
            String filterLogic = (String) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC);
 
            metadatafilterBuilder.append(filterLogic + " AND ");
-           for(int filterIndexStart = metadatafilterBuilder.indexOf("f"); filterIndexStart != -1; filterIndexStart = metadatafilterBuilder.indexOf("f")){
+           int lastFoundFilterIndex = 0;
+           for(int filterIndexStart = metadatafilterBuilder.indexOf("f"); filterIndexStart != -1; filterIndexStart = metadatafilterBuilder.indexOf("f", lastFoundFilterIndex)){
 
+               //Get the end position of the filter in the filter logic string
                int filterIndexEnd = metadatafilterBuilder.indexOf(" ", filterIndexStart);
                while(metadatafilterBuilder.charAt(filterIndexEnd-1) == ')'){
                    filterIndexEnd--;
                }
 
+               //Get the index of the filter among the metadata filters
                String filterIndexString = metadatafilterBuilder.substring(filterIndexStart + 1, filterIndexEnd);
                int filterIndex =  Integer.parseInt(filterIndexString);
 
@@ -251,40 +306,42 @@ public class PreparedStatementCreator {
                    throw new GraphQLException(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC + ": Specified filter index [" + filterIndex + "] couldn't be found in metadata filters. Maybe out of range.");
                }
 
-               String filter = metadata_filters.remove(filterIndex);
+               String filter = metadata_filters.get(filterIndex);
+               unused_metadata_filters.remove(filterIndex);
 
-               //replaceAll occurences of the filter index
-               int tmpIndex = filterIndexStart;
-               while(tmpIndex != -1){
-                   // filterIndex isn't multi-digit
-                   if(metadatafilterBuilder.charAt(tmpIndex + filterIndexString.length() + 1 ) < 48) {
-                       metadatafilterBuilder.replace(tmpIndex, tmpIndex + filterIndexString.length() + 1, filter);
-                   }
-                   tmpIndex += filterIndexString.length() + 1;
-                   tmpIndex = metadatafilterBuilder.indexOf("f"+filterIndex, tmpIndex);
-               }
+               //Remember how far the filter logic String got analyzed
+               lastFoundFilterIndex = filterIndexStart  + filter.length();
+
+               //replace occurence of the filter index
+               metadatafilterBuilder.replace(filterIndexStart, filterIndexStart + filterIndexString.length() + 1, filter);
            }
 
        }
 
        String logicOptions = GraphQLSchemaDefinition.FILTER_LOGIC_OPTION_AND;
        String logicalOperator = " AND ";
+       Boolean isOR = false;
         if(graphQLArguments.containsKey(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC_OPTIONS)){
             logicOptions = (String) graphQLArguments.get(GraphQLSchemaDefinition.QUERY_METADATA_FILTER_LOGIC_OPTIONS);
             if(logicOptions.equals(GraphQLSchemaDefinition.FILTER_LOGIC_OPTION_OR)){
                 logicalOperator = " OR ";
+                isOR = true;
             }
         }
 
         //Add the rest of the filter options that were'nt used in the logic string
         if(!logicOptions.equals(GraphQLSchemaDefinition.FILTER_LOGIC_OPTION_ONLY_LOGIC)) {
-            for (Map.Entry<Integer, String> filter : metadata_filters.entrySet()) {
+            for (Map.Entry<Integer, String> filter : unused_metadata_filters.entrySet()) {
                 metadatafilterBuilder.append(filter.getValue() + logicalOperator);
             }
         }
 
+        if(isOR && metadata_filters.size() > 0){
+            metadatafilterBuilder.append(" FALSE ");
+        }else{
+            metadatafilterBuilder.append(" TRUE ");
+        }
 
-
-        return metadatafilterBuilder.toString();
+        return metadatafilterBuilder.append(") AND ").toString();
     }
 }

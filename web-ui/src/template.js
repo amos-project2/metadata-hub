@@ -1,7 +1,6 @@
 import {Page} from "./Page";
-import {Testname} from "./status/Testname";
 import {GraphiqlConsole} from "./graphiql/Graphiql-console";
-import {FormQueryEditor} from "./query/FormQueryEditor";
+import {QueryEditor} from "./query/FormQueryEditor/QueryEditor";
 import {GraphqlQueryEditor} from "./query/GraphqlQueryEditor";
 import {HashQuery} from "./query/HashQuery";
 import {CrawlerController} from "./crawler/CrawlerController";
@@ -10,11 +9,18 @@ import {CrawlerIntervals} from "./crawler/CrawlerIntervals";
 import {ErrorPage} from "./ErrorPage";
 import {Logout} from "./logout/Logout";
 
+import {QueryStore} from "./query/FormQueryEditor/QueryStore/QueryStore";
+import {FileTypeCategories} from "./query/FormQueryEditor/FileTypeCategories/FileTypeCategories";
+
 import {
     enable as enableDarkMode,
     disable as disableDarkMode,
     auto as followSystemColorScheme,
 } from 'darkreader';
+import {About} from "./about/About";
+import {License} from "./about/License";
+import {StoreService} from "./query/FormQueryEditor/QueryStore/StoreService";
+
 
 
 class NavElement {
@@ -143,45 +149,57 @@ export class Template {
         });
 
 
-        this.addNavGroup(1, "Query", n => {
-            n.addOneNavElement(new NavElement(1, "Form-Query", "form-query", t => {return new FormQueryEditor(t)}));
+        this.addNavGroup(1, "Query-Editor", n => {
+
+            let queryEditor = new QueryEditor(this);
+            let queryStore = new QueryStore(this);
+            let storeService = new StoreService(queryEditor, this.queryStore, this.dependencies.restApiFetcherServer);
+
+            queryEditor.setStoreService(storeService);
+            queryStore.setStoreService(storeService);
+
+            n.addOneNavElement(new NavElement(1, "Query-Editor", "query-editor", t => {return queryEditor}));
+            n.addOneNavElement(new NavElement(1, "Query-Store", "query-store", t => {return queryStore}));
+            n.addOneNavElement(new NavElement(2, "File-Type-Categories", "file-type-categories", t => {return new FileTypeCategories(t)}));
+        });
+
+
+        this.addNavGroup(1, "Hash-Query", n => {
             n.addOneNavElement(new NavElement(1, "Hash Query", "hash-query", t => {return new HashQuery(t)}));
-            n.addOneNavElement(new NavElement(1, "GraphQL-Query", "graphql-query", t => {return new GraphqlQueryEditor(t)}));
-
         });
 
-        this.addNavGroup(1, "GraphiQL", n => {
+
+        this.addNavGroup(1, "GraphQL", n => {
             n.addOneNavElement(new NavElement(1, "GraphiQL-Console", "graphiql-console", t => {return new GraphiqlConsole(t)}));
+            n.addOneNavElement(new NavElement(1, "GraphQL-Query", "graphql-query", t => {return new GraphqlQueryEditor(t)}));
         });
 
-        this.addNavGroup(2, "Crawler", n => {
-            n.addOneNavElement(new NavElement(2, "Controller", "crawler-controller", t => {return new CrawlerController(t)}));
-            n.addOneNavElement(new NavElement(2, "Scheduler", "crawler-scheduler", t => {return new CrawlerScheduler(t)}));
-            n.addOneNavElement(new NavElement(2, "Intervals", "crawler-intervals", t => {return new CrawlerIntervals(t)}));
-        });
-
-
-        this.addNavGroup(3, "status", n => {
-            n.addOneNavElement(new NavElement(3, "Testname", "testname", t => {return new Testname(t)}));
-            n.addOneNavElement(new NavElement(3, "Testname2", "testname2", t => {return new Page(t)}));
-            n.addMoreNavElementsToOneGroup("MyDropdown", [
-                new NavElement(3, "Testname3", "testname3", t => {return new Page(t)}),
-                new NavElement(3, "Testname4", "testname4", t => {return new Page(t)}),
-                new NavElement(3, "divider"),
-                new NavElement(3, "Testname5", "testname5", t => {return new Page(t)})
-            ]);
-            n.addOneNavElement(3, new NavElement(3, "Testname6", "testname6", t => {return new Page(t)}));
-        });
-
-        this.addNavGroup(3, "Help", n => {
-            n.addOneNavElement(new NavElement(3, "help1", "help1", t => {return new Page(t)}));
-            n.addOneNavElement(new NavElement(3, "help1", "help2", t => {return new Page(t)}));
+        this.addNavGroup(2, "TreeWalk", n => {
+            n.addOneNavElement(new NavElement(2, "Controller", "treewalk-controller", t => {return new CrawlerController(t)}));
+            n.addOneNavElement(new NavElement(2, "Scheduler", "treewalk-scheduler", t => {return new CrawlerScheduler(t)}));
+            n.addOneNavElement(new NavElement(2, "Intervals", "treewalk-intervals", t => {return new CrawlerIntervals(t)}));
         });
 
 
-        this.addNavGroup(3, "About", n => {
-            n.addOneNavElement(new NavElement(3, "about1", "about1", t => {return new Page(t)}));
-            n.addOneNavElement(new NavElement(3, "about1", "about2", t => {return new Page(t)}));
+        /**
+         * This is an example how to add menue-items with dropdown-links
+         */
+        // this.addNavGroup(3, "status", n => {
+        //     n.addOneNavElement(new NavElement(3, "Testname", "testname", t => {return new Testname(t)}));
+        //     n.addOneNavElement(new NavElement(3, "Testname2", "testname2", t => {return new Page(t)}));
+        //     n.addMoreNavElementsToOneGroup("MyDropdown", [
+        //         new NavElement(3, "Testname3", "testname3", t => {return new Page(t)}),
+        //         new NavElement(3, "Testname4", "testname4", t => {return new Page(t)}),
+        //         new NavElement(3, "divider"),
+        //         new NavElement(3, "Testname5", "testname5", t => {return new Page(t)})
+        //     ]);
+        //     n.addOneNavElement(3, new NavElement(3, "Testname6", "testname6", t => {return new Page(t)}));
+        // });
+
+
+        this.addNavGroup(0, "About", n => {
+            n.addOneNavElement(new NavElement(0, "About", "about", t => {return new About(t)}));
+            n.addOneNavElement(new NavElement(0, "License", "license", t => {return new License(t)}));
         });
 
 

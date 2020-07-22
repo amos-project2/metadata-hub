@@ -13,8 +13,8 @@ export class Logout extends Page {
         // language=HTML
         return `
             <button class="btn btn-lg btn-primary btn-block logout-action-button1" type="button">Logout</button>
-            <button class="btn btn-lg btn-primary btn-block logout-action-button2" type="button">Logout with clearing the GraphiQl-History</button>
-            <button class="btn btn-lg btn-primary btn-block logout-action-button3" type="button">Logout with clearing the GraphiQl-History and Your-Name</button>
+            <button class="btn btn-lg btn-primary btn-block logout-action-button2" type="button">Logout and clear the GraphiQl-History</button>
+            <button class="btn btn-lg btn-primary btn-block logout-action-button3" type="button">Logout and clear the GraphiQl-History and your name</button>
         `;
 
     }
@@ -44,18 +44,5 @@ export class Logout extends Page {
         });
     }
 
-    onUnMount() {
-
-
-    }
-
-
-    onLoad() {
-
-    }
-
-    onUnLoad() {
-
-    }
 
 }

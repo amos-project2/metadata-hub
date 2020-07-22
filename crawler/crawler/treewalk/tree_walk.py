@@ -1,7 +1,11 @@
+"""Utility module for the TreeWalk"""
+
+
 # Python imports
 import os
 import psutil
 from typing import List, Tuple
+
 
 def workSize(pathInput: str) -> List[str]:
     """Creates a hash table based on the total amount of files per directory.
@@ -39,7 +43,6 @@ def create_work_packages(
             yield directories[i: i+work_package_size]
 
     # Create list with every directory that is going to be processed
-    print(f'Initialized tree walk with {len(already_processed)} already processed nodes.')
     directories = []
     for input in inputs:
         path = input.get('path')
@@ -98,6 +101,8 @@ def create_work_packages(
 def get_number_of_workers(cpu_level: int) -> int:
     """Returns the number of worker processes to create based on the CPU level.
 
+    If the actual number of workers would be 0, at least 1 is returned
+
     Args:
         cpu_level (int): cpu level specified in the configuration
 
@@ -105,7 +110,7 @@ def get_number_of_workers(cpu_level: int) -> int:
         int: number of processes to spawn
 
     """
-    return int(cpu_level * 0.25 * psutil.cpu_count(logical=False))
+    return max(int(cpu_level * 0.25 * psutil.cpu_count(logical=False)), 1)
 
 
 def resize_work_packages(
@@ -135,3 +140,20 @@ def resize_work_packages(
         new_work_packages[index].append(package)
         index = (index + 1) % num_workers
     return new_work_packages
+
+
+def chunkify_files(files: List[str], size: int) -> List[str]:
+    """Splits a list of files into 'equally' sized chunks.
+
+    Args:
+        files (List[str]): [description]
+        size (int): [description]
+
+    Returns:
+        List[str]: list of chunks of size 'size'
+
+    """
+    result = []
+    for idx in range(0, len(files), size):
+        result.append(files[idx:idx+size])
+    return result

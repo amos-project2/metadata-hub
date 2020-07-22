@@ -17,9 +17,6 @@ from crawler.services.config import Config
 import crawler.communication as communication
 
 
-_logger = logging.getLogger(__name__)
-
-
 def start(config: Config) -> communication.Response:
     """Start the TreeWalk.
 
@@ -31,6 +28,7 @@ def start(config: Config) -> communication.Response:
 
     """
     if config.get_force_update():
+        logging.info('TWManagerInterface: force-update was set. stopping.')
         command = communication.Command(
             command=communication.MANAGER_STOP,
             data=None

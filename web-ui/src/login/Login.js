@@ -38,16 +38,16 @@ export class Login {
         if (userType === "admin") {
             if (this.config.queryConstructorEnabled) {
                 scope.push(1);
-                startpage = "form-query";
+                startpage = "query-editor";
             }
             if (this.config.crawlerEnabled) {
                 scope.push(2);
-                startpage = "crawler-controller";
+                startpage = "treewalk-controller";
             }
         } else {
             if (this.config.queryConstructorEnabled) {
                 scope.push(1);
-                startpage = "form-query";
+                startpage = "query-editor";
             }
         }
         return {scope, startpage};
@@ -76,7 +76,6 @@ export class Login {
             $("#your-name").val(localStorage.getItem("username"));
             $("#your-name").trigger('propertychange');
         }
-
 
     }
 
@@ -123,7 +122,6 @@ export class Login {
 
                     $(".login-action-button").slideDown(2000);
                 }
-                //$(".login-action-button").removeClass("hide_active");
 
             } else {
 
@@ -135,7 +133,6 @@ export class Login {
                     $(".login-action-button").slideUp(1000);
                 }
 
-                //$(".login-action-button").addClass("hide_active");
             }
 
         });
@@ -153,7 +150,6 @@ export class Login {
         let template = new Template(this.dependencies, usedScope);
         this.unLoadPage();
         template.injectinDomeAndRegisterListener(this.mountpoint);
-        //this.template.goToPage(this.utilities.getUrlParam("p", "form-query"));
         template.goToPage(this.utilities.getUrlParam("p", defaultStartPage));
     }
 
@@ -170,7 +166,6 @@ export class Login {
                             <div class="card-body">
                                 <div class="text-center" style="width:100%">
                                     <img src="logo.png" alt="Metadata-Hub" style="width:180px;"> <!--style="width:240px">-->
-                                    <img src="logo.png" alt="Metadata-Hub" style="width:180px;"> <!--style="width:240px">-->
                                 </div>
                                 <h4 class="card-title text-center font-weight-bold">Sign In</h4>
                                 <form class="form-signin">
@@ -184,7 +179,7 @@ export class Login {
                                         <button class="btn btn-lg btn-primary btn-block text-uppercase login-action-button-admin ${this.adminLoginVisible}" type="button">Sign in as Admin</button>
                                     </div>
                                     <hr class="my-4">
-                                    <span class="text-secondary">* The Your-Name is used for save it along possible queries you will do. It must be not System-known.</span>
+                                    <span class="text-secondary">* Your name is used for saving your queries.</span>
                                 </form>
                             </div>
                         </div>

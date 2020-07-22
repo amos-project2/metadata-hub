@@ -9,34 +9,26 @@ chapter.
 The Metadata-Hub application consists of three major components that are listed
 below.
 
-* **Crawler**<br>
-  This component implements the tree walk algorithm which crawls the
-  target directories/filesystems.
-  The tree walk can be manually configured, e.g. input directories or rough CPU restrictions.
-  It extracts metadata of the traversed files with the
-  [ExifTool](https://exiftool.org/) and stores this data in the database.
-  Furthermore, it stores state about its execution(s) such that the tree walk
-  can be initialized with already traced data or being paused/continued.
+* **TreeWalk**<br>
+  This component implements the TreeWalk algorithm which crawls the
+  target directories/filesystems and stores the by the
+  [ExifTool](https://exiftool.org/) extracted metadata in the database.
+  The TreeWalk supports scheduled and periodic executions and controlling
+  mechanism such as pausing, continuing and stopping running executions.
 
-* **Server**<br>
-  This component provides an interface for queries about the metadata.
+* **MdH-WebUI/Query-Server**<br>
+  The MdH-WebUI/Query-Server provides the interface for metadata queries and
+  the controlling of the TreeWalk.
   It uses [GraphQL](https://graphql.org/) as the query language.
-  Furthermore, it provides a web interface for the user to create queries
-  without too detailed technical knowledge.
+  Furthermore, it supports queries to be stored and executed again as well
+  as exporting the retrieved results as JSON files.
 
 * **Database**<br>
-  This component is responsible for persisting the metadata.
-  The used database is [PostgreSQL](https://www.postgresql.org).
-  Furthermore, it is used to store state about executions of the tree walk
-  for the controlling mechanism.
+  The metadata and additional stateful information for the TreeWalk is stored
+  in a [PostgreSQL](https://www.postgresql.org) database.
 
-The interaction of these components is depicted in the following graphic
-and explained below.
+The interaction of these components is depicted in the following graphic.
+The user/admin use the web interface provided by the MdH-WebUI/Query-Server
+to query metadata and configure the TreeWalk.
 
-
-[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/80a7f8b2d957d19a4988b07c315b5565f1c343d4/documentation/images/architecture_prev.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/ce42678a35d31314d4d427dc805d7c7f8672cc0b/documentation/images/architecture.png)
-
-
-Both the server and the crawler communicate with the database.
-Both the server and the crawler are accessible via the user's web browser.
-The database itself isn't required to be accessed directly by the user.
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/cde5383152db99ee656f34d4170a88311bad3c15/documentation/images/architecture_prev.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/cde5383152db99ee656f34d4170a88311bad3c15/documentation/images/architecture.png)

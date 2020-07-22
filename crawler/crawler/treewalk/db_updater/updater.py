@@ -19,9 +19,6 @@ import crawler.communication as communication
 import crawler.services.environment as environment
 
 
-_logger = logging.getLogger(__name__)
-
-
 class DatabaseUpdater(threading.Thread):
 
     def __init__(self, db_info: dict, measure_time: bool):
@@ -69,10 +66,10 @@ class DatabaseUpdater(threading.Thread):
         For each file that fulfills this criteria, it removes it from the
         database.
         """
-        _logger.info(f'Database updater started.')
+        logging.info(f'DBUpdater: Hello!')
         while True:
-            _logger.info(
-                f'Database updater sleeping for {self._update_interval} seconds.'
+            logging.info(
+                f'DBUpdater: sleeping for {self._update_interval} seconds.'
             )
             try:
                 command = communication.database_updater_input.get(
@@ -91,4 +88,5 @@ class DatabaseUpdater(threading.Thread):
                 if self._is_to_remove(curr_time=curr_time,remove_time=timestamp)
             ]
             num = self._db_connection.delete_files(ids=to_delete)
-            _logger.info(f'Database updater removed {num} files.')
+            logging.info(f'DBUpdater: removed {num} files.')
+        logging.info(f'DBUpdater: Goodbye!')

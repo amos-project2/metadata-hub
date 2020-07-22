@@ -8,7 +8,7 @@
 [**Architecture**](https://github.com/amos-project2/metadata-hub/wiki/Architecture)
 
 [**Documentation**](https://github.com/amos-project2/metadata-hub/wiki/Documentation)
-  * [Crawler](https://github.com/amos-project2/metadata-hub/wiki/Crawler)
+  * [TreeWalk](https://github.com/amos-project2/metadata-hub/wiki/TreeWalk)
   * [Database](https://github.com/amos-project2/metadata-hub/wiki/Database)
   * [Server](https://github.com/amos-project2/metadata-hub/wiki/Server)
   * [WebUI](https://github.com/amos-project2/metadata-hub/wiki/WebUI)

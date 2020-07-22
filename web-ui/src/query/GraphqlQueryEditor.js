@@ -1,5 +1,5 @@
 import {Page} from "../Page";
-import {ResultPresenter} from "../buisnesslogic/ResultPresenter";
+import {ResultPresenterSimple} from "../ResultPresenter/ResultPresenterSimple";
 
 export class GraphqlQueryEditor extends Page {
     constructor(parent, identifier, mountpoint, titleSelector) {
@@ -7,7 +7,7 @@ export class GraphqlQueryEditor extends Page {
         this.title = "GraphQl Query Editor";
         this.cacheLevel = 3;
         this.graphQlFetcher = this.parent.dependencies.graphQlFetcher;
-        this.resultPresenter = new ResultPresenter(this.graphQlFetcher);
+        this.resultPresenter = new ResultPresenterSimple(this.graphQlFetcher);
     }
 
     content() {
@@ -22,14 +22,15 @@ export class GraphqlQueryEditor extends Page {
                 <button type="submit" class="btn btn-primary">Send</button>
             </form>
             <br>
-            <div class="resultView3"></div>
+            <div class="resultView3">
+                ${this.resultPresenter.getHtml()}
+            </div>
         `;
     }
 
     onMount() {
-        $(".resultView3").html(this.resultPresenter.getHtml());
-
         let thisdata = this;
+
         $(".q-send-query-editor").submit(function (event) {
             event.preventDefault();
             thisdata.resultPresenter.generateResultAndInjectIntoDom($("#q_textInput").val());

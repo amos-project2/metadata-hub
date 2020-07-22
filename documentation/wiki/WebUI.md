@@ -1,70 +1,50 @@
-## Form-Query
-Here you can use a special form to ask for the file-data. You can use there advanced filters and limit the json-output to metadata which you are interested in.
+The WebUI has two main parts, one is the constructing and sending of GraphQL-queries to the server, the other one is starting, stopping and scheduling the crawler.
 
-**The following Inputs are possible:**
+## Query Editor
+The Query Editor is an easy to use interface to create GraphQL queries, which can be send to the server to retrieve file metadata. The Query Editor uses filters to reduce the result set of the returned file metadata.
 
-[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/images/webui/webui-form-example.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/images/webui/webui-form-example.png)
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/b237ab6498a66a351661d51d6050045d9798c4c6/documentation/images/webui/QueryEditor.PNG)](https://raw.githubusercontent.com/amos-project2/metadata-hub/b237ab6498a66a351661d51d6050045d9798c4c6/documentation/images/webui/QueryEditor.PNG)
 
-* **Query-Name:** _A name for the query, to find this executed query later easier_
-* **Owner:** _A name of the owner, which is saved along the name, to see who executed the query_
+[**Video on how to use the Query Editor**](https://github.com/amos-project2/metadata-hub/raw/a0dce8044903ed1a7bcf8a977c84a38844a118a4/documentation/videos/UI-1-QueryEditor.mp4)
 
-_The following fields are for limiting the ResultSet related to different DateTimes, the files have_
-* **Start-DateTime (File created)**
-* **End-DateTime (File created)**
-* **Start-DateTime (File modified)**
-* **End-DateTime (File modified)**
+## Query Store
+The Query Store is used for saving and restoring queries in the Query Editor.
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/a0dce8044903ed1a7bcf8a977c84a38844a118a4/documentation/images/webui/QueryStore.PNG)](https://raw.githubusercontent.com/amos-project2/metadata-hub/a0dce8044903ed1a7bcf8a977c84a38844a118a4/documentation/images/webui/QueryStore.PNG)
 
-* **Limit:** _The result contains at maximum limit entries. No input means all entries._
+[**Video on how to use the Query Store**](https://github.com/amos-project2/metadata-hub/raw/a0dce8044903ed1a7bcf8a977c84a38844a118a4/documentation/videos/UI-2-QueryStore.mp4)
 
-**Filter (List):**
+## File Type Categories
+File Type Categories are used to group multiple file types in one category.
+They can get selected in the Query Editor, to limit the query to specific file types.
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/a0dce8044903ed1a7bcf8a977c84a38844a118a4/documentation/images/webui/FileTypeCategories.PNG)](https://raw.githubusercontent.com/amos-project2/metadata-hub/a0dce8044903ed1a7bcf8a977c84a38844a118a4/documentation/images/webui/FileTypeCategories.PNG)
 
-* **Filter-Function:** _The filter function which take place_
- * **Pattern included:** _The attribute-value must contain the value_
- * **Pattern excluded:** _The attribute-value may not contain the value_
- * **Equal:** _The attribute-value must be exactly the value_
- * **Exists (Attribute):** _The attribute has to exist._
- * **Greater Than:** _The attribute-value must be greater than value_
- * **Lower Than:** _The attribute-value must be lower than value_
-
-[See an Example from the filter](https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/gifs/webui/filter-webui.gif)
-
-**Which Attributes (List):**
-
-* **Attribute:** _Here you can insert the Name of an attribute_
-
-[See an Example from the attribute-selection](https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/gifs/webui/which-attributes.gif)
-
-
-If you press the send-button the form-data are converted to a _GraphQL-Query_ in the background. It is sent and you get the result as json. You also can introspect the _GraphQL-Query_, send the query to the _GraphiQL-Console_ for better formatting and changing the query with the help of the _GraphiQL-Console_. You also have the possibility to clear the whole form.
-
+[**Video on how to use the File Type Categories**](https://github.com/amos-project2/metadata-hub/raw/a0dce8044903ed1a7bcf8a977c84a38844a118a4/documentation/videos/UI-3-DateitypKategorien.mp4)
 
 ## Hash Query
-Here you can enter a _file-hash_. If it is in the database, you get all information about that file. You get all meta-data. Also you get some information about the _path_ and the _crawl_, which scanned the file.
+The Hash Query is only used to check if a file is already in the database. It looks for the sha256-hash of the file in the database, the hash can be manually typed or calculated from a file on disk.
 
-## GraphQL-Query
-Here you can enter _GraphQL-code_ and execute it. The result is in json.
-
-# GraphiQL
 ## GraphiQL-Console
-Here you can use the _GraphiQL-Console_. It's a editor, where you can enter your GraphQL-code. Its highlighted.
-More options you have there:
-* **Get more informations about our used GraphQL-Endpoint in the Docu**. (You have to click to the Docu-Button)
-* **You can re-exeucute old queries. They are cached locally on your computer.**
-* **Prettify your entered GraphQL-code.**
-* **Execute the GraphQL-code and get the result as json.**
+The GraphiQL Console is integrated into the WebUI, it offers syntax highlighting, corrections and autocomplete for GraphQL queries depending on the GraphQL Schema. The GraphQL Schema documentation can also be looked at using the console.
+More information about GraphQL and GraphiQL can be found in the [server-section](https://github.com/amos-project2/metadata-hub/wiki/Server).
 
-More information about GraphQL and GraphiQL you can find in the [server-section](https://github.com/amos-project2/metadata-hub/wiki/Server).
+## TreeWalk Controller
+The TreeWalk Controller is used for controlling the TreeWalk and its executions.
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/a0dce8044903ed1a7bcf8a977c84a38844a118a4/documentation/images/webui/CrawlerController.PNG)](https://raw.githubusercontent.com/amos-project2/metadata-hub/a0dce8044903ed1a7bcf8a977c84a38844a118a4/documentation/images/webui/CrawlerController.PNG)
 
-# Impressions
+[Video on how to configure a TreeWalk execution.](https://raw.githubusercontent.com/amos-project2/metadata-hub/42d860fbdd9d52669e4bcedc3ede43891bea6efb/documentation/videos/TW-1-Konfiguration.mp4)
+
+[Videon on how to control the TreeWalk](https://raw.githubusercontent.com/amos-project2/metadata-hub/42d860fbdd9d52669e4bcedc3ede43891bea6efb/documentation/videos/TW-2-Ausfuehrung.mp4)
+
+## TreeWalk Scheduler
+The TreeWalk Scheduler is used for getting an overview about scheduled TreeWalk executions and removing them from the schedule.
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/a0dce8044903ed1a7bcf8a977c84a38844a118a4/documentation/images/webui/Schedule.PNG)](https://raw.githubusercontent.com/amos-project2/metadata-hub/a0dce8044903ed1a7bcf8a977c84a38844a118a4/documentation/images/webui/Schedule.PNG)
+
+## TreeWalk Intervals
+Intervals are used to create intervals, which can change the maximum resource consumption of the crawler during certain time intervals in a week.
+[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/a0dce8044903ed1a7bcf8a977c84a38844a118a4/documentation/images/webui/Intervals.PNG)](https://raw.githubusercontent.com/amos-project2/metadata-hub/a0dce8044903ed1a7bcf8a977c84a38844a118a4/documentation/images/webui/Intervals.PNG)
+
+[Video on how to configure an interval](https://raw.githubusercontent.com/amos-project2/metadata-hub/42d860fbdd9d52669e4bcedc3ede43891bea6efb/documentation/videos/TW-3-Interval.mp4)
 
 
-**[A short video as overview over the webui](https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/gifs/webui/complete-overview.gif)**
-
-
-
-**Two pictures about using special metadata attributes in the filter and selection area**
-
-[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/images/webui/specialAttributes.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/images/webui/specialAttributes.png)
-
-[![Ooops, there should be an image :(](https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/images/webui/specialAttributesResult.png)](https://raw.githubusercontent.com/amos-project2/metadata-hub/develop/documentation/images/webui/specialAttributesResult.png)
+[Video showing the effect of active time intervals on the executions of the TreeWalk](https://raw.githubusercontent.com/amos-project2/metadata-hub/42d860fbdd9d52669e4bcedc3ede43891bea6efb/documentation/videos/TW-4-IntervalAktiv.mp4)
 

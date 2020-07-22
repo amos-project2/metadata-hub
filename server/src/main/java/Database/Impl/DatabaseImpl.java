@@ -2,6 +2,7 @@ package Database.Impl;
 
 import Config.Config;
 import Database.Database;
+import Database.DatabaseException;
 import Database.DatabaseService;
 import com.google.inject.Inject;
 import com.zaxxer.hikari.HikariConfig;
@@ -13,6 +14,7 @@ import org.jooq.impl.DSL;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLTransientConnectionException;
 import java.util.Properties;
 
 
@@ -27,6 +29,7 @@ public class DatabaseImpl implements Database, DatabaseService
     @Getter private DSLContext dslContext;
     private static Config config;
     @Getter private boolean isStarted = false;
+    @Getter private boolean isShutdowned = false;
 
 
     @Inject
@@ -47,17 +50,36 @@ public class DatabaseImpl implements Database, DatabaseService
 
     }
 
-    public void start()
+    public synchronized void start() throws DatabaseException
     {
-        if (this.isStarted) throw new RuntimeException("already started");
-        this.isStarted = true;
-
-        hikariDataSource = new HikariDataSource(hikariConfig);
-        dslContext = DSL.using(hikariDataSource, SQLDialect.POSTGRES);
+        this.isShutdowned = false;
+        this.startIntern();
     }
 
-    public void shutdown()
+    private synchronized void startIntern() throws DatabaseException
     {
+        try
+        {
+            if (this.isShutdowned) throw new RuntimeException("the pool is shutdowned");
+            if (this.isStarted) throw new RuntimeException("already started");
+
+            //if it cant obtain a connection it throws an error
+            hikariDataSource = new HikariDataSource(hikariConfig);
+            dslContext = DSL.using(hikariDataSource, SQLDialect.POSTGRES);
+
+            this.isStarted = true;
+
+        }
+        catch (Exception exception)
+        {
+            throw new DatabaseException("Couldn't establish connection to database!", exception);
+        }
+    }
+
+
+    public synchronized void shutdown()
+    {
+        this.isShutdowned = true;
         if (!this.isStarted) return;
 
         this.dslContext.close();
@@ -65,9 +87,18 @@ public class DatabaseImpl implements Database, DatabaseService
         this.isStarted = false;
     }
 
+    /**
+     * If the db crashes after the pool is initialized, it works again after the db is restarted
+     * In the meantime it throws an exception after a timeout. But retries later are possible
+     */
     @Override
-    public Connection getJDBCConnection() throws SQLException
+    public Connection getJDBCConnection() throws SQLException, DatabaseException
     {
+        if (!this.isStarted)
+        {
+            start();
+        }
+
         return this.hikariDataSource.getConnection();
     }
 

@@ -14,13 +14,13 @@ from typing import List, Union, Tuple
 # Local imports
 from crawler.services.config import Config
 from crawler.services.intervals import TimeInterval
+
+from crawler.database import measure_time
 from crawler.database import DatabaseConnectionBase
+
 from . import task as task_module
 from . import utils
 import crawler.services.environment as environment
-
-
-_logger = logging.getLogger(__name__)
 
 
 class SchedulerDatabaseConnection(DatabaseConnectionBase):
@@ -32,6 +32,7 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
         )
         self._intervals = []
 
+    @measure_time
     def get_identifiers(self) -> List[str]:
         """Get the list of present identifiers in the schedule table.
 
@@ -47,12 +48,13 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             curs.close()
             self.con.commit()
         except Exception as e:
-            _logger.warning(f'Failed getting identifiers: {str(e)}')
+            logging.warning(f'TWSchedulerDB: failed getting identifiers: {str(e)}')
             curs.close()
             self.con.rollback()
             return None
         return [identifier[0] for identifier in identifiers]
 
+    @measure_time
     def insert(self, config: Config) -> bool:
         """Insert a new task in the schedule table.
 
@@ -81,11 +83,14 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             self.con.commit()
             return status
         except Exception as e:
-            _logger.warning(f'Failed inserting config in schedule: {str(e)}')
+            logging.warning(
+                f'TWSchedulerDB: failed inserting config in schedule: {str(e)}'
+            )
             cursor.close()
             self.con.rollback()
             return False
 
+    @measure_time
     def update_schedule(self, tasks: List[task_module.Task]) -> bool:
         """Update the schedule with given tasks.
 
@@ -109,6 +114,7 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
         ]
         return all(result)
 
+    @measure_time
     def get_schedule(self, as_json: bool) -> Union[List[str], List[task_module.Task]]:
         """Return the schedule from the database.
 
@@ -127,7 +133,9 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             cursor.close()
             self.con.commit()
         except Exception as e:
-            _logger.warning(f'Failed getting schedule from database: {str(e)}')
+            logging.warning(
+                f'TWSchedulerDB: failed getting schedule from database: {str(e)}'
+            )
             cursor.close()
             self.con.rollback()
             return None
@@ -137,6 +145,7 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             for entry in schedule
         ]
 
+    @measure_time
     def get_next_task(self) -> task_module.Task:
         """Return the next task to be executed.
 
@@ -156,7 +165,9 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             cursor.close()
             self.con.commit()
         except Exception as e:
-            _logger.warning(f'Failed getting pending from database: {str(e)}')
+            logging.warning(
+                f'TWSchedulerDB: failed getting pending from database: {str(e)}'
+            )
             cursor.close()
             self.con.rollback()
             return None
@@ -164,6 +175,7 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             tasks=[task_module.Task(*entry) for entry in pending]
         )
 
+    @measure_time
     def update(self, identifier: str, timestamp_next: str, pending: bool) -> bool:
         """Update the given task with the new values.
 
@@ -186,11 +198,14 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             self.con.commit()
             return status
         except Exception as e:
-            _logger.warning(f'Failed updating config in schedule: {str(e)}')
+            logging.warning(
+                f'TWSchedulerDB: failed updating config in schedule: {str(e)}'
+            )
             cursor.close()
             self.con.rollback()
             return False
 
+    @measure_time
     def remove(self, identifier: str) -> bool:
         """Remove the config with given identifier from the schedule.
 
@@ -211,11 +226,14 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             self.con.commit()
             return status
         except Exception as e:
-            _logger.warning(f'Failed removing config from schedule: {str(e)}')
+            logging.warning(
+                f'TWSchedulerDB: failed removing config from schedule: {str(e)}'
+            )
             cursor.close()
             self.con.rollback()
             return False
 
+    @measure_time
     def remove_interval(
             self,
             identifier: str,
@@ -243,7 +261,9 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             cursor.close()
             self.con.commit()
         except Exception as e:
-            _logger.warning(f'Failed removing config from schedule: {str(e)}')
+            logging.warning(
+                f'TWSchedulerDB: failed removing config from schedule: {str(e)}'
+            )
             cursor.close()
             self.con.rollback()
             return False
@@ -254,6 +274,7 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
                     break
         return status
 
+    @measure_time
     def add_interval(
             self,
             interval: TimeInterval,
@@ -287,7 +308,9 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             cursor.close()
             self.con.commit()
         except Exception as e:
-            _logger.warning(f'Failed inserting interval in database: {str(e)}')
+            logging.warning(
+                f'TWSchedulerDB: failed inserting interval in database: {str(e)}'
+            )
             cursor.close()
             self.con.rollback()
             return False
@@ -295,6 +318,7 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             intervals.append(interval)
         return status
 
+    @measure_time
     def get_intervals(self, as_json: bool) -> Union[List[str], List[TimeInterval]]:
         """Return all present intervals.
 
@@ -312,8 +336,8 @@ class SchedulerDatabaseConnection(DatabaseConnectionBase):
             cursor.close()
             self.con.commit()
         except Exception as e:
-            _logger.warning(
-                f'Failed getting time intervals from database: {str(e)}'
+            logging.warning(
+                f'TWSchedulerDB: failed getting time intervals from database: {str(e)}'
             )
             cursor.close()
             self.con.rollback()

@@ -21,15 +21,22 @@ public class MetadataInfo implements Comparable<MetadataInfo>
     @Override
     public int compareTo(@NotNull MetadataInfo other)
     {
-        return this.occurrence.compareTo(other.getOccurrence());
+        return other.getOccurrence().compareTo(this.getOccurrence());
+    }
+
+    @Override
+    public String toString() {
+       return "MetaInfo| Attribute: " + attribute + " Occurrence: " + occurrence.toString();
     }
 
     public MetadataInfo merge(MetadataInfo other)
     {
-        this.occurrence += other.getOccurrence(); //merge occurrence
+        this.occurrence += other.getOccurrence();
 
-        //TODO merge valueType
-
+        //Never happened but maybe the ExifTool returns differing data types for a Tag, then the default data type is String
+        if(this.valueDatatype != other.valueDatatype){
+            this.valueDatatype = MetadatumValueDatatype.str;
+        }
 
         return this;
     }

@@ -1,10 +1,13 @@
 package Benchmark;
 
 import Database.Database;
+import Database.DatabaseException;
 import Start.DependenciesContainer;
 import com.google.inject.Injector;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class IndexTest {
 
@@ -18,7 +21,7 @@ public class IndexTest {
     private final int ITERATIONS = 50;
 
 
-    public IndexTest(DependenciesContainer dependenciesContainer) throws SQLException {
+    public IndexTest(DependenciesContainer dependenciesContainer) throws SQLException, DatabaseException {
         this.dependenciesContainer = dependenciesContainer;
         this.injector=dependenciesContainer.getInjector();
         this.db = dependenciesContainer.getInjector().getInstance(Database.class);
@@ -26,7 +29,7 @@ public class IndexTest {
 
     }
 
-    public void test() throws SQLException {
+    public void test() throws SQLException, DatabaseException {
         System.out.println("**************\nStart index test! ");
 
         test_gin_index_metadata();
@@ -36,7 +39,7 @@ public class IndexTest {
         System.out.println("End index test! \n**************");
     }
 
-    public void test_gin_index_metadata() throws SQLException {
+    public void test_gin_index_metadata() throws SQLException, DatabaseException {
 
         System.out.println("Query Iterations: " + ITERATIONS);
         System.out.println("------ Gin Default ");
@@ -81,7 +84,7 @@ public class IndexTest {
 
     }
 
-    private void testQuery(String sqlStatement) throws SQLException {
+    private void testQuery(String sqlStatement) throws SQLException, DatabaseException {
         System.out.println(sqlStatement);
         System.out.println("-------------------------------------------------------------");
         long averageTimeNormal = 0;

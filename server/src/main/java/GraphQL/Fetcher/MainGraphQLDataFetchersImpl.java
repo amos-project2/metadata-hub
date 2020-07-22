@@ -11,11 +11,13 @@ public class MainGraphQLDataFetchersImpl implements MainGraphQLDataFetchers
 {
     private static final Logger log = LoggerFactory.getLogger(MainGraphQLDataFetchers.class);
     private final Database database;
+    private final QueryCache queryCache;
 
     @Inject
-    public MainGraphQLDataFetchersImpl(Database database)
+    public MainGraphQLDataFetchersImpl(Database database, QueryCache queryCache)
     {
         this.database = database;
+        this.queryCache = queryCache;
     }
 
     /**
@@ -26,7 +28,7 @@ public class MainGraphQLDataFetchersImpl implements MainGraphQLDataFetchers
      */
     @Override public DataFetcher searchForFileMetadataFetcher()
     {
-        return new SearchForFileMetadataFetcher(database);
+        return new SearchForFileMetadataFetcher(database, queryCache);
     }
 
 

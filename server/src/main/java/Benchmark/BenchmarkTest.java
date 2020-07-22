@@ -1,6 +1,7 @@
 package Benchmark;
 
 import Database.Database;
+import Database.DatabaseException;
 import Start.DependenciesContainer;
 
 import javax.ws.rs.client.Client;
@@ -30,7 +31,7 @@ public class BenchmarkTest
         return new DirectJsonToEavComparer(meassureTitle);
     }
 
-    public void doBenchmark() throws InterruptedException, SQLException {
+    public void doBenchmark() throws InterruptedException, SQLException, DatabaseException {
 
         System.out.println("START BENCHMARK TESTS:\n\n");
         var allComparer = new ArrayList<DirectJsonToEavComparer>();
@@ -69,7 +70,7 @@ public class BenchmarkTest
     /**
      * Example without lambda-syntax
      */
-    private DirectJsonToEavComparer test1() throws InterruptedException, SQLException {
+    private DirectJsonToEavComparer test1() throws InterruptedException, SQLException, DatabaseException {
 
         var c = this.createAndGetComparer("Test 1");
 
@@ -116,7 +117,7 @@ public class BenchmarkTest
     /**
      * Example with lambda-syntax
      */
-    private DirectJsonToEavComparer test2() throws InterruptedException, SQLException {
+    private DirectJsonToEavComparer test2() throws InterruptedException, SQLException, DatabaseException {
         //Use of Khangs Data dump -> has to be loaded into the database
         //HikariDataSource dataSource = registry.getDatabaseProvider().getHikariDataSource();
         String dir_path = "G:/";
@@ -144,7 +145,7 @@ public class BenchmarkTest
         });
 
     }
-    private DirectJsonToEavComparer test3() throws InterruptedException, SQLException {
+    private DirectJsonToEavComparer test3() throws InterruptedException, SQLException, DatabaseException {
 
         var c = this.createAndGetComparer("Test 3");
 
