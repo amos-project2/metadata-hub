@@ -1,5 +1,11 @@
 # Metadata-Hub
 
+## Update
+
+This repository is **deprecated**! The project is actively developed by GRAU DATA GmbH at https://metadatahub.de/
+<br>
+<br>
+
 <p align="center">
     <a href="https://opensource.org/licenses/MIT">
         <img src="https://img.shields.io/github/license/amos-project2/metadata-hub" />
